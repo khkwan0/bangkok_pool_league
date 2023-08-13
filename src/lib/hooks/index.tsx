@@ -144,7 +144,23 @@ export const useAccount = (): any => {
     await AsyncStorage.removeItem('jwt')
   }
 
-  return {FetchUser, LoadUser, UserLogin, Logout, UpdateUser}
+  async function SocialLogin(platform: string, data: any) {
+    try {
+      const res = await Post('/login/social/' + platform, {data})
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        if (typeof res.data !== 'undefined' && res.data) {
+          await AsyncStorage.setItem('jwt', res.data.token)
+          dispatch(SetUser(res.data.user))
+          return {status: 'ok'}
+        }
+      }
+    } catch (e) {
+      console.log(e)
+      return null
+    }
+  }
+
+  return {FetchUser, LoadUser, UserLogin, Logout, UpdateUser, SocialLogin}
 }
 
 export const useLeague = (): any => {

@@ -13,13 +13,14 @@ import {
 import {useAppSelector} from '~/lib/hooks/redux'
 
 const Login = props => {
-  const {UserLogin, Logout} = useAccount()
+  const {SocialLogin, UserLogin, Logout} = useAccount()
   const {user} = useAppSelector(_state => _state.user)
-  const [email, setEmail] = React.useState('khkwan0@gmail.com')
+  const [email, setEmail] = React.useState('')
   const [secure, setSecure] = React.useState(true)
-  const [password, setPassword] = React.useState('KiN-1BdH')
+  const [password, setPassword] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [showSocial, setShowSocial] = React.useState(false)
+  const [err, setErr] = React.useState('')
 
   React.useEffect(() => {
     Settings.initializeSDK()
@@ -58,6 +59,7 @@ const Login = props => {
 
   async function AttemptLogin() {
     try {
+      setErr('')
       setLoading(true)
       const res = await UserLogin(email, password)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
@@ -76,10 +78,23 @@ const Login = props => {
 
   async function HandleLineLogin() {
     try {
-      const res = await LineLogin.login()
-      console.log(res)
+      setErr('')
+      const lineRes = await LineLogin.login({nonce: Date.now()})
+      if (typeof lineRes.accessToken !== 'undefined') {
+        const res = await SocialLogin('line', lineRes)
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          if (typeof props.route.params?.previous !== 'undefined') {
+            props.navigation.navigate(props.route?.params?.previous)
+          } else {
+            props.navigation.goBack()
+          }
+        }
+      }
     } catch (e) {
+      setErr('Unable to Login')
       console.log(e)
+    } finally {
+      setLoading(false)
     }
   }
 
