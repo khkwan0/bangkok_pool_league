@@ -14,7 +14,7 @@ const Matches = props => {
   const insets = useSafeAreaInsets()
 
   return (
-    <View style={{flex: 1, backgroundColor: 'blue', paddingTop: insets.top}}>
+    <View style={{flex: 1}}>
       <MatchStack.Navigator
         screenOptions={{
           // eslint-disable-next-line react/no-unstable-nested-components

@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react'
+import {View} from 'react-native'
 import {useAccount, useLeague} from '~/lib/hooks'
 import {useAppSelector} from '~/lib/hooks/redux'
 import Matches from '@screens/Matches'
@@ -20,11 +21,13 @@ import {createDrawerNavigator} from '@react-navigation/drawer'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import DrawerContent from '@components/DrawerContent'
 import {IconButton} from 'react-native-paper'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 const Tab = createBottomTabNavigator()
 const Drawer = createDrawerNavigator()
 
 const Main = props => {
+  const insets = useSafeAreaInsets()
   const account = useAccount()
   const league = useLeague()
   const [drawerOnly, setDrawerOnly] = React.useState(true)
@@ -43,6 +46,7 @@ const Main = props => {
 
   if (drawerOnly) {
     return (
+      <View style={{flex: 1, paddingTop: insets.top}}>
       <Drawer.Navigator
         drawerContent={params => <DrawerContent {...params} />}
         screenOptions={({navigation}) => ({
@@ -72,6 +76,7 @@ const Main = props => {
         <Drawer.Screen name="Info" component={Info} />
         <Drawer.Screen name="Settings" component={Settings} />
       </Drawer.Navigator>
+      </View>
     )
   } else {
     return (

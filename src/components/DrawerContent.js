@@ -1,5 +1,5 @@
 import React from 'react'
-import {StyleSheet, View} from 'react-native'
+import {Image, StyleSheet, View} from 'react-native'
 import {Text, TouchableRipple} from 'react-native-paper'
 import {useAccount} from '~/lib/hooks'
 import {useNavigation} from '@react-navigation/native'
@@ -41,6 +41,7 @@ const DrawerItem = ({navDest, icon, label, as}) => {
 const DrawerContent = props => {
   const insets = useSafeAreaInsets()
   const user = useAppSelector(_state => _state.user.user.data)
+  console.log(user)
   const account = useAccount()
 
   async function HandleLogout() {
@@ -52,13 +53,26 @@ const DrawerContent = props => {
     <View
       style={[
         drawerPanelStyle,
-        {paddingTop: insets.top, paddingBottom: insets.bottom},
+        {
+          paddingBottom: insets.bottom,
+        }
       ]}>
       <View style={{flex: 5}}>
         {typeof user?.id !== 'undefined' && user.id && (
-          <View style={{flex: 1, padding: 10}}>
-            <Text variant="titleLarge">{user.nickname}</Text>
-            <Text variant="bodyLarge">player</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: insets.top}}>
+            <View style={{flex: 1, padding: 10}}>
+              <Text variant="titleLarge">{user.nickname}</Text>
+              <Text variant="bodyLarge">player</Text>
+            </View>
+            <View style={{flex: 1}}>
+              <Image
+                source={{uri: config.profileUrl + user.profile_picture}}
+                width={100}
+                height={100}
+                resizeMode="contain"
+                style={{borderRadius: 50}}
+              />
+            </View>
           </View>
         )}
         <View style={{flex: 15, gap: 10, marginTop: 30}}>
