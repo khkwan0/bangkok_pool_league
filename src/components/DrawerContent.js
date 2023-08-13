@@ -41,7 +41,6 @@ const DrawerItem = ({navDest, icon, label, as}) => {
 const DrawerContent = props => {
   const insets = useSafeAreaInsets()
   const user = useAppSelector(_state => _state.user.user.data)
-  console.log(user)
   const account = useAccount()
 
   async function HandleLogout() {
