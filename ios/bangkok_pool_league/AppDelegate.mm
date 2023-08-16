@@ -2,6 +2,7 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import "RNLine-Swift.h"
+#import <FBSDKCoreKit/FBSDKCoreKit-swift.h>
 
 @implementation AppDelegate
 
@@ -12,6 +13,7 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
   [LineLogin setupWithChannelID:@"1660952585" universalLinkURL:nil];
+  [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
