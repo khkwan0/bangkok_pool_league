@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "bangkok_pool_league.app"
+               BuildableName = "Bangkok Pool League.app"
                BlueprintName = "bangkok_pool_league"
                ReferencedContainer = "container:bangkok_pool_league.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "bangkok_pool_leagueTests.xctest"
+               BuildableName = "Bangkok Pool League.xctest"
                BlueprintName = "bangkok_pool_leagueTests"
                ReferencedContainer = "container:bangkok_pool_league.xcodeproj">
             </BuildableReference>
@@ -55,7 +55,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "bangkok_pool_league.app"
+            BuildableName = "Bangkok Pool League.app"
             BlueprintName = "bangkok_pool_league"
             ReferencedContainer = "container:bangkok_pool_league.xcodeproj">
          </BuildableReference>
@@ -72,7 +72,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "bangkok_pool_league.app"
+            BuildableName = "Bangkok Pool League.app"
             BlueprintName = "bangkok_pool_league"
             ReferencedContainer = "container:bangkok_pool_league.xcodeproj">
          </BuildableReference>

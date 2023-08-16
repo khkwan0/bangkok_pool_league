@@ -27,10 +27,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		00E356EE1AD99517003FC87E /* bangkok_pool_leagueTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = bangkok_pool_leagueTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		00E356EE1AD99517003FC87E /* Bangkok Pool League.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Bangkok Pool League.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* bangkok_pool_leagueTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = bangkok_pool_leagueTests.m; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* bangkok_pool_league.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bangkok_pool_league.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Bangkok Pool League.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bangkok Pool League.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = bangkok_pool_league/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = bangkok_pool_league/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = bangkok_pool_league/Images.xcassets; sourceTree = "<group>"; };
@@ -153,8 +153,8 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* bangkok_pool_league.app */,
-				00E356EE1AD99517003FC87E /* bangkok_pool_leagueTests.xctest */,
+				13B07F961A680F5B00A75B9A /* Bangkok Pool League.app */,
+				00E356EE1AD99517003FC87E /* Bangkok Pool League.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -217,7 +217,7 @@
 			);
 			name = bangkok_pool_leagueTests;
 			productName = bangkok_pool_leagueTests;
-			productReference = 00E356EE1AD99517003FC87E /* bangkok_pool_leagueTests.xctest */;
+			productReference = 00E356EE1AD99517003FC87E /* Bangkok Pool League.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		13B07F861A680F5B00A75B9A /* bangkok_pool_league */ = {
@@ -239,7 +239,7 @@
 			);
 			name = bangkok_pool_league;
 			productName = bangkok_pool_league;
-			productReference = 13B07F961A680F5B00A75B9A /* bangkok_pool_league.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Bangkok Pool League.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -498,7 +498,7 @@
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Bangkok Pool League";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/bangkok_pool_league.app/bangkok_pool_league";
 			};
 			name = Debug;
@@ -522,7 +522,7 @@
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Bangkok Pool League";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/bangkok_pool_league.app/bangkok_pool_league";
 			};
 			name = Release;
@@ -551,7 +551,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bangkok-pool-league";
-				PRODUCT_NAME = bangkok_pool_league;
+				PRODUCT_NAME = "Bangkok Pool League";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -581,7 +581,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bangkok-pool-league";
-				PRODUCT_NAME = bangkok_pool_league;
+				PRODUCT_NAME = "Bangkok Pool League";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
