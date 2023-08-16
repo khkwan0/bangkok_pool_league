@@ -1,6 +1,6 @@
 import React from 'react'
 import {View, FlatList} from 'react-native'
-import {Button} from 'react-native-paper'
+import {Button, Text} from 'react-native-paper'
 import MatchCard from '@components/MatchCard'
 import {useAppSelector} from '~/lib/hooks/redux'
 import {useSeason} from '~/lib/hooks'
@@ -14,7 +14,11 @@ const UpcomingMatches = props => {
   React.useEffect(() => {
     ;(async () => {
       try {
-        const matches = await season.GetMatches(['newonly=1'])
+        const query = ['newonly=1']
+        if (typeof user?.data?.teams === 'undefined' || !user.data.teams || user.data.teams.length === 0) {
+          query.push('noteam=true')
+        }
+        const matches = await season.GetMatches(query)
         setFixtures(matches)
       } catch (e) {
         console.log(e)
@@ -40,6 +44,11 @@ const UpcomingMatches = props => {
                 }>
                 Login to see your matches
               </Button>
+            )}
+            {(typeof user?.data?.teams === 'undefined' || user.data.teams.length < 1) && user.data.id && (
+              <View style={{paddingVertical: 10}}>
+                <Text style={{textAlign: 'center'}}>You are not affiliated with a team.</Text>
+              </View>
             )}
           </View>
         }

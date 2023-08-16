@@ -24,9 +24,11 @@ const Login = props => {
 
   React.useEffect(() => {
     Settings.initializeSDK()
+    /*
     AccessToken.getCurrentAccessToken().then(accessToken => {
       console.log('fbtoken', accessToken)
     })
+    */
     /*
     GoogleSignin.configure({
       webClientId:
@@ -43,6 +45,15 @@ const Login = props => {
     const data = await AccessToken.getCurrentAccessToken()
     if (!data) {
       console.log('no data')
+    } else {
+        const res = await SocialLogin('facebook', data)
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          if (typeof props.route.params?.previous !== 'undefined') {
+            props.navigation.navigate(props.route?.params?.previous)
+          } else {
+            props.navigation.goBack()
+          }
+        }
     }
   }
   /*
