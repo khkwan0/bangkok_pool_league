@@ -1,0 +1,76 @@
+import config from '~/config'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
+export const useNetwork = () => {
+  const Get = async function (endpoint) {
+    try {
+      const _endpoint =
+        typeof endpoint !== 'undefined' && endpoint[0] === '/'
+          ? endpoint.substring(1)
+          : endpoint
+      const domain = config.domain ?? 'localhost'
+      const token = await AsyncStorage.getItem('jwt')
+      const res = await fetch('https://' + domain + '/' + _endpoint, {
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      })
+      if (res.status === 200) {
+        const json = await res.json()
+        return json
+      } else {
+        return {}
+      }
+    } catch (e) {
+      console.log('GET ' + endpoint, e)
+      return {}
+    }
+  }
+
+  const Post = async function (
+    endpoint,
+    payload
+  ) {
+    try {
+      const _endpoint =
+        typeof endpoint !== 'undefined' && endpoint[0] === '/'
+          ? endpoint.substring(1)
+          : endpoint
+      const domain = config.domain ?? 'localhost'
+      const token = await AsyncStorage.getItem('jwt')
+      const res = await fetch('https://' + domain + '/' + _endpoint, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      })
+      const json = await res.json()
+      return json
+    } catch (e) {
+      console.log('POST ' + endpoint, JSON.stringify(payload, null, 2), e)
+      return {}
+    }
+  }
+
+  const SocketSend = (type = '', matchId = 0, data = {}, dest = '') => {
+    const user = {
+      id: 1933,
+      nickname: 'Ken K',
+    }
+    const toSend = {
+      type: type,
+      matchId: matchId,
+      timestamp: Date.now(),
+      playerId: user.id ?? 0,
+      nickname: user.nickname,
+      dest: dest,
+      data: {...data},
+    }
+    if (socket && socket.connected) {
+      socket.emit('matchupdate', toSend)
+    }
+  }
+  return {Get, Post, SocketSend}
+}

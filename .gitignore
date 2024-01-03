@@ -66,3 +66,4 @@ Podfile.lock
 strings.xml
 google-services.json
 config.js
+*.swp

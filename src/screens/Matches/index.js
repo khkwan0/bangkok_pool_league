@@ -1,42 +1,19 @@
 import React from 'react'
-import MatchScreen from './MatchScreen'
-import UpcomingMatches from './UpcomingMatches'
-import Roster from './Roster'
-import ExtendedMatchInfo from './ExtendedMatchInfo'
-import {createNativeStackNavigator} from '@react-navigation/native-stack'
-import {View} from 'react-native'
-import {IconButton} from 'react-native-paper'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
+import Upcoming from './Upcoming'
+import Completed from './Completed'
+import {useTranslation} from 'react-i18next'
+import SettingsIcon from '@components/SettingsIcon'
 
-const MatchStack = createNativeStackNavigator()
-
+const Tab = createBottomTabNavigator()
 const Matches = props => {
-  const insets = useSafeAreaInsets()
+  const {t} = useTranslation()
 
   return (
-    <View style={{flex: 1}}>
-      <MatchStack.Navigator
-        screenOptions={{
-          // eslint-disable-next-line react/no-unstable-nested-components
-          headerRight: () => {
-            return (
-              <IconButton
-                icon="menu"
-                onPress={() => props.navigation.openDrawer()}
-              />
-            )
-          },
-          headerTitleAlign: 'center',
-        }}>
-        <MatchStack.Screen
-          name="Upcoming Matches"
-          component={UpcomingMatches}
-        />
-        <MatchStack.Screen name="Match Screen" component={MatchScreen} />
-        <MatchStack.Screen name="Roster" component={Roster} />
-        <MatchStack.Screen name="Match Info" component={ExtendedMatchInfo} />
-      </MatchStack.Navigator>
-    </View>
+    <Tab.Navigator screenOptions={{headerShown: false}}>
+      <Tab.Screen name="Upcoming" component={Upcoming} />
+      <Tab.Screen name="Completed" component={Completed} />
+    </Tab.Navigator>
   )
 }
 

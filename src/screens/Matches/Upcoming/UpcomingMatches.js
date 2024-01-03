@@ -1,7 +1,7 @@
 import React from 'react'
 import {View, FlatList} from 'react-native'
 import {Button, Text} from 'react-native-paper'
-import MatchCard from '@components/MatchCard'
+import MatchCard from './components/MatchCard'
 import {useAppSelector} from '~/lib/hooks/redux'
 import {useSeason} from '~/lib/hooks'
 
@@ -13,11 +13,16 @@ const UpcomingMatches = props => {
 
   React.useEffect(() => {
     ;(async () => {
+      const query = []
       try {
-        const query = ['newonly=1']
-        if (typeof user?.data?.teams === 'undefined' || !user.data.teams || user.data.teams.length === 0) {
+        if (
+          typeof user?.data?.teams === 'undefined' ||
+          !user.data.teams ||
+          user.data.teams.length === 0
+        ) {
           query.push('noteam=true')
         }
+        query.push('newonly=true')
         const matches = await season.GetMatches(query)
         setFixtures(matches)
       } catch (e) {
@@ -45,11 +50,15 @@ const UpcomingMatches = props => {
                 Login to see your matches
               </Button>
             )}
-            {(typeof user?.data?.teams === 'undefined' || user.data.teams.length < 1) && user.data.id && (
-              <View style={{paddingVertical: 10}}>
-                <Text style={{textAlign: 'center'}}>You are not affiliated with a team.</Text>
-              </View>
-            )}
+            {(typeof user?.data?.teams === 'undefined' ||
+              user.data.teams.length < 1) &&
+              user.data.id && (
+                <View style={{paddingVertical: 10}}>
+                  <Text style={{textAlign: 'center'}}>
+                    You are not affiliated with a team.
+                  </Text>
+                </View>
+              )}
           </View>
         }
         keyExtractor={(item, index) =>
