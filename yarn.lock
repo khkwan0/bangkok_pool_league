@@ -3097,9 +3097,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.4.601:
-  version "1.4.616"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.616.tgz#4bddbc2c76e1e9dbf449ecd5da3d8119826ea4fb"
-  integrity sha512-1n7zWYh8eS0L9Uy+GskE0lkBUNK83cXTVJI0pU3mGprFsbfSdAc15VTFbo+A+Bq4pwstmL30AVcEU3Fo463lNg==
+  version "1.4.617"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.617.tgz#3b0dde6c54e5f0f26db75ce6c6ae751e5df4bf75"
+  integrity sha512-sYNE3QxcDS4ANW1k4S/wWYMXjCVcFSOX3Bg8jpuMFaXt/x8JCmp0R1Xe1ZXDX4WXnSRBf+GJ/3eGWicUuQq5cg==
 
 emittery@^0.13.1:
   version "0.13.1"
@@ -3984,9 +3984,9 @@ human-signals@^2.1.0:
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
 
 i18next@^23.7.13:
-  version "23.7.13"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.7.13.tgz#2dda870cbf63e168e1d4eb8f6f700b5c26794a3d"
-  integrity sha512-DbCPlw6VmURSZa43iOnycxq9o15e+WuBWDBZ3aj+gQZcDz4sgnuKwrcwmP1n8gSSCwCN7CRFGTpnwTd93A16Mg==
+  version "23.7.15"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.7.15.tgz#62d19a6edfef15e6ca7f94d0fc9dab9012db7787"
+  integrity sha512-WukNgiqkUgU7xSaY8k2B4nXNesD+O8O4ta5g344U5B6Ag7mG61A1EBcDmktFgc4aL447V0cmpjw5l18v58KUfg==
   dependencies:
     "@babel/runtime" "^7.23.2"
 
@@ -4001,9 +4001,9 @@ ignore@^5.0.5, ignore@^5.2.0:
   integrity sha512-g7dmpshy+gD7mh88OC9NwSGTKoc3kyLAZQRU1mt53Aw/vnvfXnbC+F/7F7QoYVKbV+KNvJx8wArewKy1vXMtlg==
 
 image-size@^1.0.2:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/image-size/-/image-size-1.1.0.tgz#e0458a7957b1230ec3916ae2cac7273345a93a86"
-  integrity sha512-asnTHw2K8OlqT5kVnQwX+AGKQqpvLo95LbNzQ/C0ln3yzentZmAdd0ygoD004VC4Kkd4PV7J2iaPQkqwp9yuTw==
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/image-size/-/image-size-1.1.1.tgz#ddd67d4dc340e52ac29ce5f546a09f4e29e840ac"
+  integrity sha512-541xKlUw6jr/6gGuk92F+mYM5zaFAc5ahphvkqvNe2bQ6gVBkd6bfrmVJ2t4KDAfikAYZyIqTnktX3i6/aQDrQ==
   dependencies:
     queue "6.0.2"
 
