@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useAppDispatch, useAppSelector} from '~/lib/hooks/redux'
-import { useNetwork } from '~/lib/hooks'
+import {useNetwork} from '~/lib/hooks'
+import {SetUser} from '../../redux/userSlice'
 
 export const useAccount = () => {
   const dispatch = useAppDispatch()
