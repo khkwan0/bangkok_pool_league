@@ -2,6 +2,8 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import "RNLine-Swift.h"
+#import <AuthenticationServices/AuthenticationServices.h>
+#import <SafariServices/SafariServices.h>
 #import <FBSDKCoreKit/FBSDKCoreKit-swift.h>
 
 @implementation AppDelegate
