@@ -1,5 +1,6 @@
 import config from '~/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import {socket} from '~/socket'
 
 export const useNetwork = () => {
   const Get = async function (endpoint) {
@@ -27,10 +28,7 @@ export const useNetwork = () => {
     }
   }
 
-  const Post = async function (
-    endpoint,
-    payload
-  ) {
+  const Post = async function (endpoint, payload) {
     try {
       const _endpoint =
         typeof endpoint !== 'undefined' && endpoint[0] === '/'

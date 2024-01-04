@@ -339,6 +339,7 @@ const MatchScreen = props => {
   function SocketSend(type, data = {}) {
     network.SocketSend(type, matchInfo.match_id, data)
   }
+
   function UpdateFrames(frameData) {
     if (frameData) {
       const _frames = framesRef.current

@@ -11,6 +11,7 @@ export const useAccount = () => {
   const LoadUser = async () => {
     try {
       const user = await AsyncStorage.getItem('user')
+      return user
     } catch (e) {
       console.log(e)
     }
