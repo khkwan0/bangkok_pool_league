@@ -536,7 +536,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = bangkok_pool_league/bangkok_pool_league.entitlements;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = 2MXCL8R3KW;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = bangkok_pool_league/Info.plist;
@@ -567,7 +567,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = bangkok_pool_league/bangkok_pool_league.entitlements;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = 2MXCL8R3KW;
 				INFOPLIST_FILE = bangkok_pool_league/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Bangkok Pool League";
