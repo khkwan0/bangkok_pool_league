@@ -84,16 +84,6 @@ export const useSeason = () => {
     }
   }
 
-  const GetMatchDetails = async matchId => {
-    try {
-      const res = await Get('matches/details/' + matchId)
-      return res
-    } catch (e) {
-      console.log(e)
-      return {}
-    }
-  }
-
   return {
     GetDoublesStats,
     GetMatchPerformance,
@@ -103,6 +93,5 @@ export const useSeason = () => {
     GetPlayerStats,
     GetTeams,
     GetGameTypes,
-    GetMatchDetails,
   }
 }

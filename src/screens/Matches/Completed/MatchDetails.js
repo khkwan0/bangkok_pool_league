@@ -1,22 +1,38 @@
 import React from 'react'
-import {View} from 'react-native'
-import {useSeason} from '~/lib/hooks'
+import {FlatList} from 'react-native'
+import {useMatch} from '~/lib/hooks'
+import FrameDetail from './components/FrameDetail'
+import {Divider, View} from '@ybase'
 
 const MatchDetails = props => {
-  const {GetMatchDetails} = useSeason()
+  const {GetMatchDetails} = useMatch()
+  const [matchDetails, setMatchDetails] = React.useState([])
+  const [err, setErr] = React.useState('')
 
   React.useEffect(() => {
     ;(async () => {
       try {
         const res = await GetMatchDetails(props.route.params.matchData.matchId)
-        console.log(res)
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          setMatchDetails(res.data)
+        } else {
+          setErr(res.error)
+        }
       } catch (e) {
         console.log(e)
       }
     })()
   }, [props.route.params.matchData])
 
-  return <View />
+  return (
+    <View>
+      <FlatList
+        data={matchDetails}
+        renderItem={(item, idx) => <FrameDetail item={item} idx={idx} />}
+        ItemSeparatorComponent={<Divider />}
+      />
+    </View>
+  )
 }
 
 export default MatchDetails

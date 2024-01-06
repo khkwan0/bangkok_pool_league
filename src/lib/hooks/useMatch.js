@@ -12,9 +12,18 @@ export const useMatch = () => {
     }
   }
 
+  const GetMatchDetails = async matchId => {
+    try {
+      const res = await Get('/match/details/' + matchId)
+      return res
+    } catch (e) {
+      console.log(e)
+      return {}
+    }
+  }
+
   const GetMatchInfo = async matchId => {
     try {
-      console.log(matchId)
       const res = await Get('/match/' + matchId)
       return res
     } catch (e) {
@@ -22,5 +31,5 @@ export const useMatch = () => {
     }
   }
 
-  return {GetFrames, GetMatchInfo}
+  return {GetFrames, GetMatchInfo, GetMatchDetails}
 }

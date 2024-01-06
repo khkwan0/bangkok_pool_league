@@ -2,23 +2,25 @@ import React from 'react'
 import {View, FlatList} from 'react-native'
 import {Button, Text} from 'react-native-paper'
 import MatchCard from './components/MatchCard'
-import {useAppSelector} from '~/lib/hooks/redux'
 import {useSeason} from '~/lib/hooks'
+import {useSelector} from 'react-redux'
+import {useTranslation} from 'react-i18next'
 
 const UpcomingMatches = props => {
   const [fixtures, setFixtures] = React.useState([])
-  const {user} = useAppSelector(_state => _state.user)
+  const user = useSelector(_state => _state.userData).user
   const season = useSeason()
   const routeName = props.navigation.getState().routes[0].name
+  const {t} = useTranslation()
 
   React.useEffect(() => {
     ;(async () => {
       const query = []
       try {
         if (
-          typeof user?.data?.teams === 'undefined' ||
-          !user.data.teams ||
-          user.data.teams.length === 0
+          typeof user?.teams === 'undefined' ||
+          !user.teams ||
+          user.teams.length === 0
         ) {
           query.push('noteam=true')
         }
@@ -40,19 +42,19 @@ const UpcomingMatches = props => {
       <FlatList
         ListHeaderComponent={
           <View>
-            {!user.data.id && (
+            {!user.id && (
               <Button
                 onPress={() =>
                   props.navigation.navigate('Login', {
                     previous: routeName,
                   })
                 }>
-                Login to see your matches
+                {t('login_to_see_your_matches')}
               </Button>
             )}
             {(typeof user?.data?.teams === 'undefined' ||
-              user.data.teams.length < 1) &&
-              user.data.id && (
+              user.teams.length < 1) &&
+              user.id && (
                 <View style={{paddingVertical: 10}}>
                   <Text style={{textAlign: 'center'}}>
                     You are not affiliated with a team.

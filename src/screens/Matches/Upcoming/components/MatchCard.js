@@ -3,8 +3,10 @@ import {Image, View} from 'react-native'
 import {Button, Text, TouchableRipple} from 'react-native-paper'
 import {DateTime} from 'luxon'
 import {showLocation} from 'react-native-map-link'
+import {useTranslation} from 'react-i18next'
 
 const MatchCard = props => {
+  const {t} = useTranslation()
   function ShowLocation(lat, long) {
     showLocation({
       latitude: lat,
@@ -24,7 +26,7 @@ const MatchCard = props => {
         <View>
           <Text>{props.match.round}</Text>
           <Text variant="headlineSmall" style={{textAlign: 'center'}}>
-            {props.match.home_team_short_name} vs{' '}
+            {props.match.home_team_short_name} {t('vs')}{' '}
             {props.match.away_team_short_name}
           </Text>
           <Text variant="titleMedium" style={{textAlign: 'center'}}>
@@ -32,8 +34,7 @@ const MatchCard = props => {
               DateTime.DATE_HUGE,
             )}
           </Text>
-          <Text>Match ID: {props.match.match_id}</Text>
-          <Text>Where:</Text>
+          <Text>{t('where')}:</Text>
           <Text>{props.match.name}</Text>
           <Text>{props.match.location}</Text>
           <Text>{props.match.phone}</Text>
@@ -44,7 +45,7 @@ const MatchCard = props => {
                 onPress={() =>
                   ShowLocation(props.match.latitude, props.match.longitude)
                 }>
-                Map
+                {t('map')}
               </Button>
             </View>
           )}

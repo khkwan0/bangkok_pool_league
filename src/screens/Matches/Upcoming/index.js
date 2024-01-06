@@ -5,7 +5,6 @@ import Roster from '@screens/Matches/Roster'
 import ExtendedMatchInfo from '@screens/Matches/ExtendedMatchInfo'
 import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import {View} from 'react-native'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import SettingsIcon from '@components/SettingsIcon'
 import {useTranslation} from 'react-i18next'
 

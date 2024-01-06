@@ -9,6 +9,7 @@ module.exports = {
           '~': './src',
           '@components': './src/components',
           '@screens': './src/screens',
+          '@ybase': './src/ybase',
         },
       },
     ],

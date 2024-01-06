@@ -2,7 +2,6 @@ import React from 'react'
 import {View} from 'react-native'
 import {Divider, Text, TouchableRipple} from 'react-native-paper'
 import {DateTime} from 'luxon'
-import {showLocation} from 'react-native-map-link'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useNavigation} from '@react-navigation/native'
 

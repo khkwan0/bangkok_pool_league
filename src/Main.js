@@ -2,7 +2,7 @@
 import React from 'react'
 import {View} from 'react-native'
 import {useAccount, useLeague} from '~/lib/hooks'
-import {useAppSelector} from '~/lib/hooks/redux'
+import {useSelector} from 'react-redux'
 import Matches from '@screens/Matches'
 import Calendar from '@screens/Calendar'
 import Login from '@screens/Auth/Login'
@@ -22,6 +22,9 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import DrawerContent from '@components/DrawerContent'
 import {IconButton} from 'react-native-paper'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import '~/i18n'
+import {useTranslation} from 'react-i18next'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const Tab = createBottomTabNavigator()
 const Drawer = createDrawerNavigator()
@@ -31,8 +34,10 @@ const Main = props => {
   const account = useAccount()
   const league = useLeague()
   const [drawerOnly, setDrawerOnly] = React.useState(true)
+  const [isMounted, setIsMounted] = React.useState(false)
+  const {i18n, t} = useTranslation()
 
-  const {user} = useAppSelector(_state => _state.user)
+  const user = useSelector(_state => _state.userData).user
 
   React.useEffect(() => {
     account.FetchUser()
@@ -44,38 +49,68 @@ const Main = props => {
     })()
   }, [league])
 
+  React.useEffect(() => {
+    ;(async () => {
+      try {
+        const lang = await AsyncStorage.getItem('language')
+        i18n.changeLanguage(lang ? lang : 'en')
+      } catch (e) {
+        console.log(e)
+      }
+    })()
+    return () => setIsMounted(false)
+  }, [])
+
   if (drawerOnly) {
     return (
       <View style={{flex: 1, paddingTop: insets.top}}>
-      <Drawer.Navigator
-        drawerContent={params => <DrawerContent {...params} />}
-        screenOptions={({navigation}) => ({
-          drawerPosition: 'right',
-          headerTitleAlign: 'center',
-          headerLeft: () => null,
-          headerRight: () => 
-            <IconButton
-              icon="menu"
-              onPress={() => navigation.openDrawer()}
-            />
-        })}>
-        <Drawer.Screen
-          name="Matches"
-          component={Matches}
-          options={{headerShown: false}}
-        />
-        <Drawer.Screen name="Login" component={Login} />
-        <Drawer.Screen name="Divisions" component={Divisions} />
-        <Drawer.Screen name="Venues" component={Venues} options={{headerShown: false}} />
-        <Drawer.Screen name="Teams" component={Teams} options={{headerShown: false}} />
-        <Drawer.Screen name="Players" component={Players} options={{headerShown: false}} />
-        <Drawer.Screen name="Calendar" component={Calendar} />
-        <Drawer.Screen name="Schedules" component={Schedules} />
-        <Drawer.Screen name="Seasons" component={Seasons} />
-        <Drawer.Screen name="Statistics" component={Statistics} options={{headerShown: false}} />
-        <Drawer.Screen name="Info" component={Info} />
-        <Drawer.Screen name="Settings" component={Settings} />
-      </Drawer.Navigator>
+        <Drawer.Navigator
+          drawerContent={params => <DrawerContent {...params} />}
+          screenOptions={({navigation}) => ({
+            drawerPosition: 'right',
+            headerTitleAlign: 'center',
+            headerLeft: () => null,
+            headerRight: () => (
+              <IconButton icon="menu" onPress={() => navigation.openDrawer()} />
+            ),
+          })}>
+          <Drawer.Screen
+            name="Matches"
+            component={Matches}
+            options={{headerShown: false}}
+          />
+          <Drawer.Screen name="Login" component={Login} />
+          <Drawer.Screen name="Divisions" component={Divisions} />
+          <Drawer.Screen
+            name="Venues"
+            component={Venues}
+            options={{headerShown: false}}
+          />
+          <Drawer.Screen
+            name="Teams"
+            component={Teams}
+            options={{headerShown: false}}
+          />
+          <Drawer.Screen
+            name="Players"
+            component={Players}
+            options={{headerShown: false}}
+          />
+          <Drawer.Screen name="Calendar" component={Calendar} />
+          <Drawer.Screen name="Schedules" component={Schedules} />
+          <Drawer.Screen name="Seasons" component={Seasons} />
+          <Drawer.Screen
+            name="Statistics"
+            component={Statistics}
+            options={{headerShown: false}}
+          />
+          <Drawer.Screen name="Info" component={Info} />
+          <Drawer.Screen
+            name="Settings"
+            component={Settings}
+            options={{headerTitle: t('settings')}}
+          />
+        </Drawer.Navigator>
       </View>
     )
   } else {
