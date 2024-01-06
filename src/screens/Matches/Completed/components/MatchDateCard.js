@@ -1,9 +1,9 @@
 import React from 'react'
-import {View} from 'react-native'
-import {Divider, Text, TouchableRipple} from 'react-native-paper'
+import {TouchableRipple} from 'react-native-paper'
 import {DateTime} from 'luxon'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useNavigation} from '@react-navigation/native'
+import {Divider, Text, View} from '@ybase'
 
 const MatchDateCard = props => {
   const [showAll, setShowAll] = React.useState(props.showAll ? true : false)
@@ -42,9 +42,8 @@ const MatchDateCard = props => {
                   matchData: props.matchDate.matches[idx],
                 })
               }
-              key={idx}>
+              key={'match' + idx}>
               <>
-                <Divider />
                 <View style={{paddingVertical: 10}}>
                   <View
                     style={{
@@ -83,6 +82,7 @@ const MatchDateCard = props => {
                     </View>
                   </View>
                 </View>
+                <Divider />
               </>
             </TouchableRipple>
           ))}
