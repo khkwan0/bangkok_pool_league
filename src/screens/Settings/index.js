@@ -50,7 +50,6 @@ const DrawerContent = props => {
   }
 
   return (
-    <SafeAreaView flex={1}>
       <View flex={1} bgColor={colors.background} px={20}>
         <View flex={5}>
           {typeof user?.id !== 'undefined' && user.id && (
@@ -129,17 +128,13 @@ const DrawerContent = props => {
             />
           </View>
         </View>
-        <View style={{flex: 1, justifyContent: 'flex-end'}}>
+        <View flex={1} justifyContent="flex-end" pb={insets.bottom}>
           {typeof user?.id !== 'undefined' && user.id && (
             <Pressable onPress={() => HandleLogout()}>
-              <View style={drawerItemStyle}>
-                <View style={{flex: 1, alignItems: 'flex-end'}}>
-                  <Icon name="logout" />
-                </View>
-                <View style={{flex: 2}}>
-                  <Text variant="titleLarge">{t('logout')}</Text>
-                </View>
-              </View>
+              <Row alignItems="center" space={20}>
+                <MCI name="logout" color={colors.onSurface} size={30} />
+                <Text fontSize="lg">{t('logout')}</Text>
+              </Row>
             </Pressable>
           )}
           <View style={{padding: 10}}>
@@ -147,7 +142,6 @@ const DrawerContent = props => {
           </View>
         </View>
       </View>
-    </SafeAreaView>
   )
 }
 
