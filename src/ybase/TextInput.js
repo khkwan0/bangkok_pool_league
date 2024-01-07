@@ -111,7 +111,7 @@ export const TextInput = forwardRef((props, ref) => {
         justifyContent="center"
         height={props.height ?? 60}
         style={{...props.inputRightStyle}}>
-        {props.inputRightElement}
+        {props.inputRightElement ?? null}
       </View>
     </Row>
   )

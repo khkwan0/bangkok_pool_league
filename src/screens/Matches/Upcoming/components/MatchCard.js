@@ -1,12 +1,15 @@
 import React from 'react'
-import {Image, View} from 'react-native'
-import {Button, Text, TouchableRipple} from 'react-native-paper'
+import {Image} from 'react-native'
 import {DateTime} from 'luxon'
 import {showLocation} from 'react-native-map-link'
 import {useTranslation} from 'react-i18next'
+import {useYBase} from '~/lib/hooks'
+import {Button, Pressable, Text, View} from '@ybase'
 
 const MatchCard = props => {
   const {t} = useTranslation()
+  const {colors, theme} = useYBase()
+
   function ShowLocation(lat, long) {
     showLocation({
       latitude: lat,
@@ -15,14 +18,8 @@ const MatchCard = props => {
   }
 
   return (
-    <View
-      style={{
-        margin: 10,
-        padding: 10,
-        backgroundColor: '#ddd',
-        borderRadius: 10,
-      }}>
-      <TouchableRipple onPress={() => props.handlePress(props.idx)}>
+    <View p={10} bgColor={colors.surfaceVariant} borderRadius={theme.roundness}>
+      <Pressable onPress={() => props.handlePress(props.idx)}>
         <View>
           <Text>{props.match.round}</Text>
           <Text variant="headlineSmall" style={{textAlign: 'center'}}>
@@ -41,7 +38,7 @@ const MatchCard = props => {
           {(props.match.latitude !== 0 || props.match.longitude !== 0) && (
             <View style={{flexDirection: 'row'}}>
               <Button
-                mode="outlined"
+                variant="outlined"
                 onPress={() =>
                   ShowLocation(props.match.latitude, props.match.longitude)
                 }>
@@ -61,7 +58,7 @@ const MatchCard = props => {
             </View>
           )}
         </View>
-      </TouchableRipple>
+      </Pressable>
     </View>
   )
 }

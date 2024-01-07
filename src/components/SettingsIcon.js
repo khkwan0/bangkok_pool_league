@@ -4,7 +4,9 @@ import {useNavigation} from '@react-navigation/native'
 
 const SettingsIcon = props => {
   const navigation = useNavigation()
-  return <IconButton icon="menu" onPress={() => navigation.openDrawer()} />
+  return (
+    <IconButton icon="menu" onPress={() => navigation.navigate('Settings')} />
+  )
 }
 
 export default SettingsIcon

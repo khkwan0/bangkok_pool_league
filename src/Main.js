@@ -1,43 +1,17 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react'
-import {View} from 'react-native'
-import {useAccount, useLeague} from '~/lib/hooks'
-import {useSelector} from 'react-redux'
-import Matches from '@screens/Matches'
-import Calendar from '@screens/Calendar'
-import Login from '@screens/Auth/Login'
-import Account from '@screens/Account'
-import Divisions from '@screens/Divisions'
-import Teams from '@screens/Teams'
-import Venues from '@screens/Venues'
-import Players from '@screens/Players'
-import Seasons from '@screens/Seasons'
-import Schedules from '@screens/Schedules'
-import Statistics from '@screens/Statistics'
-import Info from '@screens/Info'
-import Settings from '@screens/Settings'
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
-import {createDrawerNavigator} from '@react-navigation/drawer'
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
-import DrawerContent from '@components/DrawerContent'
-import {IconButton} from 'react-native-paper'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import Home from '@screens/Home'
+import {useAccount, useLeague, useYBase} from '~/lib/hooks'
 import '~/i18n'
 import {useTranslation} from 'react-i18next'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const Tab = createBottomTabNavigator()
-const Drawer = createDrawerNavigator()
-
 const Main = props => {
-  const insets = useSafeAreaInsets()
   const account = useAccount()
   const league = useLeague()
-  const [drawerOnly, setDrawerOnly] = React.useState(true)
   const [isMounted, setIsMounted] = React.useState(false)
-  const {i18n, t} = useTranslation()
-
-  const user = useSelector(_state => _state.userData).user
+  const {i18n} = useTranslation()
+  const {setColorMode} = useYBase()
 
   React.useEffect(() => {
     account.FetchUser()
@@ -54,6 +28,8 @@ const Main = props => {
       try {
         const lang = await AsyncStorage.getItem('language')
         i18n.changeLanguage(lang ? lang : 'en')
+        const storedColorMode = (await AsyncStorage.getItem('theme')) ?? 'light'
+        setColorMode(storedColorMode)
       } catch (e) {
         console.log(e)
       }
@@ -61,12 +37,21 @@ const Main = props => {
     return () => setIsMounted(false)
   }, [])
 
+  return <Home />
+
+  /*
   if (drawerOnly) {
     return (
       <View style={{flex: 1, paddingTop: insets.top}}>
         <Drawer.Navigator
           drawerContent={params => <DrawerContent {...params} />}
           screenOptions={({navigation}) => ({
+            headerStyle: {
+              backgroundColor: colors.headerBackground,
+            },
+            headerTitleStyle: {
+              color: colors.onHeaderBackground,
+            },
             drawerPosition: 'right',
             headerTitleAlign: 'center',
             headerLeft: () => null,
@@ -169,6 +154,7 @@ const Main = props => {
       </Tab.Navigator>
     )
   }
+    */
 }
 
 export default Main

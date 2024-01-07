@@ -1,7 +1,8 @@
 import React from 'react'
-import {View} from 'react-native'
-import {Button, Text, TextInput} from 'react-native-paper'
-import {useAccount} from '~/lib/hooks'
+import {Image} from 'react-native'
+import Logo from '~/assets/img/logos/512_trans.png'
+import {Button, Pressable, Text, TextInput, View} from '@ybase'
+import {useAccount, useYBase} from '~/lib/hooks'
 import LineLogin from '@xmartlabs/react-native-line'
 import {Settings, LoginManager, AccessToken} from 'react-native-fbsdk-next'
 /*
@@ -10,17 +11,22 @@ import {
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin'
 */
-import {useAppSelector} from '~/lib/hooks/redux'
+import {useSelector} from 'react-redux'
+import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
+import {useTranslation} from 'react-i18next'
+import {SafeAreaView} from 'react-native-safe-area-context'
 
 const Login = props => {
   const {SocialLogin, UserLogin, Logout} = useAccount()
-  const {user} = useAppSelector(_state => _state.user)
+  const {user} = useSelector(_state => _state.userData)
   const [email, setEmail] = React.useState('')
   const [secure, setSecure] = React.useState(true)
   const [password, setPassword] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [showSocial, setShowSocial] = React.useState(false)
   const [err, setErr] = React.useState('')
+  const {colors, colorMode} = useYBase()
+  const {t} = useTranslation()
 
   React.useEffect(() => {
     Settings.initializeSDK()
@@ -46,14 +52,14 @@ const Login = props => {
     if (!data) {
       console.log('no data')
     } else {
-        const res = await SocialLogin('facebook', data)
-        if (typeof res.status !== 'undefined' && res.status === 'ok') {
-          if (typeof props.route.params?.previous !== 'undefined') {
-            props.navigation.navigate(props.route?.params?.previous)
-          } else {
-            props.navigation.goBack()
-          }
+      const res = await SocialLogin('facebook', data)
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        if (typeof props.route.params?.previous !== 'undefined') {
+          props.navigation.navigate(props.route?.params?.previous)
+        } else {
+          props.navigation.goBack()
         }
+      }
     }
   }
   /*
@@ -118,73 +124,107 @@ const Login = props => {
   }
 
   return (
-    <View style={{flex: 1}}>
+    <>
       {typeof user.data?.nickname !== 'undefined' && user.data.nickname && (
-        <View>
+        <SafeAreaView style={{flexGrow: 1, paddingHorizontal: 20}}>
           <Text>You are logged in as: {user.data.nickname}</Text>
           <Button onPress={() => HandleLogout()}>Logout</Button>
-        </View>
+        </SafeAreaView>
       )}
       {(typeof user.data?.nickname === 'undefined' || !user.data.nickname) && (
-        <>
-          <View style={{flex: 2, justifyContent: 'center'}}>
-            <View>
-              <TextInput
-                label="Email"
-                value={email}
-                left={<TextInput.Icon icon="email" />}
-                onChangeText={text => setEmail(text)}
-              />
+        <SafeAreaView flex={1}>
+          <View flex={1} bgColor={colors.background} px={20}>
+            <View flex={1} mt={20}>
+              <Text bold textAlign="center" fontSize="xxl">
+                Bangkok Pool League
+              </Text>
+              {colorMode === 'light' && (
+                <View>
+                  <Image source={Logo} />
+                </View>
+              )}
             </View>
-            <View>
-              <TextInput
-                secureTextEntry={secure}
-                label="Password"
-                value={password}
-                left={<TextInput.Icon icon="lock" />}
-                right={
-                  <TextInput.Icon
-                    icon={secure ? 'eye' : 'eye-off'}
-                    onPress={() => setSecure(s => !s)}
-                  />
-                }
-                onChangeText={text => setPassword(text)}
-              />
-            </View>
-            <View>
+            <View flex={3}>
+              <View>
+                <TextInput
+                  autoCapitalize="none"
+                  placeholder={t('email')}
+                  value={email}
+                  inputLeftElement={
+                    <View ml={10}>
+                      <MCI name="email" size={30} color={colors.onSurface} />
+                    </View>
+                  }
+                  onChangeText={text => setEmail(text)}
+                />
+              </View>
+              <View mt={20}>
+                <TextInput
+                  secureTextEntry={secure}
+                  placeholder={t('password')}
+                  value={password}
+                  inputLeftElement={
+                    <View ml={10}>
+                      <MCI name="lock" size={30} color={colors.onSurface} />
+                    </View>
+                  }
+                  inputRightElement={
+                    <Pressable onPress={() => setSecure(s => !s)} pr={10}>
+                      <MCI
+                        name={secure ? 'eye-outline' : 'eye-off-outline'}
+                        size={30}
+                        color={colors.onSurface}
+                      />
+                    </Pressable>
+                  }
+                  onChangeText={text => setPassword(text)}
+                />
+              </View>
+              <View mt={20}>
+                <View>
+                  <Button
+                    loading={loading}
+                    disabled={loading}
+                    onPress={() => AttemptLogin()}>
+                    {t('login')}
+                  </Button>
+                </View>
+              </View>
               <View>
                 <Button
-                  mode="contained"
-                  loading={loading}
-                  disabled={loading}
-                  onPress={() => AttemptLogin()}>
-                  Login
+                  variant="ghost"
+                  onPress={() => props.navigation.navigate('register')}>
+                  {t('sign_up')}
                 </Button>
               </View>
             </View>
-          </View>
-          <View style={{flex: 1.5, justifyContent: 'flex-start'}}>
-            <View style={{marginBottom: 30}}>
-              <Button onPress={() => setShowSocial(s => !s)}>
-                Social Login
-              </Button>
-            </View>
-            {showSocial && (
-              <View stlye={{paddingTop: 10}}>
-                <View>
-                  <Button onPress={() => HandleFacebookLogin()}>
-                    Facebook
-                  </Button>
-                </View>
-                <View>
-                  <Button onPress={() => HandleLineLogin()}>Line</Button>
-                </View>
+            <View flex={1}>
+              <View style={{marginBottom: 30}}>
+                <Button onPress={() => setShowSocial(s => !s)}>
+                  {t('social_login')}
+                </Button>
               </View>
-            )}
+              {showSocial && (
+                <View stlye={{paddingTop: 10}}>
+                  <View>
+                    <Button
+                      variant="ghost"
+                      onPress={() => HandleFacebookLogin()}>
+                      Facebook
+                    </Button>
+                  </View>
+                  <View>
+                    <Button variant="ghost" onPress={() => HandleLineLogin()}>
+                      Line
+                    </Button>
+                  </View>
+                </View>
+              )}
+            </View>
           </View>
-        </>
+        </SafeAreaView>
       )}
-    </View>
+    </>
   )
 }
 

@@ -6,17 +6,18 @@ import {Row} from './Row'
 import {YBaseContext} from '@ybase/YBaseProvider'
 import {ActivityIndicator} from './ActivityIndicator'
 import {useWindowDimensions} from 'react-native'
+import {useYBase} from '~/lib/hooks'
 
 export const Button = props => {
   const {width} = useWindowDimensions()
   const {theme, colorMode} = React.useContext(YBaseContext)
-  const colors = theme.palette[colorMode].colors
+  const {colors} = useYBase()
   const isGhost = props.variant?.toLowerCase() === 'ghost'
   const backgroundColor = props.bgColor ?? colors.primary
   const disabledBackgroundColor = colors.onSurfaceDisabled
   const disabledColor = theme.onSurfaceDisabled
   const ghostPressedColor = '#f00'
-  const ghostUnpressedColor = colors.primary
+  const ghostUnpressedColor = colors.onSurface
   const pressedBackgroundColor = '#007'
   const pressedColor = isGhost
     ? ghostPressedColor

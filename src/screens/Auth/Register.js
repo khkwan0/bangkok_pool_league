@@ -2,7 +2,7 @@ import React from 'react'
 import {Button, Text, TextInput, View} from '@ybase'
 import {useYBase} from '~/lib/hooks'
 
-const Recover = props => {
+const Register = props => {
   const {colors} = useYBase()
 
   return (
@@ -12,4 +12,4 @@ const Recover = props => {
   )
 }
 
-export default Recover
+export default Register

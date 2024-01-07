@@ -1,8 +1,8 @@
 import React from 'react'
-import {View, FlatList} from 'react-native'
-import {Button, Text} from 'react-native-paper'
+import {FlatList} from 'react-native'
+import {Button, Text, View} from '@ybase'
 import MatchCard from './components/MatchCard'
-import {useSeason} from '~/lib/hooks'
+import {useSeason, useYBase} from '~/lib/hooks'
 import {useSelector} from 'react-redux'
 import {useTranslation} from 'react-i18next'
 
@@ -12,6 +12,7 @@ const UpcomingMatches = props => {
   const season = useSeason()
   const routeName = props.navigation.getState().routes[0].name
   const {t} = useTranslation()
+  const {colors} = useYBase()
 
   React.useEffect(() => {
     ;(async () => {
@@ -38,12 +39,13 @@ const UpcomingMatches = props => {
   }
 
   return (
-    <View style={{flex: 1}}>
+    <View flex={1} bgColor={colors.background} px={20}>
       <FlatList
         ListHeaderComponent={
           <View>
             {!user.id && (
               <Button
+                variant="ghost"
                 onPress={() =>
                   props.navigation.navigate('Login', {
                     previous: routeName,

@@ -20,5 +20,11 @@
   "schedules": "กำหนดการ",
   "statistics": "ข้อมูล",
   "info_and_guides": "สารสนเทศ",
-  "logout": "ออกจากระบบ"
+  "logout": "ออกจากระบบ",
+  "preferences": "การตั้งค่า",
+  "coming_soon": "เร็วๆ นี้...",
+  "sign_up": "ลงทะเบียนเรียน",
+  "email": "อีเมล",
+  "password": "รหัสผ่าน",
+  "social_login": "สื่อสังคม"
 }

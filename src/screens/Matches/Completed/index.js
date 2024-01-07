@@ -5,20 +5,22 @@ import Roster from '@screens/Matches/Roster'
 import ExtendedMatchInfo from '@screens/Matches/ExtendedMatchInfo'
 import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import {View} from 'react-native'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import SettingsIcon from '@components/SettingsIcon'
 import {useTranslation} from 'react-i18next'
+import {useYBase} from '~/lib/hooks'
 
 const MatchStack = createNativeStackNavigator()
 
 const Matches = props => {
-  const insets = useSafeAreaInsets()
   const {t} = useTranslation()
+  const {colors} = useYBase()
 
   return (
     <View style={{flex: 1}}>
       <MatchStack.Navigator
         screenOptions={{
+          headerStyle: {backgroundColor: colors.headerBackground},
+          headerTitleStyle: {color: colors.onHeaderBackground},
           headerRight: SettingsIcon,
           headerTitleAlign: 'center',
           headerTitle: t('completed_matches'),

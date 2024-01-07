@@ -20,7 +20,7 @@ function Normalize(size, based = 'width', heightBaseScale, widthBaseScale) {
 
 export const YBaseProvider = props => {
   const [theme, setTheme] = React.useState({...props.theme})
-  const [colorMode, setColorMode] = React.useState('light')
+  const [colorMode, setColorMode] = React.useState('dark')
 
   const {width, height} = useWindowDimensions()
 

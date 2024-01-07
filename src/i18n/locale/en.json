@@ -20,5 +20,10 @@
   "schedules": "Schedules",
   "statistics": "Statistics",
   "info_and_guides": "Info & Guides",
-  "logout": "Logout"
+  "logout": "Logout",
+  "preferences": "Preferences",
+  "coming_soon": "Coming soon...",
+  "sign_up": "Register",
+  "email": "Email",
+  "password": "Password"
 }
