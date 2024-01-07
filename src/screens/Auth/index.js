@@ -4,10 +4,12 @@ import Login from './Login'
 import Register from './Register'
 import Recover from './Recover'
 import {useYBase} from '~/lib/hooks'
+import { useTranslation } from 'react-i18next'
 
 const AuthStack = createNativeStackNavigator()
 
 const Auth = props => {
+  const {t} = useTranslation()
   const {colors} = useYBase()
   return (
     <AuthStack.Navigator
@@ -17,8 +19,8 @@ const Auth = props => {
         headerTintColor: {color: colors.onHeaderBackground},
         headerTitleAlign: 'center',
       }}>
-      <AuthStack.Screen name="Login" component={Login} />
-      <AuthStack.Screen name="Register" component={Register} />
+      <AuthStack.Screen name="Login" component={Login} options={{headerTitle: t('login')}} />
+      <AuthStack.Screen name="Register" component={Register} options={{headerTitle: t('sign_up')}} />
       <AuthStack.Screen name="Recover" component={Recover} />
     </AuthStack.Navigator>
   )
