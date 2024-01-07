@@ -38,7 +38,12 @@ export const Text = props => {
         fontSize = normalize(18)
         break
       case '2xl':
+      case 'xxl':
         fontSize = normalize(20)
+        break
+      case '3xl':
+      case 'xxxl':
+        fontSize = normalize(22)
         break
       default:
         break
@@ -62,8 +67,13 @@ export const Text = props => {
       case 'xl':
         fontSize = normalize(18)
         break
+      case '2xl':
       case 'xxl':
         fontSize = normalize(20)
+        break
+      case '3xl':
+      case 'xxxl':
+        fontSize = normalize(22)
         break
       default:
         break
@@ -74,7 +84,7 @@ export const Text = props => {
     fontWeight: props.fontWeight ?? props.bold ? 'bold' : 'normal',
     fontSize: !isNaN(parseInt(fontSize, 10))
       ? HeightScale(fontSize)
-      : HeightScale(12),
+      : HeightScale(14),
   }
   const txtProps = {
     ...props,

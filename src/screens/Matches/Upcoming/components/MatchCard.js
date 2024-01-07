@@ -4,7 +4,7 @@ import {DateTime} from 'luxon'
 import {showLocation} from 'react-native-map-link'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
-import {Button, Pressable, Text, View} from '@ybase'
+import {Pressable, Row, Text, View} from '@ybase'
 
 const MatchCard = props => {
   const {t} = useTranslation()
@@ -18,7 +18,7 @@ const MatchCard = props => {
   }
 
   return (
-    <View p={10} bgColor={colors.surfaceVariant} borderRadius={theme.roundness}>
+    <View p={10} bgColor={colors.matchCard} borderRadius={theme.roundness}>
       <Pressable onPress={() => props.handlePress(props.idx)}>
         <View>
           <Text>{props.match.round}</Text>
@@ -36,15 +36,19 @@ const MatchCard = props => {
           <Text>{props.match.location}</Text>
           <Text>{props.match.phone}</Text>
           {(props.match.latitude !== 0 || props.match.longitude !== 0) && (
-            <View style={{flexDirection: 'row'}}>
-              <Button
-                variant="outlined"
+            <Row>
+              <Pressable
+                borderWidth={1}
+                borderRadius={10}
+                p={10}
                 onPress={() =>
                   ShowLocation(props.match.latitude, props.match.longitude)
                 }>
-                {t('map')}
-              </Button>
-            </View>
+                <Text bold size="lg">
+                  {t('map')}
+                </Text>
+              </Pressable>
+            </Row>
           )}
           {props.match.logo && (
             <View
