@@ -50,98 +50,98 @@ const DrawerContent = props => {
   }
 
   return (
-      <View flex={1} bgColor={colors.background} px={20}>
-        <View flex={5}>
-          {typeof user?.id !== 'undefined' && user.id && (
-            <Row alignItems="center" pt={insets.top}>
-              <View style={{flex: 1, padding: 10}}>
-                <Text variant="titleLarge">{user.nickname}</Text>
-                <Text variant="bodyLarge">player</Text>
-              </View>
-              <View style={{flex: 1}}>
-                <Image
-                  source={{uri: config.profileUrl + user.profile_picture}}
-                  width={100}
-                  height={100}
-                  resizeMode="contain"
-                  style={{borderRadius: 50}}
-                />
-              </View>
-            </Row>
+    <View flex={1} bgColor={colors.background} px={20}>
+      <View flex={5}>
+        {typeof user?.id !== 'undefined' && user.id && (
+          <Row alignItems="center" pt={insets.top}>
+            <View style={{flex: 1, padding: 10}}>
+              <Text variant="titleLarge">{user.nickname}</Text>
+              <Text variant="bodyLarge">player</Text>
+            </View>
+            <View style={{flex: 1}}>
+              <Image
+                source={{uri: config.profileUrl + user.profile_picture}}
+                width={100}
+                height={100}
+                resizeMode="contain"
+                style={{borderRadius: 50}}
+              />
+            </View>
+          </Row>
+        )}
+        <View style={{flex: 15, gap: 10, marginTop: 30}}>
+          {(typeof user?.id === 'undefined' || !user.id) && (
+            <DrawerItem navDest="Login" icon="login" label={t('login')} />
           )}
-          <View style={{flex: 15, gap: 10, marginTop: 30}}>
-            {(typeof user?.id === 'undefined' || !user.id) && (
-              <DrawerItem navDest="Login" icon="login" label={t('login')} />
-            )}
-            <DrawerItem
-              navDest="Seasons"
-              icon="leaf-circle-outline"
-              label={t('seasons')}
-            />
-            <DrawerItem
-              navDest="Divisions"
-              icon="division"
-              label={t('divisions')}
-            />
-            <DrawerItem
-              navDest="Venues"
-              as="Ionicons"
-              icon="location-outline"
-              label={t('venues')}
-            />
-            <DrawerItem
-              navDest="Teams"
-              as="Ionicons"
-              icon="people"
-              label={t('teams')}
-            />
-            <DrawerItem
-              navDest="Players"
-              as="Ionicons"
-              icon="person-outline"
-              label={t('players')}
-            />
-            <DrawerItem
-              navDest="Calendar"
-              icon="calendar"
-              label={t('calendar')}
-            />
-            <DrawerItem
-              navDest="Schedules"
-              icon="clipboard-list-outline"
-              label={t('schedules')}
-            />
-            <DrawerItem
-              navDest="Statistics"
-              icon="chart-areaspline-variant"
-              label={t('statistics')}
-            />
-            <DrawerItem
-              navDest="Info"
-              icon="information-outline"
-              label={t('info_and_guides')}
-            />
-            <DrawerItem
-              navDest="Preferences"
-              icon="cog"
-              label={t('preferences')}
-            />
-          </View>
-        </View>
-        <View flex={1} justifyContent="flex-end" pb={insets.bottom}>
-          {typeof user?.id !== 'undefined' && user.id && (
-            <Pressable onPress={() => HandleLogout()}>
-              <Row alignItems="center" space={20}>
-                <MCI name="logout" color={colors.onSurface} size={30} />
-                <Text fontSize="lg">{t('logout')}</Text>
-              </Row>
-            </Pressable>
-          )}
-          <View style={{padding: 10}}>
-            <Text>Build {config.build}</Text>
-          </View>
+          <DrawerItem
+            navDest="Seasons"
+            icon="leaf-circle-outline"
+            label={t('seasons')}
+          />
+          <DrawerItem
+            navDest="Divisions"
+            icon="division"
+            label={t('divisions')}
+          />
+          <DrawerItem
+            navDest="Venues"
+            as="Ionicons"
+            icon="location-outline"
+            label={t('venues')}
+          />
+          <DrawerItem
+            navDest="Teams"
+            as="Ionicons"
+            icon="people"
+            label={t('teams')}
+          />
+          <DrawerItem
+            navDest="Players"
+            as="Ionicons"
+            icon="person-outline"
+            label={t('players')}
+          />
+          <DrawerItem
+            navDest="Calendar"
+            icon="calendar"
+            label={t('calendar')}
+          />
+          <DrawerItem
+            navDest="Schedules"
+            icon="clipboard-list-outline"
+            label={t('schedules')}
+          />
+          <DrawerItem
+            navDest="Statistics"
+            icon="chart-areaspline-variant"
+            label={t('statistics')}
+          />
+          <DrawerItem
+            navDest="Info"
+            icon="information-outline"
+            label={t('info_and_guides')}
+          />
+          <DrawerItem
+            navDest="Preferences"
+            icon="cog"
+            label={t('preferences')}
+          />
         </View>
       </View>
+      <View flex={1} justifyContent="flex-end" pb={insets.bottom}>
+        {typeof user?.id !== 'undefined' && user.id && (
+          <Pressable onPress={() => HandleLogout()}>
+            <Row alignItems="center" space={20}>
+              <MCI name="logout" color={colors.onSurface} size={30} />
+              <Text fontSize="lg">{t('logout')}</Text>
+            </Row>
+          </Pressable>
+        )}
+        <View style={{padding: 10}}>
+          <Text>Build {config.build}</Text>
+        </View>
+      </View>
+    </View>
   )
 }
 
