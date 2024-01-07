@@ -21,7 +21,7 @@ const TeamsScreen = props => {
       screenOptions={{
         headerStyle: {backgroundColor: colors.headerBackground},
         headerTitleStyle: {color: colors.onHeaderBackground},
-        headerTintColor: {color: colors.onHeaderBackground},
+        headerTintColor: colors.onHeaderBackground,
         headerTitleAlign: 'center',
       }}>
       <TeamsStack.Screen

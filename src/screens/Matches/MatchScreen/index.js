@@ -1,22 +1,21 @@
 import React from 'react'
-import {AppState, FlatList, View} from 'react-native'
+import {AppState, FlatList} from 'react-native'
 import {
   ActivityIndicator,
-  Button,
   Dialog,
-  Divider,
   Paragraph,
   Portal,
   RadioButton,
-  Text,
 } from 'react-native-paper'
-import Frame from './components/Frame'
-import CompletedFrame from './components/CompletedFrame'
-import TeamsHeadline from './components/TeamsHeadline'
+import {Button, Divider, Row, Text, View} from '@ybase'
+import Frame from '../components/Frame'
+import CompletedFrame from '../components/CompletedFrame'
+import TeamsHeadline from '../components/TeamsHeadline'
 import {useFocusEffect} from '@react-navigation/native'
 import {useAppSelector} from '~/lib/hooks/redux'
 import {useMatch, useTeams, useSeason, useNetwork} from '~/lib/hooks'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {useYBase} from '~/lib/hooks'
 
 import {socket} from '~/socket'
 
@@ -53,6 +52,7 @@ const MatchScreen = props => {
   })
   const [error, setError] = React.useState('')
   const appState = React.useRef(AppState.currentState)
+  const {colors} = useYBase()
 
   /*
   useFocusEffect(
@@ -628,11 +628,11 @@ const MatchScreen = props => {
             </Dialog.Actions>
           </Dialog>
         </Portal>
-        <View style={{paddingBottom: insets.bottom}}>
+        <View bgColor={colors.background}>
           {finalizedAway && finalizedHome && (
             <FlatList
               ListHeaderComponent={
-                <View style={{backgroundColor: '#fff'}}>
+                <View bgColor={colors.background}>
                   <TeamsHeadline matchInfo={matchInfo} isLoading={isLoading} />
                 </View>
               }
@@ -654,47 +654,27 @@ const MatchScreen = props => {
           {(!finalizedAway || !finalizedHome) && (
             <FlatList
               ListHeaderComponent={
-                <View style={{backgroundColor: '#fff'}}>
+                <View bgColor={colors.background}>
                   {isLoading && (
                     <View style={{flex: 1, justifyContent: 'center'}}>
                       <ActivityIndicator />
                     </View>
                   )}
-                  <View
-                    style={{
-                      flex: 1,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                    <View
-                      style={{
-                        flex: 2,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text
-                        variant="headlineSmall"
-                        style={{textAlign: 'center'}}>
+                  <Row alignItems="center">
+                    <View flex={2} justifyContent="center" alignItems="center">
+                      <Text textAlign="center" fontSize="xl">
                         {matchInfo.home_team_short_name}
                       </Text>
                     </View>
-                    <View style={{flex: 1, alignItems: 'center'}}>
-                      <Text>VS</Text>
+                    <View flex={1} alignItems="center">
+                      <Text>vs</Text>
                     </View>
-                    <View
-                      style={{
-                        flex: 2,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                      <Text
-                        variant="headlineSmall"
-                        style={{textAlign: 'center'}}>
+                    <View flex={2} alignItems="center">
+                      <Text textAlign="center" fontSize="xl">
                         {matchInfo.away_team_short_name}
                       </Text>
                     </View>
-                  </View>
+                  </Row>
                   <RadioButton.Group
                     onValueChange={newValue => HandleSetFirstBreak(newValue)}
                     value={firstBreak}>
@@ -717,43 +697,27 @@ const MatchScreen = props => {
                           }
                           value={matchInfo.home_team_id}
                         />
-                        <Text>First Break</Text>
+                        <Text>first_break</Text>
                       </View>
-                      <View
-                        style={{
-                          flex: 1,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
+                      <Row flex={1} alignItems="center" justifyContent="center">
                         <RadioButton.Android
                           disabled={
                             isLoading || (finalizedAway && finalizedHome)
                           }
                           value={matchInfo.away_team_id}
                         />
-                        <Text>First Break</Text>
-                      </View>
+                        <Text>first_break</Text>
+                      </Row>
                     </View>
                   </RadioButton.Group>
-                  <View style={{flexDirection: 'row'}}>
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text variant="displaySmall">{homeScore}</Text>
+                  <Row>
+                    <View flex={1} justifyContent="center" alignItems="center">
+                      <Text fontSize={30}>{homeScore}</Text>
                     </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text variant="displaySmall">{awayScore}</Text>
+                    <View flex={1} justifyContent="center" alignItems="center">
+                      <Text fontSize={30}>{awayScore}</Text>
                     </View>
-                  </View>
+                  </Row>
                 </View>
               }
               ListFooterComponent={

@@ -4,33 +4,28 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import VenuesHome from './VenuesHome'
 import Venue from './Venue'
 import Team from './Team'
-import {IconButton} from 'react-native-paper'
-import {useNavigation} from '@react-navigation/native'
 import Player from './Player'
+import {useTranslation} from 'react-i18next'
+import {useYBase} from '~/lib/hooks'
 
 const VenueStack = createNativeStackNavigator()
 
 const VenuesNav = props => {
-  const navigation = useNavigation()
+  const {colors} = useYBase()
+  const {t} = useTranslation()
   return (
     <VenueStack.Navigator
       screenOptions={{
+        headerStyle: {backgroundColor: colors.headerBackground},
+        headerTitleStyle: {color: colors.onHeaderBackground},
+        headerTintColor: colors.onHeaderBackground,
         headerTitleAlign: 'center',
-        headerRight: () => (
-          <IconButton icon="menu" onPress={() => navigation.openDrawer()} />
-        ),
       }}>
       <VenueStack.Screen
         name="Root"
         component={VenuesHome}
         options={{
-          title: 'Venues',
-          headerLeft: () => (
-            <IconButton
-              icon="home"
-              onPress={() => navigation.navigate('Upcoming Matches')}
-            />
-          ),
+          title: t('venues'),
         }}
       />
       <VenueStack.Screen name="Venue" component={Venue} />

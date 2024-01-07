@@ -21,14 +21,15 @@ const HomeStack = createNativeStackNavigator()
 
 const Home = props => {
   const {t} = useTranslation()
-  const {colors} = useYBase()
+  const {colors, colorMode} = useYBase()
+  console.log(colorMode, colors.onHeaderBackground)
 
   return (
     <HomeStack.Navigator
       screenOptions={{
         headerStyle: {backgroundColor: colors.headerBackground},
         headerTitleStyle: {color: colors.onHeaderBackground},
-        headerTintColor: {color: colors.onHeaderBackground},
+        headerTintColor: colors.onHeaderBackground,
         headerTitleAlign: 'center',
       }}>
       <HomeStack.Screen
@@ -62,12 +63,12 @@ const Home = props => {
         name="Seasons"
       />
       <HomeStack.Screen
-        options={{headerTitle: t('players')}}
+        options={{headerShown: false}}
         component={Players}
         name="Players"
       />
       <HomeStack.Screen
-        options={{headerTitle: t('venues')}}
+        options={{headerShown: false}}
         component={Venues}
         name="Venues"
       />

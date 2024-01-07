@@ -1,10 +1,13 @@
 import React from 'react'
-import {View} from 'react-native'
-import {ActivityIndicator, Button, Colors, Text} from 'react-native-paper'
+import {Button} from 'react-native-paper'
+import {ActivityIndicator, Text, View} from '@ybase'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import {useYBase} from '~/lib/hooks'
 
 const Frame = props => {
+  const {colors} = useYBase()
   const disabled = props.finalizedHome && props.finalizedAway
+
   if (props.frame.type !== 'section') {
     let awayPlayerA = ''
     let awayPlayerB = ''
@@ -38,14 +41,12 @@ const Frame = props => {
 
     return (
       <View
-        style={[
-          {
-            backgroundColor: props.frameIdx % 2 === 1 ? '#ddd' : '#fff',
-          },
-          {
-            paddingBottom: 10,
-          },
-        ]}>
+        bgColor={
+          props.frameIdx % 2 === 1
+            ? colors.frameBackground
+            : colors.altFrameBackground
+        }
+        pb={10}>
         <Text style={{textAlign: 'center'}}>
           Frame {props.frame.frameNumber}
         </Text>

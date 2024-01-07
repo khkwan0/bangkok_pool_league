@@ -24,13 +24,13 @@ export const theme = {
         errorContainer: 'rgb(255, 245, 240)', //red-50
         onErrorContainer: 'rgb(116, 10, 43)', // red-800
 
-        background: 'rgb(255, 255, 255)', //neutral-50
+        background: '#fff',
         onBackground: 'rgb(29, 30, 34)', //neutral-900
 
-        headerBackground: 'rgb(255, 255, 255)', //neutral-50
-        onHeaderBackground: 'rgb(29, 30, 34)', //neutral-900
-        surface: 'rgb(255, 255, 255)', //neutral-50
-        onSurface: 'rgb(29, 30, 34)', //neutral-900
+        headerBackground: '#fff',
+        onHeaderBackground: '#1d1e22',
+        surface: '#fff',
+        onSurface: '#1d1e22',
         surfaceVariant: '#fafafa', //neutral-100
         onSurfaceVariant: 'rgb(68, 70, 79)', //neutral-600
 
@@ -139,6 +139,9 @@ export const theme = {
         surfaceVariant: 'rgb(57, 58, 64)', //neutral-700
         onSurfaceVariant: 'rgb(68, 70, 79)', //neutral-500
         backgroundVariant: '#fafafa',
+
+        frameBackground: '#333',
+        altFrameBackground: '#444',
 
         infoSurface: '#26272B', // neutral-200
         onInfoSurface: '#f5f6f9', // neutral-700
