@@ -1,7 +1,7 @@
 import React from 'react'
 import {Image} from 'react-native'
 import Logo from '~/assets/img/logos/512_trans.png'
-import {Button, Pressable, Text, TextInput, View} from '@ybase'
+import {Button, Pressable, Row, Text, TextInput, View} from '@ybase'
 import {useAccount, useYBase} from '~/lib/hooks'
 import LineLogin from '@xmartlabs/react-native-line'
 import {Settings, LoginManager, AccessToken} from 'react-native-fbsdk-next'
@@ -25,7 +25,7 @@ const Login = props => {
   const [loading, setLoading] = React.useState(false)
   const [showSocial, setShowSocial] = React.useState(false)
   const [err, setErr] = React.useState('')
-  const {colors, colorMode} = useYBase()
+  const {colors, theme, colorMode} = useYBase()
   const {t} = useTranslation()
 
   React.useEffect(() => {
@@ -144,8 +144,47 @@ const Login = props => {
                 </View>
               )}
             </View>
-            <View flex={3}>
+            <View flex={10}>
               <View>
+                <View>
+                  <Button
+                    variant="ghost"
+                    onPress={() => setShowSocial(s => !s)}>
+                    {t('social_login')}
+                  </Button>
+                </View>
+                {showSocial && (
+                  <View>
+                    <View mx={40}>
+                      <Button onPress={() => HandleFacebookLogin()}>
+                        Facebook
+                      </Button>
+                    </View>
+                    <View mx={40} mt={10}>
+                      <Pressable
+                        onPress={() => HandleLineLogin()}
+                        borderRadius={theme.roundness}
+                        bgColor="#06c755"
+                        py={10}>
+                        <Row alignItems="center" space={30}>
+                          <View flex={1} pl={10}>
+                            <Image
+                              source={require('~/assets/social/line/btn_base.png')}
+                            />
+                          </View>
+                          <View flex={2} alignItems="center">
+                            <Text bold color="#fff" fontSize="xl">
+                              Line
+                            </Text>
+                          </View>
+                          <View flex={1} />
+                        </Row>
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
+              </View>
+              <View mt={20}>
                 <TextInput
                   autoCapitalize="none"
                   placeholder={t('email')}
@@ -200,27 +239,11 @@ const Login = props => {
               </View>
             </View>
             <View flex={1}>
-              <View style={{marginBottom: 30}}>
-                <Button onPress={() => setShowSocial(s => !s)}>
-                  {t('social_login')}
-                </Button>
-              </View>
-              {showSocial && (
-                <View stlye={{paddingTop: 10}}>
-                  <View>
-                    <Button
-                      variant="ghost"
-                      onPress={() => HandleFacebookLogin()}>
-                      Facebook
-                    </Button>
-                  </View>
-                  <View>
-                    <Button variant="ghost" onPress={() => HandleLineLogin()}>
-                      Line
-                    </Button>
-                  </View>
-                </View>
-              )}
+              <Button
+                onPress={() => props.navigation.navigate('Recover')}
+                variant="ghost">
+                {t('forgot_password')}
+              </Button>
             </View>
           </View>
         </SafeAreaView>

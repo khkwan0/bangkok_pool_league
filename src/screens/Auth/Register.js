@@ -20,9 +20,9 @@ const Register = props => {
   async function HandleRegister() {
     try {
       setIsLoading(true)
-      const res = await account.register(email, password, password2)
+      const res = await account.Register(email, password, password2)
       if (res.status === 'ok') {
-
+        props.navigation.navigate('Register Success')
       } else {
         setErr(res.error)
       }
@@ -32,7 +32,6 @@ const Register = props => {
     } finally {
       setIsLoading(false)
     }
-
   }
 
   React.useEffect(() => {

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useDispatch, useSelector} from 'react-redux'
 import {useNetwork} from '~/lib/hooks'
-import {SetUser} from '../../redux/userSlice'
+import {SetUser, ClearUser} from '../../redux/userSlice'
 
 export const useAccount = () => {
   const dispatch = useDispatch()
@@ -90,5 +90,33 @@ export const useAccount = () => {
     }
   }
 
-  return {FetchUser, LoadUser, UserLogin, Logout, UpdateUser, SocialLogin}
+  async function Register(email, password1, password2) {
+    try {
+      const res = await Post('/login/register', {email, password1, password2})
+      return res
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async function Recover(email) {
+    try {
+      const res = await Post('/login/recover', {email: email})
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
+  return {
+    FetchUser,
+    LoadUser,
+    UserLogin,
+    Logout,
+    UpdateUser,
+    SocialLogin,
+    Register,
+    Recover,
+  }
 }

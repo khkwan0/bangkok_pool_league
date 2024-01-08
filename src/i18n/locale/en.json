@@ -37,6 +37,7 @@
   "password_minimum_length": "Minimum password length: {n}",
   "password_mismatch": "Password mismatch",
   "server_error": "Server error",
-  "please_contact_support": "Please contact support"
-
+  "please_contact_support": "Please contact support",
+  "forgot_password": "Forgot password",
+  "recover": "Recover"
 }
