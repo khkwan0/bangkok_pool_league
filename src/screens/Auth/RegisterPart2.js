@@ -132,7 +132,7 @@ const Register = props => {
         </View>
         <View>
           <TextInput
-            secureTextEntry={showPassword1}
+            secureTextEntry={showPassword2}
             autoCapitalize="none"
             placeholder={t('confirm_password')}
             value={password2}

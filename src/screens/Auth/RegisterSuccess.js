@@ -17,7 +17,7 @@ const RegisterSuccess = props => {
         </Text>
       </View>
       <View flex={1}>
-        <Button>ok</Button>
+        <Button onPress={() => props.navigation.navigate('Matches')}>ok</Button>
       </View>
     </View>
   )

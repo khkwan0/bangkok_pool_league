@@ -47,5 +47,6 @@
   "last_name": "Last name",
   "optional": "Optional",
   "required": "Required",
-  "continue": "Continue"
+  "continue": "Continue",
+  "invalid_parameters": "Invalid parameters"
 }

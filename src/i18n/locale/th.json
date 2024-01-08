@@ -47,5 +47,6 @@
   "last_name": "นามสกุล",
   "optional": "ไม่จำเป็น",
   "required": "ที่จำเป็น",
-  "continue": "ดำเนินการต่อ"
+  "continue": "ดำเนินการต่อ",
+  "invalid_parameters": "พารามิเตอร์ที่ไม่ดี"
 }

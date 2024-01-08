@@ -90,9 +90,23 @@ export const useAccount = () => {
     }
   }
 
-  async function Register(email, password1, password2) {
+  async function Register(
+    email,
+    password1,
+    password2,
+    nickname,
+    firstName,
+    lastName,
+  ) {
     try {
-      const res = await Post('/login/register', {email, password1, password2})
+      const res = await Post('/login/register', {
+        email,
+        password1,
+        password2,
+        nickname,
+        firstName,
+        lastName,
+      })
       return res
     } catch (e) {
       console.log(e)
