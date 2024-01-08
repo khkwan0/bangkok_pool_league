@@ -21,7 +21,7 @@ const Register = props => {
     try {
       setIsLoading(true)
       const res = await account.Register(email, password, password2)
-      if (res.status === 'ok') {
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
         props.navigation.navigate('Register Success')
       } else {
         setErr(res.error)

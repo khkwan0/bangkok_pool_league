@@ -4,6 +4,7 @@ import Login from './Login'
 import Register from './Register'
 import RegisterSuccess from './RegisterSuccess'
 import Recover from './Recover'
+import PostRecover from './PostRecover'
 import {useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
 
@@ -33,6 +34,11 @@ const Auth = props => {
       <AuthStack.Screen
         name="Register Success"
         component={RegisterSuccess}
+        options={{headerTitle: t('sign_up')}}
+      />
+      <AuthStack.Screen
+        name="Post Recover"
+        component={PostRecover}
         options={{headerTitle: t('sign_up')}}
       />
       <AuthStack.Screen name="Recover" component={Recover} />

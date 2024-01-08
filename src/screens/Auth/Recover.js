@@ -3,6 +3,7 @@ import {Button, Text, TextInput, View} from '@ybase'
 import {useAccount, useYBase} from '~/lib/hooks'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useTranslation} from 'react-i18next'
+import { ResourceStore } from 'i18next'
 
 const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g
 
@@ -11,13 +12,17 @@ const Recover = props => {
   const [email, setEmail] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [valid, setValid] = React.useState(false)
+  const [err, setErr] = React.useState('')
   const account = useAccount()
   const {t} = useTranslation()
 
   async function HandleRecover() {
     try {
       setLoading(true)
-      const res = await account
+      const res = await account.Recover(email)
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        props.navigation.navigate('Post Recover')
+      }
     } catch (e) {
       console.log(e)
     } finally {
