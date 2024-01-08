@@ -96,7 +96,11 @@ const Home = props => {
         name="Preferences"
         options={{headerTitle: t('preferences')}}
       />
-      <HomeStack.Screen component={Login} name="Login" options={{headerShown: false}} />
+      <HomeStack.Screen
+        component={Login}
+        name="Login"
+        options={{headerShown: false}}
+      />
     </HomeStack.Navigator>
   )
 }
