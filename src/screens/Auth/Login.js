@@ -233,7 +233,7 @@ const Login = props => {
               <View>
                 <Button
                   variant="ghost"
-                  onPress={() => props.navigation.navigate('Register')}>
+                  onPress={() => props.navigation.navigate('RegisterPart1')}>
                   {t('sign_up')}
                 </Button>
               </View>

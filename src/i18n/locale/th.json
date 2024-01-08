@@ -39,5 +39,13 @@
   "server_error": "ข้อผิดพลาด",
   "please_contact_support": "ติดต่อฝ่ายสนับสนุน",
   "forgot_password": "ลืมรหัสผ่าน",
-  "recover": "กู้"
+  "recover": "กู้",
+  "email_exists": "อีเมลถูกนำไปใช้แล้ว",
+  "step": "ขั้นตอน",
+  "nickname": "ชื่อเล่น",
+  "first_name": "ชื่อ",
+  "last_name": "นามสกุล",
+  "optional": "ไม่จำเป็น",
+  "required": "ที่จำเป็น",
+  "continue": "ดำเนินการต่อ"
 }

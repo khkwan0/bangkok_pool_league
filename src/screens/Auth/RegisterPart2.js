@@ -20,7 +20,15 @@ const Register = props => {
   async function HandleRegister() {
     try {
       setIsLoading(true)
-      const res = await account.Register(email, password, password2)
+      setErr('')
+      const res = await account.Register(
+        email,
+        password,
+        password2,
+        props.route.params.nickname,
+        props.route.params.firstName ?? '',
+        props.route.params.lastName ?? '',
+      )
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
         props.navigation.navigate('Register Success')
       } else {
@@ -38,7 +46,12 @@ const Register = props => {
     setErr('')
     const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g
     const validEmail = email.match(regex) ? true : false
-    if (password && password2 && password === password2 && validEmail) {
+    if (
+      password &&
+      password2 &&
+      password.trim() === password2.trim() &&
+      validEmail
+    ) {
       setValid(true)
     } else {
       setValid(false)
@@ -48,7 +61,7 @@ const Register = props => {
     } else {
       if (password.length > 0 && password.length < 7) {
         setErr(t('password_minimum_length', {n: '6'}))
-      } else if (password !== password2) {
+      } else if (password.trim() !== password2.trim()) {
         setErr(t('password_mismatch'))
       }
     }
@@ -68,12 +81,18 @@ const Register = props => {
           </Text>
         </View>
         <View mt={20}>
-          <Text bold fontSize="lg">
+          <Text bold fontSize="xl">
             create_account
+          </Text>
+          <Text bold fontSize="lg">
+            {t('step')} 2/2
           </Text>
         </View>
       </View>
-      <View flex={3} gap={20}>
+      <View flex={4} gap={20}>
+        <Text>
+          {t('nickname')}: {props.route.params.nickname}
+        </Text>
         <View>
           <TextInput
             keyboardType="email-address"
@@ -134,13 +153,15 @@ const Register = props => {
             onChangeText={text => setPassword2(text)}
           />
         </View>
-      </View>
-      <View flex={1}>
         {err && (
-          <View>
-            <Text color={colors.error}>{err}</Text>
+          <View mt={10}>
+            <Text textAlign="center" fontSize="lg" color={colors.error}>
+              {err}
+            </Text>
           </View>
         )}
+      </View>
+      <View flex={1}>
         <Button
           loading={loading}
           disabled={!valid}

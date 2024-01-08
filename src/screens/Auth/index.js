@@ -1,7 +1,8 @@
 import React from 'react'
 import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import Login from './Login'
-import Register from './Register'
+import RegisterPart2 from './RegisterPart2'
+import RegisterPart1 from './RegisterPart1'
 import RegisterSuccess from './RegisterSuccess'
 import Recover from './Recover'
 import PostRecover from './PostRecover'
@@ -27,8 +28,13 @@ const Auth = props => {
         options={{headerTitle: t('login')}}
       />
       <AuthStack.Screen
-        name="Register"
-        component={Register}
+        name="RegisterPart1"
+        component={RegisterPart1}
+        options={{headerTitle: t('sign_up')}}
+      />
+      <AuthStack.Screen
+        name="RegisterPart2"
+        component={RegisterPart2}
         options={{headerTitle: t('sign_up')}}
       />
       <AuthStack.Screen
