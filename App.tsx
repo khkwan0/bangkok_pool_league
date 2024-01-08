@@ -8,10 +8,17 @@ import {MD3LightTheme, Provider as PaperProvider} from 'react-native-paper'
 import {SafeAreaProvider} from 'react-native-safe-area-context'
 import {theme} from './src/assets/theme'
 import {GestureHandlerRootView} from 'react-native-gesture-handler'
+import BootSplash from 'react-native-bootsplash'
 
 import Main from './src/Main'
 
 const App = () => {
+  React.useEffect(() => {
+    ;(async () => {
+      await BootSplash.hide({fade: true})
+    })()
+  }, [])
+
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{flex: 1}}>
