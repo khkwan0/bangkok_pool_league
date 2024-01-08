@@ -25,5 +25,18 @@
   "coming_soon": "Coming soon...",
   "sign_up": "Register",
   "email": "Email",
-  "password": "Password"
+  "password": "Password",
+  "social_login": "Social Media Login",
+  "ok": "OK",
+  "congratulations": "Congratualations",
+  "successfully_registered": "You have successfully registered your account.",
+  "theme": "Theme",
+  "create_account": "Create account",
+  "confirm_password": "Confirm password",
+  "invalid_email": "Invalid Email",
+  "password_minimum_length": "Minimum password length: {n}",
+  "password_mismatch": "Password mismatch",
+  "server_error": "Server error",
+  "please_contact_support": "Please contact support"
+
 }

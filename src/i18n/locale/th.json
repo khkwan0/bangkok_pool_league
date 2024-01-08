@@ -26,5 +26,16 @@
   "sign_up": "ลงทะเบียนเรียน",
   "email": "อีเมล",
   "password": "รหัสผ่าน",
-  "social_login": "สื่อสังคม"
+  "social_login": "สื่อสังคม",
+  "ok": "ตกลง",
+  "congratulations": "ยินดีด้วย",
+  "successfully_registered": "ลงทะเบียนเรียบร้อยแล้ว",
+  "theme": "ธีม",
+  "create_account": "สร้างบัญชี",
+  "confirm_password": "ยืนยันรหัสผ่าน",
+  "invalid_email": "อีเมลไม่ถูกต้อง",
+  "password_minimum_length": "รหัสผ่านความยาวขั้นต่ำ: {n}",
+  "password_mismatch": "รหัสผ่านไม่ตรงกัน",
+  "server_error": "ข้อผิดพลาด",
+  "please_contact_support": "ติดต่อฝ่ายสนับสนุน"
 }

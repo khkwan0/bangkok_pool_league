@@ -161,6 +161,7 @@ const Login = props => {
               <View mt={20}>
                 <TextInput
                   secureTextEntry={secure}
+                  autoCapitalize="none"
                   placeholder={t('password')}
                   value={password}
                   inputLeftElement={

@@ -22,7 +22,6 @@ const HomeStack = createNativeStackNavigator()
 const Home = props => {
   const {t} = useTranslation()
   const {colors, colorMode} = useYBase()
-  console.log(colorMode, colors.onHeaderBackground)
 
   return (
     <HomeStack.Navigator
