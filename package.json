@@ -15,7 +15,7 @@
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/drawer": "^6.6.3",
     "@react-navigation/native": "^6.1.7",
-    "@react-navigation/native-stack": "^6.9.13",
+    "@react-navigation/native-stack": "6.9.17",
     "@reduxjs/toolkit": "^1.9.5",
     "@xmartlabs/react-native-line": "^2.2.0",
     "i18next": "^23.7.13",

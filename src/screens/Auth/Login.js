@@ -14,7 +14,7 @@ import {
 import {useSelector} from 'react-redux'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useTranslation} from 'react-i18next'
-import {SafeAreaView} from 'react-native-safe-area-context'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 const Login = props => {
   const {SocialLogin, UserLogin, Logout} = useAccount()
@@ -27,6 +27,7 @@ const Login = props => {
   const [err, setErr] = React.useState('')
   const {colors, theme, colorMode} = useYBase()
   const {t} = useTranslation()
+  const insets = useSafeAreaInsets()
 
   React.useEffect(() => {
     Settings.initializeSDK()
@@ -132,7 +133,6 @@ const Login = props => {
         </SafeAreaView>
       )}
       {(typeof user.data?.nickname === 'undefined' || !user.data.nickname) && (
-        <SafeAreaView flex={1}>
           <View flex={1} bgColor={colors.background} px={20}>
             <View flex={1} mt={20}>
               <Text bold textAlign="center" fontSize="xxl">
@@ -238,7 +238,7 @@ const Login = props => {
                 </Button>
               </View>
             </View>
-            <View flex={1}>
+            <View flex={1} pb={insets.bottom}>
               <Button
                 onPress={() => props.navigation.navigate('Recover')}
                 variant="ghost">
@@ -246,7 +246,6 @@ const Login = props => {
               </Button>
             </View>
           </View>
-        </SafeAreaView>
       )}
     </>
   )
