@@ -2,12 +2,13 @@ import React from 'react'
 import {AppState, FlatList} from 'react-native'
 import {
   ActivityIndicator,
+  Button,
   Dialog,
   Paragraph,
   Portal,
   RadioButton,
 } from 'react-native-paper'
-import {Button, Divider, Row, Text, View} from '@ybase'
+import {Divider, Row, Text, View} from '@ybase'
 import Frame from '../components/Frame'
 import CompletedFrame from '../components/CompletedFrame'
 import TeamsHeadline from '../components/TeamsHeadline'
