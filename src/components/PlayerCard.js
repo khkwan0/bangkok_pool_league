@@ -3,9 +3,9 @@ import {useTranslation} from 'react-i18next'
 import {View} from 'react-native'
 import {Button, Text} from 'react-native-paper'
 
-const PlayerCard = (props: any) => {
+const PlayerCard = props => {
   const {t} = useTranslation()
-  function HandleSelect(playerId: number) {
+  function HandleSelect(playerId) {
     props.handleSelect(playerId)
   }
 
@@ -46,7 +46,9 @@ const PlayerCard = (props: any) => {
         <Button
           disabled={props.disabled}
           mode="outlined"
-          onPress={() => HandleSelect(props.player.playerId)}>
+          onPress={() =>
+            HandleSelect(props.player.playerId ?? props.player.player_id)
+          }>
           Select
         </Button>
       </View>

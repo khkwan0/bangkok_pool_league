@@ -152,6 +152,7 @@ const NewPlayerInput = props => {
                 data={list}
                 renderItem={({item}) => (
                   <PlayerCard
+                    handleSelect={props.handleSelect}
                     player={item}
                     showFirstLast
                     onlyLastInitial

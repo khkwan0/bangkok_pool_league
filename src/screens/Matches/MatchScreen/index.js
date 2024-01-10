@@ -460,6 +460,7 @@ const MatchScreen = props => {
         setFrames(_frames)
         resolve()
       } catch (e) {
+        console.log('reject')
         reject(e)
       }
     })
