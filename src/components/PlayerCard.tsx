@@ -19,19 +19,23 @@ const PlayerCard = (props: any) => {
       ]}>
       <View style={{flex: 1.5}}>
         <Text variant="bodyLarge">
-          {t('nickname')}: {props.player.name}
+          {t('nickname')}: {props.player.name ?? props.player.nickname}
         </Text>
         <View style={{flexDirection: 'row'}}>
-          {props.player.firstname && (
-            <Text variant="bodyLarge">{props.player.firstname}</Text>
+          {(props.player.firstname || props.player.firstName) && (
+            <Text variant="bodyLarge">
+              {props.player.firstname ?? props.player.firstName}
+            </Text>
           )}
-          {props.player.lastname && (
+          {(props.player.lastname || props.player.lastName) && (
             <Text variant="bodyLarge">
               &nbsp;
               {props.abbrevLast
-                ? props.player.lastname.substr(
+                ? (props.player.lastname ?? props.player.lastName).substr(
                     0,
-                    props.player.lastname.length > 2 ? 3 : 2,
+                    (props.player.lastname ?? props.player.lastName).length > 2
+                      ? 3
+                      : 2,
                   )
                 : props.player.lastname}
             </Text>
