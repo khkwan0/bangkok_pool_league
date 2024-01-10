@@ -4,6 +4,7 @@ import {Button, Text, TextInput} from 'react-native-paper'
 import TrieSearch from 'trie-search'
 import PlayerCard from '@components/PlayerCard'
 import {useLeague} from '~/lib/hooks'
+import {useTranslation} from 'react-i18next'
 
 const NewPlayerInput = props => {
   const [nickname, setNickname] = React.useState('')
@@ -16,8 +17,9 @@ const NewPlayerInput = props => {
   const [error, setError] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const league = useLeague()
+  const {t} = useTranslation()
 
-  const trie = React.useRef(new TrieSearch('nickname', {splitOnRegEx: false}))
+  const trie = React.useRef(new TrieSearch('name', {splitOnRegEx: false}))
 
   React.useEffect(() => {
     if (props.allPlayers) {
@@ -134,14 +136,19 @@ const NewPlayerInput = props => {
           <View style={{flex: 1}}>
             <View style={{margin: 20}}>
               <TextInput
-                placeholder="Search name..."
+                disabled={props.allPlayers.length === 0}
+                placeholder={
+                  props.allPlayers.length === 0
+                    ? t('loading')
+                    : t('search_name')
+                }
                 value={nickname}
                 onChangeText={text => setNickname(text)}
               />
             </View>
             <View style={{flex: 5}}>
               <FlatList
-                keyExtractor={(item, idx) => item.nickname + idx}
+                keyExtractor={(item, idx) => item.name + idx}
                 data={list}
                 renderItem={({item}) => (
                   <PlayerCard

@@ -1,8 +1,10 @@
 import React from 'react'
+import {useTranslation} from 'react-i18next'
 import {View} from 'react-native'
 import {Button, Text} from 'react-native-paper'
 
 const PlayerCard = (props: any) => {
+  const {t} = useTranslation()
   function HandleSelect(playerId: number) {
     props.handleSelect(playerId)
   }
@@ -11,10 +13,14 @@ const PlayerCard = (props: any) => {
     <View
       style={[
         {flexDirection: 'row', alignItems: 'center', padding: 10},
-        props.idx % 2 !== 0 ? {backgroundColor: '#0000ff22'} : {},
+        props.idx % 2 !== 0
+          ? {backgroundColor: '#0000ff22'}
+          : {backgroundColor: '#0011aa22'},
       ]}>
       <View style={{flex: 1.5}}>
-        <Text variant="bodyLarge">{props.player.nickname}</Text>
+        <Text variant="bodyLarge">
+          {t('nickname')}: {props.player.name}
+        </Text>
         <View style={{flexDirection: 'row'}}>
           {props.player.firstname && (
             <Text variant="bodyLarge">{props.player.firstname}</Text>

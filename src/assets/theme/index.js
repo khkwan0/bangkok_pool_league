@@ -8,6 +8,9 @@ export const theme = {
         primaryContainer: 'rgb(252, 254, 255)', //brand-50
         onPrimaryContainer: 'rgb(17, 20, 61)', //brand-800
 
+        playerRosterCardBackground: '#0000ff22',
+        altPlayerRosterCardBackground: '#0011aa22',
+
         secondary: 'rgb(32, 86, 204)', //blue-500
         onSecondary: 'rgb(255, 255, 255)', //neutral-50
         secondaryContainer: 'rgb(235, 244, 255)', //blue-50
