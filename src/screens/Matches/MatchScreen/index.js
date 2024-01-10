@@ -497,6 +497,7 @@ const MatchScreen = props => {
   }
 
   function HandleSetWinner(
+    side,
     teamId,
     playerIds,
     frameIdx,
@@ -507,16 +508,24 @@ const MatchScreen = props => {
       setShowDialogWin({
         show: true,
         cb: () =>
-          SetWinner(teamId, playerIds, frameIdx, frameType, frameNumber),
+          SetWinner(side, teamId, playerIds, frameIdx, frameType, frameNumber),
       })
     } else {
-      SetWinner(teamId, playerIds, frameIdx, frameType, frameNumber)
+      SetWinner(side, teamId, playerIds, frameIdx, frameType, frameNumber)
     }
   }
-  function SetWinner(teamId, playerIds, frameIdx, frameType, frameNumber) {
+  function SetWinner(
+    side,
+    teamId,
+    playerIds,
+    frameIdx,
+    frameType,
+    frameNumber,
+  ) {
     const _frames = [...frames]
     _frames[frameIdx].winner = teamId
     SocketSend('win', {
+      side: side,
       frameNumber: frameNumber,
       frameType: frameType,
       winnerTeamId: teamId,

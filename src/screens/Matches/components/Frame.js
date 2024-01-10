@@ -125,9 +125,12 @@ const Frame = props => {
                 */
                 onPress={() =>
                   props.setWinner(
+                    'home',
                     props.matchInfo.home_team_id,
                     props.frame.homePlayerIds,
                     props.frameIdx,
+                    props.frame.type,
+                    props.frame.frameNumber,
                   )
                 }>
                 win
@@ -163,9 +166,12 @@ const Frame = props => {
                 */
                 onPress={() =>
                   props.setWinner(
+                    'away',
                     props.matchInfo.away_team_id,
                     props.frame.awayPlayerIds,
                     props.frameIdx,
+                    props.frame.type,
+                    props.frame.frameNumber,
                   )
                 }>
                 win
