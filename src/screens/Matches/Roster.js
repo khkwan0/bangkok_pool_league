@@ -49,10 +49,11 @@ const Roster = props => {
   }, [])
 
   // this is a "goBack" with params
-  function HandleSelect(playerId, newPlayer = false) {
+  function HandleSelect(playerId, newPlayer = false, newToTeam = false) {
     setShowAddNew(false)
     props.navigation.navigate('Match Screen', {
       player: {
+        newToTeam: newToTeam,
         playerId: playerId,
         frameInfo: props.route.params.frameInfo,
         newPlayer: newPlayer,

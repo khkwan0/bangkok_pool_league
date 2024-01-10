@@ -277,10 +277,8 @@ const MatchScreen = props => {
       const playerId = player.playerId
       const _frames = [...frames]
       const newPlayer = player.newPlayer
+      const newToTeam = player.newToTeam
       ;(async () => {
-        if (newPlayer) {
-          UpdateTeams()
-        }
         let side = 'home'
         if (frameInfo.teamId === matchInfo.away_team_id) {
           side = 'away'
@@ -289,6 +287,14 @@ const MatchScreen = props => {
         } else {
           _frames[frameInfo.frameIdx].homePlayerIds[frameInfo.playerIdx] =
             playerId
+        }
+        if (newToTeam) {
+          const teamId =
+            side === 'home' ? matchInfo.home_team_id : matchInfo.away_team_id
+          const res = await team.AddExistingPlayerToTeam(teamId, playerId)
+        }
+        if (newPlayer || newToTeam) {
+          UpdateTeams()
         }
         SocketSend('players', {
           frameNumber: _frames[frameInfo.frameIdx].frameNumber,
