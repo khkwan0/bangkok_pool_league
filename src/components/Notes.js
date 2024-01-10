@@ -1,18 +1,22 @@
 import React from 'react'
 import {View} from 'react-native'
-import {Button, IconButton, Text, TextInput} from 'react-native-paper'
+import {Button, IconButton, TextInput} from 'react-native-paper'
+import {Text} from '@ybase'
 import {useAppSelector} from '~/lib/hooks/redux'
 import {DateTime} from 'luxon'
 import {socket} from '~/socket'
+import {useTranslation} from 'react-i18next'
 
 const Notes = props => {
   const [newNote, setNewNote] = React.useState('')
   const [showAddNew, setAddNew] = React.useState(false)
   const [notes, setNotes] = React.useState(props.matchInfo?.meta?.notes ?? [])
   const user = useAppSelector(_state => _state.user)
+  const {t} = useTranslation()
 
   function HandleCancel() {
     setNewNote('')
+    setAddNew(false)
   }
 
   function HandleSaveNewNote() {
@@ -39,8 +43,8 @@ const Notes = props => {
 
   return (
     <View>
-      <Text variant="headlineMedium" style={{textAlign: 'center'}}>
-        Notes
+      <Text fontSize="xxxl" style={{textAlign: 'center'}}>
+        notes
       </Text>
       {typeof notes !== 'undefined' &&
         notes.map((note, idx) => {
@@ -61,7 +65,7 @@ const Notes = props => {
       {!props.matchInfo.notes && (
         <View>
           <Text style={{textAlign: 'center'}} variant="bodyLarge">
-            No notes
+            no_notes
           </Text>
         </View>
       )}
@@ -75,7 +79,7 @@ const Notes = props => {
           icon="plus-circle"
           mode="outlined"
           onPress={() => setAddNew(true)}>
-          <Text>Add a note</Text>
+          {t('add')}
         </Button>
       </View>
       <View style={{margin: 10}}>
@@ -95,9 +99,9 @@ const Notes = props => {
                 margin: 5,
               }}>
               <Button mode="contained" onPress={() => HandleCancel()}>
-                Cancel
+                {t('cancel')}
               </Button>
-              <Button onPress={() => HandleSaveNewNote()}>Save</Button>
+              <Button onPress={() => HandleSaveNewNote()}>{t('save')}</Button>
             </View>
           </View>
         )}

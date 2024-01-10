@@ -19,9 +19,11 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useYBase} from '~/lib/hooks'
 
 import {socket} from '~/socket'
+import {useTranslation} from 'react-i18next'
 
 const MatchScreen = props => {
   const insets = useSafeAreaInsets()
+  const {t} = useTranslation()
   const [matchInfo] = React.useState(props.route.params.matchInfo)
   //  const user = useAppSelector(_state => _state.user)
   const user = {
@@ -758,7 +760,7 @@ const MatchScreen = props => {
                           disabled={isLoading}
                           onPress={() => HandleFinalized('home')}
                           mode="elevated">
-                          Finalize Home
+                          {t('finalize')} {t('home')}
                         </Button>
                       )}
                     </View>
@@ -780,7 +782,7 @@ const MatchScreen = props => {
                           disabled={isLoading}
                           onPress={() => HandleFinalized('away')}
                           mode="elevated">
-                          Finalize Away
+                          {t('finalize')} {t('away')}
                         </Button>
                       )}
                     </View>
@@ -793,7 +795,7 @@ const MatchScreen = props => {
                       onPress={() =>
                         props.navigation.navigate('Match Info', {matchInfo})
                       }>
-                      More
+                      {t('more')}
                     </Button>
                   </View>
                 </View>

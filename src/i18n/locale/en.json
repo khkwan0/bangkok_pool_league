@@ -11,6 +11,7 @@
   "completed": "Completed",
   "login": "Login",
   "home": "Home",
+  "away": "Away",
   "seasons": "Seasons",
   "divisions": "Divisions",
   "venues": "Venues",
@@ -48,5 +49,18 @@
   "optional": "Optional",
   "required": "Required",
   "continue": "Continue",
-  "invalid_parameters": "Invalid parameters"
+  "invalid_parameters": "Invalid parameters",
+  "first_break": "First Break",
+  "frame": "Frame",
+  "break": "Break",
+  "section": "Section",
+  "win": "WIN",
+  "finalize": "Finalize",
+  "more": "More",
+  "history": "History",
+  "notes": "Notes",
+  "cancel": "Cancel",
+  "add": "Add",
+  "no_notes": "No notes",
+  "save": "Save"
 }

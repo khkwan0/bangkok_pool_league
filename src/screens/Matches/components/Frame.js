@@ -3,10 +3,12 @@ import {Button} from 'react-native-paper'
 import {ActivityIndicator, Text, View} from '@ybase'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useYBase} from '~/lib/hooks'
+import {useTranslation} from 'react-i18next'
 
 const Frame = props => {
   const {colors} = useYBase()
   const disabled = props.finalizedHome && props.finalizedAway
+  const {t} = useTranslation()
 
   if (props.frame.type !== 'section') {
     let awayPlayerA = ''
@@ -48,7 +50,7 @@ const Frame = props => {
         }
         pb={10}>
         <Text style={{textAlign: 'center'}}>
-          Frame {props.frame.frameNumber}
+          {t('frame')} {props.frame.frameNumber}
         </Text>
         <View style={{flex: 1, flexDirection: 'row', paddingHorizontal: 10}}>
           <View
@@ -92,9 +94,9 @@ const Frame = props => {
             )}
             <View style={{flexDirection: 'row', justifyContent: 'center'}}>
               {props.firstBreak === props.matchInfo.home_team_id &&
-                props.frameIdx % 2 === 0 && <Text>Break</Text>}
+                props.frameIdx % 2 === 0 && <Text>{t('break')}</Text>}
               {props.firstBreak === props.matchInfo.away_team_id &&
-                props.frameIdx % 2 === 1 && <Text>Break</Text>}
+                props.frameIdx % 2 === 1 && <Text>{t('break')}</Text>}
             </View>
           </View>
           <View
@@ -133,7 +135,7 @@ const Frame = props => {
                     props.frame.frameNumber,
                   )
                 }>
-                win
+                {t('win')}
               </Button>
             )}
           </View>
@@ -174,7 +176,7 @@ const Frame = props => {
                     props.frame.frameNumber,
                   )
                 }>
-                win
+                {t('win')}
               </Button>
             )}
           </View>
@@ -231,9 +233,9 @@ const Frame = props => {
             )}
             <View style={{flexDirection: 'row', justifyContent: 'center'}}>
               {props.firstBreak === props.matchInfo.away_team_id &&
-                props.frameIdx % 2 === 0 && <Text>Break</Text>}
+                props.frameIdx % 2 === 0 && <Text>{t('break')}</Text>}
               {props.firstBreak === props.matchInfo.home_team_id &&
-                props.frameIdx % 2 === 1 && <Text>Break</Text>}
+                props.frameIdx % 2 === 1 && <Text>{t('break')}</Text>}
             </View>
           </View>
         </View>
@@ -243,7 +245,7 @@ const Frame = props => {
     return (
       <View style={{flexDirection: 'row', paddingHorizontal: 10}}>
         <View style={{flex: 2}}>
-          <Text>Section {props.frame.section}</Text>
+          <Text>{t('section')} {props.frame.section}</Text>
         </View>
         <View style={{flex: 1}}>
           <Text variant="displaySmall" style={{textAlign: 'center'}}>

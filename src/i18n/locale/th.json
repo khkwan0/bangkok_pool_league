@@ -11,6 +11,7 @@
   "upcoming": "ที่กำลังจะมาถึง",
   "login": "ล็อคอิน",
   "home": "ฐาน",
+  "away": "ทีมออกไป",
   "seasons": "คราว",
   "divisions": "หน่วยงาน",
   "venues": "แห่ง",
@@ -48,5 +49,18 @@
   "optional": "ไม่จำเป็น",
   "required": "ที่จำเป็น",
   "continue": "ดำเนินการต่อ",
-  "invalid_parameters": "พารามิเตอร์ที่ไม่ดี"
+  "invalid_parameters": "พารามิเตอร์ที่ไม่ดี",
+  "first_break": "ร้าว",
+  "frame": "กระดาน",
+  "break": "ร้าว",
+  "section": "ส่วน",
+  "win": "ชนะ",
+  "finalize": "สุด",
+  "more": "มากกว่า",
+  "history": "ประวัติ",
+  "notes": "หมายเหตุ",
+  "cancel": "ยกเลิก",
+  "add": "เพิ่ม",
+  "no_notes": "ไม่มี",
+  "save": "ไว้"
 }
