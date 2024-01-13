@@ -61,7 +61,7 @@ const Frame = props => {
               borderRadius: 5,
             }}>
             <Button
-              disabled={false} //  && props.isLoading || disabled || props.side === 'away'}
+              disabled={props.isLoading || disabled || props.side === 'away'}
               icon={!homePlayerA ? 'plus-circle' : ''}
               onPress={() =>
                 props.choosePlayer(
@@ -77,7 +77,9 @@ const Frame = props => {
             {props.gameTypes[props.frame.type].no_players === 2 && (
               <View style={{marginTop: 5}}>
                 <Button
-                  disabled={false} //</View> props.isLoading || disabled || props.side === 'away'}
+                  disabled={
+                    props.isLoading || disabled || props.side === 'away'
+                  }
                   icon={!homePlayerB ? 'plus-circle' : ''}
                   onPress={() =>
                     props.choosePlayer(
@@ -111,8 +113,6 @@ const Frame = props => {
             )}
             {props.frame.winner !== props.matchInfo.home_team_id && (
               <Button
-                disabled={false}
-                /*
                 disabled={
                   disabled ||
                   props.isLoading ||
@@ -124,7 +124,6 @@ const Frame = props => {
                     ? false
                     : true)
                 }
-                */
                 onPress={() =>
                   props.setWinner(
                     'home',
@@ -152,8 +151,6 @@ const Frame = props => {
             )}
             {props.frame.winner !== props.matchInfo.away_team_id && (
               <Button
-                disabled={false}
-                /*
                 disabled={
                   disabled ||
                   props.isLoading ||
@@ -165,7 +162,6 @@ const Frame = props => {
                     ? false
                     : true)
                 }
-                */
                 onPress={() =>
                   props.setWinner(
                     'away',
@@ -188,8 +184,7 @@ const Frame = props => {
               borderRadius: 5,
             }}>
             <Button
-              disabled={false}
-              // disabled={props.isLoading || disabled || props.side === 'home'}
+              disabled={props.isLoading || disabled || props.side === 'home'}
               icon={!awayPlayerA ? 'plus-circle' : ''}
               onPress={() =>
                 props.choosePlayer(
@@ -211,12 +206,9 @@ const Frame = props => {
             {props.gameTypes[props.frame.type].no_players === 2 && (
               <View style={{marginTop: 5}}>
                 <Button
-                  disabled={false}
-                  /*
                   disabled={
                     props.isLoading || disabled || props.side === 'home'
                   }
-                  */
                   icon={!awayPlayerB ? 'plus-circle' : ''}
                   onPress={() =>
                     props.choosePlayer(
@@ -245,7 +237,9 @@ const Frame = props => {
     return (
       <View style={{flexDirection: 'row', paddingHorizontal: 10}}>
         <View style={{flex: 2}}>
-          <Text>{t('section')} {props.frame.section}</Text>
+          <Text>
+            {t('section')} {props.frame.section}
+          </Text>
         </View>
         <View style={{flex: 1}}>
           <Text variant="displaySmall" style={{textAlign: 'center'}}>

@@ -25,11 +25,7 @@ const MatchScreen = props => {
   const insets = useSafeAreaInsets()
   const {t} = useTranslation()
   const [matchInfo] = React.useState(props.route.params.matchInfo)
-  //  const user = useAppSelector(_state => _state.user)
-  const user = {
-    id: 1933,
-    nickname: 'Ken K',
-  }
+  const user = useAppSelector(_state => _state.user)
 
   const team = useTeams()
   const season = useSeason()
@@ -573,16 +569,14 @@ const MatchScreen = props => {
   }
 
   function HandleFinalized(side) {
-    //    if (side === 'home' && side === userTeam) {
-    if (side === 'home') {
+    if (side === 'home' && side === userTeam) {
       setFinalizedHome(true)
       SocketSend('finalize', {
         teamId: matchInfo.home_team_id,
         side: side,
         matchId: matchInfo.match_id,
       })
-    } else if (side === 'away') {
-      //} && side === userTeam) {
+    } else if (side === 'away' && side === userTeam) {
       setFinalizedAway(true)
       SocketSend('finalize', {
         teamId: matchInfo.away_team_id,
