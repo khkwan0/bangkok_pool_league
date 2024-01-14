@@ -48,7 +48,11 @@ const Auth = props => {
       <AuthStack.Screen
         name="Post Recover"
         component={PostRecover}
-        options={{headerTitle: t('recover')}}
+        options={{
+          headerTitle: t('recover'),
+          gestureEnabled: false,
+          headerBackTitleVisible: false,
+        }}
       />
       <AuthStack.Screen
         name="Recover"

@@ -7,6 +7,17 @@ import {useTranslation} from 'react-i18next'
 const PostRecover = props => {
   const {colors} = useYBase()
   const {t} = useTranslation()
+
+  React.useEffect(() => {
+    const unsubscribe = props.navigation.addListener('beforeRemove', e => {
+      if (e.data.action.type === 'NAVIGATE') {
+        props.navigation.dispatch(e.data.action)
+      }
+      e.preventDefault()
+    })
+    return () => unsubscribe()
+  }, [props.navigation])
+
   return (
     <View flex={1} px={20} bgColor={colors.background}>
       <View flex={1} />
