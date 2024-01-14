@@ -52,6 +52,7 @@ const Auth = props => {
           headerTitle: t('recover'),
           gestureEnabled: false,
           headerBackTitleVisible: false,
+          headerLeft: null,
         }}
       />
       <AuthStack.Screen

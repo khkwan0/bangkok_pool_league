@@ -106,7 +106,7 @@ const Home = props => {
       <HomeStack.Screen
         component={Login}
         name="Login"
-        options={{headerShown: false}}
+        options={{headerShown: false, gestureEnabled: false}}
       />
       <HomeStack.Screen
         component={LineSuccess}
