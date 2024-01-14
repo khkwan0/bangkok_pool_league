@@ -64,5 +64,7 @@
   "no_notes": "ไม่มี",
   "save": "ไว้",
   "season_number": "ฤดูกาล{n}",
-  "invalid_token": "ส่งรหัสไม่ถูกต้อง"
+  "invalid_token": "ส่งรหัสไม่ถูกต้อง",
+  "password_reset": "รีเซ็ตรหัสผ่าน",
+  "success": "สมบูรณ์"
 }

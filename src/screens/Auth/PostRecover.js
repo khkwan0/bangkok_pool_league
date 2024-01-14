@@ -10,7 +10,7 @@ const PostRecover = props => {
     <View flex={1} px={20} bgColor={colors.background}>
       <View flex={1} />
       <View flex={4}>
-        <Text bold fontSize="xxxl" textAlign="center">succcess</Text>
+        <Text bold fontSize="xxxl" textAlign="center">success_password_reset</Text>
       </View>
       <View flex={1}>
         <Button>{t('continue')}</Button>

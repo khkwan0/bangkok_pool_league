@@ -64,5 +64,7 @@
   "no_notes": "No notes",
   "save": "Save",
   "season_number": "Season {n}",
-  "invalid_token": "Invalid code"
+  "invalid_token": "Invalid code",
+  "password_reset": "Password reset",
+  "success": "Success"
 }
