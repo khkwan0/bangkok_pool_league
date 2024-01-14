@@ -3,7 +3,7 @@ import {Button, Pressable, Text, TextInput, View} from '@ybase'
 import {useAccount, useYBase} from '~/lib/hooks'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useTranslation} from 'react-i18next'
-import { ResourceStore } from 'i18next'
+import {ResourceStore} from 'i18next'
 
 const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g
 
@@ -23,9 +23,19 @@ const RecoverVerify = props => {
   async function HandleVerify() {
     try {
       setLoading(true)
-      const res = await account.Verify(recoverCode, password, passwordConfirm)
-      if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        props.navigation.navigate('Post Recover')
+      if (password.length > 5) {
+        if (password === password2) {
+          const res = await account.Verify(recoverCode, password, password2)
+          if (typeof res.status !== 'undefined' && res.status === 'ok') {
+            props.navigation.navigate('Post Recover')
+          } else {
+            setErr(res.err)
+          }
+        } else {
+          setErr(t('password_mismatch'))
+        }
+      } else {
+        setErr(t('password_length', {n: 6}))
       }
     } catch (e) {
       console.log(e)
@@ -101,6 +111,7 @@ const RecoverVerify = props => {
             onChangeText={text => setPassword2(text)}
           />
         </View>
+        <View mt={30}>{err && <Text color={colors.error}>{err}</Text>}</View>
       </View>
       <View flex={1}>
         <Button

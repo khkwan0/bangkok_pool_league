@@ -123,6 +123,20 @@ export const useAccount = () => {
     }
   }
 
+  async function Verify(code, pw1, pw2) {
+    try {
+      const res = await Post('/login/recover/verify', {
+        code: code,
+        password: pw1,
+        passwordConfirm: pw2,
+      })
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   return {
     FetchUser,
     LoadUser,
@@ -132,5 +146,6 @@ export const useAccount = () => {
     SocialLogin,
     Register,
     Recover,
+    Verify,
   }
 }
