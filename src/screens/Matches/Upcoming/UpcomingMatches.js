@@ -15,6 +15,8 @@ const UpcomingMatches = props => {
   const {t} = useTranslation()
   const {colors} = useYBase()
 
+  console.log(JSON.stringify(user, null, 2))
+
   const onRefresh = React.useCallback(async () => {
     const query = []
     try {
@@ -63,8 +65,7 @@ const UpcomingMatches = props => {
                 {t('login_to_see_your_matches')}
               </Button>
             )}
-            {(typeof user?.data?.teams === 'undefined' ||
-              user.teams.length < 1) &&
+            {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
               user.id && (
                 <View style={{paddingVertical: 10}}>
                   <Text style={{textAlign: 'center'}}>
