@@ -6,6 +6,7 @@ import RegisterPart2 from './RegisterPart2'
 import RegisterPart1 from './RegisterPart1'
 import RegisterSuccess from './RegisterSuccess'
 import Recover from './Recover'
+import RecoverVerify from './RecoverVerify'
 import PostRecover from './PostRecover'
 import {useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
@@ -47,9 +48,14 @@ const Auth = props => {
       <AuthStack.Screen
         name="Post Recover"
         component={PostRecover}
-        options={{headerTitle: t('sign_up')}}
+        options={{headerTitle: t('recover')}}
       />
-      <AuthStack.Screen name="Recover" component={Recover} />
+      <AuthStack.Screen name="Recover" component={Recover} options={{headerTitle: t('recover')}} />
+      <AuthStack.Screen
+        name="Recover Verify"
+        component={RecoverVerify}
+        options={{headerTitle: t('recover')}}
+      />
     </AuthStack.Navigator>
   )
 }
