@@ -66,5 +66,6 @@
   "season_number": "Season {n}",
   "invalid_token": "Invalid code",
   "password_reset": "Password reset",
-  "success": "Success"
+  "success": "Success",
+  "current_season": "Current season"
 }
