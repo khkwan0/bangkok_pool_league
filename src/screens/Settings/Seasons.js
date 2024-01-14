@@ -33,9 +33,13 @@ const Seasons = props => {
     return (
       <View flex={1} bgColor={colors.background} px={20}>
         <View flex={1} />
-        <View flex={4}>
-          <Text>current_season</Text>
-          <Text>{season}</Text>
+        <View flex={2}>
+          <Text textAlign="center" fontSize="xxxl" bold>
+            current_season
+          </Text>
+          <Text textAlign="center" bold fontSize={84}>
+            {season}
+          </Text>
         </View>
         <View flex={1} />
       </View>
