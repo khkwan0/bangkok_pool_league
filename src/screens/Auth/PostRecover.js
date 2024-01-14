@@ -33,7 +33,7 @@ const PostRecover = props => {
         </Text>
       </View>
       <View flex={1}>
-        <Button onPress={() => props.navigation.navigate('Login')}>
+        <Button onPress={() => props.navigation.navigate('AuthLogin')}>
           {t('continue')}
         </Button>
       </View>
