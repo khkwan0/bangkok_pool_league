@@ -63,5 +63,6 @@
   "add": "เพิ่ม",
   "no_notes": "ไม่มี",
   "save": "ไว้",
-  "season_number": "Season {n}"
+  "season_number": "ฤดูกาล{n}",
+  "invalid_token": "ส่งรหัสไม่ถูกต้อง"
 }

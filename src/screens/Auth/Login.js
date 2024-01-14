@@ -193,6 +193,7 @@ const Login = props => {
               </View>
               <View mt={20}>
                 <TextInput
+                  keyboardType="email-address"
                   autoCapitalize="none"
                   placeholder={t('email')}
                   value={email}

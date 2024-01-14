@@ -30,7 +30,7 @@ const RecoverVerify = props => {
             if (typeof res.status !== 'undefined' && res.status === 'ok') {
               props.navigation.navigate('Post Recover')
             } else {
-              setErr(res.err)
+              setErr(t(res.error))
             }
           } else {
             setErr(t('password_mismatch'))

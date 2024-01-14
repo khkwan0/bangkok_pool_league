@@ -63,5 +63,6 @@
   "add": "Add",
   "no_notes": "No notes",
   "save": "Save",
-  "season_number": "Season {n}"
+  "season_number": "Season {n}",
+  "invalid_token": "Invalid code"
 }
