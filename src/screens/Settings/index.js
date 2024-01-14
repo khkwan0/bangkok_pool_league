@@ -81,22 +81,16 @@ const DrawerContent = props => {
             <Text>Build {config.build}</Text>
           </View>
           <View flex={4}>
-            <Row alignItems="center">
-              <View flex={1}>
-                <Text fontSize="md" bold>
-                  Language/ภาษา
-                </Text>
-              </View>
-              <View flex={1} alignItems="flex-end">
-                <Row alignItems="center" space={10}>
-                  <Text>EN</Text>
-                  <Switch
-                    value={lang === 'th' ? true : false}
-                    onChange={() => ToggleLanguage()}
-                  />
-                  <Text>TH</Text>
-                </Row>
-              </View>
+            <Row alignItems="center" justifyContent="flex-end" space={10}>
+              <Text>Language/ภาษา</Text>
+              <Row alignItems="center" space={10}>
+                <Text>EN</Text>
+                <Switch
+                  value={lang === 'th' ? true : false}
+                  onChange={() => ToggleLanguage()}
+                />
+                <Text>TH</Text>
+              </Row>
             </Row>
           </View>
         </Row>
