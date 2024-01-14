@@ -99,7 +99,7 @@ const DrawerContent = props => {
             <Row alignItems="center">
               <View style={{flex: 1, padding: 10}}>
                 <Text variant="titleLarge">{user.nickname}</Text>
-                <Text variant="bodyLarge">#{user.id}</Text>
+                <Text variant="bodyLarge">#{user.id}{typeof user.secondaryId !== 'undefined' && user.secondaryId ? ` (${user.secondaryId})`: ''}</Text>
               </View>
               <View style={{flex: 1}}>
                 <Image
