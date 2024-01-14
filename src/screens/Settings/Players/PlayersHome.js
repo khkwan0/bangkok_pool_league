@@ -33,7 +33,7 @@ const PlayerCard = ({player, idx}) => {
             <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
               <Text>{player.name}</Text>
               <Text variant="bodySmall">
-                ({player.firstname} {player.lastname})
+                ({player.firstname.substring(0, 1)} {player.lastname.substring(0, 1)})
               </Text>
             </View>
             <View style={{flexDirection: 'row'}}>
