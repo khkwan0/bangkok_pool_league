@@ -1,13 +1,48 @@
 import React from 'react'
-import {View, FlatList} from 'react-native'
-import {Text} from 'react-native-paper'
+import {FlatList} from 'react-native'
+import {Text, View} from '@ybase'
+import {useLeague, useYBase} from '~/lib/hooks'
+import {useTranslation} from 'react-i18next'
 
 const Seasons = props => {
-  return (
-    <View>
-      <Text>Coming soon...</Text>
-    </View>
-  )
+  const {colors} = useYBase()
+  const {t} = useTranslation()
+  const league = useLeague()
+  const [season, setSeason] = React.useState(null)
+  const [isMounted, setIsMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await league.GetSeason()
+        setSeason(res)
+      } catch (e) {
+        console.log(e)
+      }
+    })()
+    return () => setIsMounted(false)
+  }, [])
+
+  React.useEffect(() => {
+    if (season) {
+      setIsMounted(true)
+    }
+  }, [season])
+
+  if (isMounted) {
+    return (
+      <View flex={1} bgColor={colors.background} px={20}>
+        <View flex={1} />
+        <View flex={4}>
+          <Text>current_season</Text>
+          <Text>{season}</Text>
+        </View>
+        <View flex={1} />
+      </View>
+    )
+  } else {
+    return null
+  }
 }
 
 export default Seasons
