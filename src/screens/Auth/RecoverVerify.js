@@ -66,7 +66,7 @@ const RecoverVerify = props => {
         </View>
         <View mt={20}>
           <TextInput
-            autoCapitalize="none"
+            autoCapitalize="characters"
             placeholder={t('verification_code')}
             value={recoverCode}
             inputLeftElement={
