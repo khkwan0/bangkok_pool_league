@@ -133,12 +133,13 @@ const Login = props => {
     return (
       <>
         {typeof user.data?.nickname !== 'undefined' && user.data.nickname && (
-          <SafeAreaView style={{flexGrow: 1, paddingHorizontal: 20}}>
+          <View flex={1} px={20} bgColor={colors.background}>
             <Text>You are logged in as: {user.data.nickname}</Text>
             <Button onPress={() => HandleLogout()}>Logout</Button>
-          </SafeAreaView>
+          </View>
         )}
-        {(typeof user.data?.nickname === 'undefined' || !user.data.nickname) && (
+        {(typeof user.data?.nickname === 'undefined' ||
+          !user.data.nickname) && (
           <View flex={1} bgColor={colors.background} px={20}>
             <View flex={1} mt={20}>
               <Text bold textAlign="center" fontSize="xxl">
@@ -153,7 +154,9 @@ const Login = props => {
             <View flex={10}>
               <View>
                 <View>
-                  <Button variant="ghost" onPress={() => setShowSocial(s => !s)}>
+                  <Button
+                    variant="ghost"
+                    onPress={() => setShowSocial(s => !s)}>
                     {t('social_login')}
                   </Button>
                 </View>

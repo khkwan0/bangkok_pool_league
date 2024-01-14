@@ -124,7 +124,7 @@ export const useLeague = () => {
     }
   }
 
-  const GetTeamInfo = async (teamId) => {
+  const GetTeamInfo = async teamId => {
     try {
       const res = await Get('/team/' + teamId)
       return res
