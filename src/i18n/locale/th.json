@@ -68,5 +68,6 @@
   "password_reset": "รีเซ็ตรหัสผ่าน",
   "success": "สมบูรณ์",
   "current_season": "ฤดูกาลตอนนี้",
-  "check_email_for_code": "ตรวจสอบอีเมลเพื่อดูรหัส"
+  "check_email_for_code": "ตรวจสอบอีเมลเพื่อดูรหัส",
+  "privacy_policy": "นโยบายความเป็นส่วนตัว"
 }
