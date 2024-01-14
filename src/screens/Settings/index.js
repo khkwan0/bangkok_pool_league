@@ -80,10 +80,10 @@ const DrawerContent = props => {
           <View flex={1}>
             <Text>Build {config.build}</Text>
           </View>
-          <View flex={3}>
+          <View flex={4}>
             <Row alignItems="center">
               <View flex={1}>
-                <Text fontSize="lg" bold>
+                <Text fontSize="md" bold>
                   Language/ภาษา
                 </Text>
               </View>
