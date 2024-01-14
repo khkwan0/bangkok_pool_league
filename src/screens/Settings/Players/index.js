@@ -1,16 +1,17 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react'
 import {createNativeStackNavigator} from '@react-navigation/native-stack'
+import {createStackNavigator} from '@react-navigation/stack'
 import PlayersHome from './PlayersHome'
 import Player from './Player'
 import PlayerStats from './PlayerStats'
 import MatchScreen from './MatchScreen'
-import {IconButton} from 'react-native-paper'
 import {useNavigation} from '@react-navigation/native'
 import {useYBase} from '~/lib/hooks'
-import { useTranslation } from 'react-i18next'
+import {useTranslation} from 'react-i18next'
 
-const PlayersStack = createNativeStackNavigator()
+// const PlayersStack = createNativeStackNavigator()
+const PlayersStack = createStackNavigator()
 
 const PlayersScreen = props => {
   const navigation = useNavigation()
