@@ -12,14 +12,16 @@ const RecoverVerify = props => {
   const [loading, setLoading] = React.useState(false)
   const [valid, setValid] = React.useState(false)
   const [err, setErr] = React.useState('')
-  const [recoverCode, setRecoverCode] = React.useState(''
+  const [recoverCode, setRecoverCode] = React.useState('')
+  const [password, setPassword] = React.useState('')
+  const [passwordConfirm, setPasswordConfirm] = React.useState('')
   const account = useAccount()
   const {t} = useTranslation()
 
   async function HandleVerify() {
     try {
       setLoading(true)
-      const res = await account.Recover(email)
+      const res = await account.Verify(recoverCode, password, passwordConfirm)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
         props.navigation.navigate('Post Recover')
       }
@@ -49,6 +51,32 @@ const RecoverVerify = props => {
               </View>
             }
             onChangeText={text => setRecoverCode(text)}
+          />
+        </View>
+        <View mt={20}>
+          <TextInput
+            autoCapitalize="none"
+            placeholder={t('password')}
+            value={password}
+            inputLeftElement={
+              <View ml={10}>
+                <MCI name="lock-outline" size={30} color={colors.onSurface} />
+              </View>
+            }
+            onChangeText={text => setPassword(text)}
+          />
+        </View>
+        <View mt={20}>
+          <TextInput
+            autoCapitalize="none"
+            placeholder={t('password_confirm')}
+            value={passwordConfirm}
+            inputLeftElement={
+              <View ml={10}>
+                <MCI name="lock-outline" size={30} color={colors.onSurface} />
+              </View>
+            }
+            onChangeText={text => setPasswordConfirm(text)}
           />
         </View>
       </View>
