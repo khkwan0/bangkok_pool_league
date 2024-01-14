@@ -3,9 +3,6 @@ import {Button, Pressable, Text, TextInput, View} from '@ybase'
 import {useAccount, useYBase} from '~/lib/hooks'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useTranslation} from 'react-i18next'
-import {ResourceStore} from 'i18next'
-
-const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g
 
 const RecoverVerify = props => {
   const {colors} = useYBase()
@@ -58,10 +55,10 @@ const RecoverVerify = props => {
 
   return (
     <View flex={1} bgColor={colors.background} px={20}>
-      <View flex={1} mt={20}>
+      <View flex={2} mt={20}>
         <View>
           <Text bold fontSize="xxl">
-            verification_code
+            {t('check_email_for_code', {email: props.route.params.email})}
           </Text>
         </View>
         <View mt={20}>

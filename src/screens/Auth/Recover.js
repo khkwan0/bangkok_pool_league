@@ -21,7 +21,7 @@ const Recover = props => {
       setLoading(true)
       const res = await account.Recover(email)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        props.navigation.navigate('Recover Verify')
+        props.navigation.navigate('Recover Verify', {email})
       }
     } catch (e) {
       console.log(e)
