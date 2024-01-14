@@ -50,6 +50,7 @@ const Recover = props => {
         <View mt={20}>
           <TextInput
             autoCapitalize="none"
+            keyboardType="email-address"
             placeholder={t('email')}
             value={email}
             inputLeftElement={

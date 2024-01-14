@@ -1,5 +1,5 @@
 import React from 'react'
-import {Button, Text, TextInput, View} from '@ybase'
+import {Button, Pressable, Text, TextInput, View} from '@ybase'
 import {useAccount, useYBase} from '~/lib/hooks'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useTranslation} from 'react-i18next'
@@ -14,7 +14,9 @@ const RecoverVerify = props => {
   const [err, setErr] = React.useState('')
   const [recoverCode, setRecoverCode] = React.useState('')
   const [password, setPassword] = React.useState('')
-  const [passwordConfirm, setPasswordConfirm] = React.useState('')
+  const [password2, setPassword2] = React.useState('')
+  const [showPassword1, setShowPassword1] = React.useState(true)
+  const [showPassword2, setShowPassword2] = React.useState(true)
   const account = useAccount()
   const {t} = useTranslation()
 
@@ -47,7 +49,7 @@ const RecoverVerify = props => {
             value={recoverCode}
             inputLeftElement={
               <View ml={10}>
-                <MCI name="code" size={30} color={colors.onSurface} />
+                <MCI name="code-string" size={30} color={colors.onSurface} />
               </View>
             }
             onChangeText={text => setRecoverCode(text)}
@@ -55,28 +57,48 @@ const RecoverVerify = props => {
         </View>
         <View mt={20}>
           <TextInput
+            secureTextEntry={showPassword1}
             autoCapitalize="none"
-            placeholder={t('password')}
+            placeholder={t('new_password')}
             value={password}
             inputLeftElement={
               <View ml={10}>
-                <MCI name="lock-outline" size={30} color={colors.onSurface} />
+                <MCI name="lock" size={30} color={colors.onSurface} />
               </View>
+            }
+            inputRightElement={
+              <Pressable onPress={() => setShowPassword1(s => !s)} pr={10}>
+                <MCI
+                  name={showPassword1 ? 'eye-outline' : 'eye-off-outline'}
+                  size={30}
+                  color={colors.onSurface}
+                />
+              </Pressable>
             }
             onChangeText={text => setPassword(text)}
           />
         </View>
         <View mt={20}>
           <TextInput
+            secureTextEntry={showPassword2}
             autoCapitalize="none"
-            placeholder={t('password_confirm')}
-            value={passwordConfirm}
+            placeholder={t('confirm_password')}
+            value={password2}
             inputLeftElement={
               <View ml={10}>
-                <MCI name="lock-outline" size={30} color={colors.onSurface} />
+                <MCI name="lock" size={30} color={colors.onSurface} />
               </View>
             }
-            onChangeText={text => setPasswordConfirm(text)}
+            inputRightElement={
+              <Pressable onPress={() => setShowPassword2(s => !s)} pr={10}>
+                <MCI
+                  name={showPassword2 ? 'eye-outline' : 'eye-off-outline'}
+                  size={30}
+                  color={colors.onSurface}
+                />
+              </Pressable>
+            }
+            onChangeText={text => setPassword2(text)}
           />
         </View>
       </View>
