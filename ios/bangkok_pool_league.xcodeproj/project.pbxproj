@@ -42,6 +42,7 @@
 		5B7EB9410499542E8C5724F5 /* Pods-bangkok_pool_league-bangkok_pool_leagueTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-bangkok_pool_league-bangkok_pool_leagueTests.debug.xcconfig"; path = "Target Support Files/Pods-bangkok_pool_league-bangkok_pool_leagueTests/Pods-bangkok_pool_league-bangkok_pool_leagueTests.debug.xcconfig"; sourceTree = "<group>"; };
 		7B110929E5BF3439BDCDB70C /* Pods_bangkok_pool_league_bangkok_pool_leagueTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_bangkok_pool_league_bangkok_pool_leagueTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-bangkok_pool_league-bangkok_pool_leagueTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-bangkok_pool_league-bangkok_pool_leagueTests.release.xcconfig"; path = "Target Support Files/Pods-bangkok_pool_league-bangkok_pool_leagueTests/Pods-bangkok_pool_league-bangkok_pool_leagueTests.release.xcconfig"; sourceTree = "<group>"; };
+		BE578C922B53D1B2001FD9D3 /* bangkok_pool_leagueRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = bangkok_pool_leagueRelease.entitlements; path = bangkok_pool_league/bangkok_pool_leagueRelease.entitlements; sourceTree = "<group>"; };
 		BE8CC3C82A88F203001432D4 /* bangkok_pool_league.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = bangkok_pool_league.entitlements; path = bangkok_pool_league/bangkok_pool_league.entitlements; sourceTree = "<group>"; };
 		BEA44BA12A8903C900B14695 /* Fontisto.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Fontisto.ttf; sourceTree = "<group>"; };
 		BEA44BA22A8903C900B14695 /* Octicons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Octicons.ttf; sourceTree = "<group>"; };
@@ -106,6 +107,7 @@
 		13B07FAE1A68108700A75B9A /* bangkok_pool_league */ = {
 			isa = PBXGroup;
 			children = (
+				BE578C922B53D1B2001FD9D3 /* bangkok_pool_leagueRelease.entitlements */,
 				BE8CC3C82A88F203001432D4 /* bangkok_pool_league.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
@@ -568,7 +570,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = bangkok_pool_league/bangkok_pool_league.entitlements;
+				CODE_SIGN_ENTITLEMENTS = bangkok_pool_league/bangkok_pool_leagueRelease.entitlements;
 				CURRENT_PROJECT_VERSION = 26;
 				DEVELOPMENT_TEAM = 2MXCL8R3KW;
 				INFOPLIST_FILE = bangkok_pool_league/Info.plist;

@@ -27,23 +27,27 @@
 			<array>
 				<string>fb879205039819790</string>
 			</array>
-    </dict>
-    <dict>
-        <key>CFBundleTypeRole</key>
-        <string>Editor</string>
-        <key>CFBundleURLSchemes</key>
-        <array>
-            <!-- Specify URL scheme to use when returning from LINE to your app. -->
-            <string>line3rdp.$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-        </array>
-    </dict>
-  </array>
-	<key>LSApplicationQueriesSchemes</key>
-  <array>
-      <!-- Specify URL scheme to use when launching LINE from your app. -->
-      <string>lineauth2</string>
-  </array>
-  <key>CFBundleVersion</key>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>line3rdp.$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.bangkok-pool-league</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>bkkleague</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FacebookAppID</key>
 	<string>879205039819790</string>
@@ -51,6 +55,10 @@
 	<string>f58a315457e05a07ba9c795c0dc4cdf7</string>
 	<key>FacebookDisplayName</key>
 	<string>bkkleague</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>lineauth2</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

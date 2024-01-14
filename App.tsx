@@ -19,11 +19,15 @@ const App = () => {
     })()
   }, [])
 
+  const linking = {
+    prefixes: ['https://api.bkkleague.com', 'bkkleague://'],
+  }
+
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{flex: 1}}>
         <SafeAreaProvider>
-          <NavigationContainer>
+          <NavigationContainer linking={linking}>
             <PaperProvider theme={MD3LightTheme}>
               <YBaseProvider theme={theme}>
                 <Main />
