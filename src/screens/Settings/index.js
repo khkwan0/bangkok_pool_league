@@ -96,7 +96,7 @@ const DrawerContent = props => {
         </Row>
         <View flex={20}>
           {typeof user?.id !== 'undefined' && user.id && (
-            <Row alignItems="center" pt={insets.top}>
+            <Row alignItems="center">
               <View style={{flex: 1, padding: 10}}>
                 <Text variant="titleLarge">{user.nickname}</Text>
                 <Text variant="bodyLarge">#{user.id}</Text>
@@ -112,7 +112,7 @@ const DrawerContent = props => {
               </View>
             </Row>
           )}
-          <View gap={10}>
+          <View gap={20}>
             {(typeof user?.id === 'undefined' || !user.id) && (
               <DrawerItem navDest="Login" icon="login" label={t('login')} />
             )}
