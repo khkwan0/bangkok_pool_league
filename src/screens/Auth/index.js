@@ -1,5 +1,6 @@
 import React from 'react'
-import {createNativeStackNavigator} from '@react-navigation/native-stack'
+// import {createNativeStackNavigator} from '@react-navigation/native-stack'
+import {createStackNavigator} from '@react-navigation/stack'
 import Login from './Login'
 import RegisterPart2 from './RegisterPart2'
 import RegisterPart1 from './RegisterPart1'
@@ -9,7 +10,8 @@ import PostRecover from './PostRecover'
 import {useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
 
-const AuthStack = createNativeStackNavigator()
+// const AuthStack = createNativeStackNavigator()
+const AuthStack = createStackNavigator()
 
 const Auth = props => {
   const {t} = useTranslation()

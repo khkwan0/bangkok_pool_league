@@ -17,6 +17,7 @@ import Info from '@screens/Settings/Info'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
 import Preferences from '@screens/Settings/Preferences'
+import LineSuccess from '@screens/Auth/LineSuccess'
 
 const HomeStack = createNativeStackNavigator()
 
@@ -105,6 +106,11 @@ const Home = props => {
       <HomeStack.Screen
         component={Login}
         name="Login"
+        options={{headerShown: false}}
+      />
+      <HomeStack.Screen
+        component={LineSuccess}
+        name="LineSuccess"
         options={{headerShown: false}}
       />
     </HomeStack.Navigator>

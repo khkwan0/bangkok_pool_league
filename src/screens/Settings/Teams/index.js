@@ -1,5 +1,6 @@
 import React from 'react'
-import {createNativeStackNavigator} from '@react-navigation/native-stack'
+// import {createNativeStackNavigator} from '@react-navigation/native-stack'
+import {createStackNavigator} from '@react-navigation/stack'
 import TeamsHome from './TeamsHome'
 import Team from './Team'
 import {IconButton} from 'react-native-paper'
@@ -10,7 +11,8 @@ import MatchScreen from './MatchScreen'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
 
-const TeamsStack = createNativeStackNavigator()
+// const TeamsStack = createNativeStackNavigator()
+const TeamsStack = createStackNavigator()
 
 const TeamsScreen = props => {
   const {t} = useTranslation()
