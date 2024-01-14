@@ -21,7 +21,7 @@ const NewSeasonSuccess = props => {
     <View flex={1} bgColor={colors.background} px={20}>
       <View flex={1} />
       <View flex={4}>
-        <Text bold>password_reset_success</Text>
+        <Text bold>success</Text>
       </View>
       <View flex={1} pb={Math.max(insets.bottom, 20)} alignItems="flex-end">
         <Button onPress={() => props.navigation.navigate('admin_seasons_new')}>ok</Button>

@@ -6,7 +6,8 @@ const PostRecover = props => {
   const {colors} = useYBase()
   return (
     <View flex={1} px={20} bgColor={colors.background}>
-      <View flex={1}>
+      <View flex={1} />
+      <View flex={4}>
         <Text>succcess</Text>
       </View>
       <View flex={1}>
