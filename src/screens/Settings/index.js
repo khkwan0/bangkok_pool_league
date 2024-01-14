@@ -72,10 +72,34 @@ const DrawerContent = props => {
     return (
       <ScrollView
         contentContainerStyle={{
-          flex: 1,
+          flexGrow: 1,
           backgroundColor: colors.background,
           paddingHorizontal: 20,
         }}>
+        <Row flex={1} alignItems="center" mt={10}>
+          <View flex={1}>
+            <Text>Build {config.build}</Text>
+          </View>
+          <View flex={3}>
+            <Row alignItems="center">
+              <View flex={1}>
+                <Text fontSize="lg" bold>
+                  Language/ภาษา
+                </Text>
+              </View>
+              <View flex={1} alignItems="flex-end">
+                <Row alignItems="center" space={10}>
+                  <Text>EN</Text>
+                  <Switch
+                    value={lang === 'th' ? true : false}
+                    onChange={() => ToggleLanguage()}
+                  />
+                  <Text>TH</Text>
+                </Row>
+              </View>
+            </Row>
+          </View>
+        </Row>
         <View flex={20}>
           {typeof user?.id !== 'undefined' && user.id && (
             <Row alignItems="center" pt={insets.top}>
@@ -94,24 +118,7 @@ const DrawerContent = props => {
               </View>
             </Row>
           )}
-          <View gap={10} mt={10}>
-            <Row alignItems="center" mt={20}>
-              <View flex={1}>
-                <Text fontSize="lg" bold>
-                  Language/ภาษา
-                </Text>
-              </View>
-              <View flex={1} alignItems="flex-end">
-                <Row alignItems="center" space={10}>
-                  <Text>EN</Text>
-                  <Switch
-                    value={lang === 'th' ? true : false}
-                    onChange={() => ToggleLanguage()}
-                  />
-                  <Text>TH</Text>
-                </Row>
-              </View>
-            </Row>
+          <View gap={10}>
             {(typeof user?.id === 'undefined' || !user.id) && (
               <DrawerItem navDest="Login" icon="login" label={t('login')} />
             )}
@@ -176,7 +183,7 @@ const DrawerContent = props => {
               )}
           </View>
         </View>
-        <View flex={1} justifyContent="flex-end" pb={insets.bottom}>
+        <View flex={1} justifyContent="flex-end" pb={insets.bottom} mt={30}>
           {typeof user?.id !== 'undefined' && user.id && (
             <Pressable onPress={() => HandleLogout()}>
               <Row alignItems="center" space={20}>
@@ -185,9 +192,6 @@ const DrawerContent = props => {
               </Row>
             </Pressable>
           )}
-          <View style={{padding: 10}}>
-            <Text>Build {config.build}</Text>
-          </View>
         </View>
       </ScrollView>
     )
