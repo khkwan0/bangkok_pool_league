@@ -31,13 +31,18 @@ const DrawerItem = ({navDest, icon, label, as}) => {
 
 const DrawerContent = props => {
   const insets = useSafeAreaInsets()
-  const user = useSelector(_state => _state.userData).user
+//   const user = useSelector(_state => _state.userData).user ?? {}
+  const user = {}
   const account = useAccount()
   const {t} = useTranslation()
   const {colors} = useYBase()
   const [lang, setLang] = React.useState('en')
   const {i18n} = useTranslation()
   const [isMounted, setIsMounted] = React.useState(false)
+
+  user.isAdmin = true
+  console.log(user)
+  console.log('isadmin', user.isAdmin)
 
   async function HandleLogout() {
     await account.Logout()
@@ -168,6 +173,12 @@ const DrawerContent = props => {
               icon="cog"
               label={t('preferences')}
             />
+            {typeof user !== 'undefined' &&
+              user &&
+              typeof user.isAdmin !== 'undefined' &&
+              user.isAdmin && (
+                <DrawerItem navDest="Admin" icon="cog" label={t('admin')} />
+              )}
           </View>
         </View>
         <View flex={1} justifyContent="flex-end" pb={insets.bottom}>

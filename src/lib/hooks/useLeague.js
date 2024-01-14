@@ -3,6 +3,15 @@ import {useNetwork} from '~/lib/hooks'
 export const useLeague = () => {
   const {Get, Post} = useNetwork()
 
+  const AddNewSeason = async season => {
+    try {
+      const res = await Get('/admin/season/new')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e.message)
+    }
+  }
   const GetSeason = async () => {
     try {
       const season = await Get('/season')
@@ -126,6 +135,7 @@ export const useLeague = () => {
   }
 
   return {
+    AddNewSeason,
     GetPlayerInfo,
     GetPlayerStats,
     GetPlayerStatsInfo,

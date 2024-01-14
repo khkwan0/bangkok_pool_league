@@ -1,6 +1,6 @@
 import React from 'react'
 import {Button} from 'react-native-paper'
-import {ActivityIndicator, Text, View} from '@ybase'
+import {ActivityIndicator, Pressable, Row, Text, View} from '@ybase'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
@@ -41,6 +41,44 @@ const Frame = props => {
       }
     }
 
+    function HandleChoosePlayer(side, number) {
+      if (props.isLoading || disabled || props.side !== side || !props.side) {
+      } else {
+        props.choosePlayer(
+          props.matchInfo.home_team_id,
+          number,
+          props.frameIdx,
+          props.frame.section,
+          props.frame.mfpp,
+        )
+      }
+    }
+
+    function HandleChooseFrameWin(side, teamId, playerIds) {
+      if (
+        !props.side ||
+        disabled ||
+        props.isLoading ||
+        (props.gameType === 'doubles'
+          ? homePlayerA && homePlayerB && awayPlayerA && awayPlayerB
+            ? false
+            : true
+          : homePlayerA && awayPlayerA
+          ? false
+          : true)
+      ) {
+      } else {
+        props.setWinner(
+          side,
+          teamId,
+          playerIds,
+          props.frameIdx,
+          props.frame.type,
+          props.frame.frameNumber,
+        )
+      }
+    }
+
     return (
       <View
         bgColor={
@@ -52,7 +90,7 @@ const Frame = props => {
         <Text style={{textAlign: 'center'}}>
           {t('frame')} {props.frame.frameNumber}
         </Text>
-        <View style={{flex: 1, flexDirection: 'row', paddingHorizontal: 10}}>
+        <Row px={10}>
           <View
             style={{
               flex: 2,
@@ -61,35 +99,15 @@ const Frame = props => {
               borderRadius: 5,
             }}>
             <Button
-              disabled={props.isLoading || disabled || props.side === 'away'}
               icon={!homePlayerA ? 'plus-circle' : ''}
-              onPress={() =>
-                props.choosePlayer(
-                  props.matchInfo.home_team_id,
-                  0,
-                  props.frameIdx,
-                  props.frame.section,
-                  props.frame.mfpp,
-                )
-              }>
+              onPress={() => HandleChoosePlayer('home', 0)}>
               {homePlayerA ? homePlayerA : 'Player'}
             </Button>
             {props.gameTypes[props.frame.type].no_players === 2 && (
               <View style={{marginTop: 5}}>
                 <Button
-                  disabled={
-                    props.isLoading || disabled || props.side === 'away'
-                  }
                   icon={!homePlayerB ? 'plus-circle' : ''}
-                  onPress={() =>
-                    props.choosePlayer(
-                      props.matchInfo.home_team_id,
-                      1,
-                      props.frameIdx,
-                      props.frame.section,
-                      props.frame.mfpp,
-                    )
-                  }>
+                  onPress={() => HandleChoosePlayer('home', 1)}>
                   {homePlayerB ? homePlayerB : 'Player'}
                 </Button>
               </View>
@@ -101,79 +119,59 @@ const Frame = props => {
                 props.frameIdx % 2 === 1 && <Text>{t('break')}</Text>}
             </View>
           </View>
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingVertical: 10,
-            }}>
+          <View flex={1} alignItems="center" justifyContent="center" py={10}>
             {props.frame.winner === props.matchInfo.home_team_id && (
               <MaterialCommunityIcons name="check" color="green" size={30} />
             )}
             {props.frame.winner !== props.matchInfo.home_team_id && (
-              <Button
-                disabled={
-                  disabled ||
-                  props.isLoading ||
-                  (props.gameType === 'doubles'
-                    ? homePlayerA && homePlayerB && awayPlayerA && awayPlayerB
-                      ? false
-                      : true
-                    : homePlayerA && awayPlayerA
-                    ? false
-                    : true)
-                }
+              <Pressable
                 onPress={() =>
-                  props.setWinner(
+                  HandleChooseFrameWin(
                     'home',
                     props.matchInfo.home_team_id,
                     props.frame.homePlayerIds,
-                    props.frameIdx,
-                    props.frame.type,
-                    props.frame.frameNumber,
                   )
                 }>
-                {t('win')}
-              </Button>
+                {props.frame.winner !== props.matchInfo.home_team_id &&
+                  props.frame.winner !== 0 && (
+                    <MaterialCommunityIcons
+                      name="close-circle-outline"
+                      color="red"
+                      size={30}
+                    />
+                  )}
+                {props.frame.winner === 0 && <Text>win</Text>}
+              </Pressable>
             )}
           </View>
           <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderLeftWidth: 1,
-              paddingVertical: 10,
-            }}>
+            flex={1}
+            alignItems="center"
+            justifyContent="center"
+            borderLeftWidth={1}
+            py={10}>
             {props.frame.winner === props.matchInfo.away_team_id && (
               <MaterialCommunityIcons name="check" color="green" size={30} />
             )}
             {props.frame.winner !== props.matchInfo.away_team_id && (
-              <Button
-                disabled={
-                  disabled ||
-                  props.isLoading ||
-                  (props.gameType === 'doubles'
-                    ? homePlayerA && homePlayerB && awayPlayerA && awayPlayerB
-                      ? false
-                      : true
-                    : homePlayerA && awayPlayerA
-                    ? false
-                    : true)
-                }
+              <Pressable
                 onPress={() =>
-                  props.setWinner(
+                  HandleChooseFrameWin(
                     'away',
                     props.matchInfo.away_team_id,
                     props.frame.awayPlayerIds,
-                    props.frameIdx,
-                    props.frame.type,
-                    props.frame.frameNumber,
                   )
                 }>
-                {t('win')}
-              </Button>
+                {props.frame.winner !== props.matchInfo.away_team_id &&
+                  props.frame.winner !== 0 && (
+                    <MaterialCommunityIcons
+                      name="close-circle-outline"
+                      color="red"
+                      size={30}
+                    />
+                  )}
+                {props.frame.winner === 0 && <Text>win</Text>}
+              </Pressable>
             )}
           </View>
           <View
@@ -184,17 +182,8 @@ const Frame = props => {
               borderRadius: 5,
             }}>
             <Button
-              disabled={props.isLoading || disabled || props.side === 'home'}
               icon={!awayPlayerA ? 'plus-circle' : ''}
-              onPress={() =>
-                props.choosePlayer(
-                  props.matchInfo.away_team_id,
-                  0,
-                  props.frameIdx,
-                  props.frame.section,
-                  props.frame.mfpp,
-                )
-              }>
+              onPress={() => HandleChoosePlayer('away', 0)}>
               {awayPlayerA ? (
                 awayPlayerA
               ) : awayPlayerA === null ? (
@@ -210,15 +199,7 @@ const Frame = props => {
                     props.isLoading || disabled || props.side === 'home'
                   }
                   icon={!awayPlayerB ? 'plus-circle' : ''}
-                  onPress={() =>
-                    props.choosePlayer(
-                      props.matchInfo.away_team_id,
-                      1,
-                      props.frameIdx,
-                      props.frame.section,
-                      props.frame.mfpp,
-                    )
-                  }>
+                  onPress={() => HandleChoosePlayer('away', 1)}>
                   {awayPlayerB ? awayPlayerB : 'Player'}
                 </Button>
               </View>
@@ -230,7 +211,7 @@ const Frame = props => {
                 props.frameIdx % 2 === 1 && <Text>{t('break')}</Text>}
             </View>
           </View>
-        </View>
+        </Row>
       </View>
     )
   } else {

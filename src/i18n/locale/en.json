@@ -62,5 +62,6 @@
   "cancel": "Cancel",
   "add": "Add",
   "no_notes": "No notes",
-  "save": "Save"
+  "save": "Save",
+  "season_number": "Season {n}"
 }

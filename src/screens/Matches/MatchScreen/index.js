@@ -325,14 +325,14 @@ const MatchScreen = props => {
     if (Object.keys(teams).length === 2) {
       if (
         teams[matchInfo.home_team_id].find(
-          player => player.playerId === user.id,
+          player => player.playerId === user?.id,
         )
       ) {
         return 'home'
       }
       if (
         teams[matchInfo.away_team_id].find(
-          player => player.playerId === user.id,
+          player => player.playerId === user?.id,
         )
       ) {
         return 'away'

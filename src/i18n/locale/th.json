@@ -62,5 +62,6 @@
   "cancel": "ยกเลิก",
   "add": "เพิ่ม",
   "no_notes": "ไม่มี",
-  "save": "ไว้"
+  "save": "ไว้",
+  "season_number": "Season {n}"
 }

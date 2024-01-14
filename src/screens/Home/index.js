@@ -1,6 +1,7 @@
 import React from 'react'
 import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import Matches from '@screens/Matches'
+import Admin from '@screens/Settings/Admin'
 import Settings from '@screens/Settings'
 import Calendar from '@screens/Settings/Calendar'
 import Login from '@screens/Auth'
@@ -95,6 +96,11 @@ const Home = props => {
         component={Preferences}
         name="Preferences"
         options={{headerTitle: t('preferences')}}
+      />
+      <HomeStack.Screen
+        component={Admin}
+        name="Admin"
+        options={{headerTitle: t('admin'), headerShown: false}}
       />
       <HomeStack.Screen
         component={Login}
