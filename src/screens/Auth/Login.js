@@ -154,11 +154,6 @@ const Login = props => {
               <View>
                 <View>
                   <View mx={40}>
-                    <Button onPress={() => HandleFacebookLogin()}>
-                      Facebook
-                    </Button>
-                  </View>
-                  <View mx={40} mt={10}>
                     <Pressable
                       onPress={() => HandleLineLogin()}
                       borderRadius={theme.roundness}
@@ -178,6 +173,11 @@ const Login = props => {
                         <View flex={1} />
                       </Row>
                     </Pressable>
+                  </View>
+                  <View mx={40} mt={10}>
+                    <Button onPress={() => HandleFacebookLogin()}>
+                      Facebook
+                    </Button>
                   </View>
                 </View>
               </View>
