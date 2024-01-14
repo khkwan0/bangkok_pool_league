@@ -49,7 +49,7 @@ const Home = props => {
         name="Statistics"
       />
       <HomeStack.Screen
-        options={{headerTitle: t('info_and_guides')}}
+        options={{headerTitle: t('info_and_guides'), headerShown: false}}
         component={Info}
         name="Info"
       />

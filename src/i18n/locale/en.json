@@ -68,5 +68,6 @@
   "password_reset": "Password reset",
   "success": "Success",
   "current_season": "Current season",
-  "check_email_for_code": "An email has been sent to {email} with a reset code.  Please retrieve the code and enter it below and choose a new password."
+  "check_email_for_code": "An email has been sent to {email} with a reset code.  Please retrieve the code and enter it below and choose a new password.",
+  "privacy_policy": "Privacy Policy"
 }

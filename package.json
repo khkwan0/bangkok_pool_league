@@ -33,6 +33,7 @@
     "react-native-safe-area-context": "^4.7.1",
     "react-native-screens": "^3.24.0",
     "react-native-vector-icons": "^10.0.0",
+    "react-native-webview": "^13.6.4",
     "react-redux": "^8.1.2",
     "socket.io-client": "^4.7.2",
     "trie-search": "^1.4.2"
