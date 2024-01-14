@@ -50,7 +50,11 @@ const Auth = props => {
         component={PostRecover}
         options={{headerTitle: t('recover')}}
       />
-      <AuthStack.Screen name="Recover" component={Recover} options={{headerTitle: t('recover')}} />
+      <AuthStack.Screen
+        name="Recover"
+        component={Recover}
+        options={{headerTitle: t('recover')}}
+      />
       <AuthStack.Screen
         name="Recover Verify"
         component={RecoverVerify}
