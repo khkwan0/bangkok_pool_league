@@ -22,20 +22,24 @@ const RecoverVerify = props => {
 
   async function HandleVerify() {
     try {
-      setLoading(true)
-      if (password.length > 5) {
-        if (password === password2) {
-          const res = await account.Verify(recoverCode, password, password2)
-          if (typeof res.status !== 'undefined' && res.status === 'ok') {
-            props.navigation.navigate('Post Recover')
+      if (recoverCode && recoverCode.length > 5) {
+        if (password.length > 5) {
+          if (password === password2) {
+            setLoading(true)
+            const res = await account.Verify(recoverCode, password, password2)
+            if (typeof res.status !== 'undefined' && res.status === 'ok') {
+              props.navigation.navigate('Post Recover')
+            } else {
+              setErr(res.err)
+            }
           } else {
-            setErr(res.err)
+            setErr(t('password_mismatch'))
           }
         } else {
-          setErr(t('password_mismatch'))
+          setErr(t('password_length', {n: 6}))
         }
       } else {
-        setErr(t('password_length', {n: 6}))
+        setErr(t('invalid_code'))
       }
     } catch (e) {
       console.log(e)
@@ -43,6 +47,14 @@ const RecoverVerify = props => {
       setLoading(false)
     }
   }
+
+  React.useEffect(() => {
+    if (password.length > 5) {
+      if (password === password2) {
+        setValid(true)
+      }
+    }
+  }, [password, password2])
 
   return (
     <View flex={1} bgColor={colors.background} px={20}>
