@@ -14,13 +14,15 @@ const PostRecover = props => {
         <Text bold fontSize="xxl" textAlign="center">
           password_reset
         </Text>
-        <MCI name="check-circle" color={colors.green['500']} size={45} />
+        <View alignItems="center">
+          <MCI name="check-circle" color={colors.green['500']} size={120} />
+        </View>
         <Text bold fontSize="xxxl" textAlign="center">
           success
         </Text>
       </View>
       <View flex={1}>
-        <Button>{t('continue')}</Button>
+        <Button onPress={() => props.navigation.navigate('Login')}>{t('continue')}</Button>
       </View>
     </View>
   )
