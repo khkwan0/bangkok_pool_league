@@ -105,7 +105,7 @@ const DrawerContent = props => {
             <Row alignItems="center" pt={insets.top}>
               <View style={{flex: 1, padding: 10}}>
                 <Text variant="titleLarge">{user.nickname}</Text>
-                <Text variant="bodyLarge">{user.id}</Text>
+                <Text variant="bodyLarge">#{user.id}</Text>
               </View>
               <View style={{flex: 1}}>
                 <Image
