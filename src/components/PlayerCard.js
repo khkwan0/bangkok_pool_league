@@ -28,7 +28,16 @@ const PlayerCard = props => {
         <View style={{flexDirection: 'row'}}>
           {(props.player.firstname || props.player.firstName) && (
             <Text variant="bodyLarge">
-              {props.player.firstname ?? props.player.firstName}
+              &nbsp;
+              {props.abbrevFirst
+                ? (props.player.firstname ?? props.player.firstName).substr(
+                    0,
+                    (props.player.firstname ?? props.player.firstName).length >
+                      2
+                      ? 3
+                      : 2,
+                  )
+                : props.player.firstname}
             </Text>
           )}
           {(props.player.lastname || props.player.lastName) && (

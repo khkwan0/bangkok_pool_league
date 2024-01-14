@@ -159,6 +159,7 @@ const Roster = props => {
               handleSelect={HandleSelect}
               frameInfo={props.route.params.frameInfo}
               abbrevLast
+              abbrevFirst
             />
           )
         }}
