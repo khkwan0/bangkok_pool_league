@@ -24,7 +24,6 @@ const Login = props => {
   const [secure, setSecure] = React.useState(true)
   const [password, setPassword] = React.useState('')
   const [loading, setLoading] = React.useState(false)
-  const [showSocial, setShowSocial] = React.useState(false)
   const [lineSuccess, setLineSuccess] = React.useState(false)
   const [err, setErr] = React.useState('')
   const {colors, theme, colorMode} = useYBase()
@@ -154,42 +153,33 @@ const Login = props => {
             <View flex={10}>
               <View>
                 <View>
-                  <Button
-                    variant="ghost"
-                    onPress={() => setShowSocial(s => !s)}>
-                    {t('social_login')}
-                  </Button>
-                </View>
-                {showSocial && (
-                  <View>
-                    <View mx={40}>
-                      <Button onPress={() => HandleFacebookLogin()}>
-                        Facebook
-                      </Button>
-                    </View>
-                    <View mx={40} mt={10}>
-                      <Pressable
-                        onPress={() => HandleLineLogin()}
-                        borderRadius={theme.roundness}
-                        bgColor="#06c755"
-                        py={10}>
-                        <Row alignItems="center" space={30}>
-                          <View flex={1} pl={10}>
-                            <Image
-                              source={require('~/assets/social/line/btn_base.png')}
-                            />
-                          </View>
-                          <View flex={2} alignItems="center">
-                            <Text bold color="#fff" fontSize="xl">
-                              Line
-                            </Text>
-                          </View>
-                          <View flex={1} />
-                        </Row>
-                      </Pressable>
-                    </View>
+                  <View mx={40}>
+                    <Button onPress={() => HandleFacebookLogin()}>
+                      Facebook
+                    </Button>
                   </View>
-                )}
+                  <View mx={40} mt={10}>
+                    <Pressable
+                      onPress={() => HandleLineLogin()}
+                      borderRadius={theme.roundness}
+                      bgColor="#06c755"
+                      py={10}>
+                      <Row alignItems="center" space={30}>
+                        <View flex={1} pl={10}>
+                          <Image
+                            source={require('~/assets/social/line/btn_base.png')}
+                          />
+                        </View>
+                        <View flex={2} alignItems="center">
+                          <Text bold color="#fff" fontSize="xl">
+                            Line
+                          </Text>
+                        </View>
+                        <View flex={1} />
+                      </Row>
+                    </Pressable>
+                  </View>
+                </View>
               </View>
               <View mt={20}>
                 <TextInput
