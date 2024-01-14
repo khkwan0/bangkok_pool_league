@@ -5,10 +5,12 @@ import Upcoming from './Upcoming'
 import Completed from './Completed'
 import {useTranslation} from 'react-i18next'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
+import {useYBase} from '~/lib/hooks'
 
 const Tab = createBottomTabNavigator()
 const Matches = props => {
   const {t} = useTranslation()
+  const {colors, colorMode} = useYBase()
 
   return (
     <Tab.Navigator screenOptions={{headerShown: false}}>
@@ -17,7 +19,11 @@ const Matches = props => {
         component={Upcoming}
         options={{
           title: t('upcoming'),
-          tabBarIcon: () => <MCI name="calendar" size={20} color="black" />,
+          tabBarActiveBackgroundColor: colors.surface,
+          tabBarInactiveBackgroundColor: colors.surface,
+          tabBarIcon: () => (
+            <MCI name="calendar" size={20} color={colors.onSurface} />
+          ),
         }}
       />
       <Tab.Screen
@@ -25,7 +31,11 @@ const Matches = props => {
         component={Completed}
         options={{
           title: t('completed'),
-          tabBarIcon: () => <MCI name="check-circle" size={20} color="black" />,
+          tabBarActiveBackgroundColor: colors.surface,
+          tabBarInactiveBackgroundColor: colors.surface,
+          tabBarIcon: () => (
+            <MCI name="check-circle" size={20} color={colors.onSurface} />
+          ),
         }}
       />
     </Tab.Navigator>

@@ -24,8 +24,6 @@ const Seasons = props => {
     })()
   }, [])
 
-  console.log(season)
-
   return (
     <ScrollView
       contentContainerStyle={{flex: 1, backgroundColor: colors.background}}>

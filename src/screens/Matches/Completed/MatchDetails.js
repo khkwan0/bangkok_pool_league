@@ -1,6 +1,6 @@
 import React from 'react'
 import {FlatList} from 'react-native'
-import {useMatch} from '~/lib/hooks'
+import {useMatch, useYBase} from '~/lib/hooks'
 import FrameDetail from './components/FrameDetail'
 import {Divider, View} from '@ybase'
 
@@ -8,6 +8,7 @@ const MatchDetails = props => {
   const {GetMatchDetails} = useMatch()
   const [matchDetails, setMatchDetails] = React.useState([])
   const [err, setErr] = React.useState('')
+  const {colors} = useYBase()
 
   React.useEffect(() => {
     ;(async () => {
@@ -27,7 +28,9 @@ const MatchDetails = props => {
   return (
     <View>
       <FlatList
+        style={{backgroundColor: colors.surface}}
         data={matchDetails}
+        keyExtractor={(item, idx) => idx}
         renderItem={(item, idx) => <FrameDetail item={item} idx={idx} />}
         ItemSeparatorComponent={<Divider />}
       />

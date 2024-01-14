@@ -45,7 +45,7 @@ export const theme = {
         outline: 'rgb(188, 192, 203)', //neutral-500
         outlineVariant: 'rgb(220, 223, 232)', //neutral-400
 
-        matchCard: '#ddd',
+        matchCardBackground: '#aaa',
 
         shadow: 'rgb(29, 30, 34)', //neutral-900
         scrim: 'rgb(29, 30, 34)', //neutral-900
@@ -154,6 +154,7 @@ export const theme = {
         outline: '#ebeef4', // neutral-300
         outlineVariant: 'rgb(107, 109, 118)', //neutral-600
 
+        matchCardBackground: '#333',
         shadow: 'rgb(29, 30, 34)', //neutral-900
         scrim: 'rgb(29, 30, 34)', //neutral-900
         success: '#3abb70',
