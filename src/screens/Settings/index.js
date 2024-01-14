@@ -81,28 +81,22 @@ const DrawerContent = props => {
             <Text>Build {config.build}</Text>
           </View>
           <View flex={4}>
-            <Row alignItems="center">
-              <View flex={1}>
-                <Text fontSize="md" bold>
-                  Language/ภาษา
-                </Text>
-              </View>
-              <View flex={1} alignItems="flex-end">
-                <Row alignItems="center" space={10}>
-                  <Text>EN</Text>
-                  <Switch
-                    value={lang === 'th' ? true : false}
-                    onChange={() => ToggleLanguage()}
-                  />
-                  <Text>TH</Text>
-                </Row>
-              </View>
+            <Row alignItems="center" justifyContent="flex-end" space={10}>
+              <Text>Language/ภาษา</Text>
+              <Row alignItems="center" space={10}>
+                <Text>EN</Text>
+                <Switch
+                  value={lang === 'th' ? true : false}
+                  onChange={() => ToggleLanguage()}
+                />
+                <Text>TH</Text>
+              </Row>
             </Row>
           </View>
         </Row>
         <View flex={20}>
           {typeof user?.id !== 'undefined' && user.id && (
-            <Row alignItems="center" pt={insets.top}>
+            <Row alignItems="center">
               <View style={{flex: 1, padding: 10}}>
                 <Text variant="titleLarge">{user.nickname}</Text>
                 <Text variant="bodyLarge">#{user.id}</Text>
@@ -118,7 +112,7 @@ const DrawerContent = props => {
               </View>
             </Row>
           )}
-          <View gap={10}>
+          <View gap={20}>
             {(typeof user?.id === 'undefined' || !user.id) && (
               <DrawerItem navDest="Login" icon="login" label={t('login')} />
             )}
