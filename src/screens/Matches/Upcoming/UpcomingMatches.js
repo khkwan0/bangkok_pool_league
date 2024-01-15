@@ -55,13 +55,9 @@ const UpcomingMatches = props => {
     props.navigation.navigate('Match Screen', {matchInfo: fixtures[idx]})
   }
 
-  async function HandleShowAllToggle() {
-
-  }
-
   React.useEffect(() => {
     if (isMounted) {
-      console.log(showMineOnly)
+//      console.log(showMineOnly)
     }
   }, [showMineOnly])
 
@@ -94,12 +90,14 @@ const UpcomingMatches = props => {
                   </View>
                 )}
               {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
-                <BouncyCheckbox
-                  text={t('show_mine_only')}
-                  textStyle={{textDecorationLine: 'none'}}
-                  isChecked={showMineOnly}
-                  onPress={() => setShowMineOnly(s => !s)}
-                />
+                <View my={20}>
+                  <BouncyCheckbox
+                    text={t('show_mine_only')}
+                    textStyle={{textDecorationLine: 'none'}}
+                    isChecked={showMineOnly}
+                    onPress={() => setShowMineOnly(s => !s)}
+                  />
+                </View>
               )}
             </View>
           ) : null
