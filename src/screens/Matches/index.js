@@ -13,7 +13,12 @@ const Matches = props => {
   const {colors, colorMode} = useYBase()
 
   return (
-    <Tab.Navigator screenOptions={{headerShown: false}}>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarLabelStyle: {fontSize: 20},
+        tabBarStyle: {position: 'relative', height: 100},
+      }}>
       <Tab.Screen
         name="Upcoming"
         component={Upcoming}
