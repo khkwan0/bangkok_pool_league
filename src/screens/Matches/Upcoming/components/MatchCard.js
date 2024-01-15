@@ -18,11 +18,14 @@ const MatchCard = props => {
   }
 
   return (
-    <View p={10} bgColor={colors.matchCard} borderRadius={theme.roundness}>
+    <View
+      p={10}
+      bgColor={colors.matchCardBackground}
+      borderRadius={theme.roundness}>
       <Pressable onPress={() => props.handlePress(props.idx)}>
         <View>
           <Text>{props.match.round}</Text>
-          <Text variant="headlineSmall" style={{textAlign: 'center'}}>
+          <Text textAlign="center" bold>
             {props.match.home_team_short_name} {t('vs')}{' '}
             {props.match.away_team_short_name}
           </Text>

@@ -45,7 +45,7 @@ export const theme = {
         outline: 'rgb(188, 192, 203)', //neutral-500
         outlineVariant: 'rgb(220, 223, 232)', //neutral-400
 
-        matchCardBackground: '#aaa',
+        matchCardBackground: '#eee',
 
         shadow: 'rgb(29, 30, 34)', //neutral-900
         scrim: 'rgb(29, 30, 34)', //neutral-900

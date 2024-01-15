@@ -25,7 +25,7 @@ const MatchScreen = props => {
   const insets = useSafeAreaInsets()
   const {t} = useTranslation()
   const [matchInfo] = React.useState(props.route.params.matchInfo)
-  const user = useAppSelector(_state => _state.user)
+  const user = useAppSelector(_state => _state.userData).user
 
   const team = useTeams()
   const season = useSeason()
