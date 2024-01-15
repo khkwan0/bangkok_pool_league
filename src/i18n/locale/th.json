@@ -69,5 +69,7 @@
   "success": "สมบูรณ์",
   "current_season": "ฤดูกาลตอนนี้",
   "check_email_for_code": "ตรวจสอบอีเมลเพื่อดูรหัส",
-  "privacy_policy": "นโยบายความเป็นส่วนตัว"
+  "privacy_policy": "นโยบายความเป็นส่วนตัว",
+  "admin": "ผู้ดูแลระบบ",
+  "show_mine_only": "เกมของฉัน"
 }
