@@ -83,6 +83,9 @@ const Preferences = props => {
             </Row>
           </View>
         </Row>
+        <Row>
+          <Pressable><Text>delete_account</Text></Pressable>
+        </Row>
       </View>
     )
   } else {

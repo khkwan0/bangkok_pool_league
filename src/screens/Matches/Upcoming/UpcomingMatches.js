@@ -34,9 +34,7 @@ const UpcomingMatches = props => {
         query.push('noteam=true')
       }
       query.push('newonly=true')
-      console.log(query)
       const matches = await season.GetMatches(query)
-      console.log(matches)
       setFixtures(matches)
       const _season = await league.GetSeason()
       dispatch(SetSeason(_season))
