@@ -6,6 +6,7 @@ import {useAccount, useYBase} from '~/lib/hooks'
 import LineLogin from '@xmartlabs/react-native-line'
 import LineSuccess from './LineSuccess'
 import {Settings, LoginManager, AccessToken} from 'react-native-fbsdk-next'
+import {AppleButton} from '@invertase/react-native-apple-authentication'
 /*
 import {
   GoogleSignin,
@@ -189,6 +190,8 @@ const Login = props => {
                     <Button onPress={() => HandleFacebookLogin()}>
                       Facebook
                     </Button>
+                  </View>
+                  <View>
                   </View>
                 </View>
               </View>
