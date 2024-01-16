@@ -71,5 +71,6 @@
   "check_email_for_code": "An email has been sent to {email} with a reset code.  Please retrieve the code and enter it below and choose a new password.",
   "privacy_policy": "Privacy Policy",
   "admin": "Admin",
-  "show_mine_only": "Only my Matches"
+  "show_mine_only": "Only my Matches",
+  "invalid_creds": "Invalid credentials"
 }

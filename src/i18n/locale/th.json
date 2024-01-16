@@ -71,5 +71,6 @@
   "check_email_for_code": "ตรวจสอบอีเมลเพื่อดูรหัส",
   "privacy_policy": "นโยบายความเป็นส่วนตัว",
   "admin": "ผู้ดูแลระบบ",
-  "show_mine_only": "เกมของฉัน"
+  "show_mine_only": "เกมของฉัน",
+  "invalid_creds": "ข้อมูลประจำตัวไม่ดี"
 }
