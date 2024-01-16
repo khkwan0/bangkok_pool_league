@@ -70,10 +70,12 @@ export const useAccount = () => {
     }
   }
 
-  async function Logout() {
+  async function Logout(network = true) {
     await AsyncStorage.removeItem('user')
     dispatch(ClearUser())
-    await Get('/logout')
+    if (network) {
+      await Get('/logout')
+    }
     await AsyncStorage.removeItem('jwt')
   }
 
@@ -140,6 +142,16 @@ export const useAccount = () => {
     }
   }
 
+  async function DeleteAccount() {
+    try {
+      const res = await Get('/account/delete')
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   return {
     FetchUser,
     LoadUser,
@@ -150,5 +162,6 @@ export const useAccount = () => {
     Register,
     Recover,
     Verify,
+    DeleteAccount,
   }
 }

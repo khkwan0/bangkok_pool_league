@@ -13,16 +13,24 @@ export const Button = props => {
   const {theme, colorMode} = React.useContext(YBaseContext)
   const {colors} = useYBase()
   const isGhost = props.variant?.toLowerCase() === 'ghost'
-  const backgroundColor = props.bgColor ?? colors.primary
+  const isOutline = props.variant?.toLowerCase() === 'outline'
+  const backgroundColor = isOutline
+    ? colors.transparent
+    : props.bgColor ?? colors.primary
   const disabledBackgroundColor = colors.onSurfaceDisabled
   const disabledColor = theme.onSurfaceDisabled
   const ghostPressedColor = '#f00'
   const ghostUnpressedColor = colors.onSurface
   const pressedBackgroundColor = '#007'
-  const pressedColor = isGhost
+  const outlinePressedColor = colors.transparent
+  const pressedColor = isOutline
+    ? outlinePressedColor
+    : isGhost
     ? ghostPressedColor
     : props.style?.color ?? '#6d83cf'
-  const unpressedColor = isGhost
+  const unpressedColor = isOutline
+    ? colors.transparent
+    : isGhost
     ? colorMode === 'dark'
       ? colors.onSurface
       : ghostUnpressedColor
@@ -32,7 +40,7 @@ export const Button = props => {
 
   return (
     <Pressable
-      borderWidth={props.borderWidth ?? 0}
+      borderWidth={isOutline ? 1 : props.borderWidth ?? 0}
       disabled={props.disabled}
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}

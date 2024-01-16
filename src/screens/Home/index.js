@@ -8,6 +8,7 @@ import Login from '@screens/Auth'
 import Account from '@screens/Settings/Account'
 import Divisions from '@screens/Settings/Divisions'
 import Teams from '@screens/Settings/Teams'
+import DeleteAccount from '@screens/Settings/DeleteAccount'
 import Venues from '@screens/Settings/Venues'
 import Players from '@screens/Settings/Players'
 import Seasons from '@screens/Settings/Seasons'
@@ -111,6 +112,11 @@ const Home = props => {
       <HomeStack.Screen
         component={LineSuccess}
         name="LineSuccess"
+        options={{headerShown: false}}
+      />
+      <HomeStack.Screen
+        component={DeleteAccount}
+        name="Delete Account"
         options={{headerShown: false}}
       />
     </HomeStack.Navigator>

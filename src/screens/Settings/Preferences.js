@@ -1,5 +1,5 @@
 import React from 'react'
-import {Row, Switch, Text, View} from '@ybase'
+import {Pressable, Row, Switch, Text, View} from '@ybase'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
@@ -83,9 +83,18 @@ const Preferences = props => {
             </Row>
           </View>
         </Row>
-        <Row>
-          <Pressable><Text>delete_account</Text></Pressable>
-        </Row>
+        <Pressable onPress={() => props.navigation.navigate('Delete Account')}>
+          <Row alignItesm="center" mt={20}>
+            <View flex={1}>
+              <Text color={colors.error} fontSize="lg" bold>
+                delete_account
+              </Text>
+            </View>
+            <View flex={1} alignItems="flex-end">
+              <MCI name="chevron-right" color={colors.error} size={30} />
+            </View>
+          </Row>
+        </Pressable>
       </View>
     )
   } else {
