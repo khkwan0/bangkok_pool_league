@@ -7,6 +7,7 @@ import LineLogin from '@xmartlabs/react-native-line'
 import LineSuccess from './LineSuccess'
 import {Settings, LoginManager, AccessToken} from 'react-native-fbsdk-next'
 import {AppleButton} from '@invertase/react-native-apple-authentication'
+import {Platform} from 'react-native'
 /*
 import {
   GoogleSignin,
@@ -138,6 +139,8 @@ const Login = props => {
     }
   }
 
+  async function HandleAppleSignIn() {}
+
   if (lineSuccess) {
     return <LineSuccess />
   } else {
@@ -191,8 +194,16 @@ const Login = props => {
                       Facebook
                     </Button>
                   </View>
-                  <View>
-                  </View>
+                  {Platform.OS !== 'android' && (
+                    <View mx={40} mt={10}>
+                      <AppleButton
+                        buttonStyle={AppleButton.Style.WHITE}
+                        buttonType={AppleButton.Type.SIGN_IN}
+                        style={{width: 160, height: 56}}
+                        onPress={() => HandleAppleSignIn()}
+                      />
+                    </View>
+                  )}
                 </View>
               </View>
               <View mt={20}>
