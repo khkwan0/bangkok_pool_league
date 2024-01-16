@@ -197,7 +197,11 @@ const Login = props => {
                   {Platform.OS !== 'android' && (
                     <View mx={40} mt={10}>
                       <AppleButton
-                        buttonStyle={AppleButton.Style.WHITE}
+                        buttonStyle={
+                          colorMode === 'dark'
+                            ? AppleButton.Style.WHITE
+                            : AppleButton.Style.BLACK
+                        }
                         buttonType={AppleButton.Type.SIGN_IN}
                         style={{width: 160, height: 56}}
                         onPress={() => HandleAppleSignIn()}
