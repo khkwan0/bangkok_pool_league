@@ -225,7 +225,7 @@ const Login = props => {
                             : AppleButton.Style.BLACK
                         }
                         buttonType={AppleButton.Type.SIGN_IN}
-                        style={{width: width * 0.8, height: 56}}
+                        style={{width: width * 0.72, height: 56}}
                         onPress={() => HandleAppleSignIn()}
                       />
                     </View>
