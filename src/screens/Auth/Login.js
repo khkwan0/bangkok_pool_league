@@ -91,7 +91,6 @@ const Login = props => {
         setErr('')
         setLoading(true)
         const res = await UserLogin(email, password)
-        console.log(res)
         if (typeof res.status !== 'undefined' && res.status === 'ok') {
           if (typeof props.route.params?.previous !== 'undefined') {
             props.navigation.navigate(props.route?.params?.previous)
@@ -159,8 +158,18 @@ const Login = props => {
 
       // use credentialState response to ensure the user is authenticated
       if (credentialState === appleAuth.State.AUTHORIZED) {
-        console.log('authenticated')
-        // user is authenticated
+        const res = await SocialLogin('apple', appleAuthRequestResponse)
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          if (typeof props.route.params?.previous !== 'undefined') {
+            props.navigation.navigate(props.route?.params?.previous)
+          } else {
+            props.navigation.goBack()
+          }
+        } else {
+          if (typeof res.status !== 'undefined' && res.status === 'error') {
+            setErr(res.error)
+          }
+        }
       }
     } catch (e) {
       console.log(e)

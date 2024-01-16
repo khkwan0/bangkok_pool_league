@@ -174,7 +174,7 @@ const DrawerContent = props => {
             {typeof user !== 'undefined' &&
               user &&
               typeof user.role_id !== 'undefined' &&
-              user.role_id === 3 && (
+              user.role_id === 9 && (
                 <DrawerItem navDest="Admin" icon="cog" label={t('admin')} />
               )}
           </View>

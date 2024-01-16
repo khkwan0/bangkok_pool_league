@@ -5,12 +5,14 @@ import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
 import Feather from 'react-native-vector-icons/Feather'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
+import {useSelector} from 'react-redux'
 
 const Preferences = props => {
   const [lang, setLang] = React.useState('en')
   const [isMounted, setIsMounted] = React.useState(false)
   const {i18n} = useTranslation()
   const {colors, colorMode, setColorMode} = useYBase()
+  const user = useSelector(_state => _state.userData).user
 
   React.useEffect(() => {
     ;(async () => {
@@ -83,18 +85,21 @@ const Preferences = props => {
             </Row>
           </View>
         </Row>
-        <Pressable onPress={() => props.navigation.navigate('Delete Account')}>
-          <Row alignItesm="center" mt={20}>
-            <View flex={1}>
-              <Text color={colors.error} fontSize="lg" bold>
-                delete_account
-              </Text>
-            </View>
-            <View flex={1} alignItems="flex-end">
-              <MCI name="chevron-right" color={colors.error} size={30} />
-            </View>
-          </Row>
-        </Pressable>
+        {typeof user.id !== 'undefined' && (
+          <Pressable
+            onPress={() => props.navigation.navigate('Delete Account')}>
+            <Row alignItesm="center" mt={20}>
+              <View flex={1}>
+                <Text color={colors.error} fontSize="lg" bold>
+                  delete_account
+                </Text>
+              </View>
+              <View flex={1} alignItems="flex-end">
+                <MCI name="chevron-right" color={colors.error} size={30} />
+              </View>
+            </Row>
+          </Pressable>
+        )}
       </View>
     )
   } else {

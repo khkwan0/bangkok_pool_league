@@ -14,14 +14,12 @@ const DeleteAccountHome = props => {
     try {
       setErr('')
       setLoading(true)
-      /*
       const res = await account.DeleteAccount()
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
         props.navigation.navigate('Delete Success')
       } else {
         setErr(res.error)
       }
-      */
       props.navigation.navigate('Delete Success')
     } catch (e) {
       setErr('server_error')
