@@ -8,6 +8,7 @@ import LineSuccess from './LineSuccess'
 import {Settings, LoginManager, AccessToken} from 'react-native-fbsdk-next'
 import {AppleButton} from '@invertase/react-native-apple-authentication'
 import {Platform} from 'react-native'
+import {useWindowDimensions} from 'react-native'
 /*
 import {
   GoogleSignin,
@@ -31,6 +32,7 @@ const Login = props => {
   const {colors, theme, colorMode} = useYBase()
   const {t} = useTranslation()
   const insets = useSafeAreaInsets()
+  const {width} = useWindowDimensions()
 
   React.useEffect(() => {
     Settings.initializeSDK()
@@ -203,7 +205,7 @@ const Login = props => {
                             : AppleButton.Style.BLACK
                         }
                         buttonType={AppleButton.Type.SIGN_IN}
-                        style={{width: 160, height: 56}}
+                        style={{width: width * 0.8, height: 56}}
                         onPress={() => HandleAppleSignIn()}
                       />
                     </View>
