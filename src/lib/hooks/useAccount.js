@@ -43,23 +43,26 @@ export const useAccount = () => {
 
   async function UserLogin(email, password) {
     try {
-      const res = await Post('/login', {email, password}, false)
-      console.log(res)
-      /*
-      const res = {
-        email: 'khkwan0@gmail.com',
-        id: 1,
-        token: 'asd',
-        firstName: 'Kenneth',
-        lastName: 'K',
-      }
-  const user = useAppSelector
-      */
-      if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        if (typeof res.data !== 'undefined' && res.data) {
-          await AsyncStorage.setItem('jwt', res.data.token)
-          dispatch(SetUser(res.data.user))
-          return {status: 'ok'}
+      if (email && password) {
+        const res = await Post('/login', {email, password}, false)
+        /*
+        const res = {
+          email: 'khkwan0@gmail.com',
+          id: 1,
+          token: 'asd',
+          firstName: 'Kenneth',
+          lastName: 'K',
+        }
+    const user = useAppSelector
+        */
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          if (typeof res.data !== 'undefined' && res.data) {
+            await AsyncStorage.setItem('jwt', res.data.token)
+            dispatch(SetUser(res.data.user))
+            return {status: 'ok'}
+          }
+        } else {
+          return res
         }
       }
     } catch (e) {

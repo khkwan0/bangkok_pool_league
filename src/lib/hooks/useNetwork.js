@@ -48,7 +48,7 @@ export const useNetwork = () => {
       return json
     } catch (e) {
       console.log('POST ' + endpoint, JSON.stringify(payload, null, 2), e)
-      return {}
+      return {status: 'error', error: 'server_error'}
     }
   }
 

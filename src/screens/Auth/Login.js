@@ -61,6 +61,10 @@ const Login = props => {
         } else {
           props.navigation.goBack()
         }
+      } else {
+        if (res.status === 'error' && res.error) {
+          setErr(res.error)
+        }
       }
     }
   }
@@ -78,14 +82,21 @@ const Login = props => {
 
   async function AttemptLogin() {
     try {
-      setErr('')
-      setLoading(true)
-      const res = await UserLogin(email, password)
-      if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        if (typeof props.route.params?.previous !== 'undefined') {
-          props.navigation.navigate(props.route?.params?.previous)
+      if (email && password) {
+        setErr('')
+        setLoading(true)
+        const res = await UserLogin(email, password)
+        console.log(res)
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          if (typeof props.route.params?.previous !== 'undefined') {
+            props.navigation.navigate(props.route?.params?.previous)
+          } else {
+            props.navigation.goBack()
+          }
         } else {
-          props.navigation.goBack()
+          if (typeof res.status !== 'undefined' && res.status === 'error') {
+            setErr(res.error)
+          }
         }
       }
     } catch (e) {
@@ -222,12 +233,19 @@ const Login = props => {
                 <View>
                   <Button
                     loading={loading}
-                    disabled={loading}
+                    disabled={loading || !email || !password}
                     onPress={() => AttemptLogin()}>
                     {t('login')}
                   </Button>
                 </View>
               </View>
+              {err && (
+                <View mt={10}>
+                  <Text textAlign="center" color={colors.error}>
+                    {t(err)}
+                  </Text>
+                </View>
+              )}
               <View>
                 <Button
                   variant="ghost"
