@@ -17,7 +17,7 @@ const Matches = props => {
       screenOptions={{
         headerShown: false,
         tabBarLabelStyle: {fontSize: 20},
-        tabBarStyle: {position: 'relative', height: 100},
+        tabBarStyle: {height: 50},
       }}>
       <Tab.Screen
         name="Upcoming"
