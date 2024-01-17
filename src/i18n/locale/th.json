@@ -72,5 +72,11 @@
   "privacy_policy": "นโยบายความเป็นส่วนตัว",
   "admin": "ผู้ดูแลระบบ",
   "show_mine_only": "เกมของฉัน",
-  "invalid_creds": "ข้อมูลประจำตัวไม่ดี"
+  "invalid_creds": "ข้อมูลประจำตัวไม่ดี",
+  "delete_account": "ลบบัญชี",
+  "delete": "ลบ",
+  "confirm_delete_account": "คุณแน่ใจไหม",
+  "active": "คล่องแคล่ว",
+  "inactive": "ไม่ได้ใช้งาน",
+  "activate": "เปิดใช้งาน"
 }

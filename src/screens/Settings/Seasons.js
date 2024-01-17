@@ -14,8 +14,9 @@ const Seasons = props => {
   React.useEffect(() => {
     ;(async () => {
       try {
-        const res = await league.GetSeason()
-        setSeason(res)
+        const res = await league.GetSeasonV2()
+        console.log(res[0])
+        setSeason(res[0])
       } catch (e) {
         console.log(e)
       }
@@ -38,7 +39,7 @@ const Seasons = props => {
             current_season
           </Text>
           <Text textAlign="center" bold fontSize={84}>
-            {season}
+            {season.id}
           </Text>
         </View>
         <View flex={1} />

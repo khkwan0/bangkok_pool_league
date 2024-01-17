@@ -75,5 +75,8 @@
   "invalid_creds": "Invalid credentials",
   "delete_account": "Delete Account",
   "delete": "Delete",
-  "confirm_delete_account": "Are you sure you want to delete your account?  All your data will be lost."
+  "confirm_delete_account": "Are you sure you want to delete your account?  All your data will be lost.",
+  "active": "Active",
+  "inactive": "Inactive",
+  "activate": "Activate"
 }

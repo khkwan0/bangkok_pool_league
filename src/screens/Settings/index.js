@@ -18,10 +18,12 @@ const DrawerItem = ({navDest, icon, label, as}) => {
   return (
     <Pressable onPress={() => navigation.navigate(navDest)}>
       <Row alignItems="center">
-        <Row flex={1} space={20}>
-          <Icon name={icon} as={as} color={colors.onSurface} />
-          <Text fontSize="lg">{label}</Text>
-        </Row>
+        <View flex={1}>
+          <Row space={20}>
+            <Icon name={icon} as={as} color={colors.onSurface} />
+            <Text fontSize="lg">{label}</Text>
+          </Row>
+        </View>
         <View flex={1} alignItems="flex-end">
           <MCI name="chevron-right" size={30} color={colors.onSurface} />
         </View>
@@ -118,6 +120,12 @@ const DrawerContent = props => {
             {(typeof user?.id === 'undefined' || !user.id) && (
               <DrawerItem navDest="Login" icon="login" label={t('login')} />
             )}
+            {typeof user !== 'undefined' &&
+              user &&
+              typeof user.role_id !== 'undefined' &&
+              user.role_id === 9 && (
+                <DrawerItem navDest="Admin" icon="controller-classic-outline" label={t('admin')} />
+              )}
             <DrawerItem
               navDest="Seasons"
               icon="leaf-circle-outline"
@@ -171,12 +179,6 @@ const DrawerContent = props => {
               icon="cog"
               label={t('preferences')}
             />
-            {typeof user !== 'undefined' &&
-              user &&
-              typeof user.role_id !== 'undefined' &&
-              user.role_id === 9 && (
-                <DrawerItem navDest="Admin" icon="cog" label={t('admin')} />
-              )}
           </View>
         </View>
         <View flex={1} justifyContent="flex-end" pb={insets.bottom} mt={30}>

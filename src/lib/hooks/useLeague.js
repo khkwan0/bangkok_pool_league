@@ -3,10 +3,18 @@ import {useNetwork} from '~/lib/hooks'
 export const useLeague = () => {
   const {Get, Post} = useNetwork()
 
-  const AddNewSeason = async season => {
+  const AddNewSeason = async (name = '', shortName = '', description = '') => {
     try {
-      const res = await Get('/admin/season/new')
-      return res
+      if (name && shortName) {
+        const res = await Post('/admin/season/new', {
+          name,
+          shortName,
+          description,
+        })
+        return res
+      } else {
+        return {status: 'error', error: 'invalid_parameters'}
+      }
     } catch (e) {
       console.log(e)
       throw new Error(e.message)
@@ -18,6 +26,24 @@ export const useLeague = () => {
       return season.season
     } catch (e) {
       console.log('no season')
+    }
+  }
+
+  const GetSeasonV2 = async () => {
+    try {
+      const season = await Get('/v2/season')
+      return season
+    } catch (e) {
+      console.log('no season')
+    }
+  }
+
+  const GetSeasons = async () => {
+    try {
+      const seasons = await Get('/seasons')
+      return seasons
+    } catch (e) {
+      console.log(e)
     }
   }
 
@@ -124,6 +150,15 @@ export const useLeague = () => {
     }
   }
 
+  const GetTeamsBySeason = async season => {
+    try {
+      const res = await Get('/teams/' + season)
+      return res
+    } catch (e) {
+      return []
+    }
+  }
+
   const GetTeamInfo = async teamId => {
     try {
       const res = await Get('/team/' + teamId)
@@ -141,8 +176,11 @@ export const useLeague = () => {
     GetPlayerStatsInfo,
     GetPlayers,
     GetSeason,
+    GetSeasonV2,
     GetStandings,
+    GetSeasons,
     GetTeams,
+    GetTeamsBySeason,
     GetTeamInfo,
     GetTeamStats,
     GetVenues,

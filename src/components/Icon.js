@@ -3,7 +3,7 @@ import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
 const Icon = ({as, name, size, color}) => {
-  const _size = size ?? 30
+  const _size = size ?? 20
   const _color = color ?? '#000'
   if (
     (typeof as !== 'undefined' && as === 'MaterialCommunityIcons') ||

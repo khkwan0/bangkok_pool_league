@@ -1,29 +1,80 @@
 import React from 'react'
-import {Button, Pressable, Row, ScrollView, Text, View} from '@ybase'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {ActivityIndicator, Button, Row, Text, View} from '@ybase'
 import {useTranslation} from 'react-i18next'
-import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useLeague, useYBase} from '~/lib/hooks'
+import {FlatList} from 'react-native'
+import AddSeason from './components/AddSeason'
+
+const Season = props => {
+  const {colors} = useYBase()
+  const {t} = useTranslation()
+  const season = props.item
+  return (
+    <Row alignItems="center" py={5}>
+      <View flex={1}>
+        <Text>Season {season.identifier ? season.identifier : season.id}</Text>
+        <Text>{season.name}</Text>
+      </View>
+      <View flex={1}>
+        {season.status_id === 1 ? (
+          <Text fontSize="xl" color={colors.success} bold>
+            {t('active').toUpperCase()}
+          </Text>
+        ) : (
+          <Text>inactive</Text>
+        )}
+      </View>
+      {season.status_id !== 1 && (
+        <View flex={1}>
+          <Button variant="ghost" onPress={() => props.active(props.idx)}>
+            {t('activate')}
+          </Button>
+        </View>
+      )}
+      {season.status_id === 1 && <View flex={1} />}
+    </Row>
+  )
+}
 
 const Seasons = props => {
-  const {colors} = useYBase()
   const league = useLeague()
-  const {t} = useTranslation()
-  const [season, setSeason] = React.useState(-1)
-  const insets = useSafeAreaInsets()
+  const [seasons, setSeasons] = React.useState([])
+  const [loading, setLoading] = React.useState(false)
 
-  React.useEffect(() => {
-    ;(async () => {
-      try {
-        const res = await league.GetSeason()
-        console.log('here', res)
-        setSeason(res)
-      } catch (e) {
-        console.log(e)
+  async function GetSeasons() {
+    try {
+      setLoading(true)
+      const res = await league.GetSeasons()
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        setSeasons(res.data.sort((a, b) => b.sortorder - a.sortorder))
       }
-    })()
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+  React.useEffect(() => {
+    GetSeasons()
   }, [])
 
+  return (
+    <View flex={1} px={20}>
+      <AddSeason refresh={GetSeasons} />
+      {loading && (
+        <View flex={1} alignitems="center" justifyContent="center">
+          <ActivityIndicator />
+        </View>
+      )}
+      {!loading && (
+        <FlatList
+          renderItem={({item, idx}) => <Season item={item} idx={idx} />}
+          data={seasons}
+        />
+      )}
+    </View>
+  )
+  /*
   return (
     <ScrollView
       contentContainerStyle={{flex: 1, backgroundColor: colors.background}}>
@@ -47,6 +98,7 @@ const Seasons = props => {
       </View>
     </ScrollView>
   )
+  */
 }
 
 export default Seasons

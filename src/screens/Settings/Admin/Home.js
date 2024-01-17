@@ -17,7 +17,7 @@ const Home = props => {
             <View flex={1}>
               <Text>teams</Text>
             </View>
-            <View flex={1}>
+            <View flex={1} alignItems="flex-end">
               <MCI name="chevron-right" size={30} color={colors.onSurface} />
             </View>
           </Row>
@@ -27,7 +27,7 @@ const Home = props => {
             <View flex={1}>
               <Text>seasons</Text>
             </View>
-            <View flex={1}>
+            <View flex={1} alignItems="flex-end">
               <MCI name="chevron-right" size={30} color={colors.onSurface} />
             </View>
           </Row>
