@@ -5,7 +5,7 @@ import Roster from '@screens/Matches/Roster'
 import ExtendedMatchInfo from '@screens/Matches/ExtendedMatchInfo'
 import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import {createStackNavigator} from '@react-navigation/stack'
-import {View} from 'react-native'
+import {View} from '@ybase'
 import SettingsIcon from '@components/SettingsIcon'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
@@ -18,7 +18,7 @@ const Matches = props => {
   const {colors} = useYBase()
 
   return (
-    <View style={{flex: 1}}>
+    <View flex={1} bgColor={colors.backgroundColor}>
       <MatchStack.Navigator
         screenOptions={{
           headerStyle: {backgroundColor: colors.headerBackground},
@@ -26,6 +26,8 @@ const Matches = props => {
           headerRight: SettingsIcon,
           headerTitleAlign: 'center',
           headerTitle: t('completed_matches'),
+          headerTintColor: colors.onHeaderBackground,
+          cardStyle: {backgroundColor: colors.background},
         }}>
         <MatchStack.Screen
           name="Upcoming Matches"

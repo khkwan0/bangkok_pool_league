@@ -84,11 +84,22 @@ export const useSeason = () => {
     }
   }
 
+  const GetCompletedMatchesBySeason = async season => {
+    try {
+      const res = await Get('/matches/completed/season/' + season)
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
   return {
     GetDoublesStats,
     GetMatchPerformance,
     GetMatchStats,
     GetMatches,
+    GetCompletedMatchesBySeason,
     GetMatchesBySeason,
     GetPlayerStats,
     GetTeams,

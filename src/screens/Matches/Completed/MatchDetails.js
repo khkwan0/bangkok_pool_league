@@ -30,7 +30,7 @@ const MatchDetails = props => {
       <FlatList
         style={{backgroundColor: colors.surface}}
         data={matchDetails}
-        keyExtractor={(item, idx) => idx}
+        keyExtractor={(item, idx) => 'asdasd' + idx}
         renderItem={(item, idx) => <FrameDetail item={item} idx={idx} />}
         ItemSeparatorComponent={<Divider />}
       />

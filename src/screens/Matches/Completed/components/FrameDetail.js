@@ -11,14 +11,14 @@ const FrameDetails = props => {
 
   const isAdmin = user.role_id === 9 ? true : true
   return (
-    <View my={10} px={20}>
+    <View my={10} px={20} key={'complete_frame_detail' + props.idx}>
       <Row alignItems="center">
         <View flex={1}>
           {homePlayers.map((player, idx) => (
-            <>
+            <View key={'home_compelted' + idx}>
               {idx !== 0 && <Text>and</Text>}
               <Text bold>{player.nickName}</Text>
-            </>
+            </View>
           ))}
         </View>
         <View flex={1} justifyContent="center" alignItems="center">
@@ -42,10 +42,10 @@ const FrameDetails = props => {
         </View>
         <View flex={1} alignItems="flex-end">
           {awayPlayers.map((player, idx) => (
-            <>
+            <View key={'away_completed' + idx}>
               {idx !== 0 && <Text>and</Text>}
               <Text bold>{player.nickName}</Text>
-            </>
+            </View>
           ))}
         </View>
       </Row>
