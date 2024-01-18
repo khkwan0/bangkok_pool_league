@@ -78,5 +78,10 @@
   "confirm_delete_account": "Are you sure you want to delete your account?  All your data will be lost.",
   "active": "Active",
   "inactive": "Inactive",
-  "activate": "Activate"
+  "activate": "Activate",
+  "season": "Season",
+  "add_new_team": "Add new team",
+  "team_name": "Team name",
+  "choose_a_venue": "Choose a venue",
+  "add_new_venue": "Add new venue"
 }

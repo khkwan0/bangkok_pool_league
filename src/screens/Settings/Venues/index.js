@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react'
-import {createNativeStackNavigator} from '@react-navigation/native-stack'
+// import {createNativeStackNavigator} from '@react-navigation/native-stack'
+import {createStackNavigator} from '@react-navigation/stack'
 import VenuesHome from './VenuesHome'
 import Venue from './Venue'
 import Team from './Team'
@@ -8,7 +9,8 @@ import Player from './Player'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
 
-const VenueStack = createNativeStackNavigator()
+// const VenueStack = createNativeStackNavigator()
+const VenueStack = createStackNavigator()
 
 const VenuesNav = props => {
   const {colors} = useYBase()

@@ -53,7 +53,7 @@ export const Button = props => {
             paddingVertical: props.py ?? 18,
             paddingHorizontal: props.px ?? 18,
             borderRadius: theme.roundness,
-            borderColor: props.borderColor ?? '',
+            borderColor: isOutline ? colors.outline : props.borderColor ?? '',
           },
           {
             backgroundColor: isGhost

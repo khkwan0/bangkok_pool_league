@@ -11,21 +11,57 @@ const Home = props => {
   return (
     <ScrollView
       contentContainerStyle={{flex: 1, backgroundColor: colors.background}}>
-      <View flex={1} px={20}>
-        <Pressable onPress={() => props.navigation.navigate('admin_teams')}>
+      <View flex={1} px={20} my={20}>
+        <Pressable
+          onPress={() => props.navigation.navigate('admin_teams')}
+          my={20}>
           <Row alignItems="center">
             <View flex={1}>
-              <Text>teams</Text>
+              <Text bold fontSize="xxl">
+                teams
+              </Text>
             </View>
             <View flex={1} alignItems="flex-end">
               <MCI name="chevron-right" size={30} color={colors.onSurface} />
             </View>
           </Row>
         </Pressable>
-        <Pressable onPress={() => props.navigation.navigate('admin_seasons')}>
+        <Pressable
+          onPress={() => props.navigation.navigate('admin_divisions')}
+          my={20}>
           <Row alignItems="center">
             <View flex={1}>
-              <Text>seasons</Text>
+              <Text bold fontSize="xxl">
+                divisions
+              </Text>
+            </View>
+            <View flex={1} alignItems="flex-end">
+              <MCI name="chevron-right" size={30} color={colors.onSurface} />
+            </View>
+          </Row>
+        </Pressable>
+        <Pressable
+          onPress={() => props.navigation.navigate('admin_seasons')}
+          my={20}>
+          <Row alignItems="center">
+            <View flex={1}>
+              <Text bold fontSize="xxl">
+                seasons
+              </Text>
+            </View>
+            <View flex={1} alignItems="flex-end">
+              <MCI name="chevron-right" size={30} color={colors.onSurface} />
+            </View>
+          </Row>
+        </Pressable>
+        <Pressable
+          onPress={() => props.navigation.navigate('admin_team_migrations')}
+          my={20}>
+          <Row alignItems="center">
+            <View flex={1}>
+              <Text bold fontSize="xxl">
+                team migrations
+              </Text>
             </View>
             <View flex={1} alignItems="flex-end">
               <MCI name="chevron-right" size={30} color={colors.onSurface} />

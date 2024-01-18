@@ -46,7 +46,7 @@ const Seasons = props => {
       </View>
     )
   } else {
-    return null
+    return <View flex={1} bgColor={colors.background} />
   }
 }
 

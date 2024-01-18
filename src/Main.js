@@ -5,13 +5,14 @@ import {useAccount, useLeague, useYBase} from '~/lib/hooks'
 import '~/i18n'
 import {useTranslation} from 'react-i18next'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import {View} from '@ybase'
 
 const Main = props => {
   const account = useAccount()
   const league = useLeague()
   const [isMounted, setIsMounted] = React.useState(false)
   const {i18n} = useTranslation()
-  const {setColorMode} = useYBase()
+  const {colors, setColorMode} = useYBase()
 
   React.useEffect(() => {
     account.FetchUser()
@@ -37,7 +38,11 @@ const Main = props => {
     return () => setIsMounted(false)
   }, [])
 
-  return <Home />
+  return (
+    <View flex={1} bgColor={colors.background}>
+      <Home />
+    </View>
+  )
 
   /*
   if (drawerOnly) {

@@ -124,7 +124,11 @@ const DrawerContent = props => {
               user &&
               typeof user.role_id !== 'undefined' &&
               user.role_id === 9 && (
-                <DrawerItem navDest="Admin" icon="controller-classic-outline" label={t('admin')} />
+                <DrawerItem
+                  navDest="Admin"
+                  icon="controller-classic-outline"
+                  label={t('admin')}
+                />
               )}
             <DrawerItem
               navDest="Seasons"

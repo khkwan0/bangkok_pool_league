@@ -9,6 +9,7 @@ const Season = props => {
   const {colors} = useYBase()
   const {t} = useTranslation()
   const season = props.item
+
   return (
     <Row alignItems="center" py={5}>
       <View flex={1}>
@@ -26,7 +27,10 @@ const Season = props => {
       </View>
       {season.status_id !== 1 && (
         <View flex={1}>
-          <Button variant="ghost" onPress={() => props.active(props.idx)}>
+          <Button
+            variant="ghost"
+            loading={props.loading}
+            onPress={() => props.activate(props.idx)}>
             {t('activate')}
           </Button>
         </View>
@@ -39,7 +43,9 @@ const Season = props => {
 const Seasons = props => {
   const league = useLeague()
   const [seasons, setSeasons] = React.useState([])
+  const [err, setErr] = React.useState('')
   const [loading, setLoading] = React.useState(false)
+  const {colors} = useYBase()
 
   async function GetSeasons() {
     try {
@@ -58,22 +64,58 @@ const Seasons = props => {
     GetSeasons()
   }, [])
 
-  return (
-    <View flex={1} px={20}>
-      <AddSeason refresh={GetSeasons} />
-      {loading && (
-        <View flex={1} alignitems="center" justifyContent="center">
-          <ActivityIndicator />
-        </View>
-      )}
-      {!loading && (
-        <FlatList
-          renderItem={({item, idx}) => <Season item={item} idx={idx} />}
-          data={seasons}
-        />
-      )}
-    </View>
-  )
+  async function ActivateSeason(idx) {
+    try {
+      setLoading(true)
+      setErr('')
+      const res = await league.ActivateSeason(seasons[idx].id)
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        GetSeasons()
+      } else {
+        setErr(res.error)
+      }
+    } catch (e) {
+      setErr('server_error')
+      console.log(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (seasons.length > 0) {
+    return (
+      <View flex={1} px={20} bgColor={colors.background}>
+        <AddSeason refresh={GetSeasons} />
+        {err && (
+          <View mt={20}>
+            <Text textAlign="center" color={colors.error}>
+              {err}
+            </Text>
+          </View>
+        )}
+        {loading && (
+          <View flex={1} alignitems="center" justifyContent="center">
+            <ActivityIndicator />
+          </View>
+        )}
+        {!loading && (
+          <FlatList
+            renderItem={({item, index}) => (
+              <Season
+                item={item}
+                idx={index}
+                activate={ActivateSeason}
+                props={loading}
+              />
+            )}
+            data={seasons}
+          />
+        )}
+      </View>
+    )
+  } else {
+    return null
+  }
   /*
   return (
     <ScrollView

@@ -159,6 +159,26 @@ export const useLeague = () => {
     }
   }
 
+  const GetAdminTeamsBySeason = async season => {
+    try {
+      if (season) {
+        const res = await Get('/admin/teams/' + season)
+        return res
+      }
+    } catch (e) {
+      return []
+    }
+  }
+
+  const GetDivisionsBySeason = async season => {
+    try {
+      const res = await Get('/divisions/' + season)
+      return res
+    } catch (e) {
+      return []
+    }
+  }
+
   const GetTeamInfo = async teamId => {
     try {
       const res = await Get('/team/' + teamId)
@@ -169,8 +189,84 @@ export const useLeague = () => {
     }
   }
 
+  const Migrate = async (oldSeason = '', newSeason = '') => {
+    try {
+      const res = await Post('/admin/migrate', {
+        oldSeason: parseInt(oldSeason, 10),
+        newSeason: parseInt(newSeason, 10),
+      })
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: e.message}
+    }
+  }
+
+  const ActivateSeason = async seasonId => {
+    try {
+      const res = await Get('/admin/season/activate/' + seasonId)
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: e.message}
+    }
+  }
+
+  const SetTeamDivision = async (teamId, divisionId) => {
+    try {
+      const res = await Post('/admin/team/division', {teamId, divisionId})
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: e.message}
+    }
+  }
+
+  const GetTeamDivisionsBySeason = async seasonId => {
+    try {
+      const res = await Get('/team/division/' + seasonId)
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: e.message}
+    }
+  }
+
+  const SaveVenue = async venue => {
+    try {
+      const res = await Post('/venue', {venue: venue})
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: e.message}
+    }
+  }
+
+  const GetAllVenues = async () => {
+    try {
+      const res = await Get('/venues/all')
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: e.message}
+    }
+  }
+
+  const SaveNewTeam = async (name, venue) => {
+    try {
+      const res = await Post('/admin/team', {name, venue})
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: e.message}
+    }
+  }
+
   return {
+    ActivateSeason,
     AddNewSeason,
+    GetAllVenues,
+    GetDivisionsBySeason,
     GetPlayerInfo,
     GetPlayerStats,
     GetPlayerStatsInfo,
@@ -181,9 +277,15 @@ export const useLeague = () => {
     GetSeasons,
     GetTeams,
     GetTeamsBySeason,
+    GetTeamDivisionsBySeason,
+    GetAdminTeamsBySeason,
     GetTeamInfo,
     GetTeamStats,
     GetVenues,
     SaveNewPlayer,
+    SaveNewTeam,
+    SaveVenue,
+    SetTeamDivision,
+    Migrate,
   }
 }

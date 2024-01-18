@@ -19,6 +19,7 @@ import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
 import Preferences from '@screens/Settings/Preferences'
 import LineSuccess from '@screens/Auth/LineSuccess'
+import {View} from '@ybase'
 
 const HomeStack = createNativeStackNavigator()
 
@@ -27,99 +28,101 @@ const Home = props => {
   const {colors, colorMode} = useYBase()
 
   return (
-    <HomeStack.Navigator
-      screenOptions={{
-        headerStyle: {backgroundColor: colors.headerBackground},
-        headerTitleStyle: {color: colors.onHeaderBackground},
-        headerTintColor: colors.onHeaderBackground,
-        headerTitleAlign: 'center',
-      }}>
-      <HomeStack.Screen
-        component={Matches}
-        name="Matches"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        options={{headerTitle: t('settings')}}
-        component={Settings}
-        name="Settings"
-      />
-      <HomeStack.Screen
-        options={{headerTitle: t('statistics')}}
-        component={Statistics}
-        name="Statistics"
-      />
-      <HomeStack.Screen
-        options={{headerTitle: t('info_and_guides'), headerShown: false}}
-        component={Info}
-        name="Info"
-      />
-      <HomeStack.Screen
-        options={{headerTitle: t('schedules')}}
-        component={Schedules}
-        name="Schedules"
-      />
-      <HomeStack.Screen
-        options={{headerTitle: t('seasons')}}
-        component={Seasons}
-        name="Seasons"
-      />
-      <HomeStack.Screen
-        options={{headerShown: false}}
-        component={Players}
-        name="Players"
-      />
-      <HomeStack.Screen
-        options={{headerShown: false}}
-        component={Venues}
-        name="Venues"
-      />
-      <HomeStack.Screen
-        options={{headerShown: false}}
-        component={Teams}
-        name="Teams"
-      />
-      <HomeStack.Screen
-        options={{headerTitle: t('divisions')}}
-        component={Divisions}
-        name="Divisions"
-      />
-      <HomeStack.Screen
-        options={{headerTitle: t('account')}}
-        component={Account}
-        name="Account"
-      />
-      <HomeStack.Screen
-        options={{headerTitle: t('calendar')}}
-        component={Calendar}
-        name="Calendar"
-      />
-      <HomeStack.Screen
-        component={Preferences}
-        name="Preferences"
-        options={{headerTitle: t('preferences')}}
-      />
-      <HomeStack.Screen
-        component={Admin}
-        name="Admin"
-        options={{headerTitle: t('admin'), headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={Login}
-        name="Login"
-        options={{headerShown: false, gestureEnabled: false}}
-      />
-      <HomeStack.Screen
-        component={LineSuccess}
-        name="LineSuccess"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={DeleteAccount}
-        name="Delete Account"
-        options={{headerShown: false}}
-      />
-    </HomeStack.Navigator>
+    <View flex={1} bgColor={colors.backgroundColor}>
+      <HomeStack.Navigator
+        screenOptions={{
+          headerStyle: {backgroundColor: colors.headerBackground},
+          headerTitleStyle: {color: colors.onHeaderBackground},
+          headerTintColor: colors.onHeaderBackground,
+          headerTitleAlign: 'center',
+        }}>
+        <HomeStack.Screen
+          component={Matches}
+          name="Matches"
+          options={{headerShown: false}}
+        />
+        <HomeStack.Screen
+          options={{headerTitle: t('settings')}}
+          component={Settings}
+          name="Settings"
+        />
+        <HomeStack.Screen
+          options={{headerTitle: t('statistics')}}
+          component={Statistics}
+          name="Statistics"
+        />
+        <HomeStack.Screen
+          options={{headerTitle: t('info_and_guides'), headerShown: false}}
+          component={Info}
+          name="Info"
+        />
+        <HomeStack.Screen
+          options={{headerTitle: t('schedules')}}
+          component={Schedules}
+          name="Schedules"
+        />
+        <HomeStack.Screen
+          options={{headerTitle: t('seasons')}}
+          component={Seasons}
+          name="Seasons"
+        />
+        <HomeStack.Screen
+          options={{headerShown: false}}
+          component={Players}
+          name="Players"
+        />
+        <HomeStack.Screen
+          options={{headerShown: false}}
+          component={Venues}
+          name="Venues"
+        />
+        <HomeStack.Screen
+          options={{headerShown: false}}
+          component={Teams}
+          name="Teams"
+        />
+        <HomeStack.Screen
+          options={{headerTitle: t('divisions')}}
+          component={Divisions}
+          name="Divisions"
+        />
+        <HomeStack.Screen
+          options={{headerTitle: t('account')}}
+          component={Account}
+          name="Account"
+        />
+        <HomeStack.Screen
+          options={{headerTitle: t('calendar')}}
+          component={Calendar}
+          name="Calendar"
+        />
+        <HomeStack.Screen
+          component={Preferences}
+          name="Preferences"
+          options={{headerTitle: t('preferences')}}
+        />
+        <HomeStack.Screen
+          component={Admin}
+          name="Admin"
+          options={{headerTitle: t('admin'), headerShown: false}}
+        />
+        <HomeStack.Screen
+          component={Login}
+          name="Login"
+          options={{headerShown: false, gestureEnabled: false}}
+        />
+        <HomeStack.Screen
+          component={LineSuccess}
+          name="LineSuccess"
+          options={{headerShown: false}}
+        />
+        <HomeStack.Screen
+          component={DeleteAccount}
+          name="Delete Account"
+          options={{headerShown: false}}
+        />
+      </HomeStack.Navigator>
+    </View>
   )
 }
 
