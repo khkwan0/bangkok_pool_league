@@ -159,6 +159,7 @@ const DrawerContent = props => {
               icon="person-outline"
               label={t('players')}
             />
+            {/*
             <DrawerItem
               navDest="Calendar"
               icon="calendar"
@@ -169,6 +170,7 @@ const DrawerContent = props => {
               icon="clipboard-list-outline"
               label={t('schedules')}
             />
+              */}
             <DrawerItem
               navDest="Statistics"
               icon="chart-areaspline-variant"

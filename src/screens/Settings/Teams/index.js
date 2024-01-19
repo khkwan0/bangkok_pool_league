@@ -24,6 +24,7 @@ const TeamsScreen = props => {
         headerStyle: {backgroundColor: colors.headerBackground},
         headerTitleStyle: {color: colors.onHeaderBackground},
         headerTintColor: colors.onHeaderBackground,
+        cardStyle: {backgroundColor: colors.background},
         headerTitleAlign: 'center',
       }}>
       <TeamsStack.Screen

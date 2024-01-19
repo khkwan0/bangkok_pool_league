@@ -1,16 +1,13 @@
 import React from 'react'
-import {FlatList, View} from 'react-native'
-import {
-  ActivityIndicator,
-  Button,
-  Text,
-  TouchableRipple,
-} from 'react-native-paper'
-import {useLeague} from '~/lib/hooks'
+import {FlatList} from 'react-native'
+import {ActivityIndicator, Button, Row, Text, View} from '@ybase'
+import {TouchableRipple} from 'react-native-paper'
+import {useLeague, useYBase} from '~/lib/hooks'
 import {useNavigation} from '@react-navigation/native'
 
 const PlayerCard = ({player, idx}) => {
-  const bgColor = idx % 2 ? '#eee' : '#fff'
+  const {colors} = useYBase()
+  const bgColor = idx % 2 ? colors.teamCard : colors.teamCardAlt
   const navigation = useNavigation()
 
   function HandlePress() {
@@ -101,20 +98,18 @@ const PlayersHome = props => {
     return (
       <FlatList
         ListHeaderComponent={
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              margin: 10,
-            }}>
+          <Row
+            alignItems="center"
+            justifyContent="space-between"
+            m={10}
+            px={20}>
             <Text>
               View: {showActiveOnly ? 'Active Players' : 'All Players'}
             </Text>
             <Button onPress={() => setShowActiveOnly(s => !s)}>
               Show {showActiveOnly ? 'All' : 'Active Only'}
             </Button>
-          </View>
+          </Row>
         }
         data={players}
         keyExtractor={(item, index) => item.player_name + '_' + index}
