@@ -131,6 +131,13 @@ const DrawerContent = props => {
                   label={t('admin')}
                 />
               )}
+            {typeof user.teams !== 'undefined' && user.teams.length > 0 && (
+              <DrawerItem
+                navDest="Player"
+                icon="account-settings"
+                label={t('me')}
+              />
+            )}
             <DrawerItem
               navDest="Seasons"
               icon="leaf-circle-outline"

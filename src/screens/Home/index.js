@@ -12,6 +12,7 @@ import Teams from '@screens/Settings/Teams'
 import DeleteAccount from '@screens/Settings/DeleteAccount'
 import Venues from '@screens/Settings/Venues'
 import Players from '@screens/Settings/Players'
+import Player from '@screens/Settings/Player'
 import Seasons from '@screens/Settings/Seasons'
 import Schedules from '@screens/Settings/Schedules'
 import Statistics from '@screens/Settings/Statistics'
@@ -73,6 +74,11 @@ const Home = props => {
           options={{headerShown: false}}
           component={Players}
           name="Players"
+        />
+        <HomeStack.Screen
+          options={{headerShown: false}}
+          component={Player}
+          name="Player"
         />
         <HomeStack.Screen
           options={{headerShown: false}}
