@@ -1,5 +1,6 @@
 import React from 'react'
-import {createNativeStackNavigator} from '@react-navigation/native-stack'
+// import {createNativeStackNavigator} from '@react-navigation/native-stack'
+import {createStackNavigator} from '@react-navigation/stack'
 import Matches from '@screens/Matches'
 import Admin from '@screens/Settings/Admin'
 import Settings from '@screens/Settings'
@@ -21,7 +22,7 @@ import Preferences from '@screens/Settings/Preferences'
 import LineSuccess from '@screens/Auth/LineSuccess'
 import {View} from '@ybase'
 
-const HomeStack = createNativeStackNavigator()
+const HomeStack = createStackNavigator()
 
 const Home = props => {
   const {t} = useTranslation()
@@ -34,7 +35,9 @@ const Home = props => {
           headerStyle: {backgroundColor: colors.headerBackground},
           headerTitleStyle: {color: colors.onHeaderBackground},
           headerTintColor: colors.onHeaderBackground,
+          cardStyle: {backgroundColor: colors.background, opacity: 1},
           headerTitleAlign: 'center',
+          presentation: 'transparentModal',
         }}>
         <HomeStack.Screen
           component={Matches}

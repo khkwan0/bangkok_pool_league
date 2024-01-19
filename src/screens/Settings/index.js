@@ -73,6 +73,7 @@ const DrawerContent = props => {
   if (isMounted) {
     return (
       <ScrollView
+        bgColor={colors.background}
         contentContainerStyle={{
           flexGrow: 1,
           backgroundColor: colors.background,
@@ -198,7 +199,7 @@ const DrawerContent = props => {
       </ScrollView>
     )
   } else {
-    return null
+    return <View flex={1} bgColor={colors.background} />
   }
 }
 

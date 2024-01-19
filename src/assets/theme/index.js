@@ -21,6 +21,9 @@ export const theme = {
         tertiaryContainer: 'rgb(253, 215, 250)', //not used
         onTertiaryContainer: 'rgb(42, 19, 44)', //not used
 
+        teamCard: '#eee',
+        teamCardAlt: '#fff',
+
         error: 'rgb(201, 32, 40)', // red-500
         onError: 'rgb(255, 255, 255)', //neutral-50
 
@@ -130,6 +133,9 @@ export const theme = {
         tertiaryContainer: 'rgb(253, 215, 250)', //not used
         onTertiaryContainer: 'rgb(42, 19, 44)', //not used
 
+        teamCard: '#1d1d1d',
+        teamCardAlt: '#222',
+
         error: 'rgb(222, 88, 82)', // red-400
         onError: 'rgb(255, 255, 255)', //neutral-50
         errorContainer: 'rgb(255, 245, 240)', //red-50
@@ -140,7 +146,7 @@ export const theme = {
         surface: 'rgb(29, 30, 34)', //neutral-900
         headerBackground: 'rgb(29, 30, 34)', //neutral-900
         onHeaderBackground: 'rgb(255, 255, 255)', //neutral-50
-        onSurface: 'rgb(255, 255, 255)', //neutral-50
+        onSurface: '#eee',
         surfaceVariant: 'rgb(57, 58, 64)', //neutral-700
         onSurfaceVariant: 'rgb(68, 70, 79)', //neutral-500
         backgroundVariant: '#fafafa',
