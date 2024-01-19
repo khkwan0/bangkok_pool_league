@@ -22,6 +22,7 @@ const AddNewTeam = props => {
   function HandleCancel() {
     setNewTeamName('')
     setNewTeamVenueId(0)
+    props.refresh()
     props.setShowAddNew(false)
   }
 
@@ -241,7 +242,10 @@ const Teams = props => {
         )}
         {showAddNew && (
           <View flex={1}>
-            <AddNewTeam setShowAddNew={setShowAddNew} />
+            <AddNewTeam
+              setShowAddNew={setShowAddNew}
+              refresh={GetTeamsBySeason}
+            />
           </View>
         )}
         {!showAddNew && (
