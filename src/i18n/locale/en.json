@@ -92,5 +92,8 @@
   "show_my_teams": "Show only my teams",
   "name": "Name",
   "add_player": "Add player",
-  "search": "Search"
+  "search": "Search",
+  "search_name": "Search names",
+  "loading": "Loading...",
+  "me": "Me"
 }

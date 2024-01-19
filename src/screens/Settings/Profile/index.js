@@ -242,8 +242,8 @@ const Profile = props => {
               user.teams &&
               Array.isArray(user.teams) &&
               user.teams.length > 0 &&
-              user.teams.map(team => (
-                <Text>
+              user.teams.map((team, idx) => (
+                <Text key={team.name + idx}>
                   {team.name}{' '}
                   {team.team_role_id === 2 ? '(' + t('captain') + ')' : ''}
                   {team.team_role_id === 1 ? '(' + t('asst_captain') + ')' : ''}
