@@ -1,5 +1,5 @@
 import React from 'react'
-import {Button, Pressable, Row, Text, TextInput, View} from '@ybase'
+import {Button, Pressable, Row, ScrollView, Text, TextInput, View} from '@ybase'
 import {useAccount, useYBase} from '~/lib/hooks'
 import {useSelector} from 'react-redux'
 import {useTranslation} from 'react-i18next'
@@ -10,15 +10,16 @@ const Profile = props => {
   const {colors} = useYBase()
   const {t} = useTranslation()
   const user = useSelector(_state => _state.userData).user
-  const [nickname, setNickname] = React.useState(user.nickname)
+  const [nickName, setNickName] = React.useState(user.nickname)
   const [firstName, setFirstName] = React.useState(user.firstname)
   const [lastName, setLastName] = React.useState(user.lastname)
   const [editLastName, setEditLastName] = React.useState(false)
   const [editFirstName, setEditFirstName] = React.useState(false)
-  const [editNickname, setEditNickname] = React.useState(false)
+  const [editNickname, setEditNickName] = React.useState(false)
+  const [lastNameErr, setLastNameErr] = React.useState('')
+  const [firstNameErr, setFirstNameErr] = React.useState('')
+  const [nickNameErr, setNickNameErr] = React.useState('')
   const account = useAccount()
-
-  console.log(JSON.stringify(user, null, 2))
 
   React.useEffect(() => {
     props.navigation.setOptions({
@@ -27,19 +28,57 @@ const Profile = props => {
   }, [])
 
   async function HandleSaveLastName() {
-    setEditLastName(false)
+    try {
+      setLastNameErr('')
+      const res = await account.SetLastName(lastName)
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        setEditLastName(false)
+      } else {
+        setLastNameErr(res.error)
+      }
+    } catch (e) {
+      console.log(e)
+      setLastNameErr('server_error')
+    }
   }
 
   async function HandleSaveFirstName() {
-    setEditFirstName(false)
+    try {
+      setFirstNameErr('')
+      const res = await account.SetFirstName(firstName)
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        setEditFirstName(false)
+      } else {
+        setFirstNameErr(res.error)
+      }
+    } catch (e) {
+      console.log(e)
+      setFirstNameErr('server_error')
+    }
   }
 
   async function HandleSaveNickName() {
-    setEditNickname(false)
+    try {
+      setNickNameErr('')
+      const res = await account.SetNickName(nickName)
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        setEditNickName(false)
+      } else {
+        setNickNameErr(res.error)
+      }
+    } catch (e) {
+      console.log(e)
+      setNickNameErr('server_error')
+    }
   }
 
   return (
-    <View flex={1} bgColor={colors.background} px={20}>
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        backgroundColor: colors.background,
+        paddingHorizontal: 20,
+      }}>
       <View my={20} alignItems="center">
         <Image
           source={{uri: config.profileUrl + user.profile_picture}}
@@ -79,7 +118,7 @@ const Profile = props => {
           </Row>
         </View>
       )}
-      <Pressable onPress={() => setEditNickname(true)}>
+      <Pressable onPress={() => setEditNickName(true)}>
         <Row alignItems="center" py={10} space={10}>
           <View flex={1}>
             <Text bold fontSize="xl">
@@ -90,13 +129,21 @@ const Profile = props => {
             {editNickname && (
               <>
                 <TextInput
-                  value={nickname}
-                  onChangeText={text => setNickname(text)}
+                  maxLength={32}
+                  value={nickName}
+                  onChangeText={text => setNickName(text)}
                 />
+                {nickNameErr && (
+                  <View mt={10}>
+                    <Text textAlign="center" color={colors.error}>
+                      {nickNameErr}
+                    </Text>
+                  </View>
+                )}
                 <Row alignItems="center" space={20} my={10}>
                   <Button
                     variant="outline"
-                    onPress={() => setEditNickname(false)}>
+                    onPress={() => setEditNickName(false)}>
                     {t('cancel')}
                   </Button>
                   <Button onPress={() => HandleSaveNickName()}>
@@ -105,7 +152,7 @@ const Profile = props => {
                 </Row>
               </>
             )}
-            {!editNickname && <Text fontSize="xl">{nickname ?? ''}</Text>}
+            {!editNickname && <Text fontSize="xl">{nickName ?? ''}</Text>}
           </View>
         </Row>
       </Pressable>
@@ -120,9 +167,17 @@ const Profile = props => {
             {editFirstName && (
               <>
                 <TextInput
+                  maxLength={32}
                   value={firstName}
                   onChangeText={text => setFirstName(text)}
                 />
+                {firstNameErr && (
+                  <View mt={10}>
+                    <Text textAlign="center" color={colors.error}>
+                      {firstNameErr}
+                    </Text>
+                  </View>
+                )}
                 <Row alignItems="center" space={20} my={10}>
                   <Button
                     variant="outline"
@@ -150,9 +205,17 @@ const Profile = props => {
             {editLastName && (
               <>
                 <TextInput
+                  maxLength={32}
                   value={lastName}
                   onChangeText={text => setLastName(text)}
                 />
+                {lastNameErr && (
+                  <View mt={10}>
+                    <Text textAlign="center" color={colors.error}>
+                      {lastNameErr}
+                    </Text>
+                  </View>
+                )}
                 <Row alignItems="center" space={20} my={10}>
                   <Button
                     variant="outline"
@@ -189,7 +252,7 @@ const Profile = props => {
           </View>
         </Row>
       </Pressable>
-    </View>
+    </ScrollView>
   )
 }
 

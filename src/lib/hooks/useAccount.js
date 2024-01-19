@@ -152,6 +152,36 @@ export const useAccount = () => {
     }
   }
 
+  async function SetFirstName(text) {
+    try {
+      const res = await Post('/account/first_name', {name: text})
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
+  async function SetLastName(text) {
+    try {
+      const res = await Post('/account/last_name', {name: text})
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
+  async function SetNickName(text) {
+    try {
+      const res = await Post('/account/nick_name', {name: text})
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   return {
     FetchUser,
     LoadUser,
@@ -163,5 +193,8 @@ export const useAccount = () => {
     Recover,
     Verify,
     DeleteAccount,
+    SetFirstName,
+    SetLastName,
+    SetNickName,
   }
 }
