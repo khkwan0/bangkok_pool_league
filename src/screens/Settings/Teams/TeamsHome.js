@@ -1,8 +1,12 @@
 import React from 'react'
-import {FlatList, Pressable, View} from 'react-native'
-import {Text} from '@ybase'
+import {FlatList, RefreshControl} from 'react-native'
+import {Pressable, Text, View} from '@ybase'
 import {useLeague, useYBase} from '~/lib/hooks'
 import {useNavigation} from '@react-navigation/native'
+import {useSelector} from 'react-redux'
+import {useTranslation} from 'react-i18next'
+import BouncyCheckbox from 'react-native-bouncy-checkbox'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const TeamCard = ({team, idx}) => {
   const {colors} = useYBase()
@@ -34,23 +38,74 @@ const TeamsHome = props => {
   const {colors} = useYBase()
   const league = useLeague()
   const [teams, setTeams] = React.useState([])
+  const [refreshing, setRefreshing] = React.useState(false)
+  const [showMineOnly, setShowMineOnly] = React.useState(false)
+  const [isMounted, setIsMounted] = React.useState(false)
+  const user = useSelector(_state => _state.userData).user
+  const {t} = useTranslation()
 
-  React.useEffect(() => {
+  const userTeams = user.teams.map(_team => _team.id)
+
+  async function GetTeams() {
     try {
-      ;(async () => {
-        const res = await league.GetTeams()
-        setTeams(res)
-      })()
+      setRefreshing(true)
+      const res = await league.GetTeams()
+      setTeams(res)
+      setIsMounted(true)
     } catch (e) {
       console.log(e)
+    } finally {
+      setRefreshing(false)
     }
+  }
+
+  React.useEffect(() => {
+    if (isMounted) {
+      AsyncStorage.setItem(
+        'my_teams_only',
+        JSON.stringify({showMineOnly: showMineOnly}),
+      )
+      if (showMineOnly) {
+        const _teams = teams.filter(team => userTeams.includes(team.id))
+        setTeams(_teams)
+      } else {
+        GetTeams()
+      }
+    }
+  }, [showMineOnly])
+
+  React.useEffect(() => {
+    GetTeams()
   }, [])
+
+  async function onRefresh() {
+    GetTeams()
+  }
 
   return (
     <FlatList
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      ListHeaderComponent={
+        <View>
+          {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
+            <View my={20} px={20}>
+              <BouncyCheckbox
+                text={t('show_my_teams')}
+                textStyle={{textDecorationLine: 'none'}}
+                isChecked={showMineOnly}
+                onPress={() => setShowMineOnly(s => !s)}
+              />
+            </View>
+          )}
+        </View>
+      }
       contentContainerStyle={{backgroundColor: colors.background}}
       data={teams}
-      renderItem={({item, index}) => <TeamCard team={item} idx={index} />}
+      renderItem={({item, index}) => (
+        <TeamCard team={item} idx={index} userTeams={userTeams} />
+      )}
     />
   )
 }

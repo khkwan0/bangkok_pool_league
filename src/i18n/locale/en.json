@@ -87,5 +87,10 @@
   "main_player_id": "Main Player ID",
   "associated_player_id": "Alternate IDs",
   "captain": "Captain",
-  "asst_captain": "Asst Captain"
+  "asst_captain": "Asst Captain",
+  "assistants": "Assistants",
+  "show_my_teams": "Show only my teams",
+  "name": "Name",
+  "add_player": "Add player",
+  "search": "Search"
 }

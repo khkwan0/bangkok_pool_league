@@ -86,6 +86,15 @@ export const useLeague = () => {
     }
   }
 
+  const GetUniquePlayers = async () => {
+    try {
+      const res = await Get('/players/unique')
+      return res
+    } catch (e) {
+      return []
+    }
+  }
+
   const GetStandings = async (seasonId = null) => {
     try {
       if (seasonId) {
@@ -262,8 +271,19 @@ export const useLeague = () => {
     }
   }
 
+  const AddPlayerToTeam = async (playerId, teamId) => {
+    try {
+      const res = await Post('/team/player', {playerId, teamId})
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'network_error'}
+    }
+  }
+
   return {
     ActivateSeason,
+    AddPlayerToTeam,
     AddNewSeason,
     GetAllVenues,
     GetDivisionsBySeason,
@@ -281,6 +301,7 @@ export const useLeague = () => {
     GetAdminTeamsBySeason,
     GetTeamInfo,
     GetTeamStats,
+    GetUniquePlayers,
     GetVenues,
     SaveNewPlayer,
     SaveNewTeam,

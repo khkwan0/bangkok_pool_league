@@ -139,6 +139,12 @@ const DrawerContent = props => {
               />
             )}
             <DrawerItem
+              navDest="Teams"
+              as="Ionicons"
+              icon="people"
+              label={t('teams')}
+            />
+            <DrawerItem
               navDest="Seasons"
               icon="leaf-circle-outline"
               label={t('seasons')}
@@ -153,12 +159,6 @@ const DrawerContent = props => {
               as="Ionicons"
               icon="location-outline"
               label={t('venues')}
-            />
-            <DrawerItem
-              navDest="Teams"
-              as="Ionicons"
-              icon="people"
-              label={t('teams')}
             />
             <DrawerItem
               navDest="Players"
