@@ -83,5 +83,9 @@
   "add_new_team": "Add new team",
   "team_name": "Team name",
   "choose_a_venue": "Choose a venue",
-  "add_new_venue": "Add new venue"
+  "add_new_venue": "Add new venue",
+  "main_player_id": "Main Player ID",
+  "associated_player_id": "Alternate IDs",
+  "captain": "Captain",
+  "asst_captain": "Asst Captain"
 }

@@ -133,7 +133,7 @@ const DrawerContent = props => {
               )}
             {typeof user.teams !== 'undefined' && user.teams.length > 0 && (
               <DrawerItem
-                navDest="Player"
+                navDest="Profile"
                 icon="account-settings"
                 label={t('me')}
               />
