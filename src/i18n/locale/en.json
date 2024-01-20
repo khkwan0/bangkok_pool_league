@@ -95,5 +95,7 @@
   "search": "Search",
   "search_name": "Search names",
   "loading": "Loading...",
-  "me": "Me"
+  "me": "Me",
+  "revoke": "Revoke",
+  "promote": "Promote"
 }

@@ -1,17 +1,18 @@
 import React from 'react'
-import {View} from 'react-native'
-import {Text} from 'react-native-paper'
+import {Row, Text, View} from '@ybase'
 
 const TwoColumns = props => {
   return (
-    <View style={[{flexDirection: 'row', alignItems: 'center', gap: props.style?.gap ?? 10}, {...props.style}]}>
-      <View style={{flex:1, alignItems: 'flex-end' }}>
+    <Row
+      flex={1}
+      alignItems="center"
+      space={props.gap ?? 10}
+      style={{...props.style}}>
+      <View flex={1} alignItems="flex-end">
         <Text>{props.label}</Text>
       </View>
-      <View style={{flex:2 }}>
-        {props.children}
-      </View>
-    </View>
+      <View flex={4}>{props.children}</View>
+    </Row>
   )
 }
 

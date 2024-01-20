@@ -1,7 +1,6 @@
 import React from 'react'
-import {FlatList, Image} from 'react-native'
-import {TouchableRipple} from 'react-native-paper'
-import {Button, Row, ScrollView, Text, TextInput, View} from '@ybase'
+import {Image} from 'react-native'
+import {Button, Pressable, Row, ScrollView, Text, TextInput, View} from '@ybase'
 import TwoColumns from '~/components/TwoColumns'
 import {useNavigation} from '@react-navigation/native'
 import config from '~/config'
@@ -179,7 +178,11 @@ const Team = props => {
   }, [team])
 
   React.useEffect(() => {
-    setCanAdd(captains.includes(user.id) || assts.includes(user.id))
+    setCanAdd(
+      captains.includes(user.id) ||
+        assts.includes(user.id) ||
+        user.role_id === 9,
+    )
   }, [])
 
   async function RefreshTeam() {
@@ -256,7 +259,7 @@ const Team = props => {
               <TwoColumns
                 key={'captain' + idx}
                 label={idx === 0 ? t('captain') : ''}>
-                <TouchableRipple
+                <Pressable
                   onPress={() =>
                     navigation.navigate('Player', {
                       playerId: captain.id,
@@ -269,14 +272,14 @@ const Team = props => {
                       ({captain.firstname} {captain.lastname})
                     </Text>
                   </View>
-                </TouchableRipple>
+                </Pressable>
               </TwoColumns>
             ))}
             {team.assistants.map((assistant, idx) => (
               <TwoColumns
                 key={'assistant' + idx}
                 label={idx === 0 ? t('assistants') : ''}>
-                <TouchableRipple
+                <Pressable
                   onPress={() =>
                     navigation.navigate('Player', {
                       playerId: assistant.id,
@@ -289,31 +292,38 @@ const Team = props => {
                       ({assistant.firstname} {assistant.lastname})
                     </Text>
                   </View>
-                </TouchableRipple>
+                </Pressable>
               </TwoColumns>
             ))}
           </View>
           <View style={{marginTop: 20}}>
-            {team.players.map((player, idx) => (
-              <TwoColumns
-                key={'player' + idx}
-                label={idx === 0 ? t('players') : ''}>
-                <TouchableRipple
-                  onPress={() =>
-                    navigation.navigate('Player', {
-                      playerId: player.id,
-                    })
-                  }>
-                  <View style={{flexDirection: 'row', gap: 5}}>
-                    <Text>{player.flag}</Text>
-                    <Text variant="bodyLarge">{player.nickname}</Text>
-                    <Text variant="bodyLarge">
-                      ({player.firstname} {player.lastname})
-                    </Text>
-                  </View>
-                </TouchableRipple>
-              </TwoColumns>
-            ))}
+            <Row>
+              <View flex={1}>
+                <Text>players</Text>
+              </View>
+              <View flex={4}>
+                {team.players.map((player, idx) => (
+                  <Pressable
+                    py={5}
+                    key={'player_' + idx}
+                    onPress={() =>
+                      navigation.navigate('Player', {
+                        playerId: player.id,
+                      })
+                    }>
+                    <View style={{flexDirection: 'row', gap: 5}}>
+                      <Text>{player.flag}</Text>
+                      <Text variant="bodyLarge">{player.nickname}</Text>
+                      {user.role_id === 9 && (
+                        <Text variant="bodyLarge">
+                          ({player.firstname} {player.lastname})
+                        </Text>
+                      )}
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            </Row>
           </View>
         </>
       )}

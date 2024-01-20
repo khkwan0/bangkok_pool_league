@@ -1,5 +1,5 @@
 import React from 'react'
-import {Text, View} from '@ybase'
+import {Row, Text, View} from '@ybase'
 import {useLeague, useYBase} from '~/lib/hooks'
 import SeasonPicker from '@components/SeasonPicker'
 import {FlatList} from 'react-native'
@@ -10,13 +10,30 @@ const Division = props => {
       <Text textAlign="center" bold fontSize="xxxl">
         {props.item.divisionName}
       </Text>
-      {props.item.teams.map(team => {
-        return (
-          <View my={5}>
-            <Text fontSize="xxl">{team.teamName}</Text>
-          </View>
-        )
-      })}
+      <Row alignItems="center">
+        <View flex={1}>
+          <Text fontSize="lg">team_id</Text>
+        </View>
+        <View flex={3}>
+          <Text fontSize="xxl">name</Text>
+        </View>
+      </Row>
+      {props.item.teams
+        .sort((a, b) => (a.teamName > b.teamName ? 1 : -1))
+        .map(team => {
+          return (
+            <View my={5} key={'someteam' + team.teamName}>
+              <Row alignItems="center">
+                <View flex={1}>
+                  <Text fontSize="lg">#{team.teamId}</Text>
+                </View>
+                <View flex={3}>
+                  <Text fontSize="xxl">{team.teamName}</Text>
+                </View>
+              </Row>
+            </View>
+          )
+        })}
     </View>
   )
 }

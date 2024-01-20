@@ -145,14 +145,14 @@ const DrawerContent = props => {
               label={t('teams')}
             />
             <DrawerItem
-              navDest="Seasons"
-              icon="leaf-circle-outline"
-              label={t('seasons')}
-            />
-            <DrawerItem
               navDest="Divisions"
               icon="division"
               label={t('divisions')}
+            />
+            <DrawerItem
+              navDest="Seasons"
+              icon="leaf-circle-outline"
+              label={t('seasons')}
             />
             <DrawerItem
               navDest="Venues"
