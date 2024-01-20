@@ -97,5 +97,6 @@
   "loading": "Loading...",
   "me": "Me",
   "revoke": "Revoke",
-  "promote": "Promote"
+  "promote": "Promote",
+  "team_id": "Team ID"
 }

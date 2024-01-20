@@ -1,7 +1,7 @@
 import {useNavigation} from '@react-navigation/native'
 import React from 'react'
-import {FlatList, Pressable, View} from 'react-native'
-import {Text} from 'react-native-paper'
+import {FlatList} from 'react-native'
+import {ActivityIndicator, Pressable, Row, Text, View} from '@ybase'
 import {useLeague} from '~/lib/hooks'
 
 const VenueCard = ({venue, idx}) => {
@@ -36,12 +36,20 @@ const Venues = props => {
     })()
   }, [])
 
-  return (
-    <FlatList
-      data={venues}
-      renderItem={({item, index}) => <VenueCard venue={item} idx={index} />}
-    />
-  )
+  if (venues.length > 0) {
+    return (
+      <FlatList
+        data={venues}
+        renderItem={({item, index}) => <VenueCard venue={item} idx={index} />}
+      />
+    )
+  } else {
+    return (
+      <View flex={1} justifyContent="center" alignItems="center">
+        <ActivityIndicator />
+      </View>
+    )
+  }
 }
 
 export default Venues

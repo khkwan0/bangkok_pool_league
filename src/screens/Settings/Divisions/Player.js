@@ -1,6 +1,5 @@
 import React from 'react'
 import Player from '@screens/Settings/Player'
-import {useLeague} from '~/lib/hooks'
 
 // could've just imported directly from previous screen,
 // but by doing this, it's just easier to see that the common

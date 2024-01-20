@@ -22,6 +22,7 @@ const Player = props => {
   const [playerInfo, setPlayerInfo] = React.useState(null)
   const [err, setErr] = React.useState('')
   const {t} = useTranslation()
+
   function HandleStatsPress() {
     navigation.navigate('Player Statistics', {playerInfo: playerInfo})
   }
@@ -86,7 +87,6 @@ const Player = props => {
         playerInfo.pic = 'default_male.png'
       }
     }
-    console.log(JSON.stringify(playerInfo, null, 2))
     return (
       <ScrollView contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20}}>
         <Row alignItems="center" py={20}>
@@ -132,8 +132,12 @@ const Player = props => {
                 <Text>nationality</Text>
               </View>
               <View flex={3}>
-                <Text variant="bodyLarge">{playerInfo.nationality.en}</Text>
-                <Text variant="bodyLarge">{playerInfo.nationality.th}</Text>
+                <Text variant="bodyLarge">
+                  {playerInfo?.nationality?.en ?? ''}
+                </Text>
+                <Text variant="bodyLarge">
+                  {playerInfo?.nationality?.th ?? ''}
+                </Text>
               </View>
             </Row>
           </View>

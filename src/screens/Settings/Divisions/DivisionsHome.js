@@ -1,10 +1,12 @@
 import React from 'react'
-import {Row, Text, View} from '@ybase'
+import {Pressable, Row, Text, View} from '@ybase'
 import {useLeague, useYBase} from '~/lib/hooks'
 import SeasonPicker from '@components/SeasonPicker'
 import {FlatList} from 'react-native'
+import {useNavigation} from '@react-navigation/native'
 
 const Division = props => {
+  const navigation = useNavigation()
   return (
     <View key={`divisions_teams_${props.idx}`}>
       <Text textAlign="center" bold fontSize="xxxl">
@@ -22,16 +24,22 @@ const Division = props => {
         .sort((a, b) => (a.teamName > b.teamName ? 1 : -1))
         .map(team => {
           return (
-            <View my={5} key={'someteam' + team.teamName}>
-              <Row alignItems="center">
-                <View flex={1}>
-                  <Text fontSize="lg">#{team.teamId}</Text>
-                </View>
-                <View flex={3}>
-                  <Text fontSize="xxl">{team.teamName}</Text>
-                </View>
-              </Row>
-            </View>
+            <Pressable
+              key={'someteam' + team.teamName}
+              onPress={() =>
+                navigation.navigate('Team', {teamId: team.teamId})
+              }>
+              <View my={5}>
+                <Row alignItems="center">
+                  <View flex={1}>
+                    <Text fontSize="lg">#{team.teamId}</Text>
+                  </View>
+                  <View flex={3}>
+                    <Text fontSize="xxl">{team.teamName}</Text>
+                  </View>
+                </Row>
+              </View>
+            </Pressable>
           )
         })}
     </View>

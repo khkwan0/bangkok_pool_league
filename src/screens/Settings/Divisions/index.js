@@ -1,36 +1,38 @@
 import React from 'react'
-// import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import {createStackNavigator} from '@react-navigation/stack'
-import ProfileHome from './ProfileHome'
+import DivisionsHome from './DivisionsHome'
+import Team from './Team'
+import Player from './Player'
 import PlayerStats from './PlayerStats'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
-import {useSelector} from 'react-redux'
 
-const ProfileStack = createStackNavigator()
+const DivisionStack = createStackNavigator()
 
-const ProfilesNav = props => {
-  const user = useSelector(_state => _state.userData).user
+const Divisions = props => {
   const {colors} = useYBase()
   const {t} = useTranslation()
+
   return (
-    <ProfileStack.Navigator
+    <DivisionStack.Navigator
       screenOptions={{
         headerStyle: {backgroundColor: colors.headerBackground},
         headerTitleStyle: {color: colors.onHeaderBackground},
         headerTintColor: colors.onHeaderBackground,
         headerTitleAlign: 'center',
       }}>
-      <ProfileStack.Screen
+      <DivisionStack.Screen
         name="Root"
-        component={ProfileHome}
+        component={DivisionsHome}
         options={{
-          title: user.nickname,
+          title: t('divisions'),
         }}
       />
-      <ProfileStack.Screen name="Player Statistics" component={PlayerStats} />
-    </ProfileStack.Navigator>
+      <DivisionStack.Screen name="Team" component={Team} />
+      <DivisionStack.Screen name="Player" component={Player} />
+      <DivisionStack.Screen name="Player Statistics" component={PlayerStats} />
+    </DivisionStack.Navigator>
   )
 }
 
-export default ProfilesNav
+export default Divisions

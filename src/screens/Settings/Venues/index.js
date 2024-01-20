@@ -6,6 +6,7 @@ import VenuesHome from './VenuesHome'
 import Venue from './Venue'
 import Team from './Team'
 import Player from './Player'
+import PlayerStats from './PlayerStats'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
 
@@ -41,6 +42,7 @@ const VenuesNav = props => {
         component={Player}
         option={{title: 'Player'}}
       />
+      <VenueStack.Screen name="Player Statistics" component={PlayerStats} />
     </VenueStack.Navigator>
   )
 }

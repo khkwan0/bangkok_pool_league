@@ -75,7 +75,11 @@ const Home = props => {
           component={Players}
           name="Players"
         />
-        <HomeStack.Screen component={Profile} name="Profile" />
+        <HomeStack.Screen
+          component={Profile}
+          name="Profile"
+          options={{headerShown: false}}
+        />
         <HomeStack.Screen
           options={{headerShown: false}}
           component={Venues}
@@ -87,7 +91,7 @@ const Home = props => {
           name="Teams"
         />
         <HomeStack.Screen
-          options={{headerTitle: t('divisions')}}
+          options={{headerTitle: t('divisions'), headerShown: false}}
           component={Divisions}
           name="Divisions"
         />

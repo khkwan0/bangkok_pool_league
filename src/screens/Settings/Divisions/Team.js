@@ -5,14 +5,16 @@ import {ActivityIndicator, View} from '@ybase'
 
 const _Team = props => {
   const league = useLeague()
-  const teamId = props.route.params.team?.id ?? null
+  const teamId = props.route.params.teamId ?? null
   const [team, setTeam] = React.useState(null)
 
   React.useEffect(() => {
     ;(async () => {
       try {
-        const res = await league.GetTeamInfo(teamId)
-        setTeam(res)
+        if (teamId) {
+          const res = await league.GetTeamInfo(teamId)
+          setTeam(res)
+        }
       } catch (e) {
         console.log(e)
       }

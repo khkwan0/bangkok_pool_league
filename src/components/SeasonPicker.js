@@ -1,12 +1,13 @@
 import React from 'react'
 import {Picker} from '@react-native-picker/picker'
-import {useLeague} from '~/lib/hooks'
+import {useLeague, useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
 
 const SeasonPicker = props => {
   const [seasons, setSeasons] = React.useState([])
   const league = useLeague()
   const {t} = useTranslation()
+  const {colors} = useYBase()
 
   React.useEffect(() => {
     ;(async () => {
@@ -23,11 +24,14 @@ const SeasonPicker = props => {
 
   return (
     <Picker
+      dropdownIconColor={colors.onSurface}
       selectedValue={props.season}
       mode="dropdown"
       onValueChange={(itemValue, itemPosition) => props.setSeason(itemValue)}>
       {seasons.map(_season => (
         <Picker.Item
+          color={colors.onSurface}
+          style={{backgroundColor: colors.surface}}
           key={_season.id}
           label={
             t('season') +
