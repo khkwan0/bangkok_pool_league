@@ -8,6 +8,7 @@ import {useSelector} from 'react-redux'
 import {useTranslation} from 'react-i18next'
 import {useLeague, useYBase} from '~/lib/hooks'
 import TrieSearch from 'trie-search'
+import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 
 const PlayerCard = props => {
   const {t} = useTranslation()
@@ -136,6 +137,14 @@ const ChoosePlayer = props => {
 const AddNewPlayer = props => {
   const {t} = useTranslation()
   const [allPlayers, setAllPlayers] = React.useState([])
+  const [showAddNewPlayer, setShowAddNewPlayer] = React.useState(false)
+  const [newNickName, setNewNickName] = React.useState('')
+  const [newFirstName, setNewFirstName] = React.useState('')
+  const [newLastName, setNewLastName] = React.useState('')
+  const [newEmail, setNewEmail] = React.useState('')
+  const [valid, setValid] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
+  const [err, setErr] = React.useState('')
   const {colors} = useYBase()
   const league = useLeague()
 
@@ -150,16 +159,142 @@ const AddNewPlayer = props => {
     })()
   }, [])
 
+  async function HandleSave() {
+    try {
+      if (newNickName && newNickName.length > 3) {
+        setLoading(true)
+        const res = await league.SaveNewPlayer(
+          newNickName,
+          newFirstName,
+          newLastName,
+          newEmail,
+        )
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          if (
+            typeof res.data !== 'undefined' &&
+            res.data.playerId !== 'undefined' &&
+            res.data.playerId
+          ) {
+            props.handleSelect(res.data.playerId)
+          } else {
+            setErr('Error Saving')
+          }
+        } else if (typeof res.status !== 'undefined' && res.status === 'err') {
+          if (typeof res.msg !== 'undefined') {
+            setErr(res.msg)
+          } else {
+            setErr('Error Saving (unknown)')
+          }
+        }
+      } else {
+        setErr('too_short')
+      }
+    } catch (e) {
+      console.log(e)
+      setErr('server_error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  React.useEffect(() => {
+    if (newNickName.length > 2) {
+      setValid(true)
+    }
+  }, [newNickName])
+
   return (
     <View>
+      <View mt={20}>
+        <Text bold>add_player</Text>
+      </View>
       <ChoosePlayer allPlayers={allPlayers} handleSelect={props.handleSelect} />
       <Row alignItems="center" space={20} my={20}>
         <View flex={1}>
-          <Button onPress={() => props.cancel()} variant="outline">
-            {t('cancel')}
-          </Button>
+          {!showAddNewPlayer && (
+            <View>
+              <View>
+                <Text textAlign="center" bold fontSize="xxxl">
+                  - OR -
+                </Text>
+              </View>
+              <View mt={10}>
+                <Button onPress={() => setShowAddNewPlayer(true)}>
+                  {t('add_new_player')}
+                </Button>
+              </View>
+            </View>
+          )}
+          {showAddNewPlayer && (
+            <View>
+              <View>
+                <Text textAlign="center" bold fontSize="xxxl">
+                  - OR -
+                </Text>
+              </View>
+              <View>
+                <Text bold>add_new_player</Text>
+              </View>
+              <View>
+                <View>
+                  <TextInput
+                    placeholder={
+                      t('nickname') + ' ' + '(' + t('required') + ')'
+                    }
+                    value={newNickName}
+                    onChangeText={text => setNewNickName(text)}
+                  />
+                </View>
+                <View>
+                  <TextInput
+                    placeholder="Email (recommended)"
+                    value={newEmail}
+                    onChangeText={text => setNewEmail(text)}
+                  />
+                </View>
+                <View>
+                  <TextInput
+                    placeholder="First Name (optional)"
+                    value={newFirstName}
+                    onChangeText={text => setNewFirstName(text)}
+                  />
+                </View>
+                <View>
+                  <TextInput
+                    placeholder="Last Name (optional)"
+                    value={newLastName}
+                    onChangeText={text => setNewLastName(text)}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
         </View>
       </Row>
+      <View flex={1}>
+        {err && (
+          <View>
+            <Text textAlign="center" color={colors.error}>
+              {err}
+            </Text>
+          </View>
+        )}
+        <Row space={10}>
+          <View flex={1}>
+            <Button onPress={() => props.cancel()} variant="outline">
+              {t('cancel')}
+            </Button>
+          </View>
+          <View flex={1}>
+            <Button
+              loading={loading}
+              disabled={!valid}
+              onPress={() => HandleSave()}>
+              {t('save')}
+            </Button>
+          </View>
+        </Row>
+      </View>
     </View>
   )
 }
@@ -169,6 +304,8 @@ const Team = props => {
   const navigation = useNavigation()
   const user = useSelector(_state => _state.userData).user
   const [showAddNewPlayer, setShowAddNewPlayer] = React.useState(false)
+  const [toDelete, setToDelete] = React.useState(0)
+  const [loading, setLoading] = React.useState(false)
   const {t} = useTranslation()
   const {colors} = useYBase()
   const [canAdd, setCanAdd] = React.useState(false)
@@ -213,6 +350,25 @@ const Team = props => {
     } catch (e) {
       console.log(e)
       setErr('server_error')
+    }
+  }
+
+  async function HandleDelete() {
+    try {
+      console.log(toDelete, team.id)
+      setLoading(true)
+      setErr('')
+      const res = await league.RemovePlayerFromTeam(toDelete, team.id)
+      if (typeof res.error !== 'undefined' && res.error) {
+        setErr(res.error)
+      }
+      setToDelete(0)
+      RefreshTeam()
+    } catch (e) {
+      console.log(e)
+      setErr('server_error')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -262,6 +418,7 @@ const Team = props => {
         <AddNewPlayer
           cancel={() => setShowAddNewPlayer(false)}
           handleSelect={HandleSelect}
+          teamId={team.id}
         />
       )}
       {!showAddNewPlayer && (
@@ -311,33 +468,59 @@ const Team = props => {
             ))}
           </View>
           <View style={{marginTop: 20}}>
-            <Row>
-              <View flex={1}>
-                <Text>players</Text>
-              </View>
-              <View flex={4}>
-                {team.players.map((player, idx) => (
+            <View>
+              <Text>players</Text>
+            </View>
+            {team.players.map((player, idx) => (
+              <Row alignItems="center">
+                <View flex={1}>
+                  <Text>{player.flag}</Text>
+                </View>
+                <View flex={4}>
                   <Pressable
-                    py={5}
-                    key={'player_' + idx}
                     onPress={() =>
                       navigation.navigate('Player', {
                         playerId: player.id,
                       })
                     }>
-                    <View style={{flexDirection: 'row', gap: 5}}>
-                      <Text>{player.flag}</Text>
-                      <Text variant="bodyLarge">{player.nickname}</Text>
-                      {user.role_id === 9 && (
-                        <Text variant="bodyLarge">
-                          ({player.firstname} {player.lastname})
-                        </Text>
-                      )}
-                    </View>
+                    <Text variant="bodyLarge">{player.nickname}</Text>
+                    {user.role_id === 9 && (
+                      <Text variant="bodyLarge">
+                        ({player.firstname} {player.lastname})
+                      </Text>
+                    )}
                   </Pressable>
-                ))}
-              </View>
-            </Row>
+                </View>
+                {toDelete === player.id && (
+                  <View flex={5}>
+                    <Row space={10}>
+                      <Button loading={loading} onPress={() => HandleDelete()}>
+                        {t('confirm')}
+                      </Button>
+                      <Button
+                        loading={loading}
+                        variant="outline"
+                        onPress={() => setToDelete(0)}>
+                        {t('cancel')}
+                      </Button>
+                    </Row>
+                  </View>
+                )}
+                {toDelete !== player.id && (
+                  <View flex={1}>
+                    <Pressable
+                      disabled={loading}
+                      onPress={() => setToDelete(player.id)}>
+                      <MCI
+                        name="trash-can-outline"
+                        size={20}
+                        color={colors.onSurface}
+                      />
+                    </Pressable>
+                  </View>
+                )}
+              </Row>
+            ))}
           </View>
         </>
       )}

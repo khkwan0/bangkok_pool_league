@@ -292,12 +292,24 @@ export const useLeague = () => {
   }
 
   const GrantPrivilege = async (playerId, teamId, level) => {
-    console.log(playerId, teamId, level)
     try {
       const res = await Post('/player/privilege/grant', {
         playerId,
         teamId,
         level,
+      })
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'network_error'}
+    }
+  }
+
+  const RemovePlayerFromTeam = async (playerId, teamId) => {
+    try {
+      const res = await Post('/team/player/remove', {
+        playerId,
+        teamId,
       })
       return res
     } catch (e) {
@@ -330,6 +342,7 @@ export const useLeague = () => {
     GetVenues,
     GrantPrivilege,
     RevokePrivileges,
+    RemovePlayerFromTeam,
     SaveNewPlayer,
     SaveNewTeam,
     SaveVenue,

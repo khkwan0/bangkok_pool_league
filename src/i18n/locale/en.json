@@ -98,5 +98,8 @@
   "me": "Me",
   "revoke": "Revoke",
   "promote": "Promote",
-  "team_id": "Team ID"
+  "team_id": "Team ID",
+  "add_new_player": "Add new player",
+  "too_short": "Too short",
+  "confirm": "Confirm"
 }
