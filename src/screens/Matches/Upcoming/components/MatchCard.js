@@ -26,8 +26,13 @@ const MatchCard = props => {
         <View>
           <Text>{props.match.round}</Text>
           <Text textAlign="center" bold>
-            {props.match.home_team_short_name} {t('vs')}{' '}
-            {props.match.away_team_short_name}
+            {props.match.home_team_short_name
+              ? props.match.home_team_short_name
+              : props.match.home_team_name}{' '}
+            {t('vs')}{' '}
+            {props.match.away_team_short_name
+              ? props.match.away_team_short_name
+              : props.match.away_team_name}{' '}
           </Text>
           <Text variant="titleMedium" style={{textAlign: 'center'}}>
             {DateTime.fromISO(props.match.date).toLocaleString(
@@ -55,7 +60,12 @@ const MatchCard = props => {
           )}
           {props.match.logo && (
             <View
-              style={{position: 'absolute', bottom: 0, right: 10, zIndex: -1}}>
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 10,
+                zIndex: -1,
+              }}>
               <Image
                 source={{uri: props.match.logo}}
                 width={100}

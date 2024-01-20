@@ -26,12 +26,20 @@ const UpcomingMatches = props => {
     const query = []
     try {
       setRefreshing(true)
+      let showAll = false
       if (
         typeof user?.teams === 'undefined' ||
         !user.teams ||
         user.teams.length === 0
       ) {
+        showAll = true
+      } else if (!showMineOnly) {
+        showAll = false
+      }
+      if (showAll) {
         query.push('noteam=true')
+      } else {
+        query.push('noteam=false')
       }
       query.push('newonly=true')
       const matches = await season.GetMatches(query)
@@ -55,9 +63,28 @@ const UpcomingMatches = props => {
     props.navigation.navigate('Match Screen', {matchInfo: fixtures[idx]})
   }
 
+  async function GetMatches() {
+    try {
+      setRefreshing(true)
+      const query = []
+      if (showMineOnly) {
+        query.push('noteam=false')
+      } else {
+        query.push('noteam=true')
+      }
+      query.push('newonly=true')
+      const res = await season.GetMatches(query)
+      setFixtures(res)
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   React.useEffect(() => {
     if (isMounted) {
-//      console.log(showMineOnly)
+      GetMatches()
     }
   }, [showMineOnly])
 
@@ -117,7 +144,7 @@ const UpcomingMatches = props => {
         ItemSeparatorComponent={<View my={10} />}
         data={fixtures}
         renderItem={({item, index}) => (
-          <MatchCard match={item} idx={index} handlePress={HandlePress} />
+          <MatchCard match={item} idx={index} handlePress={HandlePress} showMineOnly={showMineOnly} />
         )}
       />
     </View>

@@ -36,6 +36,7 @@ export const useSeason = () => {
   const GetMatches = async (options = []) => {
     try {
       const query = options.join('&')
+      console.log(query)
       const matches = await Get('/matches?' + query)
       return matches
     } catch (e) {
