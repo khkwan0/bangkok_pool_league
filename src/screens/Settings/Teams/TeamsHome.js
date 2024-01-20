@@ -2,7 +2,7 @@ import React from 'react'
 import {FlatList, RefreshControl} from 'react-native'
 import {Pressable, Text, View} from '@ybase'
 import {useLeague, useYBase} from '~/lib/hooks'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation, useFocusEffect} from '@react-navigation/native'
 import {useSelector} from 'react-redux'
 import {useTranslation} from 'react-i18next'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
@@ -74,9 +74,11 @@ const TeamsHome = props => {
     }
   }, [showMineOnly])
 
-  React.useEffect(() => {
-    GetTeams()
-  }, [])
+  useFocusEffect(
+    React.useCallback(() => {
+      GetTeams()
+    }, []),
+  )
 
   async function onRefresh() {
     GetTeams()

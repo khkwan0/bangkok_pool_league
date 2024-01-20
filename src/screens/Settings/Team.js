@@ -11,6 +11,7 @@ import TrieSearch from 'trie-search'
 
 const PlayerCard = props => {
   const {t} = useTranslation()
+  const user = useSelector(_state => _state.userData).user
 
   return (
     <Row alignItems="center" p={10}>
@@ -25,8 +26,10 @@ const PlayerCard = props => {
               {props.abbrevFirst
                 ? (props.player.firstname ?? props.player.firstName).substr(
                     0,
-                    (props.player.firstname ?? props.player.firstName).length >
-                      2
+                    user.role_id === 9
+                      ? props.player.lastname.length
+                      : (props.player.firstname ?? props.player.firstName)
+                          .length > 2
                       ? 3
                       : 2,
                   )
@@ -39,7 +42,10 @@ const PlayerCard = props => {
               {props.abbrevLast
                 ? (props.player.lastname ?? props.player.lastName).substr(
                     0,
-                    (props.player.lastname ?? props.player.lastName).length > 2
+                    user.role_id === 9
+                      ? props.player.lastname.length
+                      : (props.player.lastname ?? props.player.lastName)
+                          .length > 2
                       ? 3
                       : 2,
                   )
@@ -194,6 +200,7 @@ const Team = props => {
       setErr('server_error')
     }
   }
+
   async function HandleSelect(playerId) {
     try {
       setShowAddNewPlayer(false)
@@ -240,6 +247,11 @@ const Team = props => {
         </View>
       )}
       <View style={{marginTop: 20}}>
+        <TwoColumns label={t('team_id')}>
+          <Text bold fontSize="lg">
+            #{team.id}
+          </Text>
+        </TwoColumns>
         <TwoColumns label={t('name')}>
           <Text fontSize="lg" bold>
             {team.name}
@@ -260,6 +272,7 @@ const Team = props => {
                 key={'captain' + idx}
                 label={idx === 0 ? t('captain') : ''}>
                 <Pressable
+                  py={5}
                   onPress={() =>
                     navigation.navigate('Player', {
                       playerId: captain.id,
@@ -280,6 +293,7 @@ const Team = props => {
                 key={'assistant' + idx}
                 label={idx === 0 ? t('assistants') : ''}>
                 <Pressable
+                  py={5}
                   onPress={() =>
                     navigation.navigate('Player', {
                       playerId: assistant.id,

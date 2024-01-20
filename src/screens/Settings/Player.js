@@ -23,6 +23,8 @@ const Player = props => {
   const [err, setErr] = React.useState('')
   const {t} = useTranslation()
 
+  console.log(props.playerId)
+
   function HandleStatsPress() {
     navigation.navigate('Player Statistics', {playerInfo: playerInfo})
   }
@@ -43,6 +45,7 @@ const Player = props => {
   async function GetPlayerStatsInfo(playerId) {
     try {
       const res = await league.GetPlayerStatsInfo(playerId)
+  console.log(res)
       setPlayerInfo(res)
     } catch (e) {
       console.log(e)
@@ -78,6 +81,7 @@ const Player = props => {
   React.useEffect(() => {
     GetPlayerStatsInfo(props.playerId)
   }, [props.playerId])
+
 
   if (playerInfo) {
     if (typeof playerInfo.pic === 'undefined' || !playerInfo.pic) {
