@@ -4,14 +4,17 @@ import {Button, Text} from 'react-native-paper'
 import TwoColumns from '@components/TwoColumns'
 import {showLocation} from 'react-native-map-link'
 import config from '~/config'
+import {useTranslation} from 'react-i18next'
 
 const Venue = props => {
   const venue = props.route.params.venue
+  const {t} = useTranslation()
 
   function HandleTeamPress(team) {
     props.navigation.navigate('Team', {team: team})
   }
 
+  console.log(venue)
   return (
     <ScrollView style={{marginBottom: 10}}>
       <View style={{padding: 20}}>
@@ -35,9 +38,9 @@ const Venue = props => {
           <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
             <Text>{venue.plus}</Text>
             {typeof venue.latitude !== 'undefined' &&
-              venue.latitude &&
+              venue.latitude !== 0 &&
               typeof venue.longitude !== 'undefined' &&
-              venue.longitude && (
+              venue.longitude !== 0 && (
                 <Button
                   mode="outlined"
                   onPress={() =>
@@ -46,7 +49,7 @@ const Venue = props => {
                       longitude: venue.longitude,
                     })
                   }>
-                  Map
+                  {t('map')}
                 </Button>
               )}
           </View>
