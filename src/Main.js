@@ -1,11 +1,10 @@
-/* eslint-disable react/no-unstable-nested-components */
 import React from 'react'
 import Home from '@screens/Home'
 import {useAccount, useLeague, useYBase} from '~/lib/hooks'
 import '~/i18n'
 import {useTranslation} from 'react-i18next'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {View} from '@ybase'
+import {ActivityIndicator, View} from '@ybase'
 
 const Main = props => {
   const account = useAccount()
@@ -15,7 +14,15 @@ const Main = props => {
   const {colors, setColorMode} = useYBase()
 
   React.useEffect(() => {
-    account.FetchUser()
+    ;(async () => {
+      try {
+        await account.FetchUser()
+      } catch (e) {
+        console.log(e)
+      } finally {
+        setIsMounted(true)
+      }
+    })()
   }, [])
 
   React.useEffect(() => {
@@ -38,11 +45,17 @@ const Main = props => {
     return () => setIsMounted(false)
   }, [])
 
-  return (
-    <View flex={1} bgColor={colors.background}>
-      <Home />
+  if (isMounted) {
+    return (
+      <View flex={1} bgColor={colors.background}>
+        <Home />
+      </View>
+    )
+  } else {
+    <View flex={1} justifyContent="center" alignItems="center">
+      <ActivityIndicator />
     </View>
-  )
+  }
 
   /*
   if (drawerOnly) {
