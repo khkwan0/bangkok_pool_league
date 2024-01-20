@@ -5,6 +5,7 @@ import {Button, Text} from 'react-native-paper'
 
 const PlayerCard = props => {
   const {t} = useTranslation()
+
   function HandleSelect(playerId) {
     let newToTeam = false
     if (typeof props.newToTeam !== 'undefined' && props.newToTeam) {
