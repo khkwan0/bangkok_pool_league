@@ -589,11 +589,11 @@ const MatchScreen = props => {
   async function UpdateTeams() {
     const _teams = {}
     if (typeof matchInfo.home_team_id !== 'undefined') {
-      const homePlayers = await team.GetPlayers(matchInfo.home_team_id)
+      const homePlayers = await team.GetPlayers(matchInfo.home_team_id, true)
       _teams[matchInfo.home_team_id] = homePlayers
     }
     if (typeof matchInfo.away_team_id !== 'undefined') {
-      const awayPlayers = await team.GetPlayers(matchInfo.away_team_id)
+      const awayPlayers = await team.GetPlayers(matchInfo.away_team_id, true)
       _teams[matchInfo.away_team_id] = awayPlayers
     }
     setTeams(_teams)

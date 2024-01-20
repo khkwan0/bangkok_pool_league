@@ -40,7 +40,7 @@ const Roster = props => {
   React.useEffect(() => {
     ;(async () => {
       try {
-        const res = await league.GetPlayers()
+        const res = await league.GetPlayers(true)
         setAllPlayers(res)
       } catch (e) {
         console.log(e)

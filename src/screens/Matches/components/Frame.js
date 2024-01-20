@@ -44,7 +44,10 @@ const Frame = props => {
     function HandleChoosePlayer(side, number) {
       if (props.isLoading || disabled || props.side !== side || !props.side) {
       } else {
-        const teamId = side === 'home' ? props.matchInfo.home_team_id : props.matchInfo.away_team_id
+        const teamId =
+          side === 'home'
+            ? props.matchInfo.home_team_id
+            : props.matchInfo.away_team_id
         props.choosePlayer(
           teamId,
           number,
