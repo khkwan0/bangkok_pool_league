@@ -224,6 +224,7 @@ const MatchScreen = props => {
     })
 
     socket.on('match_update', data => {
+      try {
       if (typeof data !== 'undefined' && data) {
         if (typeof data.type !== 'undefined' && data.type) {
           if (data.type === 'firstbreak') {
@@ -253,6 +254,9 @@ const MatchScreen = props => {
           }
         }
       }
+  } catch (e) {
+    console.log(e)
+  }
     })
     return () => {
       socket.close()
