@@ -62,6 +62,10 @@ const MatchScreen = props => {
   */
 
   React.useEffect(() => {
+    props.navigation.setOptions({headerTitle: '#' + matchInfo.match_id})
+  }, [])
+
+  React.useEffect(() => {
     ;(async () => {
       try {
         setIsLoading(true)
@@ -678,9 +682,6 @@ const MatchScreen = props => {
                       <ActivityIndicator />
                     </View>
                   )}
-                  <View mt={20}>
-                    <Text textAlign="center">Match #{matchInfo.match_id}</Text>
-                  </View>
                   <Row alignItems="center">
                     <View flex={2} justifyContent="center" alignItems="center">
                       <Text textAlign="center" fontSize="xl">
