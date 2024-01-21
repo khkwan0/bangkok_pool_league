@@ -1,6 +1,6 @@
 import React from 'react'
 import {FlatList, RefreshControl} from 'react-native'
-import {Button, Row, Text, View} from '@ybase'
+import {Button, Text, View} from '@ybase'
 import MatchCard from './components/MatchCard'
 import {useLeague, useSeason, useYBase} from '~/lib/hooks'
 import {useSelector, useDispatch} from 'react-redux'
@@ -22,11 +22,13 @@ const UpcomingMatches = props => {
   const {t} = useTranslation()
   const {colors} = useYBase()
 
+  /*
   const onRefresh = React.useCallback(async () => {
     const query = []
     try {
       setRefreshing(true)
       let showAll = false
+      console.log(user?.teams?.length)
       if (
         typeof user?.teams === 'undefined' ||
         !user.teams ||
@@ -42,6 +44,7 @@ const UpcomingMatches = props => {
         query.push('noteam=false')
       }
       query.push('newonly=true')
+      console.log(query)
       const matches = await season.GetMatches(query)
       setFixtures(matches)
       const _season = await league.GetSeason()
@@ -54,20 +57,28 @@ const UpcomingMatches = props => {
       setIsMounted(true)
     }
   }, [])
+  */
 
-  React.useEffect(() => {
-    onRefresh()
-  }, [user])
+
+  async function GetSeason() {
+    try {
+      const _season = await league.GetSeason()
+      dispatch(SetSeason(_season))
+    } catch (e) {
+      console.log(e)
+    }
+
+  }
 
   function HandlePress(idx) {
     props.navigation.navigate('Match Screen', {matchInfo: fixtures[idx]})
   }
 
-  async function GetMatches() {
+  async function GetMatches(filtered = false) {
     try {
       setRefreshing(true)
       const query = []
-      if (showMineOnly) {
+      if (filtered) {
         query.push('noteam=false')
       } else {
         query.push('noteam=true')
@@ -79,23 +90,46 @@ const UpcomingMatches = props => {
       console.log(e)
     } finally {
       setRefreshing(false)
+      setIsMounted(true)
     }
   }
 
   React.useEffect(() => {
-    if (isMounted) {
-      GetMatches()
+    GetSeason()
+  }, [])
+
+  React.useEffect(() => {
+    if (
+      typeof user?.teams !== 'undefined' &&
+      user.teams.length > 0 &&
+      showMineOnly
+    ) {
+      GetMatches(true)
+    } else {
+      GetMatches(false)
     }
   }, [showMineOnly])
 
-  return (
-    <View flex={1} bgColor={colors.background} px={20}>
-      <FlatList
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListHeaderComponent={
-          isMounted ? (
+  React.useEffect(() => {
+    if (
+      typeof user?.teams !== 'undefined' &&
+      user.teams.length > 0 &&
+      showMineOnly
+    ) {
+      GetMatches(true)
+    } else {
+      GetMatches(false)
+    }
+  }, [user])
+
+  if (isMounted) {
+    return (
+      <View flex={1} bgColor={colors.background} px={20}>
+        <FlatList
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={GetMatches} />
+          }
+          ListHeaderComponent={
             <View>
               {!user.id && (
                 <Button
@@ -127,33 +161,35 @@ const UpcomingMatches = props => {
                 </View>
               )}
             </View>
-          ) : null
-        }
-        ListFooterComponent={
-          isMounted && fixtures.length === 0 ? (
-            <View my={30}>
-              <Text textAlign="center" fontSize="xxxl">
-                No upcoming matches for season: {seasonNumber}
-              </Text>
-            </View>
-          ) : null
-        }
-        keyExtractor={(item, index) =>
-          item.home_team_id + item.away_team_id + item.date + index
-        }
-        ItemSeparatorComponent={<View my={10} />}
-        data={fixtures}
-        renderItem={({item, index}) => (
-          <MatchCard
-            match={item}
-            idx={index}
-            handlePress={HandlePress}
-            showMineOnly={showMineOnly}
-          />
-        )}
-      />
-    </View>
-  )
+          }
+          ListFooterComponent={
+            isMounted && fixtures.length === 0 ? (
+              <View my={30}>
+                <Text textAlign="center" fontSize="xxxl">
+                  No upcoming matches for season: {seasonNumber}
+                </Text>
+              </View>
+            ) : null
+          }
+          keyExtractor={(item, index) =>
+            item.home_team_id + item.away_team_id + item.date + index
+          }
+          ItemSeparatorComponent={<View my={10} />}
+          data={fixtures}
+          renderItem={({item, index}) => (
+            <MatchCard
+              match={item}
+              idx={index}
+              handlePress={HandlePress}
+              showMineOnly={showMineOnly}
+            />
+          )}
+        />
+      </View>
+    )
+  } else {
+    return null
+  }
 }
 
 export default UpcomingMatches

@@ -225,38 +225,38 @@ const MatchScreen = props => {
 
     socket.on('match_update', data => {
       try {
-      if (typeof data !== 'undefined' && data) {
-        if (typeof data.type !== 'undefined' && data.type) {
-          if (data.type === 'firstbreak') {
-            setFirstBreak(data.data.firstBreak)
-          }
-          if (data.type === 'newnote') {
-            if (typeof matchInfo.meta === 'undefined') {
-              matchInfo.meta = {
-                notes: [],
-                history: [],
-              }
+        if (typeof data !== 'undefined' && data) {
+          if (typeof data.type !== 'undefined' && data.type) {
+            if (data.type === 'firstbreak') {
+              setFirstBreak(data.data.firstBreak)
             }
-            matchInfo.meta.notes.push(data)
-          }
-          if (data.type === 'finalize') {
-            if (
-              typeof data.data !== 'undefined' &&
-              typeof data.data.side !== 'undefined'
-            ) {
-              if (data.data.side === 'home') {
-                setFinalizedHome(true)
+            if (data.type === 'newnote') {
+              if (typeof matchInfo.meta === 'undefined') {
+                matchInfo.meta = {
+                  notes: [],
+                  history: [],
+                }
               }
-              if (data.data.side === 'away') {
-                setFinalizedAway(true)
+              matchInfo.meta.notes.push(data)
+            }
+            if (data.type === 'finalize') {
+              if (
+                typeof data.data !== 'undefined' &&
+                typeof data.data.side !== 'undefined'
+              ) {
+                if (data.data.side === 'home') {
+                  setFinalizedHome(true)
+                }
+                if (data.data.side === 'away') {
+                  setFinalizedAway(true)
+                }
               }
             }
           }
         }
+      } catch (e) {
+        console.log(e)
       }
-  } catch (e) {
-    console.log(e)
-  }
     })
     return () => {
       socket.close()
