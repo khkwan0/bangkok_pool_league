@@ -28,8 +28,16 @@ const Matches = props => {
       }}>
       <MatchStack.Screen name="Upcoming Matches" component={UpcomingMatches} />
       <MatchStack.Screen name="Match Screen" component={MatchScreen} />
-      <MatchStack.Screen name="Roster" component={Roster} />
-      <MatchStack.Screen name="Match Info" component={ExtendedMatchInfo} />
+      <MatchStack.Screen
+        name="Roster"
+        component={Roster}
+        options={{headerTitle: t('roster')}}
+      />
+      <MatchStack.Screen
+        name="Match Info"
+        component={ExtendedMatchInfo}
+        options={{headerTitle: t('match_info')}}
+      />
     </MatchStack.Navigator>
   )
 }

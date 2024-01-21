@@ -101,5 +101,7 @@
   "team_id": "Team ID",
   "add_new_player": "Add new player",
   "too_short": "Too short",
-  "confirm": "Confirm"
+  "confirm": "Confirm",
+  "roster": "Roster",
+  "match_info": "Match Info"
 }
