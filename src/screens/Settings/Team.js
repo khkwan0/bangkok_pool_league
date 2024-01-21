@@ -161,7 +161,7 @@ const AddNewPlayer = props => {
 
   async function HandleSave() {
     try {
-      if (newNickName && newNickName.length > 3) {
+      if (newNickName && newNickName.length > 2) {
         setLoading(true)
         const res = await league.SaveNewPlayer(
           newNickName,
