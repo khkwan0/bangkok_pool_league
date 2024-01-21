@@ -36,7 +36,6 @@ const Home = props => {
           headerStyle: {backgroundColor: colors.headerBackground},
           headerTitleStyle: {color: colors.onHeaderBackground},
           headerTintColor: colors.onHeaderBackground,
-          cardStyle: {backgroundColor: colors.background, opacity: 1},
           headerTitleAlign: 'center',
           presentation: 'transparentModal',
         }}>

@@ -1,10 +1,13 @@
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import {View} from 'react-native'
-import {Button, Text} from 'react-native-paper'
+import {Button, Row, Text, View} from '@ybase'
+import {useYBase} from '~/lib/hooks'
+import {Image} from 'react-native'
+import config from '~/config'
 
 const PlayerCard = props => {
   const {t} = useTranslation()
+  const {colors} = useYBase()
 
   function HandleSelect(playerId) {
     let newToTeam = false
@@ -15,18 +18,10 @@ const PlayerCard = props => {
   }
 
   return (
-    <View
-      style={[
-        {flexDirection: 'row', alignItems: 'center', padding: 10},
-        props.idx % 2 !== 0
-          ? {backgroundColor: '#0000ff22'}
-          : {backgroundColor: '#0011aa22'},
-      ]}>
-      <View style={{flex: 1.5}}>
-        <Text variant="bodyLarge">
-          {t('nickname')}: {props.player.name ?? props.player.nickname}
-        </Text>
-        <View style={{flexDirection: 'row'}}>
+    <Row alignItems="center" p={10} bgColor={colors.playerRosterCardBackground}>
+      <View flex={1.5}>
+        <Text fontSize="lg">{props.player.name ?? props.player.nickname}</Text>
+        <Row>
           {(props.player.firstname || props.player.firstName) && (
             <Text variant="bodyLarge">
               &nbsp;
@@ -54,19 +49,31 @@ const PlayerCard = props => {
                 : props.player.lastname}
             </Text>
           )}
-        </View>
+        </Row>
       </View>
-      <View style={{flex: 1}}>
+      <View flex={1}>
+        {typeof props.player.profile_picture !== 'undefined' &&
+          props.player.profile_picture && (
+            <Image
+              source={{uri: config.profileUrl + props.player.profile_picture}}
+              width={50}
+              height={50}
+              resizeMode="contain"
+              style={{borderRadius: 50}}
+            />
+          )}
+      </View>
+      <View flex={1}>
         <Button
           disabled={props.disabled}
-          mode="outlined"
+          variant="outline"
           onPress={() =>
             HandleSelect(props.player.playerId ?? props.player.player_id)
           }>
           Select
         </Button>
       </View>
-    </View>
+    </Row>
   )
 }
 

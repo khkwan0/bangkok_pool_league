@@ -3,7 +3,7 @@ import {FlatList, View} from 'react-native'
 import {Button, Text, TextInput} from 'react-native-paper'
 import TrieSearch from 'trie-search'
 import PlayerCard from '@components/PlayerCard'
-import {useLeague} from '~/lib/hooks'
+import {useLeague, useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
 
 const NewPlayerInput = props => {

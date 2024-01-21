@@ -472,7 +472,7 @@ const Team = props => {
               <Text>players</Text>
             </View>
             {team.players.map((player, idx) => (
-              <Row alignItems="center">
+              <Row alignItems="center" key={'player' + idx}>
                 <View flex={1}>
                   <Text>{player.flag}</Text>
                 </View>

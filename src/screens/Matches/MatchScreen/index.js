@@ -587,16 +587,21 @@ const MatchScreen = props => {
   }
 
   async function UpdateTeams() {
-    const _teams = {}
-    if (typeof matchInfo.home_team_id !== 'undefined') {
-      const homePlayers = await team.GetPlayers(matchInfo.home_team_id, true)
-      _teams[matchInfo.home_team_id] = homePlayers
+    try {
+      const _teams = {}
+      if (typeof matchInfo.home_team_id !== 'undefined') {
+        const homePlayers = await team.GetPlayers(matchInfo.home_team_id, true)
+        _teams[matchInfo.home_team_id] = homePlayers.data
+      }
+      if (typeof matchInfo.away_team_id !== 'undefined') {
+        const awayPlayers = await team.GetPlayers(matchInfo.away_team_id, true)
+        _teams[matchInfo.away_team_id] = awayPlayers.data
+      }
+      setTeams(_teams)
+    } catch (e) {
+      setError('server_error_update_teams')
+      console.log(e)
     }
-    if (typeof matchInfo.away_team_id !== 'undefined') {
-      const awayPlayers = await team.GetPlayers(matchInfo.away_team_id, true)
-      _teams[matchInfo.away_team_id] = awayPlayers
-    }
-    setTeams(_teams)
   }
 
   if (isMounted) {

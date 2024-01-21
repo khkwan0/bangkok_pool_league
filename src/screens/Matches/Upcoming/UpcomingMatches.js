@@ -144,7 +144,12 @@ const UpcomingMatches = props => {
         ItemSeparatorComponent={<View my={10} />}
         data={fixtures}
         renderItem={({item, index}) => (
-          <MatchCard match={item} idx={index} handlePress={HandlePress} showMineOnly={showMineOnly} />
+          <MatchCard
+            match={item}
+            idx={index}
+            handlePress={HandlePress}
+            showMineOnly={showMineOnly}
+          />
         )}
       />
     </View>

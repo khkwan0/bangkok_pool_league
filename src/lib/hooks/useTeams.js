@@ -7,7 +7,10 @@ export const useTeams = () => {
     try {
       if (teamid && Number.isInteger(teamid) && teamid >= 0) {
         const players = await Get(
-          '/players?teamid=' + teamid + '&active_only=' + activeOnly,
+          '/playersteam/players?teamid=' +
+            teamid +
+            '&active_only=' +
+            activeOnly,
         )
         return players
       }
