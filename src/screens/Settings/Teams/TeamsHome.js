@@ -50,10 +50,15 @@ const TeamsHome = props => {
     try {
       setRefreshing(true)
       const res = await league.GetTeams()
-      const _showMineOnly = JSON.parse(
-        await AsyncStorage.getItem('my_teams_only'),
-      )
-      if (_showMineOnly.showMineOnly) {
+      let __showMineOnly = false
+      const _showMineOnly = await AsyncStorage.getItem('my_teams_only')
+      if (typeof _showMineOnly !== 'undefined' && _showMineOnly) {
+        const temp = JSON.parse(_showMineOnly)
+        if (typeof temp !== 'undefined' && typeof temp.showMineOnly !== 'undefined') {
+          __showMineOnly = temp
+        }
+      }
+      if (__showMineOnly) {
         const _teams = res.filter(team => userTeams.includes(team.id))
         setTeams(_teams)
       } else {
