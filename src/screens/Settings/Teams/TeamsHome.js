@@ -44,7 +44,8 @@ const TeamsHome = props => {
   const user = useSelector(_state => _state.userData).user
   const {t} = useTranslation()
 
-  const userTeams = user.teams.map(_team => _team.id)
+  const userTeams =
+    typeof user?.teams !== 'undefined' ? user?.teams.map(_team => _team.id) : []
 
   async function GetTeams() {
     try {
