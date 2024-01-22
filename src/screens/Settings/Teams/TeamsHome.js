@@ -51,18 +51,7 @@ const TeamsHome = props => {
     try {
       setRefreshing(true)
       const res = await league.GetTeams()
-      let __showMineOnly = false
-      const _showMineOnly = await AsyncStorage.getItem('my_teams_only')
-      if (typeof _showMineOnly !== 'undefined' && _showMineOnly) {
-        const temp = JSON.parse(_showMineOnly)
-        if (
-          typeof temp !== 'undefined' &&
-          typeof temp.showMineOnly !== 'undefined'
-        ) {
-          __showMineOnly = temp
-        }
-      }
-      if (__showMineOnly) {
+      if (showMineOnly) {
         const _teams = res.filter(team => userTeams.includes(team.id))
         setTeams(_teams)
       } else {
@@ -76,57 +65,95 @@ const TeamsHome = props => {
     }
   }
 
+  async function GetShowMineOnly() {
+    const fromStorage = await AsyncStorage.getItem('my_teams_only')
+    if (typeof fromStorage !== 'undefined' && fromStorage) {
+      const temp = JSON.parse(fromStorage)
+      if (
+        typeof temp !== 'undefined' &&
+        typeof temp.showMineOnly !== 'undefined' &&
+        typeof user.id !== 'undefined' &&
+        user.id
+      ) {
+        setShowMineOnly(temp)
+      } else {
+        setShowMineOnly(false)
+      }
+    }
+  }
+
+  React.useEffect(() => {
+    ;(async () => {
+      await GetShowMineOnly()
+      setIsMounted(true)
+    })()
+  }, [])
+
   React.useEffect(() => {
     if (isMounted) {
-      AsyncStorage.setItem(
-        'my_teams_only',
-        JSON.stringify({showMineOnly: showMineOnly}),
-      )
-      if (showMineOnly) {
-        const _teams = teams.filter(team => userTeams.includes(team.id))
-        setTeams(_teams)
-      } else {
-        GetTeams()
-      }
+      ;(async () => {
+        await AsyncStorage.setItem(
+          'my_teams_only',
+          JSON.stringify({showMineOnly: showMineOnly}),
+        )
+        if (showMineOnly) {
+          const _teams = teams.filter(team => userTeams.includes(team.id))
+          setTeams(_teams)
+        } else {
+          GetTeams()
+        }
+      })()
     }
   }, [showMineOnly])
 
+  React.useEffect(() => {
+    if (isMounted) {
+      GetTeams()
+    }
+  }, [isMounted])
+  /*
   useFocusEffect(
     React.useCallback(() => {
       GetTeams()
     }, []),
   )
+  */
 
   async function onRefresh() {
+    console.log('refresh')
     GetTeams()
   }
 
-  return (
-    <FlatList
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      ListHeaderComponent={
-        <View>
-          {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
-            <View my={20} px={20}>
-              <BouncyCheckbox
-                text={t('show_my_teams')}
-                textStyle={{textDecorationLine: 'none'}}
-                isChecked={showMineOnly}
-                onPress={() => setShowMineOnly(s => !s)}
-              />
-            </View>
-          )}
-        </View>
-      }
-      contentContainerStyle={{backgroundColor: colors.background}}
-      data={teams}
-      renderItem={({item, index}) => (
-        <TeamCard team={item} idx={index} userTeams={userTeams} />
-      )}
-    />
-  )
+  if (isMounted) {
+    return (
+      <FlatList
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListHeaderComponent={
+          <View>
+            {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
+              <View my={20} px={20}>
+                <BouncyCheckbox
+                  text={t('show_my_teams')}
+                  textStyle={{textDecorationLine: 'none'}}
+                  isChecked={showMineOnly}
+                  onPress={() => setShowMineOnly(s => !s)}
+                />
+              </View>
+            )}
+          </View>
+        }
+        contentContainerStyle={{backgroundColor: colors.background}}
+        data={teams}
+        renderItem={({item, index}) => (
+          <TeamCard team={item} idx={index} userTeams={userTeams} />
+        )}
+      />
+    )
+  } else {
+    return null
+  }
 }
 
 export default TeamsHome
