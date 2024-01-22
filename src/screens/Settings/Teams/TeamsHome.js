@@ -54,7 +54,10 @@ const TeamsHome = props => {
       const _showMineOnly = await AsyncStorage.getItem('my_teams_only')
       if (typeof _showMineOnly !== 'undefined' && _showMineOnly) {
         const temp = JSON.parse(_showMineOnly)
-        if (typeof temp !== 'undefined' && typeof temp.showMineOnly !== 'undefined') {
+        if (
+          typeof temp !== 'undefined' &&
+          typeof temp.showMineOnly !== 'undefined'
+        ) {
           __showMineOnly = temp
         }
       }
