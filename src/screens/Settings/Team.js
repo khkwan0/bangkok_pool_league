@@ -161,7 +161,7 @@ const AddNewPlayer = props => {
 
   async function HandleSave() {
     try {
-      if (newNickName && newNickName.length > 2) {
+      if (newNickName && newNickName.length > 1) {
         setLoading(true)
         const res = await league.SaveNewPlayer(
           newNickName,
@@ -198,7 +198,7 @@ const AddNewPlayer = props => {
   }
 
   React.useEffect(() => {
-    if (newNickName.length > 2) {
+    if (newNickName.length > 1) {
       setValid(true)
     }
   }, [newNickName])
