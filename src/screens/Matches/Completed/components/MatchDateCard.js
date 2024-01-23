@@ -49,7 +49,9 @@ const MatchDateCard = props => {
                 <Row alignItems="center">
                   <View flex={2}>
                     <Text bold fontSize="xl" textAlign="center">
-                      {match.home_team_short_name}
+                      {match.home_team_short_name
+                        ? match.home_team_short_name
+                        : match.home_team_name}
                     </Text>
                   </View>
                   <View flex={1} alignItems="center">
@@ -57,7 +59,9 @@ const MatchDateCard = props => {
                   </View>
                   <View flex={2}>
                     <Text fontSize="xl" bold textAlign="center">
-                      {match.away_team_short_name}
+                      {match.away_team_short_name
+                        ? match.away_team_short_name
+                        : match.away_team_name}
                     </Text>
                   </View>
                 </Row>

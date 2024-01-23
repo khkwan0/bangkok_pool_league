@@ -64,6 +64,9 @@ export const theme = {
         activeSubsBackground: '#ebf4ff',
         redeemInfoBackground: '#ebf4ff',
 
+        completedFrame: '#fff',
+        completedFrameAlt: '#ccc',
+
         success: '#3abb70',
         alert: '#DE5852', // red-400
         alertSurface: '#DE5852', // red-400
@@ -171,6 +174,9 @@ export const theme = {
         inverseSurface: 'rgb(255, 255, 255)', //neutral-50
         inverseOnSurface: 'rgb(17, 20, 61)', //brand-800
         inversePrimary: 'rgb(16, 68, 153)', //brand-500
+
+        completedFrame: '#fff',
+        completedFrameAlt: '#ccc',
 
         alert: '#DE5852', // red-400
         alertSurface: '#DE5852', // red-400

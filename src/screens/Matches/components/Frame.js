@@ -4,11 +4,13 @@ import {ActivityIndicator, Pressable, Row, Text, View} from '@ybase'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
+import {useSelector} from 'react-redux'
 
 const Frame = props => {
   const {colors} = useYBase()
   const disabled = props.finalizedHome && props.finalizedAway
   const {t} = useTranslation()
+  const user = useSelector(_state => _state.userData).user
 
   if (props.frame.type !== 'section') {
     let awayPlayerA = ''
@@ -42,8 +44,10 @@ const Frame = props => {
     }
 
     function HandleChoosePlayer(side, number) {
-      if (props.isLoading || disabled || props.side !== side || !props.side) {
-      } else {
+      if (
+        (!props.isLoading && !disabled && props.side === side && props.side) ||
+        user.role_id === 9
+      ) {
         const teamId =
           side === 'home'
             ? props.matchInfo.home_team_id
@@ -60,18 +64,18 @@ const Frame = props => {
 
     function HandleChooseFrameWin(side, teamId, playerIds) {
       if (
-        !props.side ||
-        disabled ||
-        props.isLoading ||
-        (props.gameType === 'doubles'
-          ? homePlayerA && homePlayerB && awayPlayerA && awayPlayerB
-            ? false
-            : true
-          : homePlayerA && awayPlayerA
-          ? false
-          : true)
+        (!props.side &&
+          !disabled &&
+          !props.isLoading &&
+          (props.gameType === 'doubles'
+            ? homePlayerA && homePlayerB && awayPlayerA && awayPlayerB
+              ? true
+              : false
+            : homePlayerA && awayPlayerA
+            ? true
+            : false)) ||
+        user.role_id === 9
       ) {
-      } else {
         props.setWinner(
           side,
           teamId,
@@ -118,9 +122,17 @@ const Frame = props => {
             )}
             <View style={{flexDirection: 'row', justifyContent: 'center'}}>
               {props.firstBreak === props.matchInfo.home_team_id &&
+                Math.floor((props.frameIdx / 5) % 2) === 0 &&
                 props.frameIdx % 2 === 0 && <Text>{t('break')}</Text>}
               {props.firstBreak === props.matchInfo.away_team_id &&
+                Math.floor((props.frameIdx / 5) % 2) === 0 &&
                 props.frameIdx % 2 === 1 && <Text>{t('break')}</Text>}
+              {props.firstBreak === props.matchInfo.home_team_id &&
+                Math.floor((props.frameIdx / 5) % 2) === 1 &&
+                props.frameIdx % 2 === 1 && <Text>{t('break')}</Text>}
+              {props.firstBreak === props.matchInfo.away_team_id &&
+                Math.floor((props.frameIdx / 5) % 2) === 1 &&
+                props.frameIdx % 2 === 0 && <Text>{t('break')}</Text>}
             </View>
           </View>
           <View flex={1} alignItems="center" justifyContent="center" py={10}>
@@ -199,9 +211,6 @@ const Frame = props => {
             {props.gameTypes[props.frame.type].no_players === 2 && (
               <View style={{marginTop: 5}}>
                 <Button
-                  disabled={
-                    props.isLoading || disabled || props.side === 'home'
-                  }
                   icon={!awayPlayerB ? 'plus-circle' : ''}
                   onPress={() => HandleChoosePlayer('away', 1)}>
                   {awayPlayerB ? awayPlayerB : 'Player'}
@@ -210,9 +219,17 @@ const Frame = props => {
             )}
             <View style={{flexDirection: 'row', justifyContent: 'center'}}>
               {props.firstBreak === props.matchInfo.away_team_id &&
+                Math.floor((props.frameIdx / 5) % 2) === 0 &&
                 props.frameIdx % 2 === 0 && <Text>{t('break')}</Text>}
               {props.firstBreak === props.matchInfo.home_team_id &&
+                Math.floor((props.frameIdx / 5) % 2) === 0 &&
                 props.frameIdx % 2 === 1 && <Text>{t('break')}</Text>}
+              {props.firstBreak === props.matchInfo.away_team_id &&
+                Math.floor((props.frameIdx / 5) % 2) === 1 &&
+                props.frameIdx % 2 === 1 && <Text>{t('break')}</Text>}
+              {props.firstBreak === props.matchInfo.home_team_id &&
+                Math.floor((props.frameIdx / 5) % 2) === 1 &&
+                props.frameIdx % 2 === 0 && <Text>{t('break')}</Text>}
             </View>
           </View>
         </Row>

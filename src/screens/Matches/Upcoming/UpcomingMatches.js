@@ -67,7 +67,6 @@ const UpcomingMatches = props => {
     } catch (e) {
       console.log(e)
     }
-
   }
 
   function HandlePress(idx) {

@@ -577,14 +577,14 @@ const MatchScreen = props => {
   }
 
   function HandleFinalized(side) {
-    if (side === 'home' && side === userTeam) {
+    if ((side === 'home' && side === userTeam) || user.role_id === 9) {
       setFinalizedHome(true)
       SocketSend('finalize', {
         teamId: matchInfo.home_team_id,
         side: side,
         matchId: matchInfo.match_id,
       })
-    } else if (side === 'away' && side === userTeam) {
+    } else if ((side === 'away' && side === userTeam) || user.role_id === 9) {
       setFinalizedAway(true)
       SocketSend('finalize', {
         teamId: matchInfo.away_team_id,
@@ -689,7 +689,9 @@ const MatchScreen = props => {
                   <Row alignItems="center">
                     <View flex={2} justifyContent="center" alignItems="center">
                       <Text textAlign="center" fontSize="xl">
-                        {matchInfo.home_team_short_name}
+                        {matchInfo.home_team_short_name
+                          ? matchInfo.home_team_short_name
+                          : matchInfo.home_team_name}
                       </Text>
                     </View>
                     <View flex={1} alignItems="center">
@@ -697,7 +699,9 @@ const MatchScreen = props => {
                     </View>
                     <View flex={2} alignItems="center">
                       <Text textAlign="center" fontSize="xl">
-                        {matchInfo.away_team_short_name}
+                        {matchInfo.away_team_short_name
+                          ? matchInfo.away_team_short_name
+                          : matchInfo.away_team_name}
                       </Text>
                     </View>
                   </Row>
@@ -823,6 +827,7 @@ const MatchScreen = props => {
                   teams={teams}
                   gameTypes={gameTypes}
                   frameIdx={index}
+                  framesLength={frames.length}
                   frame={item}
                   choosePlayer={ChoosePlayer}
                   setWinner={HandleSetWinner}

@@ -111,16 +111,14 @@ const TeamsHome = props => {
       GetTeams()
     }
   }, [isMounted])
-  /*
+
   useFocusEffect(
     React.useCallback(() => {
       GetTeams()
     }, []),
   )
-  */
 
   async function onRefresh() {
-    console.log('refresh')
     GetTeams()
   }
 

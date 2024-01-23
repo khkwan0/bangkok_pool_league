@@ -9,7 +9,7 @@ const FrameDetails = props => {
   const user = useSelector(_state => _state.userData).user
   const {colors} = useYBase()
 
-  const isAdmin = user.role_id === 9 ? true : true
+  const isAdmin = user.role_id === 9 ? true : false
   return (
     <View my={10} px={20} key={'complete_frame_detail' + props.idx}>
       <Row alignItems="center">
