@@ -27,25 +27,17 @@ const SeasonPicker = props => {
     })()
   }, [])
 
-  const items = seasons.map(_season => ({
-    label: `${t('season')} ${
-      _season.identifier ? _season.identifier : _season.id
-    } ${_season.name}`,
-    value: _season.id,
-    color: colors.onSurface,
-  }))
+  const __season = seasons.find(s => s.id === season)
 
-  const _season = seasons.find(s => s.id === season)
-
-  if (_season) {
+  if (__season) {
     if (Platform.OS === 'ios' && !open) {
       return (
         <Pressable onPress={() => setOpen(true)}>
           <Row alignItems="center">
             <Text>
               {t('season')}{' '}
-              {season.identifier ? _season.identifier : _season.id}{' '}
-              {_season.name}
+              {season.identifier ? __season.identifier : __season.id}{' '}
+              {__season.name}
             </Text>
           </Row>
         </Pressable>

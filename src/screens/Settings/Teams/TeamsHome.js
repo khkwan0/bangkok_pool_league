@@ -145,7 +145,7 @@ const TeamsHome = props => {
           </View>
         }
         contentContainerStyle={{backgroundColor: colors.background}}
-        data={teams}
+        data={teams.sort((a, b) => (a.name > b.name ? 1 : -1))}
         renderItem={({item, index}) => (
           <TeamCard team={item} idx={index} userTeams={userTeams} />
         )}

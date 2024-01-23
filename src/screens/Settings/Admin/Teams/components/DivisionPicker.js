@@ -14,6 +14,7 @@ const DivisionPicker = props => {
       {props.divisions.map(division => (
         <Picker.Item
           color={colors.onSurface}
+          style={{backgroundColor: colors.surface}}
           key={division.id}
           label={division.id + ' ' + division.name}
           value={division.id}
