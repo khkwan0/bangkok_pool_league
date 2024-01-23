@@ -5,6 +5,7 @@ import {useLeague, useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
 import {Platform} from 'react-native'
 import {Pressable, Row, Text} from '@ybase'
+import AD from 'react-native-vector-icons/AntDesign'
 
 const SeasonPicker = props => {
   const [seasons, setSeasons] = React.useState([])
@@ -32,41 +33,49 @@ const SeasonPicker = props => {
   if (__season) {
     if (Platform.OS === 'ios' && !open) {
       return (
-        <Pressable onPress={() => setOpen(true)}>
-          <Row alignItems="center">
-            <Text>
+        <Pressable onPress={() => setOpen(true)} py={10}>
+          <Row alignItems="center" space={20}>
+            <Text fontSize="lg">
               {t('season')}{' '}
               {season.identifier ? __season.identifier : __season.id}{' '}
               {__season.name}
             </Text>
+            <AD name="caretdown" color={colors.onSurface} size={20} />
           </Row>
         </Pressable>
       )
     } else if (Platform.OS === 'android' || open) {
       return (
-        <Picker
-          dropdownIconColor={colors.onSurface}
-          selectedValue={props.season}
-          mode="dropdown"
-          onValueChange={(itemValue, itemPosition) =>
-            props.setSeason(itemValue)
-          }>
-          {seasons.map(_season => (
-            <Picker.Item
-              color={colors.onSurface}
-              style={{backgroundColor: colors.surface}}
-              key={_season.id}
-              label={
-                t('season') +
-                ' ' +
-                (_season.identifier
-                  ? _season.identifier
-                  : _season.id + ' ' + _season.name)
-              }
-              value={_season.id}
-            />
-          ))}
-        </Picker>
+        <>
+          {Platform.OS === 'ios' && (
+            <Pressable onPress={() => setOpen(false)}>
+              <Text textAlign="right">done</Text>
+            </Pressable>
+          )}
+          <Picker
+            dropdownIconColor={colors.onSurface}
+            selectedValue={props.season}
+            mode="dropdown"
+            onValueChange={(itemValue, itemPosition) =>
+              props.setSeason(itemValue)
+            }>
+            {seasons.map(_season => (
+              <Picker.Item
+                color={colors.onSurface}
+                style={{backgroundColor: colors.surface}}
+                key={_season.id}
+                label={
+                  t('season') +
+                  ' ' +
+                  (_season.identifier
+                    ? _season.identifier
+                    : _season.id + ' ' + _season.name)
+                }
+                value={_season.id}
+              />
+            ))}
+          </Picker>
+        </>
       )
     }
   } else {
