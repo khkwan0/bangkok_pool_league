@@ -20,6 +20,7 @@ const Profile = props => {
   const [lastNameErr, setLastNameErr] = React.useState('')
   const [firstNameErr, setFirstNameErr] = React.useState('')
   const [nickNameErr, setNickNameErr] = React.useState('')
+  const [isMounted, setIsMounted] = React.useState(false)
   const account = useAccount()
   const league = useLeague()
 
@@ -62,11 +63,15 @@ const Profile = props => {
   async function HandleSaveNickName() {
     try {
       setNickNameErr('')
-      const res = await account.SetNickName(nickName)
-      if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        setEditNickName(false)
+      if (nickName.length > 1) {
+        const res = await account.SetNickName(nickName)
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          setEditNickName(false)
+        } else {
+          setNickNameErr(res.error)
+        }
       } else {
-        setNickNameErr(res.error)
+        setNickNameErr('too_short')
       }
     } catch (e) {
       console.log(e)
@@ -85,7 +90,35 @@ const Profile = props => {
 
   React.useEffect(() => {
     GetPlayerStatsInfo()
+    setIsMounted(true)
   }, [])
+
+  React.useEffect(() => {
+    if (isMounted && !editNickname) {
+      ;(async () => {
+        const _user = await account.FetchUser()
+        setNickName(_user.nickname)
+      })()
+    }
+  }, [editNickname])
+
+  React.useEffect(() => {
+    if (isMounted && !editFirstName) {
+      ;(async () => {
+        const _user = await account.FetchUser()
+        setFirstName(_user.firstname)
+      })()
+    }
+  }, [editFirstName])
+
+  React.useEffect(() => {
+    if (isMounted && !editLastName) {
+      ;(async () => {
+        const _user = await account.FetchUser()
+        setLastName(_user.lastname)
+      })()
+    }
+  }, [editLastName])
 
   return (
     <ScrollView

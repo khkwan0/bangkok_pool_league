@@ -28,6 +28,7 @@ export const useAccount = () => {
       ) {
         const userData = await Get('/user')
         dispatch(SetUser(userData))
+        return userData
       }
     } catch (e) {
       console.log('no user')
