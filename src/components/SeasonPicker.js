@@ -1,4 +1,5 @@
 import React from 'react'
+import RNPickerSelect from 'react-native-picker-select'
 import {Picker} from '@react-native-picker/picker'
 import {useLeague, useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
@@ -23,6 +24,22 @@ const SeasonPicker = props => {
   }, [])
 
   return (
+    <RNPickerSelect
+      onValueChange={val => props.setSeason(val)}
+      items={seasons.map(_season => ({
+        label: `${t('season')} ${
+          _season.identifier ? _season.identifier : _season.id
+        } ${_season.name}`,
+        value: _season.id,
+        color: colors.onSurface,
+      }))}
+      value={props.season}
+      dropdownIconColor={colors.onSurface}
+      pickerProps={{dropdownIconColor: colors.onSurface}}
+    />
+  )
+  /*
+  return (
     <Picker
       dropdownIconColor={colors.onSurface}
       selectedValue={props.season}
@@ -45,6 +62,7 @@ const SeasonPicker = props => {
       ))}
     </Picker>
   )
+  */
 }
 
 export default SeasonPicker
