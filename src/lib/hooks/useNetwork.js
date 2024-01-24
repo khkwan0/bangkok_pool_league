@@ -1,6 +1,6 @@
 import config from '~/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {socket} from '~/socket'
+// import {socket} from '~/socket'
 
 export const useNetwork = () => {
   const Get = async function (endpoint) {
@@ -52,10 +52,18 @@ export const useNetwork = () => {
     }
   }
 
-  const SocketSend = (type = '', matchId = 0, data = {}, dest = '') => {
+  const SocketSend = (
+    type = '',
+    matchId = 0,
+    data = {},
+    dest = '',
+    userId,
+    nickname,
+    socket,
+  ) => {
     const user = {
-      id: 1933,
-      nickname: 'Ken K',
+      id: userId,
+      nickname: nickname,
     }
     const toSend = {
       type: type,

@@ -18,8 +18,10 @@ import {useMatch, useTeams, useSeason, useNetwork} from '~/lib/hooks'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useYBase} from '~/lib/hooks'
 
-import {socket} from '~/socket'
+// import {socket} from '~/socket'
+import {io} from 'socket.io-client'
 import {useTranslation} from 'react-i18next'
+import config from '~/config'
 
 const MatchScreen = props => {
   const insets = useSafeAreaInsets()
@@ -31,6 +33,7 @@ const MatchScreen = props => {
   const season = useSeason()
   const network = useNetwork()
   const match = useMatch()
+  const [socket, setSocket] = React.useState(null)
   const [gameTypes, setGameTypes] = React.useState({})
   const [teams, setTeams] = React.useState({})
   const [firstBreak, setFirstBreak] = React.useState(0)
@@ -66,48 +69,28 @@ const MatchScreen = props => {
   }, [])
 
   React.useEffect(() => {
-    ;(async () => {
-      try {
-        setIsLoading(true)
-        console.log('getting game types')
-        const _gameTypes = await season.GetGameTypes()
-        setGameTypes(_gameTypes)
-
-        console.log('rendering init frames')
-        await RenderInitialFrames()
-
-        console.log('update teams')
-        await UpdateTeams()
-
-        console.log('Get frames')
-        await GetFrames()
-
-        console.log('updatematch info')
-        await UpdateMatchInfo()
-
-        setIsLoading(false)
-        setIsMounted(true)
-      } catch (e) {
-        setError('Something is very wrong')
-        console.log(e)
-      }
-    })()
+    console.log('setting socket')
+    setSocket(io('https://' + config.domain, {autoConnect: false}))
     return () => {
-      console.log('unmounting')
-      socket.disconnect()
-      setIsMounted(false)
+      if (socket) {
+        socket.disconnect()
+      }
     }
   }, [])
 
-  async function HandleAppStateChange(nextAppState) {
-    console.log('nextappstate', nextAppState)
-    if (
-      appState.current.match(/inactive|background/) &&
-      nextAppState === 'active'
-    ) {
+  React.useEffect(() => {
+    console.log('socket status', socket)
+    if (socket) {
       ;(async () => {
         try {
           setIsLoading(true)
+          console.log('getting game types')
+          const _gameTypes = await season.GetGameTypes()
+          setGameTypes(_gameTypes)
+
+          console.log('rendering init frames')
+          await RenderInitialFrames()
+
           console.log('update teams')
           await UpdateTeams()
 
@@ -120,27 +103,69 @@ const MatchScreen = props => {
           setIsLoading(false)
           setIsMounted(true)
         } catch (e) {
+          setError('Something is very wrong')
           console.log(e)
         }
       })()
+      return () => {
+        console.log('unmounting')
+        //      socket.disconnect()
+        setIsMounted(false)
+      }
+    }
+  }, [socket])
+
+  async function HandleAppStateChange(nextAppState) {
+    console.log('nextappstate', nextAppState, appState.current)
+    if (
+      appState.current.match(/inactive|background/) &&
+      nextAppState === 'active'
+    ) {
+      try {
+        console.log('socket', socket)
+        setIsLoading(true)
+        console.log('update teams')
+        await UpdateTeams()
+
+        console.log('Get frames')
+        await GetFrames()
+
+        console.log('updatematch info')
+        await UpdateMatchInfo()
+
+        setIsLoading(false)
+        setIsMounted(true)
+      } catch (e) {
+        console.log('Appstate change error', e)
+      }
     } else {
-      socket.disconnect()
+      console.log('socket background state', socket)
+      if (socket) {
+        console.log('disconnecting')
+        socket.disconnect()
+        socket.close()
+      }
     }
     appState.current = nextAppState
   }
 
   React.useEffect(() => {
-    const subscription = AppState.addEventListener(
-      'change',
-      HandleAppStateChange,
-    )
-    return () => {
-      console.log('removing subscription')
-      socket.disconnect()
-      socket.close()
-      subscription.remove()
+    if (socket) {
+      const subscription = AppState.addEventListener(
+        'change',
+        HandleAppStateChange,
+        //      (nextAppState) => HandleAppStateChange(nextAppState, socket),
+      )
+      return () => {
+        console.log('removing subscription')
+        if (socket) {
+          socket.disconnect()
+          socket.close()
+        }
+        subscription.remove()
+      }
     }
-  }, [])
+  }, [socket])
 
   const framesRef = React.useRef([])
   const setFramesRef = React.useRef(setFrames)
@@ -152,116 +177,118 @@ const MatchScreen = props => {
   }, [frames])
 
   React.useEffect(() => {
-    console.log('registering sockets')
-    function UpdateFrameWin(frameIdx, winnerTeamId) {
-      try {
-        const _frames = framesRef.current
-        _frames[frameIdx].winner = winnerTeamId
-        UpdateScore(_frames)
-      } catch (e) {
-        console.log(e)
-      }
-    }
-
-    function UpdateFramePlayers(frameIdx, side, playerIdx, playerId) {
-      try {
-        const _frames = framesRef.current
-        if (side === 'home') {
-          _frames[frameIdx].homePlayerIds[playerIdx] = playerId
-        } else {
-          _frames[frameIdx].awayPlayerIds[playerIdx] = playerId
+    if (socket) {
+      console.log('registering sockets')
+      function UpdateFrameWin(frameIdx, winnerTeamId) {
+        try {
+          const _frames = framesRef.current
+          _frames[frameIdx].winner = winnerTeamId
+          UpdateScore(_frames)
+        } catch (e) {
+          console.log(e)
         }
-        setFrames([..._frames])
-      } catch (e) {
-        console.log(e)
       }
-    }
-    const roomId = 'match_' + matchInfo.match_id
-    socket.on('reconnect', () => {
-      console.log('reconnect')
-    })
-    socket.on('connect', () => {
-      console.log('socket connected')
-      socket.emit('join', roomId, joinStatus => {
-        if (joinStatus.status === 'ok') {
-          console.log('joined OK')
+
+      function UpdateFramePlayers(frameIdx, side, playerIdx, playerId) {
+        try {
+          const _frames = framesRef.current
+          if (side === 'home') {
+            _frames[frameIdx].homePlayerIds[playerIdx] = playerId
+          } else {
+            _frames[frameIdx].awayPlayerIds[playerIdx] = playerId
+          }
+          setFrames([..._frames])
+        } catch (e) {
+          console.log(e)
+        }
+      }
+      const roomId = 'match_' + matchInfo.match_id
+      socket.on('reconnect', () => {
+        console.log('reconnect')
+      })
+      socket.on('connect', () => {
+        console.log('socket connected')
+        socket.emit('join', roomId, joinStatus => {
+          if (joinStatus.status === 'ok') {
+            console.log('joined OK')
+          }
+        })
+      })
+
+      socket.on('disconnect', () => {
+        console.log('socket disconnected')
+      })
+
+      socket.on('frame_update', data => {
+        if (typeof data.type !== 'undefined') {
+          if (data.type === 'win') {
+            UpdateFrameWin(data.frameIdx, data.winnerTeamId)
+          } else if (data.type === 'players') {
+            ;(async () => {
+              if (data.newPlayer) {
+                await UpdateTeams()
+              }
+              UpdateFramePlayers(
+                data.frameIdx,
+                data.side,
+                data.playerIdx,
+                data.playerId,
+              )
+            })()
+          }
         }
       })
-    })
 
-    socket.on('disconnect', () => {
-      console.log('socket disconnected')
-    })
-
-    socket.on('frame_update', data => {
-      if (typeof data.type !== 'undefined') {
-        if (data.type === 'win') {
-          UpdateFrameWin(data.frameIdx, data.winnerTeamId)
-        } else if (data.type === 'players') {
-          ;(async () => {
-            if (data.newPlayer) {
-              await UpdateTeams()
-            }
-            UpdateFramePlayers(
-              data.frameIdx,
-              data.side,
-              data.playerIdx,
-              data.playerId,
-            )
-          })()
+      socket.on('historyupdate', data => {
+        if (typeof matchInfo.meta === 'undefined') {
+          matchInfo.meta = {
+            notes: [],
+            history: [],
+          }
         }
-      }
-    })
+        matchInfo.meta.history.push(data)
+      })
 
-    socket.on('historyupdate', data => {
-      if (typeof matchInfo.meta === 'undefined') {
-        matchInfo.meta = {
-          notes: [],
-          history: [],
-        }
-      }
-      matchInfo.meta.history.push(data)
-    })
-
-    socket.on('match_update', data => {
-      try {
-        if (typeof data !== 'undefined' && data) {
-          if (typeof data.type !== 'undefined' && data.type) {
-            if (data.type === 'firstbreak') {
-              setFirstBreak(data.data.firstBreak)
-            }
-            if (data.type === 'newnote') {
-              if (typeof matchInfo.meta === 'undefined') {
-                matchInfo.meta = {
-                  notes: [],
-                  history: [],
-                }
+      socket.on('match_update', data => {
+        try {
+          if (typeof data !== 'undefined' && data) {
+            if (typeof data.type !== 'undefined' && data.type) {
+              if (data.type === 'firstbreak') {
+                setFirstBreak(data.data.firstBreak)
               }
-              matchInfo.meta.notes.push(data)
-            }
-            if (data.type === 'finalize') {
-              if (
-                typeof data.data !== 'undefined' &&
-                typeof data.data.side !== 'undefined'
-              ) {
-                if (data.data.side === 'home') {
-                  setFinalizedHome(true)
+              if (data.type === 'newnote') {
+                if (typeof matchInfo.meta === 'undefined') {
+                  matchInfo.meta = {
+                    notes: [],
+                    history: [],
+                  }
                 }
-                if (data.data.side === 'away') {
-                  setFinalizedAway(true)
+                matchInfo.meta.notes.push(data)
+              }
+              if (data.type === 'finalize') {
+                if (
+                  typeof data.data !== 'undefined' &&
+                  typeof data.data.side !== 'undefined'
+                ) {
+                  if (data.data.side === 'home') {
+                    setFinalizedHome(true)
+                  }
+                  if (data.data.side === 'away') {
+                    setFinalizedAway(true)
+                  }
                 }
               }
             }
           }
+        } catch (e) {
+          console.log(e)
         }
-      } catch (e) {
-        console.log(e)
+      })
+      return () => {
+        socket.close()
       }
-    })
-    return () => {
-      socket.close()
     }
-  }, [])
+  }, [socket])
 
   /*
    * When returning from the Roster (the screen where a captain assign's a
@@ -350,7 +377,15 @@ const MatchScreen = props => {
   }, [user, teams])
 
   function SocketSend(type, data = {}) {
-    network.SocketSend(type, matchInfo.match_id, data)
+    network.SocketSend(
+      type,
+      matchInfo.match_id,
+      data,
+      '',
+      user.id,
+      user.nickname,
+      socket,
+    )
   }
 
   function UpdateFrames(frameData) {
@@ -427,7 +462,6 @@ const MatchScreen = props => {
         }
         setFinalizedAway(_finalizeAway)
         setFinalizedHome(_finalizedHome)
-        console.log('sc', socket.connected)
         if ((!_finalizeAway || !_finalizedHome) && !socket.connected) {
           console.log('socket connecting')
           socket.connect()

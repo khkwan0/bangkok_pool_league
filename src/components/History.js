@@ -2,7 +2,7 @@ import React from 'react'
 import {FlatList, View} from 'react-native'
 import {Button, Text} from 'react-native-paper'
 import {DateTime} from 'luxon'
-import {socket} from '~/socket'
+// import {socket} from '~/socket'
 
 const HistoryCard = ({item, index}) => {
   return (
@@ -24,11 +24,13 @@ const History = props => {
   )
   const [history, setHistory] = React.useState(props.history ?? [])
 
+  /*
   React.useEffect(() => {
     socket.on('historyupdate2', data => {
       setHistory(data)
     })
   }, [])
+  */
 
   return (
     <View>
