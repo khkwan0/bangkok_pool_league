@@ -95,7 +95,7 @@ const ChoosePlayer = props => {
   }, [props.allPlayers])
 
   React.useEffect(() => {
-    if (searchQuery.length > 2) {
+    if (searchQuery.length > 1) {
       const _list = trie.current.search(searchQuery)
       setList(_list)
     }
