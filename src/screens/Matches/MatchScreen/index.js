@@ -148,9 +148,12 @@ const MatchScreen = props => {
       }
     }
     if (Platform.OS === 'ios') {
-      if (appState.current === 'background' && nextAppState === 'active') {
+      if (
+        (appState.current === 'background' ||
+          appState.current === 'inactive') &&
+        nextAppState === 'active'
+      ) {
         try {
-          console.log('socket', socket)
           setIsLoading(true)
           console.log('update teams')
           await UpdateTeams()
@@ -167,7 +170,7 @@ const MatchScreen = props => {
           console.log('Appstate change error', e)
         }
       } else {
-        if (socket) {
+        if (socket && appState.current === 'inactive') {
           console.log('disconnecting')
           socket.disconnect()
           socket.close()
