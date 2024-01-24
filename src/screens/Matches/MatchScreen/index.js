@@ -1,5 +1,5 @@
 import React from 'react'
-import {AppState, FlatList} from 'react-native'
+import {AppState, FlatList, Platform} from 'react-native'
 import {
   ActivityIndicator,
   Button,
@@ -117,33 +117,61 @@ const MatchScreen = props => {
 
   async function HandleAppStateChange(nextAppState) {
     console.log('nextappstate', nextAppState, appState.current)
-    if (
-      appState.current.match(/inactive|background/) &&
-      nextAppState === 'active'
-    ) {
-      try {
-        console.log('socket', socket)
-        setIsLoading(true)
-        console.log('update teams')
-        await UpdateTeams()
+    if (Platform.OS === 'android') {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        try {
+          console.log('socket', socket)
+          setIsLoading(true)
+          console.log('update teams')
+          await UpdateTeams()
 
-        console.log('Get frames')
-        await GetFrames()
+          console.log('Get frames')
+          await GetFrames()
 
-        console.log('updatematch info')
-        await UpdateMatchInfo()
+          console.log('updatematch info')
+          await UpdateMatchInfo()
 
-        setIsLoading(false)
-        setIsMounted(true)
-      } catch (e) {
-        console.log('Appstate change error', e)
+          setIsLoading(false)
+          setIsMounted(true)
+        } catch (e) {
+          console.log('Appstate change error', e)
+        }
+      } else {
+        if (socket) {
+          console.log('disconnecting')
+          socket.disconnect()
+          socket.close()
+        }
       }
-    } else {
-      console.log('socket background state', socket)
-      if (socket) {
-        console.log('disconnecting')
-        socket.disconnect()
-        socket.close()
+    }
+    if (Platform.OS === 'ios') {
+      if (appState.current === 'background' && nextAppState === 'active') {
+        try {
+          console.log('socket', socket)
+          setIsLoading(true)
+          console.log('update teams')
+          await UpdateTeams()
+
+          console.log('Get frames')
+          await GetFrames()
+
+          console.log('updatematch info')
+          await UpdateMatchInfo()
+
+          setIsLoading(false)
+          setIsMounted(true)
+        } catch (e) {
+          console.log('Appstate change error', e)
+        }
+      } else {
+        if (socket) {
+          console.log('disconnecting')
+          socket.disconnect()
+          socket.close()
+        }
       }
     }
     appState.current = nextAppState
