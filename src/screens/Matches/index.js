@@ -45,18 +45,6 @@ const Matches = props => {
             ),
           }}
         />
-        <Tab.Screen
-          name="Postponed"
-          component={Postponed}
-          options={{
-            title: t('postponed'),
-            tabBarActiveBackgroundColor: colors.surface,
-            tabBarInactiveBackgroundColor: colors.surface,
-            tabBarIcon: () => (
-              <MCI name="clock-time-five" size={20} color={colors.onSurface} />
-            ),
-          }}
-        />
       </Tab.Navigator>
     </View>
   )
