@@ -42,7 +42,7 @@ const FrameDetails = props => {
         </View>
         <View flex={1} alignItems="flex-end">
           {awayPlayers.map((player, idx) => (
-            <View key={'away_completed' + idx}>
+            <View key={'away_completed' + idx} alignItems="flex-end">
               {idx !== 0 && <Text>and</Text>}
               <Text bold>{player.nickName}</Text>
             </View>

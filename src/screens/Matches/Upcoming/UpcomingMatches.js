@@ -59,7 +59,6 @@ const UpcomingMatches = props => {
   }, [])
   */
 
-
   async function GetSeason() {
     try {
       const _season = await league.GetSeason()

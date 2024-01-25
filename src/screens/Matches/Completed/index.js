@@ -2,6 +2,7 @@ import React from 'react'
 import MatchDetails from './MatchDetails'
 import UpcomingMatches from './CompletedMatches'
 import Roster from '@screens/Matches/Roster'
+import MatchScreen from '../MatchScreen'
 import ExtendedMatchInfo from '@screens/Matches/ExtendedMatchInfo'
 import {createNativeStackNavigator} from '@react-navigation/native-stack'
 import {createStackNavigator} from '@react-navigation/stack'
@@ -40,6 +41,7 @@ const Matches = props => {
         />
         <MatchStack.Screen name="Roster" component={Roster} />
         <MatchStack.Screen name="Match Info" component={ExtendedMatchInfo} />
+        <MatchStack.Screen name="Post Match Screen" component={MatchScreen} />
       </MatchStack.Navigator>
     </View>
   )

@@ -15,7 +15,20 @@ const MatchDetails = props => {
       try {
         const res = await GetMatchDetails(props.route.params.matchData.matchId)
         if (typeof res.status !== 'undefined' && res.status === 'ok') {
-          setMatchDetails(res.data)
+          if (res.data.length > 0) {
+            setMatchDetails(res.data)
+          } else {
+            props.navigation.replace('Post Match Screen', {
+              matchInfo: {
+                match_id: props.route.params.matchData.matchId,
+                away_team_id: props.route.params.matchData.away_team_id,
+                home_team_id: props.route.params.matchData.home_team_id,
+                home_team_name: props.route.params.matchData.home_team_name,
+                away_team_name: props.route.params.matchData.away_team_name,
+                format: props.route.params.matchData.format,
+              },
+            })
+          }
         } else {
           setErr(res.error)
         }

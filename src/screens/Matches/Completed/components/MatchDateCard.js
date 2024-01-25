@@ -36,53 +36,59 @@ const MatchDateCard = props => {
         </Row>
       </TouchableRipple>
       {showAll &&
-        props.matchDate.matches.map((match, idx) => (
-          <TouchableRipple
-            onPress={() =>
-              navigation.navigate('Match Details', {
-                matchData: props.matchDate.matches[idx],
-              })
-            }
-            key={'match' + idx}>
-            <>
-              <View py={10}>
-                <Row alignItems="center">
-                  <View flex={2}>
-                    <Text bold fontSize="xl" textAlign="center">
-                      {match.home_team_short_name
-                        ? match.home_team_short_name
-                        : match.home_team_name}
-                    </Text>
-                  </View>
-                  <View flex={1} alignItems="center">
-                    <Text>vs</Text>
-                  </View>
-                  <View flex={2}>
-                    <Text fontSize="xl" bold textAlign="center">
-                      {match.away_team_short_name
-                        ? match.away_team_short_name
-                        : match.away_team_name}
-                    </Text>
-                  </View>
-                </Row>
-                <Row alignItems="center">
-                  <View flex={2}>
-                    <Text textAlign="center" fontSize="xxxl">
-                      {match.home_frames}
-                    </Text>
-                  </View>
-                  <View flex={1} />
-                  <View flex={2}>
-                    <Text textAlign="center" fontSize="xxxl">
-                      {match.away_frames}
-                    </Text>
-                  </View>
-                </Row>
-              </View>
-              <Divider />
-            </>
-          </TouchableRipple>
-        ))}
+        props.matchDate.matches.map((match, idx) => {
+          return (
+            <TouchableRipple
+              onPress={() =>
+                match.match_status_id === 1
+                  ? navigation.navigate('Post Match Screen', {
+                      matchInfo: match,
+                    })
+                  : navigation.navigate('Match Details', {
+                      matchData: props.matchDate.matches[idx],
+                    })
+              }
+              key={'match' + idx}>
+              <>
+                <View py={10} px={20}>
+                  <Row alignItems="center">
+                    <View flex={2}>
+                      <Text bold fontSize="xl" textAlign="center">
+                        {match.home_team_short_name
+                          ? match.home_team_short_name
+                          : match.home_team_name}
+                      </Text>
+                    </View>
+                    <View flex={1} alignItems="center">
+                      <Text>vs</Text>
+                    </View>
+                    <View flex={2}>
+                      <Text fontSize="xl" bold textAlign="center">
+                        {match.away_team_short_name
+                          ? match.away_team_short_name
+                          : match.away_team_name}
+                      </Text>
+                    </View>
+                  </Row>
+                  <Row alignItems="center">
+                    <View flex={2}>
+                      <Text textAlign="center" fontSize="xxxl">
+                        {match.home_frames}
+                      </Text>
+                    </View>
+                    <View flex={1} />
+                    <View flex={2}>
+                      <Text textAlign="center" fontSize="xxxl">
+                        {match.away_frames}
+                      </Text>
+                    </View>
+                  </Row>
+                </View>
+                <Divider />
+              </>
+            </TouchableRipple>
+          )
+        })}
     </View>
   )
 }
