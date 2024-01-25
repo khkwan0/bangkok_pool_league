@@ -3,6 +3,7 @@ import React from 'react'
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
 import Upcoming from './Upcoming'
 import Completed from './Completed'
+import Postponed from './Postponed'
 import {useTranslation} from 'react-i18next'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useYBase} from '~/lib/hooks'
@@ -18,7 +19,7 @@ const Matches = props => {
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
-          tabBarLabelStyle: {fontSize: 20},
+          tabBarLabelStyle: {fontSize: 16},
         }}>
         <Tab.Screen
           name="Upcoming"
@@ -41,6 +42,18 @@ const Matches = props => {
             tabBarInactiveBackgroundColor: colors.surface,
             tabBarIcon: () => (
               <MCI name="check-circle" size={20} color={colors.onSurface} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Postponed"
+          component={Postponed}
+          options={{
+            title: t('postponed'),
+            tabBarActiveBackgroundColor: colors.surface,
+            tabBarInactiveBackgroundColor: colors.surface,
+            tabBarIcon: () => (
+              <MCI name="clock-time-five" size={20} color={colors.onSurface} />
             ),
           }}
         />

@@ -64,7 +64,7 @@ const Frame = props => {
 
     function HandleChooseFrameWin(side, teamId, playerIds) {
       if (
-        (!props.side &&
+        (props.side &&
           !disabled &&
           !props.isLoading &&
           (props.gameType === 'doubles'

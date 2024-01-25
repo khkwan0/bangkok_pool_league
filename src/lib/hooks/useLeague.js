@@ -318,6 +318,16 @@ export const useLeague = () => {
     }
   }
 
+  const GetPostponed = async () => {
+    try {
+      const res = await Get('/matches/postponed')
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'network_error'}
+    }
+  }
+
   return {
     ActivateSeason,
     AddPlayerToTeam,
@@ -328,6 +338,7 @@ export const useLeague = () => {
     GetPlayerStats,
     GetPlayerStatsInfo,
     GetPlayers,
+    GetPostponed,
     GetSeason,
     GetSeasonV2,
     GetStandings,
