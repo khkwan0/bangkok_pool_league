@@ -1,7 +1,7 @@
 import {useNetwork} from '~/lib/hooks'
 
 export const useMatch = () => {
-  const {Get} = useNetwork()
+  const {Get, Post} = useNetwork()
 
   const GetFrames = async matchId => {
     try {
@@ -31,5 +31,18 @@ export const useMatch = () => {
     }
   }
 
-  return {GetFrames, GetMatchInfo, GetMatchDetails}
+  const UpdateCompletedMatch = async (type, matchId, data) => {
+    try {
+      const res = await Post('/admin/match/completed', {
+        type: type,
+        matchId: matchId,
+        data: data,
+      })
+      return res
+    } catch (e) {
+      return {status: 'error', error: 'network_error'}
+    }
+  }
+
+  return {GetFrames, GetMatchInfo, GetMatchDetails, UpdateCompletedMatch}
 }

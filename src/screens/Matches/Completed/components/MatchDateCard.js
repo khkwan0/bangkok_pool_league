@@ -10,6 +10,20 @@ const MatchDateCard = props => {
   const [showAll, setShowAll] = React.useState(props.showAll ? true : false)
   const navigation = useNavigation()
   const {colors} = useYBase()
+  const [count, setCount] = React.useState(0)
+
+  React.useEffect(() => {
+    let _count = 0
+    props.matchDate.matches.forEach(match => {
+      if (
+        match.match_status_id === 1 &&
+        DateTime.fromISO(match.match_date).toMillis() < Date.now()
+      ) {
+        _count++
+      }
+      setCount(_count)
+    })
+  }, [])
 
   return (
     <View>
@@ -23,7 +37,7 @@ const MatchDateCard = props => {
         }}>
         <Row alignItems="center">
           <View flex={1} />
-          <View flex={2}>
+          <View flex={3}>
             <Text textAlign="center" bold color={colors.onSurface}>
               {DateTime.fromISO(props.matchDate.date).toLocaleString(
                 DateTime.DATE_HUGE,
@@ -33,6 +47,20 @@ const MatchDateCard = props => {
           <View flex={1}>
             <MCI name="chevron-down" size={30} color={colors.onSurface} />
           </View>
+          {count > 0 && (
+            <View flex={1}>
+              <Text
+                p={5}
+                borderRadius={25}
+                maxWidth={30}
+                textAlign="center"
+                color="#fff"
+                bold
+                bgColor={colors.error}>
+                {count}
+              </Text>
+            </View>
+          )}
         </Row>
       </TouchableRipple>
       {showAll &&
@@ -43,6 +71,7 @@ const MatchDateCard = props => {
                 match.match_status_id === 1
                   ? navigation.navigate('Post Match Screen', {
                       matchInfo: match,
+                      fromCompleted: true,
                     })
                   : navigation.navigate('Match Details', {
                       matchData: props.matchDate.matches[idx],
@@ -70,19 +99,32 @@ const MatchDateCard = props => {
                       </Text>
                     </View>
                   </Row>
-                  <Row alignItems="center">
-                    <View flex={2}>
-                      <Text textAlign="center" fontSize="xxxl">
-                        {match.home_frames}
-                      </Text>
-                    </View>
-                    <View flex={1} />
-                    <View flex={2}>
-                      <Text textAlign="center" fontSize="xxxl">
-                        {match.away_frames}
-                      </Text>
-                    </View>
-                  </Row>
+                  {match.match_status_id === 1 &&
+                    DateTime.fromISO(match.match_date).toMillis() <
+                      Date.now() && (
+                      <View alignItems="center" justifyContent="center">
+                        <MCI
+                          name="alert-circle"
+                          color={colors.error}
+                          size={30}
+                        />
+                      </View>
+                    )}
+                  {match.match_status_id === 3 && (
+                    <Row alignItems="center">
+                      <View flex={2}>
+                        <Text textAlign="center" fontSize="xxxl">
+                          {match.home_frames}
+                        </Text>
+                      </View>
+                      <View flex={1} />
+                      <View flex={2}>
+                        <Text textAlign="center" fontSize="xxxl">
+                          {match.away_frames}
+                        </Text>
+                      </View>
+                    </Row>
+                  )}
                 </View>
                 <Divider />
               </>

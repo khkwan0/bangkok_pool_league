@@ -2,7 +2,6 @@ import React from 'react'
 import {FlatList} from 'react-native'
 import {ActivityIndicator, View, Text} from '@ybase'
 import MatchDateCard from './components/MatchDateCard'
-import {useSelector} from 'react-redux'
 import {useLeague, useSeason, useYBase} from '~/lib/hooks'
 import SeasonPicker from '@components/SeasonPicker'
 
@@ -11,13 +10,12 @@ const CompletedMatches = props => {
   const [season, setSeason] = React.useState(-1)
   const [refreshing, setRefreshing] = React.useState(false)
   const [err, setErr] = React.useState('')
-  const [filterPlayerOnly, setFilterPlayerOnly] = React.useState(false)
   const [isMounted, setIsMounted] = React.useState(false)
-  const user = useSelector(_state => _state.userData).user
-  const {GetMatches, GetCompletedMatchesBySeason} = useSeason()
+  const {GetCompletedMatchesBySeason} = useSeason()
   const league = useLeague()
   const {colors} = useYBase()
 
+  /*
   React.useEffect(() => {
     ;(async () => {
       const query = []
@@ -30,15 +28,14 @@ const CompletedMatches = props => {
           query.push('noteam=true')
         }
         query.push('completed=true')
-        /*
         const res = await GetMatches(query)
         setDates(res)
-        */
       } catch (e) {
         console.log(e)
       }
     })()
   }, [user])
+  */
 
   async function GetCompletedMatches() {
     try {
@@ -46,6 +43,7 @@ const CompletedMatches = props => {
       setRefreshing(true)
       const res = await GetCompletedMatchesBySeason(season)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        console.log('setting dates')
         setDates(res.data)
         setIsMounted(true)
       } else {
@@ -82,6 +80,20 @@ const CompletedMatches = props => {
       GetCompletedMatches()
     }
   }, [season])
+
+  React.useEffect(() => {
+    try {
+      if (
+        typeof props?.route?.params?.refresh !== 'undefined' &&
+        props.route.params.refresh
+      ) {
+        console.log('refreshing')
+        GetCompletedMatches()
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }, [props.route.params])
 
   if (isMounted) {
     return (

@@ -44,6 +44,8 @@ const MatchScreen = props => {
   const [isLoading, setIsLoading] = React.useState(true)
   const [finalizedHome, setFinalizedHome] = React.useState(false)
   const [finalizedAway, setFinalizedAway] = React.useState(false)
+  const [finalizedAwayLoading, setFinalizedAwayLoading] = React.useState(false)
+  const [finalizedHomeLoading, setFinalizedHomeLoading] = React.useState(false)
   const [showDialogFirstBreak, setShowDialogFirstBreak] = React.useState({
     show: false,
     cb: null,
@@ -241,13 +243,66 @@ const MatchScreen = props => {
         console.log('socket connected')
         socket.emit('join', roomId, joinStatus => {
           if (joinStatus.status === 'ok') {
-            console.log('joined OK')
+            console.log('joined OK:' + roomId)
           }
         })
       })
 
       socket.on('disconnect', () => {
         console.log('socket disconnected')
+      })
+
+      socket.on('match_update', data => {
+        try {
+          if (typeof data !== 'undefined' && data) {
+            if (typeof data.type !== 'undefined' && data.type) {
+              if (data.type === 'firstbreak') {
+                setFirstBreak(data.data.firstBreak)
+              }
+              if (data.type === 'newnote') {
+                if (typeof matchInfo.meta === 'undefined') {
+                  matchInfo.meta = {
+                    notes: [],
+                    history: [],
+                  }
+                }
+                matchInfo.meta.notes.push(data)
+              }
+              if (data.type === 'finalize') {
+                if (
+                  typeof data.data !== 'undefined' &&
+                  typeof data.data.side !== 'undefined'
+                ) {
+                  if (data.data.side === 'home') {
+                    setFinalizedHomeLoading(false)
+                    setFinalizedHome(true)
+                  }
+                  if (data.data.side === 'away') {
+                    setFinalizedAwayLoading(false)
+                    setFinalizedAway(true)
+                  }
+                }
+              }
+              if (data.type === 'unfinalize') {
+                if (
+                  typeof data.data !== 'undefined' &&
+                  typeof data.data.side !== 'undefined'
+                ) {
+                  if (data.data.side === 'home') {
+                    setFinalizedHomeLoading(false)
+                    setFinalizedHome(false)
+                  }
+                  if (data.data.side === 'away') {
+                    setFinalizedAwayLoading(false)
+                    setFinalizedAway(false)
+                  }
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.log(e)
+        }
       })
 
       socket.on('frame_update', data => {
@@ -280,41 +335,6 @@ const MatchScreen = props => {
         matchInfo.meta.history.push(data)
       })
 
-      socket.on('match_update', data => {
-        try {
-          if (typeof data !== 'undefined' && data) {
-            if (typeof data.type !== 'undefined' && data.type) {
-              if (data.type === 'firstbreak') {
-                setFirstBreak(data.data.firstBreak)
-              }
-              if (data.type === 'newnote') {
-                if (typeof matchInfo.meta === 'undefined') {
-                  matchInfo.meta = {
-                    notes: [],
-                    history: [],
-                  }
-                }
-                matchInfo.meta.notes.push(data)
-              }
-              if (data.type === 'finalize') {
-                if (
-                  typeof data.data !== 'undefined' &&
-                  typeof data.data.side !== 'undefined'
-                ) {
-                  if (data.data.side === 'home') {
-                    setFinalizedHome(true)
-                  }
-                  if (data.data.side === 'away') {
-                    setFinalizedAway(true)
-                  }
-                }
-              }
-            }
-          }
-        } catch (e) {
-          console.log(e)
-        }
-      })
       return () => {
         socket.close()
       }
@@ -641,16 +661,46 @@ const MatchScreen = props => {
     }
   }
 
+  function HandleUnFinalized(side) {
+    if (
+      (side === 'home' && side === userTeam) ||
+      (side === 'home' && user.role_id === 9)
+    ) {
+      setFinalizedHomeLoading(true)
+      SocketSend('unfinalize', {
+        teamId: matchInfo.home_team_id,
+        side: side,
+        matchId: matchInfo.match_id,
+      })
+    } else if (
+      (side === 'away' && side === userTeam) ||
+      (side === 'away' && user.role_id === 9)
+    ) {
+      setFinalizedAwayLoading(true)
+      SocketSend('unfinalize', {
+        teamId: matchInfo.away_team_id,
+        side: side,
+        matchId: matchInfo.match_id,
+      })
+    }
+  }
+
   function HandleFinalized(side) {
-    if ((side === 'home' && side === userTeam) || user.role_id === 9) {
-      setFinalizedHome(true)
+    if (
+      (side === 'home' && side === userTeam) ||
+      (side === 'home' && user.role_id === 9)
+    ) {
+      setFinalizedHomeLoading(true)
       SocketSend('finalize', {
         teamId: matchInfo.home_team_id,
         side: side,
         matchId: matchInfo.match_id,
       })
-    } else if ((side === 'away' && side === userTeam) || user.role_id === 9) {
-      setFinalizedAway(true)
+    } else if (
+      (side === 'away' && side === userTeam) ||
+      (side === 'away' && user.role_id === 9)
+    ) {
+      setFinalizedAwayLoading(true)
       SocketSend('finalize', {
         teamId: matchInfo.away_team_id,
         side: side,
@@ -676,6 +726,17 @@ const MatchScreen = props => {
       console.log(e)
     }
   }
+
+  React.useEffect(() => {
+    if (finalizedAway && finalizedHome) {
+      if (
+        typeof props?.route?.params?.fromCompleted !== 'undefined' &&
+        props.route.params.fromCompleted
+      ) {
+        props.navigation.navigate('Upcoming Matches', {refresh: true})
+      }
+    }
+  }, [finalizedHome, finalizedAway])
 
   if (isMounted) {
     return (
@@ -816,23 +877,23 @@ const MatchScreen = props => {
                 </View>
               }
               ListFooterComponent={
-                <View style={{paddingBottom: 20}}>
+                <View style={{paddingVertical: 20}}>
                   <View style={{flexDirection: 'row'}}>
                     <View style={{flex: 1}}>
                       {finalizedHome && (
                         <Button
+                          loading={finalizedHomeLoading}
                           disabled={
                             (finalizedHome && finalizedAway) || isLoading
                           }
-                          onPress={() => HandleFinalized('home')}
+                          onPress={() => HandleUnFinalized('home')}
                           mode="elevated">
-                          {finalizedHome && finalizedAway
-                            ? 'Submitted'
-                            : 'Unfinalize Home'}
+                          Unfinalize Home
                         </Button>
                       )}
                       {!finalizedHome && (
                         <Button
+                          loading={finalizedHomeLoading}
                           disabled={isLoading}
                           onPress={() => HandleFinalized('home')}
                           mode="elevated">
@@ -843,18 +904,18 @@ const MatchScreen = props => {
                     <View style={{flex: 1}}>
                       {finalizedAway && (
                         <Button
+                          loading={finalizedAwayLoading}
                           disabled={
                             (finalizedAway && finalizedHome) || isLoading
                           }
-                          onPress={() => HandleFinalized('away')}
+                          onPress={() => HandleUnFinalized('away')}
                           mode="elevated">
-                          {finalizedHome && finalizedAway
-                            ? 'Submitted'
-                            : 'Unfinalize Away'}
+                          Unfinalize Away
                         </Button>
                       )}
                       {!finalizedAway && (
                         <Button
+                          loading={finalizedAwayLoading}
                           disabled={isLoading}
                           onPress={() => HandleFinalized('away')}
                           mode="elevated">

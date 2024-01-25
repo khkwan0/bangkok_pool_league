@@ -3,12 +3,21 @@ import {FlatList} from 'react-native'
 import {useMatch, useYBase} from '~/lib/hooks'
 import FrameDetail from './components/FrameDetail'
 import {Divider, View} from '@ybase'
+import MatchHeader from './components/MatchHeader'
+import {useTranslation} from 'react-i18next'
 
 const MatchDetails = props => {
   const {GetMatchDetails} = useMatch()
   const [matchDetails, setMatchDetails] = React.useState([])
   const [err, setErr] = React.useState('')
   const {colors} = useYBase()
+  const {t} = useTranslation()
+
+  React.useEffect(() => {
+    props.navigation.setOptions({
+      headerTitle: t('match') + ' #' + props.route.params.matchData.matchId,
+    })
+  }, [])
 
   React.useEffect(() => {
     ;(async () => {
@@ -41,6 +50,9 @@ const MatchDetails = props => {
   return (
     <View>
       <FlatList
+        ListHeaderComponent={
+          <MatchHeader matchData={props.route.params.matchData} />
+        }
         style={{backgroundColor: colors.surface}}
         data={matchDetails}
         keyExtractor={(item, idx) => 'asdasd' + idx}

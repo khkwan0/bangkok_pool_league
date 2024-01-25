@@ -104,5 +104,6 @@
   "confirm": "Confirm",
   "roster": "Roster",
   "match_info": "Match Info",
-  "postponed": "Postponed"
+  "postponed": "Postponed",
+  "match": "Match"
 }
