@@ -49,16 +49,16 @@ const MatchDateCard = props => {
           </View>
           {count > 0 && (
             <View flex={1}>
-              <Text
-                p={5}
-                borderRadius={25}
-                maxWidth={30}
-                textAlign="center"
-                color="#fff"
-                bold
-                bgColor={colors.error}>
-                {count}
-              </Text>
+              <View width={30} borderRadius={25} bgColor={colors.error}>
+                <Text
+                  p={5}
+                  borderRadius={25}
+                  textAlign="center"
+                  color="#fff"
+                  bold>
+                  {count}
+                </Text>
+              </View>
             </View>
           )}
         </Row>
