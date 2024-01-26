@@ -4,6 +4,7 @@ import {ActivityIndicator, View, Text} from '@ybase'
 import MatchDateCard from './components/MatchDateCard'
 import {useLeague, useSeason, useYBase} from '~/lib/hooks'
 import SeasonPicker from '@components/SeasonPicker'
+import {useFocusEffect} from '@react-navigation/native'
 
 const CompletedMatches = props => {
   const [dates, setDates] = React.useState([])
@@ -15,35 +16,12 @@ const CompletedMatches = props => {
   const league = useLeague()
   const {colors} = useYBase()
 
-  /*
-  React.useEffect(() => {
-    ;(async () => {
-      const query = []
-      try {
-        if (
-          typeof user?.teams === 'undefined' ||
-          !user.teams ||
-          user.teams.length === 0
-        ) {
-          query.push('noteam=true')
-        }
-        query.push('completed=true')
-        const res = await GetMatches(query)
-        setDates(res)
-      } catch (e) {
-        console.log(e)
-      }
-    })()
-  }, [user])
-  */
-
   async function GetCompletedMatches() {
     try {
       setErr('')
       setRefreshing(true)
       const res = await GetCompletedMatchesBySeason(season)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        console.log('setting dates')
         setDates(res.data)
         setIsMounted(true)
       } else {
@@ -69,17 +47,26 @@ const CompletedMatches = props => {
       setErr('server_error')
     }
   }
-
+  /*
   React.useEffect(() => {
     GetCurrentSeason()
   }, [])
+  */
 
   React.useEffect(() => {
     if (season > -1) {
       setDates([])
       GetCompletedMatches()
+    } else {
+      GetCurrentSeason()
     }
   }, [season])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setSeason(-1)
+    }, []),
+  )
 
   React.useEffect(() => {
     try {

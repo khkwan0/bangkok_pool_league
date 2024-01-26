@@ -97,13 +97,8 @@ export const useLeague = () => {
 
   const GetStandings = async (seasonId = null) => {
     try {
-      if (seasonId) {
-        const res = await Get('/league/standings/')
-        return res
-      } else {
-        const res = await Get('/league/standings/' + seasonId)
-        return res
-      }
+      const res = await Get('/league/standings/' + seasonId)
+      return res
     } catch (e) {
       console.log(e)
       return []

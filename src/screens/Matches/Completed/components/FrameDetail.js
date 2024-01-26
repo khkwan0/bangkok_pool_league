@@ -22,7 +22,9 @@ const FrameDetails = props => {
 
   async function UpdateMatchWin() {
     try {
-      const res = await match.UpdateCompletedMatch('win', matchId, data)
+      const data = props.item.item
+      data.homeWin = homeWin
+      const res = await match.UpdateCompletedMatch('win', props.matchId, data)
       setShowDialogWin({show: false, cb: null})
     } catch (e) {
       console.log(e)
