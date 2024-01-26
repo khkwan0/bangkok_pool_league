@@ -5,7 +5,7 @@ import '~/i18n'
 import {useTranslation} from 'react-i18next'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {ActivityIndicator, View} from '@ybase'
-import {AppState, Platform} from 'react-native'
+import {AppState} from 'react-native'
 
 const Main = props => {
   const account = useAccount()
@@ -40,11 +40,7 @@ const Main = props => {
   React.useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       console.log(appState.current, nextAppState)
-      if (
-        Platform.OS === 'android' &&
-        appState.current === 'active' &&
-        nextAppState === 'active'
-      ) {
+      if (appState.current === 'active' && nextAppState === 'active') {
         FetchUser()
       }
     })
