@@ -15,7 +15,6 @@ const Seasons = props => {
     ;(async () => {
       try {
         const res = await league.GetSeasonV2()
-        console.log(res[0])
         setSeason(res[0])
       } catch (e) {
         console.log(e)

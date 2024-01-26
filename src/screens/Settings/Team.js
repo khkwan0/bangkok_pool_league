@@ -355,7 +355,6 @@ const Team = props => {
 
   async function HandleDelete() {
     try {
-      console.log(toDelete, team.id)
       setLoading(true)
       setErr('')
       const res = await league.RemovePlayerFromTeam(toDelete, team.id)

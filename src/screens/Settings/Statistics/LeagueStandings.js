@@ -76,7 +76,6 @@ const TeamStandings = ({team, idx}) => {
 }
 
 const DivisionStandings = ({data}) => {
-  console.log(data.teams)
   return (
     <View>
       <FlatList

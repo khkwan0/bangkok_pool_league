@@ -37,17 +37,6 @@ const Login = props => {
 
   React.useEffect(() => {
     Settings.initializeSDK()
-    /*
-    AccessToken.getCurrentAccessToken().then(accessToken => {
-      console.log('fbtoken', accessToken)
-    })
-    */
-    /*
-    GoogleSignin.configure({
-      webClientId:
-        '498946945828-1sk1rjvia7gthtro5lp7jjie5l4dct6i.apps.googleusercontent.com',
-    })
-    */
   }, [])
 
   async function HandleFacebookLogin() {
@@ -73,17 +62,6 @@ const Login = props => {
       }
     }
   }
-  /*
-  async function HandleGoogleLogin() {
-    try {
-      await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true})
-      const res = await GoogleSignin.signIn()
-      console.log(res)
-    } catch (e) {
-      console.log(e)
-    }
-  }
-  */
 
   async function AttemptLogin() {
     try {

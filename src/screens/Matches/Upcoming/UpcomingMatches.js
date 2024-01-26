@@ -22,43 +22,6 @@ const UpcomingMatches = props => {
   const {t} = useTranslation()
   const {colors} = useYBase()
 
-  /*
-  const onRefresh = React.useCallback(async () => {
-    const query = []
-    try {
-      setRefreshing(true)
-      let showAll = false
-      console.log(user?.teams?.length)
-      if (
-        typeof user?.teams === 'undefined' ||
-        !user.teams ||
-        user.teams.length === 0
-      ) {
-        showAll = true
-      } else if (!showMineOnly) {
-        showAll = false
-      }
-      if (showAll) {
-        query.push('noteam=true')
-      } else {
-        query.push('noteam=false')
-      }
-      query.push('newonly=true')
-      console.log(query)
-      const matches = await season.GetMatches(query)
-      setFixtures(matches)
-      const _season = await league.GetSeason()
-      dispatch(SetSeason(_season))
-      setSeasonNumber(_season)
-    } catch (e) {
-      console.log(e)
-    } finally {
-      setRefreshing(false)
-      setIsMounted(true)
-    }
-  }, [])
-  */
-
   async function GetSeason() {
     try {
       const _season = await league.GetSeason()

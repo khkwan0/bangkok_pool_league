@@ -67,7 +67,6 @@ const MatchScreen = ({matchId}) => {
       try {
         setIsLoading(true)
         const res = await season.GetMatchStats(matchId)
-        console.log(JSON.stringify(res, null, 2))
         setMatchData(res)
       } catch (e) {
         console.log(e)

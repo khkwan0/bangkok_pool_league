@@ -14,7 +14,6 @@ const Venue = props => {
     props.navigation.navigate('Team', {team: team})
   }
 
-  console.log(venue)
   return (
     <ScrollView style={{marginBottom: 10}}>
       <View style={{padding: 20}}>
