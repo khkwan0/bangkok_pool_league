@@ -733,7 +733,7 @@ const MatchScreen = props => {
         typeof props?.route?.params?.fromCompleted !== 'undefined' &&
         props.route.params.fromCompleted
       ) {
-        props.navigation.navigate('Upcoming Matches', {refresh: true})
+//        props.navigation.navigate('Upcoming Matches', {refresh: true})
       }
     }
   }, [finalizedHome, finalizedAway])
