@@ -39,8 +39,10 @@ const Main = props => {
 
   React.useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
-      console.log(appState.current, nextAppState)
-      if (appState.current.match(/background|active/) && nextAppState === 'active') {
+      if (
+        appState.current.match(/background|active/) &&
+        nextAppState === 'active'
+      ) {
         FetchUser()
       }
       appState.current = nextAppState

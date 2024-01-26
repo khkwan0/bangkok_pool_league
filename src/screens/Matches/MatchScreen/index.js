@@ -117,7 +117,7 @@ const MatchScreen = props => {
   }, [socket])
 
   async function HandleAppStateChange(nextAppState) {
-    console.log('nextappstate', nextAppState, appState.current)
+    console.log('nextappstate', appState.current, nextAppState)
     if (Platform.OS === 'android') {
       if (
         appState.current.match(/inactive|background/) &&
