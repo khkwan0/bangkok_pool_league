@@ -5,7 +5,6 @@ import {Button, ScrollView, View} from '@ybase'
 import NewPlayerInput from './components/AddNewPlayer'
 import {useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
-import { SafeAreaFrameContext } from 'react-native-safe-area-context'
 
 const Roster = props => {
   const [showAddNew, setShowAddNew] = React.useState(false)
@@ -26,6 +25,7 @@ const Roster = props => {
           frameInfo: props.route.params.frameInfo,
           newPlayer: newPlayer,
         },
+        fromCompleted: true,
       })
     } else {
       props.navigation.navigate('Match Screen', {

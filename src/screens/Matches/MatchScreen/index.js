@@ -81,7 +81,6 @@ const MatchScreen = props => {
   }, [])
 
   React.useEffect(() => {
-    console.log('socket status', socket)
     if (socket) {
       ;(async () => {
         try {
