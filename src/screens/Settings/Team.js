@@ -300,7 +300,7 @@ const AddNewPlayer = props => {
 }
 
 const Team = props => {
-  const [team, setTeam] = React.useState(props.team)
+  const [team, setTeam] = React.useState([])
   const navigation = useNavigation()
   const user = useSelector(_state => _state.userData).user
   const [showAddNewPlayer, setShowAddNewPlayer] = React.useState(false)
@@ -313,11 +313,19 @@ const Team = props => {
   const league = useLeague()
 
   const captains = React.useMemo(() => {
-    return team.captains.map(u => u.id)
+    if (typeof team.captains !== 'undefined') {
+      return team.captains.map(u => u.id)
+    } else {
+      return []
+    }
   }, [team])
 
   const assts = React.useMemo(() => {
-    return team.assistants.map(u => u.id)
+    if (typeof team.assistants !== 'undefined') {
+      return team.assistants.map(u => u.id)
+    } else {
+      return []
+    }
   }, [team])
 
   React.useEffect(() => {
@@ -330,7 +338,7 @@ const Team = props => {
 
   async function RefreshTeam() {
     try {
-      const res = await league.GetTeamInfo(team.id)
+      const res = await league.GetTeamInfo(props.team.id)
       setTeam(res)
     } catch (e) {
       console.log(e)
@@ -338,11 +346,20 @@ const Team = props => {
     }
   }
 
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      RefreshTeam()
+    })
+    return unsubscribe
+  }, [navigation])
+
   async function HandleSelect(playerId) {
     try {
       setShowAddNewPlayer(false)
       const res = await league.AddPlayerToTeam(playerId, team.id)
+      console.log(res, team.id)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        console.log('refreshing')
         RefreshTeam()
       } else {
         setErr(res.error)
@@ -423,103 +440,108 @@ const Team = props => {
       {!showAddNewPlayer && (
         <>
           <View mt={20}>
-            {team.captains.map((captain, idx) => (
-              <TwoColumns
-                key={'captain' + idx}
-                label={idx === 0 ? t('captain') : ''}>
-                <Pressable
-                  py={5}
-                  onPress={() =>
-                    navigation.navigate('Player', {
-                      playerId: captain.id,
-                    })
-                  }>
-                  <View style={{flexDirection: 'row', gap: 5}}>
-                    <Text>{captain.flag}</Text>
-                    <Text variant="bodyLarge">{captain.nickname}</Text>
-                    <Text variant="bodyLarge">
-                      ({captain.firstname} {captain.lastname})
-                    </Text>
-                  </View>
-                </Pressable>
-              </TwoColumns>
-            ))}
-            {team.assistants.map((assistant, idx) => (
-              <TwoColumns
-                key={'assistant' + idx}
-                label={idx === 0 ? t('assistants') : ''}>
-                <Pressable
-                  py={5}
-                  onPress={() =>
-                    navigation.navigate('Player', {
-                      playerId: assistant.id,
-                    })
-                  }>
-                  <View style={{flexDirection: 'row', gap: 5}}>
-                    <Text>{assistant.flag}</Text>
-                    <Text variant="bodyLarge">{assistant.nickname}</Text>
-                    <Text variant="bodyLarge">
-                      ({assistant.firstname} {assistant.lastname})
-                    </Text>
-                  </View>
-                </Pressable>
-              </TwoColumns>
-            ))}
+            {typeof team.captains !== 'undefined' &&
+              team.captains.map((captain, idx) => (
+                <TwoColumns
+                  key={'captain' + idx}
+                  label={idx === 0 ? t('captain') : ''}>
+                  <Pressable
+                    py={5}
+                    onPress={() =>
+                      navigation.navigate('Player', {
+                        playerId: captain.id,
+                      })
+                    }>
+                    <View style={{flexDirection: 'row', gap: 5}}>
+                      <Text>{captain.flag}</Text>
+                      <Text variant="bodyLarge">{captain.nickname}</Text>
+                      <Text variant="bodyLarge">
+                        ({captain.firstname} {captain.lastname})
+                      </Text>
+                    </View>
+                  </Pressable>
+                </TwoColumns>
+              ))}
+            {typeof team.assistants !== 'undefined' &&
+              team.assistants.map((assistant, idx) => (
+                <TwoColumns
+                  key={'assistant' + idx}
+                  label={idx === 0 ? t('assistants') : ''}>
+                  <Pressable
+                    py={5}
+                    onPress={() =>
+                      navigation.navigate('Player', {
+                        playerId: assistant.id,
+                      })
+                    }>
+                    <View style={{flexDirection: 'row', gap: 5}}>
+                      <Text>{assistant.flag}</Text>
+                      <Text variant="bodyLarge">{assistant.nickname}</Text>
+                      <Text variant="bodyLarge">
+                        ({assistant.firstname} {assistant.lastname})
+                      </Text>
+                    </View>
+                  </Pressable>
+                </TwoColumns>
+              ))}
           </View>
           <View style={{marginTop: 20}}>
             <View>
               <Text>players</Text>
             </View>
-            {team.players.map((player, idx) => (
-              <Row alignItems="center" key={'player' + idx}>
-                <View flex={1}>
-                  <Text>{player.flag}</Text>
-                </View>
-                <View flex={4}>
-                  <Pressable
-                    onPress={() =>
-                      navigation.navigate('Player', {
-                        playerId: player.id,
-                      })
-                    }>
-                    <Text variant="bodyLarge">{player.nickname}</Text>
-                    {user.role_id === 9 && (
-                      <Text variant="bodyLarge">
-                        ({player.firstname} {player.lastname})
-                      </Text>
-                    )}
-                  </Pressable>
-                </View>
-                {toDelete === player.id && (
-                  <View flex={5}>
-                    <Row space={10}>
-                      <Button loading={loading} onPress={() => HandleDelete()}>
-                        {t('confirm')}
-                      </Button>
-                      <Button
-                        loading={loading}
-                        variant="outline"
-                        onPress={() => setToDelete(0)}>
-                        {t('cancel')}
-                      </Button>
-                    </Row>
-                  </View>
-                )}
-                {toDelete !== player.id && (
+            {typeof team.players !== 'undefined' &&
+              team.players.map((player, idx) => (
+                <Row alignItems="center" key={'player' + idx}>
                   <View flex={1}>
+                    <Text>{player.flag}</Text>
+                  </View>
+                  <View flex={4}>
                     <Pressable
-                      disabled={loading}
-                      onPress={() => setToDelete(player.id)}>
-                      <MCI
-                        name="trash-can-outline"
-                        size={20}
-                        color={colors.onSurface}
-                      />
+                      onPress={() =>
+                        navigation.navigate('Player', {
+                          playerId: player.id,
+                        })
+                      }>
+                      <Text variant="bodyLarge">{player.nickname}</Text>
+                      {user.role_id === 9 && (
+                        <Text variant="bodyLarge">
+                          ({player.firstname} {player.lastname})
+                        </Text>
+                      )}
                     </Pressable>
                   </View>
-                )}
-              </Row>
-            ))}
+                  {toDelete === player.id && (
+                    <View flex={5}>
+                      <Row space={10}>
+                        <Button
+                          loading={loading}
+                          onPress={() => HandleDelete()}>
+                          {t('confirm')}
+                        </Button>
+                        <Button
+                          loading={loading}
+                          variant="outline"
+                          onPress={() => setToDelete(0)}>
+                          {t('cancel')}
+                        </Button>
+                      </Row>
+                    </View>
+                  )}
+                  {toDelete !== player.id && (
+                    <View flex={1}>
+                      <Pressable
+                        disabled={loading}
+                        onPress={() => setToDelete(player.id)}>
+                        <MCI
+                          name="trash-can-outline"
+                          size={20}
+                          color={colors.onSurface}
+                        />
+                      </Pressable>
+                    </View>
+                  )}
+                </Row>
+              ))}
           </View>
         </>
       )}

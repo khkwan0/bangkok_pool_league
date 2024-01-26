@@ -5,6 +5,7 @@ import {Button, ScrollView, View} from '@ybase'
 import NewPlayerInput from './components/AddNewPlayer'
 import {useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
+import { SafeAreaFrameContext } from 'react-native-safe-area-context'
 
 const Roster = props => {
   const [showAddNew, setShowAddNew] = React.useState(false)
@@ -14,14 +15,28 @@ const Roster = props => {
   // this is a "goBack" with params
   function HandleSelect(playerId, newPlayer = false, newToTeam = false) {
     setShowAddNew(false)
-    props.navigation.navigate('Match Screen', {
-      player: {
-        newToTeam: newToTeam,
-        playerId: playerId,
-        frameInfo: props.route.params.frameInfo,
-        newPlayer: newPlayer,
-      },
-    })
+    if (
+      typeof props?.route?.params?.fromCompleted !== 'undefined' &&
+      props.route.params.fromCompleted
+    ) {
+      props.navigation.navigate('Post Match Screen', {
+        player: {
+          newToTeam: newToTeam,
+          playerId: playerId,
+          frameInfo: props.route.params.frameInfo,
+          newPlayer: newPlayer,
+        },
+      })
+    } else {
+      props.navigation.navigate('Match Screen', {
+        player: {
+          newToTeam: newToTeam,
+          playerId: playerId,
+          frameInfo: props.route.params.frameInfo,
+          newPlayer: newPlayer,
+        },
+      })
+    }
   }
 
   return (

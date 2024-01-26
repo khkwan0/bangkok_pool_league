@@ -5,6 +5,7 @@ import '~/i18n'
 import {useTranslation} from 'react-i18next'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {ActivityIndicator, View} from '@ybase'
+import {AppState, Platform} from 'react-native'
 
 const Main = props => {
   const account = useAccount()
@@ -13,16 +14,21 @@ const Main = props => {
   const {i18n} = useTranslation()
   const {colors, setColorMode} = useYBase()
 
+  const appState = React.useRef(AppState.currentState)
+
+  async function FetchUser() {
+    try {
+      console.log('fetch user')
+      await account.FetchUser()
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setIsMounted(true)
+    }
+  }
+
   React.useEffect(() => {
-    ;(async () => {
-      try {
-        await account.FetchUser()
-      } catch (e) {
-        console.log(e)
-      } finally {
-        setIsMounted(true)
-      }
-    })()
+    FetchUser()
   }, [])
 
   React.useEffect(() => {
@@ -30,6 +36,20 @@ const Main = props => {
       const season = await league.GetSeason()
     })()
   }, [league])
+
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      console.log(appState.current, nextAppState)
+      if (
+        Platform.OS === 'android' &&
+        appState.current === 'active' &&
+        nextAppState === 'active'
+      ) {
+        FetchUser()
+      }
+    })
+    return () => subscription.remove()
+  }, [])
 
   React.useEffect(() => {
     ;(async () => {
@@ -52,7 +72,7 @@ const Main = props => {
       </View>
     )
   } else {
-    <View flex={1} justifyContent="center" alignItems="center">
+    ;<View flex={1} justifyContent="center" alignItems="center">
       <ActivityIndicator />
     </View>
   }

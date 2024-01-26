@@ -570,6 +570,7 @@ const MatchScreen = props => {
       section: section,
       mfpp: mfpp,
       frames: frames,
+      fromCompleted: props?.route?.params?.fromCompleted ?? false,
     })
   }
 

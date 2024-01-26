@@ -1,7 +1,7 @@
 import React from 'react'
 import {FlatList, RefreshControl} from 'react-native'
 import {Pressable, Text, View} from '@ybase'
-import {useLeague, useYBase} from '~/lib/hooks'
+import {useAccount, useLeague, useYBase} from '~/lib/hooks'
 import {useNavigation, useFocusEffect} from '@react-navigation/native'
 import {useSelector} from 'react-redux'
 import {useTranslation} from 'react-i18next'
@@ -43,6 +43,7 @@ const TeamsHome = props => {
   const [isMounted, setIsMounted] = React.useState(false)
   const user = useSelector(_state => _state.userData).user
   const {t} = useTranslation()
+  const account = useAccount()
 
   const userTeams =
     typeof user?.teams !== 'undefined' ? user?.teams.map(_team => _team.id) : []
@@ -66,29 +67,59 @@ const TeamsHome = props => {
   }
 
   async function GetShowMineOnly() {
-    const fromStorage = await AsyncStorage.getItem('my_teams_only')
-    if (typeof fromStorage !== 'undefined' && fromStorage) {
-      const temp = JSON.parse(fromStorage)
-      if (
-        typeof temp !== 'undefined' &&
-        typeof temp.showMineOnly !== 'undefined' &&
-        typeof user.id !== 'undefined' &&
-        user.id
-      ) {
-        setShowMineOnly(temp)
-      } else {
-        setShowMineOnly(false)
+    try {
+      const fromStorage = await AsyncStorage.getItem('my_teams_only')
+      if (typeof fromStorage !== 'undefined' && fromStorage) {
+        const temp = JSON.parse(fromStorage)
+        if (
+          typeof temp !== 'undefined' &&
+          typeof temp.showMineOnly !== 'undefined' &&
+          typeof user.id !== 'undefined' &&
+          user.id
+        ) {
+          setShowMineOnly(temp.showMineOnly)
+        } else {
+          setShowMineOnly(false)
+        }
       }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setIsMounted(true)
     }
   }
 
   React.useEffect(() => {
+    const unsubscribe = props.navigation.addListener('blur', () => {
+      setIsMounted(false)
+    })
+    return unsubscribe
+  }, [props.navigation])
+
+  React.useEffect(() => {
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      GetShowMineOnly()
+    })
+    return unsubscribe
+  }, [props.navigation])
+
+  /*
+  React.useEffect(() => {
     ;(async () => {
       await GetShowMineOnly()
-      setIsMounted(true)
     })()
   }, [])
+  */
 
+  React.useEffect(() => {
+    ;(async () => {
+      if (isMounted) {
+        await GetTeams()
+      }
+    })()
+  }, [isMounted])
+
+/*
   React.useEffect(() => {
     if (isMounted) {
       ;(async () => {
@@ -103,6 +134,8 @@ const TeamsHome = props => {
           GetTeams()
         }
       })()
+    } else {
+      setIsMounted(true)
     }
   }, [showMineOnly])
 
@@ -117,10 +150,29 @@ const TeamsHome = props => {
       GetTeams()
     }, []),
   )
+  */
+
+  React.useEffect(() => {
+    if (isMounted) {
+      GetTeams()
+    }
+  }, [showMineOnly])
 
   async function onRefresh() {
-    GetTeams()
+    await GetTeams()
   }
+
+  async function HandleSetShowMineOnly() {
+    await AsyncStorage.setItem(
+      'my_teams_only',
+      JSON.stringify({showMineOnly: !showMineOnly}),
+    )
+    setShowMineOnly(s => !s)
+  }
+
+  React.useEffect(() => {
+    account.FetchUser()
+  }, [teams])
 
   if (isMounted) {
     return (
@@ -136,7 +188,7 @@ const TeamsHome = props => {
                   text={t('show_my_teams')}
                   textStyle={{textDecorationLine: 'none'}}
                   isChecked={showMineOnly}
-                  onPress={() => setShowMineOnly(s => !s)}
+                  onPress={() => HandleSetShowMineOnly()}
                 />
               </View>
             )}
