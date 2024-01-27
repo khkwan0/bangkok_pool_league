@@ -68,6 +68,20 @@ const Home = props => {
             </View>
           </Row>
         </Pressable>
+        <Pressable
+          onPress={() => props.navigation.navigate('admin_login')}
+          my={20}>
+          <Row alignItems="center">
+            <View flex={1}>
+              <Text bold fontSize="xxl">
+                Login As
+              </Text>
+            </View>
+            <View flex={1} alignItems="flex-end">
+              <MCI name="chevron-right" size={30} color={colors.onSurface} />
+            </View>
+          </Row>
+        </Pressable>
       </View>
     </ScrollView>
   )

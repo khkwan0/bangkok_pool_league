@@ -2,6 +2,7 @@ import React from 'react'
 import {createStackNavigator} from '@react-navigation/stack'
 import Home from './Home'
 import Teams from './Teams'
+import AdminLogin from './AdminLogin'
 import Divisions from './Divisions'
 import Leagues from './Leagues'
 import TeamMigrations from './TeamMigrations'
@@ -31,6 +32,7 @@ const Admin = props => {
           name="admin_team_migrations"
           component={TeamMigrations}
         />
+        <AdminStack.Screen name="admin_login" component={AdminLogin} />
       </AdminStack.Navigator>
     </View>
   )

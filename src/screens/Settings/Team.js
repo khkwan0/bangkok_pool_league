@@ -334,7 +334,7 @@ const Team = props => {
         assts.includes(user.id) ||
         user.role_id === 9,
     )
-  }, [])
+  }, [captains, assts])
 
   async function RefreshTeam() {
     try {

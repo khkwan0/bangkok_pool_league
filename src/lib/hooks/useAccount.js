@@ -71,6 +71,25 @@ export const useAccount = () => {
     }
   }
 
+  async function AdminLogin(playerId) {
+    try {
+      if (playerId) {
+        const res = await Post('/admin/login', {playerId}, false)
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          if (typeof res.data !== 'undefined' && res.data) {
+            await AsyncStorage.setItem('jwt', res.data.token)
+            dispatch(SetUser(res.data.user))
+            return {status: 'ok'}
+          }
+        } else {
+          return res
+        }
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async function Logout(network = true) {
     await AsyncStorage.removeItem('user')
     dispatch(ClearUser())
@@ -184,6 +203,7 @@ export const useAccount = () => {
   }
 
   return {
+    AdminLogin,
     FetchUser,
     LoadUser,
     UserLogin,
