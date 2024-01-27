@@ -104,5 +104,8 @@
   "confirm": "ยืนยัน",
   "roster": "บัญชีรายชื่อ",
   "match_info": "ข้อมูลการแข่งขัน",
-  "postponed": "เลื่อนออกไป"
+  "postponed": "เลื่อนออกไป",
+  "match": "การแข่งขัน",
+  "merge": "ผสาน",
+  "request_submitted": "ส่งคำขอแล้ว"
 }

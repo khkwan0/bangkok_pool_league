@@ -160,13 +160,13 @@ const DrawerContent = props => {
               icon="location-outline"
               label={t('venues')}
             />
-            {/*
             <DrawerItem
               navDest="Players"
               as="Ionicons"
               icon="person-outline"
               label={t('players')}
             />
+            {/*
             <DrawerItem
               navDest="Calendar"
               icon="calendar"

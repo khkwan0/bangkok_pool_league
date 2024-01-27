@@ -323,6 +323,16 @@ export const useLeague = () => {
     }
   }
 
+  const MergePlayer = async (currentId, toMergeId) => {
+    try {
+      const res = await Get('/users/merge/' + currentId + '/' + toMergeId)
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'network_error'}
+    }
+  }
+
   return {
     ActivateSeason,
     AddPlayerToTeam,
@@ -347,6 +357,7 @@ export const useLeague = () => {
     GetUniquePlayers,
     GetVenues,
     GrantPrivilege,
+    MergePlayer,
     RevokePrivileges,
     RemovePlayerFromTeam,
     SaveNewPlayer,

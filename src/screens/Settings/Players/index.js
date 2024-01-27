@@ -6,6 +6,8 @@ import PlayersHome from './PlayersHome'
 import Player from './Player'
 import PlayerStats from './PlayerStats'
 import MatchScreen from './MatchScreen'
+import RequestMerge from './RequestMerge'
+import SuccessRequestMerge from './SuccessRequestMerge'
 import {useNavigation} from '@react-navigation/native'
 import {useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
@@ -34,6 +36,16 @@ const PlayersScreen = props => {
       <PlayersStack.Screen name="Player" component={Player} />
       <PlayersStack.Screen name="Player Statistics" component={PlayerStats} />
       <PlayersStack.Screen name="Player Match Screen" component={MatchScreen} />
+      <PlayersStack.Screen
+        name="Request Merge"
+        component={RequestMerge}
+        options={{headerTitle: t('request_merge')}}
+      />
+      <PlayersStack.Screen
+        name="Merge Request Success"
+        component={SuccessRequestMerge}
+        options={{headerTitle: t('request_merge')}}
+      />
     </PlayersStack.Navigator>
   )
 }

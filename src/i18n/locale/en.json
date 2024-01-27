@@ -105,5 +105,8 @@
   "roster": "Roster",
   "match_info": "Match Info",
   "postponed": "Postponed",
-  "match": "Match"
+  "match": "Match",
+  "request_merge": "Request merge",
+  "request_merge_into": "Request merge into",
+  "request_submitted": "Request submitted"
 }
