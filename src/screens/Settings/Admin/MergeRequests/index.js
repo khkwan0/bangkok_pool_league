@@ -72,13 +72,13 @@ const RequestHeader = props => {
   const {colors} = useYBase()
 
   return (
-    <View px={20} bgColor={colors.background}>
+    <View px={20} bgColor={colors.background} my={20}>
       <Row alignItems="center">
         <View flex={1}>
-          <Text>Request ID</Text>
+          <Text bold>Request ID</Text>
         </View>
         <View flex={4} alignItems="center">
-          <Text>Request</Text>
+          <Text bold>Request</Text>
         </View>
       </Row>
     </View>
@@ -106,6 +106,7 @@ const MergeRequests = props => {
 
   return (
     <FlatList
+      style={{flexGrow: 1, backgroundColor: colors.background}}
       ListHeaderComponent={<RequestHeader />}
       data={requests}
       renderItem={(item, idx) => (
