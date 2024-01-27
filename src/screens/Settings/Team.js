@@ -527,7 +527,7 @@ const Team = props => {
                       </Row>
                     </View>
                   )}
-                  {toDelete !== player.id && (
+                  {toDelete !== player.id && canAdd && (
                     <View flex={1}>
                       <Pressable
                         disabled={loading}
