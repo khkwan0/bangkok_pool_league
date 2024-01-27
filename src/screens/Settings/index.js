@@ -1,8 +1,8 @@
 import React from 'react'
 import {Image} from 'react-native'
 import {Pressable, Switch, Text, Row, ScrollView, View} from '@ybase'
-import {useAccount, useYBase} from '~/lib/hooks'
-import {useNavigation} from '@react-navigation/native'
+import {useAccount, useLeague, useYBase} from '~/lib/hooks'
+import {useFocusEffect, useNavigation} from '@react-navigation/native'
 import Icon from '@components/Icon'
 import {useSelector} from 'react-redux'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
@@ -11,10 +11,12 @@ import {useTranslation} from 'react-i18next'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Feather from 'react-native-vector-icons/Feather'
+import {Badge} from 'react-native-paper'
 
-const DrawerItem = ({navDest, icon, label, as}) => {
+const DrawerItem = ({navDest, icon, label, as, badge}) => {
   const navigation = useNavigation()
   const {colors} = useYBase()
+  const badgeCount = badge ?? 0
   return (
     <Pressable onPress={() => navigation.navigate(navDest)}>
       <Row alignItems="center">
@@ -22,6 +24,7 @@ const DrawerItem = ({navDest, icon, label, as}) => {
           <Row space={20}>
             <Icon name={icon} as={as} color={colors.onSurface} />
             <Text fontSize="lg">{label}</Text>
+            {badgeCount > 0 && <Badge>{badgeCount}</Badge>}
           </Row>
         </View>
         <View flex={1} alignItems="flex-end">
@@ -39,8 +42,9 @@ const DrawerContent = props => {
   const {t} = useTranslation()
   const {colors, colorMode, setColorMode} = useYBase()
   const [lang, setLang] = React.useState('en')
-  const {i18n} = useTranslation()
+  const [mergeRequestCount, setMergeRequestCount] = React.useState(0)
   const [isMounted, setIsMounted] = React.useState(false)
+  const league = useLeague()
 
   async function HandleLogout() {
     await account.Logout()
@@ -59,6 +63,25 @@ const DrawerContent = props => {
       }
     })()
   }, [])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      GetActiveMergeRequestCount()
+    }, []),
+  )
+
+  async function GetActiveMergeRequestCount() {
+    if (user.role_id === 9) {
+      try {
+        const res = await league.GetActiveMergeRequestCount()
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          setMergeRequestCount(res.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+  }
 
   async function ToggleColorMode() {
     try {
@@ -126,6 +149,7 @@ const DrawerContent = props => {
               typeof user.role_id !== 'undefined' &&
               user.role_id === 9 && (
                 <DrawerItem
+                  badge={mergeRequestCount}
                   navDest="Admin"
                   icon="controller-classic-outline"
                   label={t('admin')}

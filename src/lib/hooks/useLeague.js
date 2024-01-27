@@ -333,12 +333,67 @@ export const useLeague = () => {
     }
   }
 
+  const GetActiveMergeRequestCount = async () => {
+    try {
+      const res = await Get('/users/mergerequest/count')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
+  const GetMergeRequests = async () => {
+    try {
+      const res = await Get('/admin/mergerequests')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
+  const GetMyMergeRequests = async () => {
+    try {
+      const res = await Get('/mymergerequests')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
+  const AcceptMergeRequest = async requestId => {
+    try {
+      const res = await Get('/admin/mergerequest/accept/' + requestId)
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
+  const DenyMergeRequest = async requestId => {
+    try {
+      const res = await Get('/admin/mergerequest/deny/' + requestId)
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
   return {
+    AcceptMergeRequest,
     ActivateSeason,
     AddPlayerToTeam,
     AddNewSeason,
+    DenyMergeRequest,
+    GetActiveMergeRequestCount,
     GetAllVenues,
     GetDivisionsBySeason,
+    GetMergeRequests,
+    GetMyMergeRequests,
     GetPlayerInfo,
     GetPlayerStats,
     GetPlayerStatsInfo,

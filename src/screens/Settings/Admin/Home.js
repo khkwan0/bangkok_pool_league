@@ -1,12 +1,35 @@
 import React from 'react'
 import {Pressable, Row, ScrollView, Text, View} from '@ybase'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import {useTranslation} from 'react-i18next'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
-import {useYBase} from '~/lib/hooks'
+import {useLeague, useYBase} from '~/lib/hooks'
+import {useFocusEffect} from '@react-navigation/native'
+import {useSelector} from 'react-redux'
+import {Badge} from 'react-native-paper'
 
 const Home = props => {
   const {colors} = useYBase()
+  const user = useSelector(_state => _state.userData).user
+  const league = useLeague()
+  const [mergeRequestCount, setMergeRequestCount] = React.useState(0)
+
+  async function GetActiveMergeRequestCount() {
+    if (user.role_id === 9) {
+      try {
+        const res = await league.GetActiveMergeRequestCount()
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          setMergeRequestCount(res.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+  }
+
+  useFocusEffect(
+    React.useCallback(() => {
+      GetActiveMergeRequestCount()
+    }, []),
+  )
 
   return (
     <ScrollView
@@ -48,6 +71,23 @@ const Home = props => {
               <Text bold fontSize="xxl">
                 seasons
               </Text>
+            </View>
+            <View flex={1} alignItems="flex-end">
+              <MCI name="chevron-right" size={30} color={colors.onSurface} />
+            </View>
+          </Row>
+        </Pressable>
+        <Pressable
+          onPress={() => props.navigation.navigate('admin_merge_requests')}
+          my={20}>
+          <Row alignItems="center">
+            <View flex={1}>
+              <Row alignItesm="center" space={10}>
+                <Text bold fontSize="xxl">
+                  Merge Requests
+                </Text>
+                {mergeRequestCount > 0 && <Badge>{mergeRequestCount}</Badge>}
+              </Row>
             </View>
             <View flex={1} alignItems="flex-end">
               <MCI name="chevron-right" size={30} color={colors.onSurface} />

@@ -9,6 +9,7 @@ import TeamMigrations from './TeamMigrations'
 import Seasons from './Seasons'
 import {useYBase} from '~/lib/hooks'
 import {View} from '@ybase'
+import MergeRequests from './MergeRequests'
 
 const AdminStack = createStackNavigator()
 
@@ -33,6 +34,10 @@ const Admin = props => {
           component={TeamMigrations}
         />
         <AdminStack.Screen name="admin_login" component={AdminLogin} />
+        <AdminStack.Screen
+          name="admin_merge_requests"
+          component={MergeRequests}
+        />
       </AdminStack.Navigator>
     </View>
   )
