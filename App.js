@@ -10,12 +10,27 @@ import {theme} from './src/assets/theme'
 import {GestureHandlerRootView} from 'react-native-gesture-handler'
 import BootSplash from 'react-native-bootsplash'
 import Main from './src/Main'
+import messaging from '@react-native-firebase/messaging'
 
 const App = () => {
   React.useEffect(() => {
     ;(async () => {
       await BootSplash.hide({fade: true})
     })()
+  }, [])
+
+  async function RequestUserPermission() {
+    const authStatus = await messaging().requestPermission()
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      messaging.AuthorizationStatus.PROVISIONAL
+    if (enabled) {
+      console.log('Authorization status: ', authStatus)
+    }
+  }
+
+  React.useEffect(() => {
+    RequestUserPermission()
   }, [])
 
   const linking = {

@@ -13,6 +13,8 @@
     "@gorhom/bottom-sheet": "^4.6.0",
     "@invertase/react-native-apple-authentication": "^2.3.0",
     "@react-native-async-storage/async-storage": "^1.19.1",
+    "@react-native-firebase/app": "^18.8.0",
+    "@react-native-firebase/messaging": "^18.8.0",
     "@react-native-picker/picker": "^2.6.1",
     "@react-navigation/bottom-tabs": "^6.5.11",
     "@react-navigation/drawer": "^6.6.3",
