@@ -45,7 +45,7 @@ const Home = props => {
           options={{headerShown: false}}
         />
         <HomeStack.Screen
-          options={{headerTitle: t('settings')}}
+          options={{headerTitle: t('bangkok_pool_league')}}
           component={Settings}
           name="Settings"
         />

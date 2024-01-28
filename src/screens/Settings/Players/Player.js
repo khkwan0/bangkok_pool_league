@@ -6,7 +6,7 @@ import Player from '@screens/Settings/Player'
 // screen "Player" is part of this stack as well as others
 const _Player = props => {
   const playerInfo = props?.route?.params?.playerInfo ?? null
-  return <Player playerInfo={playerInfo} />
+  return <Player playerId={playerInfo.id} />
 }
 
 export default _Player
