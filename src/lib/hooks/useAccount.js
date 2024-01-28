@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useDispatch, useSelector} from 'react-redux'
 import {useNetwork} from '~/lib/hooks'
 import {SetUser, ClearUser} from '../../redux/userSlice'
+import messaging from '@react-native-firebase/messaging'
 
 export const useAccount = () => {
   const dispatch = useDispatch()
@@ -27,6 +28,8 @@ export const useAccount = () => {
         !user.id
       ) {
         const userData = await Get('/user')
+        const token = await messaging().getToken()
+        const res = await Post('/user/token', {token: token})
         dispatch(SetUser(userData))
         return userData
       }
@@ -59,6 +62,8 @@ export const useAccount = () => {
         if (typeof res.status !== 'undefined' && res.status === 'ok') {
           if (typeof res.data !== 'undefined' && res.data) {
             await AsyncStorage.setItem('jwt', res.data.token)
+            const token = await messaging().getToken()
+            await Post('/user/token', {token: token})
             dispatch(SetUser(res.data.user))
             return {status: 'ok'}
           }

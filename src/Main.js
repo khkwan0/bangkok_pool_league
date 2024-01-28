@@ -6,6 +6,7 @@ import {useTranslation} from 'react-i18next'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {ActivityIndicator, View} from '@ybase'
 import {AppState} from 'react-native'
+import messaging from '@react-native-firebase/messaging'
 
 const Main = props => {
   const account = useAccount()
@@ -62,6 +63,13 @@ const Main = props => {
       }
     })()
     return () => setIsMounted(false)
+  }, [])
+
+  React.useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log(JSON.stringify(remoteMessage, null, 2))
+    })
+    return unsubscribe
   }, [])
 
   if (isMounted) {
