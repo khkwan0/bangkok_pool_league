@@ -58,6 +58,8 @@ export const theme = {
         inversePrimary: 'rgb(126, 162, 214)', //brand-200
 
         pressablePressed: '#aaa',
+        switchThumb: '#a00',
+        thumbTrack: '#000',
 
         filterButtonSurface: 'rgb(17, 20, 61)', //brand-800
         onFilterButtonSurface: 'rgb()',

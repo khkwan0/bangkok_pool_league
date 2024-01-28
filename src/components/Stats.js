@@ -1,6 +1,5 @@
 import React from 'react'
-import {View} from 'react-native'
-import {Text} from 'react-native-paper'
+import {Row, Text, View} from '@ybase'
 
 const Stats = ({stats}) => {
   return (
@@ -9,25 +8,23 @@ const Stats = ({stats}) => {
         const margin = gameType === 'Total' ? 10 : 0
         const fw = gameType === 'Total' ? 'bold' : 'normal'
         return (
-          <View
-            key={gameType + '_' + index}
-            style={{flexDirection: 'row', marginVertical: margin}}>
-            <View style={{flex: 2}}>
+          <Row key={gameType + '_' + index} my={margin}>
+            <View flex={2}>
               <Text style={{fontWeight: fw}}>{gameType}</Text>
             </View>
-            <View style={{flex: 1}}>
+            <View flex={1}>
               <Text style={{fontWeight: fw}}>{stats[gameType].played}</Text>
             </View>
-            <View style={{flex: 1}}>
+            <View flex={1}>
               <Text style={{fontWeight: fw}}>{stats[gameType].won}</Text>
             </View>
-            <View style={{flex: 1}}>
+            <View flex={1}>
               <Text style={{fontWeight: fw}}>{stats[gameType].winp}</Text>
             </View>
-            <View style={{flex: 1}}>
+            <View flex={1}>
               <Text style={{fontWeight: fw}}>{stats[gameType].wgtd}</Text>
             </View>
-          </View>
+          </Row>
         )
       })}
     </>

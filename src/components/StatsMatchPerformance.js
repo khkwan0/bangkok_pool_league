@@ -1,6 +1,6 @@
 import React from 'react'
-import {View} from 'react-native'
-import {Text, TouchableRipple} from 'react-native-paper'
+import {TouchableRipple} from 'react-native-paper'
+import {Row, Text, View} from '@ybase'
 import {DateTime} from 'luxon'
 import {useNavigation} from '@react-navigation/native'
 
@@ -10,10 +10,8 @@ const StatsMatchPerformance = ({stats}) => {
     <View>
       {stats.map((stat, index) => {
         return (
-          <View
-            key={stat.date + '_' + index}
-            style={{flexDirection: 'row', alignItems: 'center'}}>
-            <View style={{flex: 2}}>
+          <Row alignItems="center" key={stat.date + '_' + index}>
+            <View flex={2}>
               <TouchableRipple
                 style={{paddingVertical: 5}}
                 onPress={() =>
@@ -26,22 +24,22 @@ const StatsMatchPerformance = ({stats}) => {
                 </Text>
               </TouchableRipple>
             </View>
-            <View style={{flex: 1}}>
+            <View flex={1}>
               <Text>
                 {stat.singlesPlayed}/{stat.singlesWon}
               </Text>
             </View>
-            <View style={{flex: 1}}>
+            <View flex={1}>
               <Text>
                 {stat.doublesPlayed}/{stat.doublesWon}
               </Text>
             </View>
-            <View style={{flex: 1}}>
+            <View flex={1}>
               <Text>
                 {stat.doublesPlayed}/{stat.doublesWon}
               </Text>
             </View>
-          </View>
+          </Row>
         )
       })}
     </View>

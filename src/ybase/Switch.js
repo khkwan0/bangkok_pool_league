@@ -7,10 +7,10 @@ export const Switch = props => {
   return (
     // eslint-disable-next-line react/react-in-jsx-scope
     <RNSwitch
-      ios_backgroundColor={colors.secondaryContainer}
-      thumbColor={colors.background}
+      ios_backgroundColor={colors.thumbTrack}
+      thumbColor={colors.switchThumb}
       trackColor={{
-        false: colors.secondaryContainer,
+        false: colors.thumbTrack,
         true: colors.green['300'],
       }}
       style={

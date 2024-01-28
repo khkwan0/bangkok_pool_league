@@ -11,7 +11,10 @@ const Home = props => {
   return (
     <View flex={1} bgColor={colors.background} px={20}>
       <View mt={20}>
-        <Pressable onPress={() => props.navigation.navigate('Privacy Policy')}>
+        <Pressable
+          onPress={() => props.navigation.navigate('Privacy Policy')}
+          py={5}
+          px={20}>
           <Row alignItems="center">
             <View flex={1}>
               <Text bold fontSize="lg">

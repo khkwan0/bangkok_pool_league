@@ -1,6 +1,5 @@
 import React from 'react'
-import {View} from 'react-native'
-import {Text} from 'react-native-paper'
+import {Row, Text, View} from '@ybase'
 
 const StatsHeader = props => {
   const header = props.isDoubles
@@ -9,40 +8,40 @@ const StatsHeader = props => {
     ? 'Match Performance'
     : 'Frames'
   return (
-    <View style={{flexDirection: 'row', backgroundColor: '#eee', padding: 5}}>
-      <View style={{flex: 2}}>
-        <Text>{header}</Text>
+    <Row>
+      <View flex={2}>
+        <Text bold>{header}</Text>
       </View>
       {!props.isMatchPerformance && (
         <>
-          <View style={{flex: 1}}>
-            <Text>Played</Text>
+          <View flex={1}>
+            <Text bold>Played</Text>
           </View>
-          <View style={{flex: 1}}>
-            <Text>Won</Text>
+          <View flex={1}>
+            <Text bold>Won</Text>
           </View>
-          <View style={{flex: 1}}>
-            <Text>Win %</Text>
+          <View flex={1}>
+            <Text bold>Win %</Text>
           </View>
-          <View style={{flex: 1}}>
-            <Text>Wgtd %</Text>
+          <View flex={1}>
+            <Text bold>Wgtd %</Text>
           </View>
         </>
       )}
       {props.isMatchPerformance && (
         <>
-          <View style={{flex: 1}}>
-            <Text>Sgl.</Text>
+          <View flex={1}>
+            <Text bold>Sgl.</Text>
           </View>
-          <View style={{flex: 1}}>
-            <Text>Dbl.</Text>
+          <View flex={1}>
+            <Text bold>Dbl.</Text>
           </View>
-          <View style={{flex: 1}}>
-            <Text>Wgtd %</Text>
+          <View flex={1}>
+            <Text bold>Wgtd %</Text>
           </View>
         </>
       )}
-    </View>
+    </Row>
   )
 }
 

@@ -1,19 +1,19 @@
 import React from 'react'
-import {Image, ScrollView, View} from 'react-native'
-import {ActivityIndicator, Button, Text} from 'react-native-paper'
+import {Image} from 'react-native'
+import {ActivityIndicator, Button, Row, ScrollView, Text, View} from '@ybase'
 import LeagueHistory from '@components/LeageHistory'
 import StatsHeader from '@components/StatsHeader'
 import Stats from '@components/Stats'
 import StatsDoubles from '@components/StatsDoubles'
 import StatsMatchPerformance from '@components/StatsMatchPerformance'
 import config from '~/config'
-import {useSeason, useLeague} from '~/lib/hooks'
+import {useSeason, useLeague, useYBase} from '~/lib/hooks'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 const PlayerStats = props => {
   const season = useSeason()
   const league = useLeague()
-  const insets = useSafeAreaInsets()
+  const {colors} = useYBase()
   const [playerInfo, setPlayerInfo] = React.useState(
     props.route.params.playerInfo,
   )
@@ -108,17 +108,13 @@ const PlayerStats = props => {
 
   return (
     <ScrollView
-      style={{
-        paddingVertical: 20,
-        marginBottom: insets.bottom,
+      contentContainerStyle={{
+        flexGrow: 1,
+        backgroundColor: colors.background,
+        paddingHorizontal: 20,
       }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 20,
-        }}>
-        <View style={{flex: 1}}>
+      <Row alignItems="center" mt={20}>
+        <View flex={1}>
           <Image
             source={{uri: config.profileUrl + playerInfo.pic}}
             width={100}
@@ -127,7 +123,7 @@ const PlayerStats = props => {
             style={{borderRadius: 50}}
           />
         </View>
-        <View style={{flex: 2, alignItems: 'center'}}>
+        <View flex={2} alignItems="center">
           <Button onPress={() => props.navigation.goBack()}>
             {`${playerInfo.name} (${playerInfo.firstname} ${playerInfo.lastname})`}
           </Button>
@@ -142,7 +138,7 @@ const PlayerStats = props => {
             })}
           </View>
         </View>
-      </View>
+      </Row>
       {isLoading && (
         <View>
           <ActivityIndicator />
@@ -179,7 +175,7 @@ const PlayerStats = props => {
           <StatsMatchPerformance stats={matchPerformance} />
         </View>
       )}
-      <View style={{backgroundColor: '#eee', padding: 20}}>
+      <View>
         <View>
           <Text variant="bodyLarge">
             All performance figures are based on confirmed matches only
@@ -198,16 +194,13 @@ const PlayerStats = props => {
           </Text>
         </View>
       </View>
-      <View style={{marginVertical: 20}}>
-        <View
-          style={{
-            backgroundColor: '#eee',
-            paddingHorizontal: 20,
-            paddingVertical: 10,
-          }}>
-          <Text variant="labelLarge">League History</Text>
+      <View my={20}>
+        <View px={20} py={10}>
+          <Text bold fontSize="lg">
+            League History
+          </Text>
         </View>
-        <View style={{paddingHorizontal: 20}}>
+        <View px={20}>
           <LeagueHistory playerInfo={playerInfo} />
         </View>
       </View>
