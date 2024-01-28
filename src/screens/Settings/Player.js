@@ -227,7 +227,7 @@ const Player = props => {
         <Divider />
         <View style={{padding: 20}}>
           <View>
-            <Text>LEAGUE HISTORY</Text>
+            <Text bold>LEAGUE HISTORY</Text>
           </View>
           <LeagueHistory playerInfo={playerInfo} />
         </View>
