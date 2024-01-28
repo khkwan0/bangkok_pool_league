@@ -59,7 +59,7 @@ export const theme = {
 
         pressablePressed: '#aaa',
         switchThumb: '#a00',
-        thumbTrack: '#000',
+        thumbTrack: '#aaa',
 
         filterButtonSurface: 'rgb(17, 20, 61)', //brand-800
         onFilterButtonSurface: 'rgb()',
