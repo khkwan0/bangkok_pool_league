@@ -25,7 +25,7 @@ export const Pressable = props => {
     paddingRight: props.pr,
     //     backgroundColor: props.bgColor ?? defaultBackgroundColor,
     width: props.w,
-    borderRadius: props.borderRadius,
+    borderRadius: props.borderRadius ?? theme.roundness,
     flex: props.flex,
     alignItems: props.alignItems,
     flexDirection: props.flexDirection,
@@ -34,7 +34,7 @@ export const Pressable = props => {
     borderWidth: props.borderWidth,
   }
   const pressedBackgroundColor =
-    props.pressedBackgroundColor ?? colors.inversePrimary
+    props.pressedBackgroundColor ?? colors.pressablePressed
 
   return (
     <RNPressable
@@ -42,10 +42,9 @@ export const Pressable = props => {
       style={({pressed}) => [
         {..._style},
         {
-          backgroundColor:
-            pressed && props.highlight
-              ? pressedBackgroundColor
-              : defaultBackgroundColor,
+          backgroundColor: pressed
+            ? pressedBackgroundColor
+            : defaultBackgroundColor,
         },
         {...style},
       ]}

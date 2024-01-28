@@ -406,7 +406,7 @@ const Team = props => {
       </View>
       {canAdd && !showAddNewPlayer && (
         <View mt={20}>
-          <Button variant="ghost" onPress={() => setShowAddNewPlayer(true)}>
+          <Button variant="outline" onPress={() => setShowAddNewPlayer(true)}>
             {t('add_player')}
           </Button>
           {err && (
@@ -452,13 +452,25 @@ const Team = props => {
                         playerId: captain.id,
                       })
                     }>
-                    <View style={{flexDirection: 'row', gap: 5}}>
-                      <Text>{captain.flag}</Text>
-                      <Text variant="bodyLarge">{captain.nickname}</Text>
-                      <Text variant="bodyLarge">
-                        ({captain.firstname} {captain.lastname})
-                      </Text>
-                    </View>
+                    <Row flex={1} alignItems="center">
+                      <View flex={1}>
+                        <Text fontSize="lg">
+                          {captain.flag} {captain.nickname}
+                        </Text>
+                        {user.role_id === 9 && (
+                          <Text fontSize="lg">
+                            ({captain.firstname} {captain.lastname})
+                          </Text>
+                        )}
+                      </View>
+                      <View flex={1} alignItems="flex-end">
+                        <MCI
+                          name="chevron-right"
+                          color={colors.onSurface}
+                          size={30}
+                        />
+                      </View>
+                    </Row>
                   </Pressable>
                 </TwoColumns>
               ))}
@@ -474,13 +486,25 @@ const Team = props => {
                         playerId: assistant.id,
                       })
                     }>
-                    <View style={{flexDirection: 'row', gap: 5}}>
-                      <Text>{assistant.flag}</Text>
-                      <Text variant="bodyLarge">{assistant.nickname}</Text>
-                      <Text variant="bodyLarge">
-                        ({assistant.firstname} {assistant.lastname})
-                      </Text>
-                    </View>
+                    <Row alignItems="center" flex={1}>
+                      <View flex={4}>
+                        <Text fontSize="lg">
+                          {assistant.flag} {assistant.nickname}
+                        </Text>
+                        {user.role_id === 9 && (
+                          <Text fontSize="lg">
+                            ({assistant.firstname} {assistant.lastname})
+                          </Text>
+                        )}
+                      </View>
+                      <View flex={1} alignItems="flex-end">
+                        <MCI
+                          name="chevron-right"
+                          color={colors.onSurface}
+                          size={30}
+                        />
+                      </View>
+                    </Row>
                   </Pressable>
                 </TwoColumns>
               ))}
@@ -491,12 +515,15 @@ const Team = props => {
             </View>
             {typeof team.players !== 'undefined' &&
               team.players.map((player, idx) => (
-                <Row alignItems="center" key={'player' + idx}>
+                <Row alignItems="center" key={'player' + idx} my={5}>
                   <View flex={1}>
                     <Text>{player.flag}</Text>
                   </View>
-                  <View flex={4}>
+                  <View flex={5} mr={10}>
                     <Pressable
+                      bgColor={colors.pressableUnpressed}
+                      py={10}
+                      px={10}
                       onPress={() =>
                         navigation.navigate('Player', {
                           playerId: player.id,

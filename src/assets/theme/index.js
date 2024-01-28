@@ -30,7 +30,7 @@ export const theme = {
         errorContainer: 'rgb(255, 245, 240)', //red-50
         onErrorContainer: 'rgb(116, 10, 43)', // red-800
 
-        background: '#fff',
+        background: '#eee',
         onBackground: 'rgb(29, 30, 34)', //neutral-900
 
         headerBackground: '#fff',
@@ -48,7 +48,7 @@ export const theme = {
         outline: 'rgb(188, 192, 203)', //neutral-500
         outlineVariant: 'rgb(220, 223, 232)', //neutral-400
 
-        matchCardBackground: '#eee',
+        matchCardBackground: '#fff',
 
         shadow: 'rgb(29, 30, 34)', //neutral-900
         scrim: 'rgb(29, 30, 34)', //neutral-900
@@ -56,6 +56,8 @@ export const theme = {
         inverseSurface: 'rgb(17, 20, 61)', //brand-800
         inverseOnSurface: 'rgb(255, 255, 255)', //neutral-50
         inversePrimary: 'rgb(126, 162, 214)', //brand-200
+
+        pressablePressed: '#aaa',
 
         filterButtonSurface: 'rgb(17, 20, 61)', //brand-800
         onFilterButtonSurface: 'rgb()',
@@ -175,6 +177,8 @@ export const theme = {
         inverseOnSurface: 'rgb(17, 20, 61)', //brand-800
         inversePrimary: 'rgb(16, 68, 153)', //brand-500
 
+        pressablePressed: '#aaa',
+        pressableUnpressed: '#444',
         completedFrame: '#fff',
         completedFrameAlt: '#ccc',
 

@@ -18,12 +18,14 @@ const DrawerItem = ({navDest, icon, label, as, badge}) => {
   const {colors} = useYBase()
   const badgeCount = badge ?? 0
   return (
-    <Pressable onPress={() => navigation.navigate(navDest)}>
+    <Pressable py={10} onPress={() => navigation.navigate(navDest)}>
       <Row alignItems="center">
         <View flex={1}>
           <Row space={20}>
             <Icon name={icon} as={as} color={colors.onSurface} />
-            <Text fontSize="lg">{label}</Text>
+            <Text bold fontSize="lg">
+              {label}
+            </Text>
             {badgeCount > 0 && <Badge>{badgeCount}</Badge>}
           </Row>
         </View>
@@ -140,7 +142,7 @@ const DrawerContent = props => {
               </View>
             </Row>
           )}
-          <View gap={20}>
+          <View>
             {(typeof user?.id === 'undefined' || !user.id) && (
               <DrawerItem navDest="Login" icon="login" label={t('login')} />
             )}
@@ -167,6 +169,11 @@ const DrawerContent = props => {
               as="Ionicons"
               icon="people"
               label={t('teams')}
+            />
+            <DrawerItem
+              navDest="Statistics"
+              icon="chart-areaspline-variant"
+              label={t('statistics')}
             />
             <DrawerItem
               navDest="Divisions"
@@ -202,11 +209,6 @@ const DrawerContent = props => {
               label={t('schedules')}
             />
               */}
-            <DrawerItem
-              navDest="Statistics"
-              icon="chart-areaspline-variant"
-              label={t('statistics')}
-            />
             <DrawerItem
               navDest="Info"
               icon="information-outline"

@@ -166,150 +166,170 @@ const Profile = props => {
           </Row>
         </View>
       )}
-      <Pressable onPress={() => setEditNickName(true)}>
-        <Row alignItems="center" py={10} space={10}>
-          <View flex={1}>
-            <Text bold fontSize="xl">
-              nickname
-            </Text>
-          </View>
-          <View flex={2} alignItems="flex-end">
-            {editNickname && (
-              <>
-                <TextInput
-                  maxLength={32}
-                  value={nickName}
-                  onChangeText={text => setNickName(text)}
-                />
-                {nickNameErr && (
-                  <View mt={10}>
-                    <Text textAlign="center" color={colors.error}>
-                      {nickNameErr}
-                    </Text>
-                  </View>
-                )}
-                <Row alignItems="center" space={20} my={10}>
-                  <Button
-                    variant="outline"
-                    onPress={() => setEditNickName(false)}>
-                    {t('cancel')}
-                  </Button>
-                  <Button onPress={() => HandleSaveNickName()}>
-                    {t('save')}
-                  </Button>
-                </Row>
-              </>
-            )}
-            {!editNickname && <Text fontSize="xl">{nickName ?? ''}</Text>}
-          </View>
-        </Row>
-      </Pressable>
-      <Pressable onPress={() => setEditFirstName(true)}>
-        <Row alignItems="center" py={10} space={10}>
-          <View flex={1}>
-            <Text bold fontSize="xl">
-              first_name
-            </Text>
-          </View>
-          <View flex={2} alignItems="flex-end">
-            {editFirstName && (
-              <>
-                <TextInput
-                  maxLength={32}
-                  value={firstName}
-                  onChangeText={text => setFirstName(text)}
-                />
-                {firstNameErr && (
-                  <View mt={10}>
-                    <Text textAlign="center" color={colors.error}>
-                      {firstNameErr}
-                    </Text>
-                  </View>
-                )}
-                <Row alignItems="center" space={20} my={10}>
-                  <Button
-                    variant="outline"
-                    onPress={() => setEditFirstName(false)}>
-                    {t('cancel')}
-                  </Button>
-                  <Button onPress={() => HandleSaveFirstName()}>
-                    {t('save')}
-                  </Button>
-                </Row>
-              </>
-            )}
-            {!editFirstName && <Text fontSize="xl">{firstName ?? ''}</Text>}
-          </View>
-        </Row>
-      </Pressable>
-      <Pressable onPress={() => setEditLastName(true)}>
-        <Row alignItems="center" py={10} space={10}>
-          <View flex={1}>
-            <Text bold fontSize="xl">
-              last_name
-            </Text>
-          </View>
-          <View flex={2} alignItems="flex-end">
-            {editLastName && (
-              <>
-                <TextInput
-                  maxLength={32}
-                  value={lastName}
-                  onChangeText={text => setLastName(text)}
-                />
-                {lastNameErr && (
-                  <View mt={10}>
-                    <Text textAlign="center" color={colors.error}>
-                      {lastNameErr}
-                    </Text>
-                  </View>
-                )}
-                <Row alignItems="center" space={20} my={10}>
-                  <Button
-                    variant="outline"
-                    onPress={() => setEditLastName(false)}>
-                    {t('cancel')}
-                  </Button>
-                  <Button onPress={() => HandleSaveLastName()}>
-                    {t('save')}
-                  </Button>
-                </Row>
-              </>
-            )}
-            {!editLastName && <Text fontSize="xl">{lastName ?? ''}</Text>}
-          </View>
-        </Row>
-        <Row>
-          <View flex={1}>
-            <Text bold fontSize="xl">
-              teams
-            </Text>
-          </View>
-          <View flex={2} alignItems="flex-end">
-            {typeof user.teams !== 'undefined' &&
-              user.teams &&
-              Array.isArray(user.teams) &&
-              user.teams.length > 0 &&
-              user.teams.map((team, idx) => (
-                <Text key={team.name + idx}>
-                  {team.name}{' '}
-                  {team.team_role_id === 2 ? '(' + t('captain') + ')' : ''}
-                  {team.team_role_id === 1 ? '(' + t('asst_captain') + ')' : ''}
-                </Text>
-              ))}
-          </View>
-        </Row>
-      </Pressable>
-      <Button
-        variant="ghost"
-        disabled={!playerInfo}
-        onPress={() =>
-          props.navigation.navigate('Player Statistics', {
-            playerInfo: playerInfo,
-          })
-        }>
-        {t('statistics')}
-      </Button>
+      <Row alignItems="center" py={10} space={10}>
+        <View flex={1}>
+          <Text bold fontSize="xl">
+            nickname
+          </Text>
+        </View>
+        <View flex={2} alignItems="flex-end">
+          {editNickname && (
+            <>
+              <TextInput
+                maxLength={32}
+                value={nickName}
+                onChangeText={text => setNickName(text)}
+              />
+              {nickNameErr && (
+                <View mt={10}>
+                  <Text textAlign="center" color={colors.error}>
+                    {nickNameErr}
+                  </Text>
+                </View>
+              )}
+              <Row alignItems="center" space={20} my={10}>
+                <Button
+                  variant="outline"
+                  onPress={() => setEditNickName(false)}>
+                  {t('cancel')}
+                </Button>
+                <Button onPress={() => HandleSaveNickName()}>
+                  {t('save')}
+                </Button>
+              </Row>
+            </>
+          )}
+          {!editNickname && (
+            <Pressable
+              py={5}
+              px={20}
+              onPress={() => setEditFirstName(true)}
+              bgColor={colors.pressableUnpressed}>
+              <Text fontSize="xl">{nickName ?? ''}</Text>
+            </Pressable>
+          )}
+        </View>
+      </Row>
+      <Row alignItems="center" py={10} space={10}>
+        <View flex={1}>
+          <Text bold fontSize="xl">
+            first_name
+          </Text>
+        </View>
+        <View flex={2} alignItems="flex-end">
+          {editFirstName && (
+            <>
+              <TextInput
+                maxLength={32}
+                value={firstName}
+                onChangeText={text => setFirstName(text)}
+              />
+              {firstNameErr && (
+                <View mt={10}>
+                  <Text textAlign="center" color={colors.error}>
+                    {firstNameErr}
+                  </Text>
+                </View>
+              )}
+              <Row alignItems="center" space={20} my={10}>
+                <Button
+                  variant="outline"
+                  onPress={() => setEditFirstName(false)}>
+                  {t('cancel')}
+                </Button>
+                <Button onPress={() => HandleSaveFirstName()}>
+                  {t('save')}
+                </Button>
+              </Row>
+            </>
+          )}
+          {!editFirstName && (
+            <Pressable
+              py={5}
+              px={20}
+              onPress={() => setEditFirstName(true)}
+              bgColor={colors.pressableUnpressed}>
+              <Text fontSize="xl">{firstName ?? ''}</Text>
+            </Pressable>
+          )}
+        </View>
+      </Row>
+      <Row alignItems="center" py={10} space={10}>
+        <View flex={1}>
+          <Text bold fontSize="xl">
+            last_name
+          </Text>
+        </View>
+        <View flex={2} alignItems="flex-end">
+          {editLastName && (
+            <>
+              <TextInput
+                maxLength={32}
+                value={lastName}
+                onChangeText={text => setLastName(text)}
+              />
+              {lastNameErr && (
+                <View mt={10}>
+                  <Text textAlign="center" color={colors.error}>
+                    {lastNameErr}
+                  </Text>
+                </View>
+              )}
+              <Row alignItems="center" space={20} my={10}>
+                <Button
+                  variant="outline"
+                  onPress={() => setEditLastName(false)}>
+                  {t('cancel')}
+                </Button>
+                <Button onPress={() => HandleSaveLastName()}>
+                  {t('save')}
+                </Button>
+              </Row>
+            </>
+          )}
+          {!editLastName && (
+            <Pressable
+              py={5}
+              px={20}
+              onPress={() => setEditLastName(true)}
+              bgColor={colors.pressableUnpressed}>
+              <Text fontSize="xl">{lastName ?? ''}</Text>
+            </Pressable>
+          )}
+        </View>
+      </Row>
+      <Row>
+        <View flex={1}>
+          <Text bold fontSize="xl">
+            teams
+          </Text>
+        </View>
+        <View flex={2} alignItems="flex-end">
+          {typeof user.teams !== 'undefined' &&
+            user.teams &&
+            Array.isArray(user.teams) &&
+            user.teams.length > 0 &&
+            user.teams.map((team, idx) => (
+              <Text key={team.name + idx}>
+                {team.name}{' '}
+                {team.team_role_id === 2 ? '(' + t('captain') + ')' : ''}
+                {team.team_role_id === 1 ? '(' + t('asst_captain') + ')' : ''}
+              </Text>
+            ))}
+        </View>
+      </Row>
+      <View mt={20}>
+        <Button
+          variant="outline"
+          disabled={!playerInfo}
+          onPress={() =>
+            props.navigation.navigate('Player Statistics', {
+              playerInfo: playerInfo,
+            })
+          }>
+          {t('statistics')}
+        </Button>
+      </View>
     </ScrollView>
   )
 }
