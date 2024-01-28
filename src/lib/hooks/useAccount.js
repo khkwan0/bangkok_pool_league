@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useDispatch, useSelector} from 'react-redux'
 import {useNetwork} from '~/lib/hooks'
 import {SetUser, ClearUser} from '../../redux/userSlice'
+import {OneSignal} from 'react-native-onesignal'
 
 export const useAccount = () => {
   const dispatch = useDispatch()
@@ -27,6 +28,8 @@ export const useAccount = () => {
         !user.id
       ) {
         const userData = await Get('/user')
+        console.log('onesignal login')
+        OneSignal.login('bkkleague_' + userData.id)
         dispatch(SetUser(userData))
         return userData
       }
