@@ -12,6 +12,7 @@ import Teams from '@screens/Settings/Teams'
 import DeleteAccount from '@screens/Settings/DeleteAccount'
 import Venues from '@screens/Settings/Venues'
 import Players from '@screens/Settings/Players'
+import AvatarPicker from '@screens/Settings/AvatarPicker'
 import Profile from '@screens/Settings/Profile'
 import Seasons from '@screens/Settings/Seasons'
 import Schedules from '@screens/Settings/Schedules'
@@ -68,6 +69,11 @@ const Home = props => {
           options={{headerTitle: t('seasons')}}
           component={Seasons}
           name="Seasons"
+        />
+        <HomeStack.Screen
+          options={{headerTitle: t('avatar')}}
+          component={AvatarPicker}
+          name="Avatar"
         />
         <HomeStack.Screen
           options={{headerShown: false}}

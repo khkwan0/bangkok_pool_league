@@ -132,13 +132,33 @@ const DrawerContent = props => {
                 </Text>
               </View>
               <View style={{flex: 1}} alignItems="center">
-                <Image
-                  source={{uri: config.profileUrl + user.profile_picture}}
-                  width={80}
-                  height={80}
-                  resizeMode="contain"
-                  style={{borderRadius: 50}}
-                />
+                <Pressable onPress={() => props.navigation.navigate('Avatar')}>
+                  {user.profile_picture && (
+                    <Image
+                      source={{uri: config.profileUrl + user.profile_picture}}
+                      width={80}
+                      height={80}
+                      resizeMode="contain"
+                      style={{borderRadius: 50}}
+                    />
+                  )}
+                  {!user.profile_picture && (
+                    <View
+                      bgColor={colors.surface}
+                      width={80}
+                      height={80}
+                      borderRadius={50}
+                      alignItems="center"
+                      justifyContent="center">
+                      <MCI
+                        name="plus-circle-outline"
+                        color={colors.primary}
+                        size={40}
+                      />
+                      <Text>Upload</Text>
+                    </View>
+                  )}
+                </Pressable>
               </View>
             </Row>
           )}
