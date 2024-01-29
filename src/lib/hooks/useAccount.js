@@ -3,6 +3,7 @@ import {useDispatch, useSelector} from 'react-redux'
 import {useNetwork} from '~/lib/hooks'
 import {SetUser, ClearUser} from '../../redux/userSlice'
 import messaging from '@react-native-firebase/messaging'
+import config from '~/config'
 
 export const useAccount = () => {
   const dispatch = useDispatch()
@@ -207,6 +208,26 @@ export const useAccount = () => {
     }
   }
 
+  async function SaveAvatar(path) {
+    try {
+      const token = await AsyncStorage.getItem('jwt')
+      const data = new FormData()
+      data.append('photo', {uri: path, name: 'oho', type: 'image/jpg'})
+      const res = await fetch('https://' + config.domain + '/avatar', {
+        method: 'post',
+        body: data,
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      })
+      const json = await res.json()
+      return json
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   return {
     AdminLogin,
     FetchUser,
@@ -219,6 +240,7 @@ export const useAccount = () => {
     Recover,
     Verify,
     DeleteAccount,
+    SaveAvatar,
     SetFirstName,
     SetLastName,
     SetNickName,
