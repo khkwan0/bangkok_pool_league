@@ -134,13 +134,16 @@ const DrawerContent = props => {
               <View style={{flex: 1}} alignItems="center">
                 <Pressable onPress={() => props.navigation.navigate('Avatar')}>
                   {user.profile_picture && (
-                    <Image
-                      source={{uri: config.profileUrl + user.profile_picture}}
-                      width={80}
-                      height={80}
-                      resizeMode="contain"
-                      style={{borderRadius: 50}}
-                    />
+                    <>
+                      <Image
+                        source={{uri: config.profileUrl + user.profile_picture}}
+                        width={80}
+                        height={80}
+                        resizeMode="contain"
+                        style={{borderRadius: 50}}
+                      />
+                      <Text textAlign="center">change</Text>
+                    </>
                   )}
                   {!user.profile_picture && (
                     <View
