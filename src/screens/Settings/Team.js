@@ -300,7 +300,7 @@ const AddNewPlayer = props => {
 }
 
 const Team = props => {
-  const [team, setTeam] = React.useState([])
+  const [team, setTeam] = React.useState(props.team ?? [])
   const navigation = useNavigation()
   const user = useSelector(_state => _state.userData).user
   const [showAddNewPlayer, setShowAddNewPlayer] = React.useState(false)
@@ -357,9 +357,7 @@ const Team = props => {
     try {
       setShowAddNewPlayer(false)
       const res = await league.AddPlayerToTeam(playerId, team.id)
-      console.log(res, team.id)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        console.log('refreshing')
         RefreshTeam()
       } else {
         setErr(res.error)

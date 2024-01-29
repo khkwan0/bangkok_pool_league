@@ -11,6 +11,7 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler'
 import BootSplash from 'react-native-bootsplash'
 import Main from './src/Main'
 import messaging from '@react-native-firebase/messaging'
+import {PermissionsAndroid, Platform} from 'react-native'
 
 const App = () => {
   React.useEffect(() => {
@@ -20,12 +21,18 @@ const App = () => {
   }, [])
 
   async function RequestUserPermission() {
-    const authStatus = await messaging().requestPermission()
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      messaging.AuthorizationStatus.PROVISIONAL
-    if (enabled) {
-      console.log('Authorization status: ', authStatus)
+    if (Platform.OS === 'ios') {
+      const authStatus = await messaging().requestPermission()
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        messaging.AuthorizationStatus.PROVISIONAL
+      if (enabled) {
+        console.log('Authorization status: ', authStatus)
+      }
+    } else {
+      PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      )
     }
   }
 

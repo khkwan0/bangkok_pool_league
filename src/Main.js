@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {ActivityIndicator, View} from '@ybase'
 import {AppState} from 'react-native'
 import messaging from '@react-native-firebase/messaging'
+import PushNotificationIOS from '@react-native-community/push-notification-ios'
+import {Platform} from 'react-native'
 
 const Main = props => {
   const account = useAccount()
@@ -16,6 +18,19 @@ const Main = props => {
   const {colors, setColorMode} = useYBase()
 
   const appState = React.useRef(AppState.currentState)
+
+  React.useEffect(() => {
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      console.log(remoteMessage)
+
+      if (Platform.OS === 'ios') {
+        PushNotificationIOS.setApplicationIconBadgeNumber(
+          remoteMessage.notification.ios.badge,
+        )
+      } else {
+      }
+    })
+  }, [])
 
   async function FetchUser() {
     try {

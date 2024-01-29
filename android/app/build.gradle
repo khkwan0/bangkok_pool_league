@@ -1,6 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
-
+apply plugin: 'com.google.gms.google-services'
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -23,7 +23,7 @@ react {
     // debuggableVariants = ["liteDebug", "prodDebug"]
 
     /* Bundling */
-    //   A list containing the node command and its flags. Default is just 'node'.
+    //   A list containing the node command/plugins and its flags. Default is just 'node'.
     // nodeExecutableAndArgs = ["node"]
     //
     //   The command to run when bundling. By default is 'bundle'
@@ -78,7 +78,7 @@ android {
         applicationId "com.bangkok_pool_league"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 49
+        versionCode 50
         versionName "1.0"
     }
     signingConfigs {
