@@ -89,7 +89,7 @@ const AvatarPicker = props => {
             )}
             {!newAvatar && !user.profile_picture && (
               <View
-                bgColor={colors.surface}
+                bgColor={colors.profilePicBackground}
                 width={200}
                 height={200}
                 borderRadius={100}
@@ -110,14 +110,14 @@ const AvatarPicker = props => {
             </View>
           )}
           {showOptions && (
-          <Row my={20} space={20}>
-            <Button onPress={() => HandleShowPicker('gallery')}>
-              {t('from_gallery')}
-            </Button>
-            <Button onPress={() => HandleShowPicker('camera')}>
-              {t('from_camera')}
-            </Button>
-          </Row>
+            <Row my={20} space={20}>
+              <Button onPress={() => HandleShowPicker('gallery')}>
+                {t('from_gallery')}
+              </Button>
+              <Button onPress={() => HandleShowPicker('camera')}>
+                {t('from_camera')}
+              </Button>
+            </Row>
           )}
         </View>
       </View>
@@ -133,7 +133,7 @@ const AvatarPicker = props => {
           onPress={() => HandleSave()}
           disabled={newAvatar ? false : true}
           loading={loading}>
-          {t('submit')}
+          {t('save')}
         </Button>
       </View>
     </View>

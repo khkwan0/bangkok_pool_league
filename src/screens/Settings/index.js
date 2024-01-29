@@ -144,7 +144,7 @@ const DrawerContent = props => {
                   )}
                   {!user.profile_picture && (
                     <View
-                      bgColor={colors.surface}
+                      bgColor={colors.profilePicBackground}
                       width={80}
                       height={80}
                       borderRadius={50}
@@ -155,7 +155,7 @@ const DrawerContent = props => {
                         color={colors.primary}
                         size={40}
                       />
-                      <Text>Upload</Text>
+                      <Text>upload</Text>
                     </View>
                   )}
                 </Pressable>
