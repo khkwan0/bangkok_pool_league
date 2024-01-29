@@ -79,13 +79,16 @@ const AvatarPicker = props => {
               />
             )}
             {!newAvatar && user.profile_picture && (
-              <Image
-                source={{uri: config.profileUrl + user.profile_picture}}
-                width={200}
-                height={200}
-                resizeMode="contain"
-                style={{borderRadius: 100}}
-              />
+              <>
+                <Image
+                  source={{uri: config.profileUrl + user.profile_picture}}
+                  width={200}
+                  height={200}
+                  resizeMode="contain"
+                  style={{borderRadius: 100}}
+                />
+                <Text textAlign="center">change</Text>
+              </>
             )}
             {!newAvatar && !user.profile_picture && (
               <View
