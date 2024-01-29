@@ -112,10 +112,10 @@ const AvatarPicker = props => {
           {showOptions && (
             <Row my={20} space={20}>
               <Button onPress={() => HandleShowPicker('gallery')}>
-                {t('from_gallery')}
+                {t('gallery')}
               </Button>
               <Button onPress={() => HandleShowPicker('camera')}>
-                {t('from_camera')}
+                {t('camera')}
               </Button>
             </Row>
           )}
