@@ -100,7 +100,7 @@ const AvatarPicker = props => {
                   color={colors.primary}
                   size={40}
                 />
-                <Text>Upload</Text>
+                <Text>upload</Text>
               </View>
             )}
           </Pressable>
