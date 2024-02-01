@@ -9,6 +9,7 @@ import {AppState} from 'react-native'
 import messaging from '@react-native-firebase/messaging'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import {Platform} from 'react-native'
+import notifee, {AndroidImportance} from '@notifee/react-native'
 
 const Main = props => {
   const account = useAccount()
@@ -85,6 +86,20 @@ const Main = props => {
       console.log(JSON.stringify(remoteMessage, null, 2))
     })
     return unsubscribe
+  }, [])
+
+  async function CreateChannel() {
+    await notifee.createChannel({
+      id: 'App Wide',
+      name: 'General',
+      vibration: true,
+      lights: true,
+      importance: AndroidImportance.HIGH,
+    })
+  }
+
+  React.useEffect(() => {
+    CreateChannel()
   }, [])
 
   if (isMounted) {

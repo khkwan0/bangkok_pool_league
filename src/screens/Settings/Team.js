@@ -95,7 +95,7 @@ const ChoosePlayer = props => {
   }, [props.allPlayers])
 
   React.useEffect(() => {
-    if (searchQuery.length > 1) {
+    if (searchQuery.length > 0) {
       const _list = trie.current.search(searchQuery)
       setList(_list)
     }
@@ -161,7 +161,7 @@ const AddNewPlayer = props => {
 
   async function HandleSave() {
     try {
-      if (newNickName && newNickName.length > 1) {
+      if (newNickName && newNickName.length > 0) {
         setLoading(true)
         const res = await league.SaveNewPlayer(
           newNickName,
@@ -198,7 +198,7 @@ const AddNewPlayer = props => {
   }
 
   React.useEffect(() => {
-    if (newNickName.length > 1) {
+    if (newNickName.length > 0) {
       setValid(true)
     }
   }, [newNickName])
