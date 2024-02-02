@@ -88,20 +88,31 @@ const UpcomingMatches = props => {
       <View flex={1} bgColor={colors.background} px={20}>
         <FlatList
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={GetMatches} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                typeof user?.teams !== 'undefined' &&
+                user.teams.length > 0 &&
+                showMineOnly
+                  ? GetMatches(true)
+                  : GetMatches(false)
+              }}
+            />
           }
           ListHeaderComponent={
             <View>
               {!user.id && (
-                <Button
-                  variant="ghost"
-                  onPress={() =>
-                    props.navigation.navigate('Login', {
-                      previous: routeName,
-                    })
-                  }>
-                  {t('login_to_see_your_matches')}
-                </Button>
+                <View my={10}>
+                  <Button
+                    variant="outline"
+                    onPress={() =>
+                      props.navigation.navigate('Login', {
+                        previous: routeName,
+                      })
+                    }>
+                    {t('login_to_see_your_matches')}
+                  </Button>
+                </View>
               )}
               {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
                 user.id && (
