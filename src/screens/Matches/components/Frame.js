@@ -109,14 +109,18 @@ const Frame = props => {
             <Button
               icon={!homePlayerA ? 'plus-circle' : ''}
               onPress={() => HandleChoosePlayer('home', 0)}>
-              {homePlayerA ? homePlayerA : 'Player'}
+              <Text bold fontSize="xl">
+                {homePlayerA ? homePlayerA : 'Player'}
+              </Text>
             </Button>
             {props.gameTypes[props.frame.type].no_players === 2 && (
               <View style={{marginTop: 5}}>
                 <Button
                   icon={!homePlayerB ? 'plus-circle' : ''}
                   onPress={() => HandleChoosePlayer('home', 1)}>
-                  {homePlayerB ? homePlayerB : 'Player'}
+                  <Text bold fontSize="xl">
+                    {homePlayerB ? homePlayerB : 'Player'}
+                  </Text>
                 </Button>
               </View>
             )}
@@ -201,11 +205,15 @@ const Frame = props => {
               icon={!awayPlayerA ? 'plus-circle' : ''}
               onPress={() => HandleChoosePlayer('away', 0)}>
               {awayPlayerA ? (
-                awayPlayerA
+                <Text bold fontSize="xl">
+                  {awayPlayerA}
+                </Text>
               ) : awayPlayerA === null ? (
                 <ActivityIndicator color="#f00" />
               ) : (
-                'Player'
+                <Text bold fontSize="xl">
+                  Player
+                </Text>
               )}
             </Button>
             {props.gameTypes[props.frame.type].no_players === 2 && (
@@ -213,7 +221,9 @@ const Frame = props => {
                 <Button
                   icon={!awayPlayerB ? 'plus-circle' : ''}
                   onPress={() => HandleChoosePlayer('away', 1)}>
-                  {awayPlayerB ? awayPlayerB : 'Player'}
+                  <Text bold fontSize="xl">
+                    {awayPlayerB ? awayPlayerB : 'Player'}
+                  </Text>
                 </Button>
               </View>
             )}
