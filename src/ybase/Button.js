@@ -85,6 +85,7 @@ export const Button = props => {
         alignItems="center">
         {typeof props.leftIcon !== 'undefined' && <>{props.leftIcon}</>}
         <Text
+          style={{fontWeight: props.fontWeight ?? 'normal'}}
           color={
             props.disabled
               ? disabledColor

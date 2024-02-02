@@ -107,20 +107,18 @@ const Frame = props => {
               borderRadius: 5,
             }}>
             <Button
+              labelStyle={{fontWeight: 'bold', fontSize: 22}}
               icon={!homePlayerA ? 'plus-circle' : ''}
               onPress={() => HandleChoosePlayer('home', 0)}>
-              <Text bold fontSize="xl">
-                {homePlayerA ? homePlayerA : 'Player'}
-              </Text>
+              {homePlayerA ? homePlayerA : 'Player'}
             </Button>
             {props.gameTypes[props.frame.type].no_players === 2 && (
               <View style={{marginTop: 5}}>
                 <Button
+                  labelStyle={{fontWeight: 'bold', fontSize: 22}}
                   icon={!homePlayerB ? 'plus-circle' : ''}
                   onPress={() => HandleChoosePlayer('home', 1)}>
-                  <Text bold fontSize="xl">
-                    {homePlayerB ? homePlayerB : 'Player'}
-                  </Text>
+                  {homePlayerB ? homePlayerB : 'Player'}
                 </Button>
               </View>
             )}
@@ -202,28 +200,24 @@ const Frame = props => {
               borderRadius: 5,
             }}>
             <Button
+              labelStyle={{fontWeight: 'bold', fontSize: 22}}
               icon={!awayPlayerA ? 'plus-circle' : ''}
               onPress={() => HandleChoosePlayer('away', 0)}>
               {awayPlayerA ? (
-                <Text bold fontSize="xl">
-                  {awayPlayerA}
-                </Text>
+                awayPlayerA
               ) : awayPlayerA === null ? (
                 <ActivityIndicator color="#f00" />
               ) : (
-                <Text bold fontSize="xl">
-                  Player
-                </Text>
+                'Player'
               )}
             </Button>
             {props.gameTypes[props.frame.type].no_players === 2 && (
               <View style={{marginTop: 5}}>
                 <Button
+                  labelStyle={{fontWeight: 'bold', fontSize: 22}}
                   icon={!awayPlayerB ? 'plus-circle' : ''}
                   onPress={() => HandleChoosePlayer('away', 1)}>
-                  <Text bold fontSize="xl">
-                    {awayPlayerB ? awayPlayerB : 'Player'}
-                  </Text>
+                  {awayPlayerB ? awayPlayerB : 'Player'}
                 </Button>
               </View>
             )}
