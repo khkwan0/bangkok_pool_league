@@ -5,12 +5,14 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'
 import {useSelector} from 'react-redux'
+import {Platform} from 'react-native'
 
 const Frame = props => {
   const {colors} = useYBase()
   const disabled = props.finalizedHome && props.finalizedAway
   const {t} = useTranslation()
   const user = useSelector(_state => _state.userData).user
+  const playerFontSize = Platform.OS === 'ios' ? 22 : 18
 
   if (props.frame.type !== 'section') {
     let awayPlayerA = ''
@@ -107,7 +109,7 @@ const Frame = props => {
               borderRadius: 5,
             }}>
             <Button
-              labelStyle={{fontWeight: 'bold', fontSize: 22}}
+              labelStyle={{fontWeight: 'bold', fontSize: playerFontSize}}
               icon={!homePlayerA ? 'plus-circle' : ''}
               onPress={() => HandleChoosePlayer('home', 0)}>
               {homePlayerA ? homePlayerA : 'Player'}
@@ -115,7 +117,7 @@ const Frame = props => {
             {props.gameTypes[props.frame.type].no_players === 2 && (
               <View style={{marginTop: 5}}>
                 <Button
-                  labelStyle={{fontWeight: 'bold', fontSize: 22}}
+                  labelStyle={{fontWeight: 'bold', fontSize: playerFontSize}}
                   icon={!homePlayerB ? 'plus-circle' : ''}
                   onPress={() => HandleChoosePlayer('home', 1)}>
                   {homePlayerB ? homePlayerB : 'Player'}
@@ -200,7 +202,7 @@ const Frame = props => {
               borderRadius: 5,
             }}>
             <Button
-              labelStyle={{fontWeight: 'bold', fontSize: 22}}
+              labelStyle={{fontWeight: 'bold', fontSize: playerFontSize}}
               icon={!awayPlayerA ? 'plus-circle' : ''}
               onPress={() => HandleChoosePlayer('away', 0)}>
               {awayPlayerA ? (
@@ -214,7 +216,7 @@ const Frame = props => {
             {props.gameTypes[props.frame.type].no_players === 2 && (
               <View style={{marginTop: 5}}>
                 <Button
-                  labelStyle={{fontWeight: 'bold', fontSize: 22}}
+                  labelStyle={{fontWeight: 'bold', fontSize: playerFontSize}}
                   icon={!awayPlayerB ? 'plus-circle' : ''}
                   onPress={() => HandleChoosePlayer('away', 1)}>
                   {awayPlayerB ? awayPlayerB : 'Player'}
