@@ -393,6 +393,26 @@ export const useLeague = () => {
     }
   }
 
+  const GetLiveScores = async () => {
+    try {
+      const res = await Get('/scores/live')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
+  const GetMatchById = async matchId => {
+    try {
+      const res = await Get('/match/info/full/' + matchId)
+      return res
+    } catch (e) {
+      console.log(e)
+      return null
+    }
+  }
+
   return {
     AcceptMergeRequest,
     ActivateSeason,
@@ -402,6 +422,8 @@ export const useLeague = () => {
     GetActiveMergeRequestCount,
     GetAllVenues,
     GetDivisionsBySeason,
+    GetLiveScores,
+    GetMatchById,
     GetMatchesBySeason,
     GetMergeRequests,
     GetMyMergeRequests,

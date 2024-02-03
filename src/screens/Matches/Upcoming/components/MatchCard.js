@@ -19,6 +19,7 @@ const MatchCard = props => {
 
   return (
     <View
+      mx={20}
       p={10}
       bgColor={colors.matchCardBackground}
       borderRadius={theme.roundness}>
