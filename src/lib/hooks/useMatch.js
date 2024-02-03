@@ -44,5 +44,23 @@ export const useMatch = () => {
     }
   }
 
-  return {GetFrames, GetMatchInfo, GetMatchDetails, UpdateCompletedMatch}
+  const RescheduleMatch = async (matchId, newDate) => {
+    try {
+      const res = await Post('/admin/match/date', {
+        matchId: matchId,
+        newDate: newDate,
+      })
+      return res
+    } catch (e) {
+      throw new Error(e)
+    }
+  }
+
+  return {
+    GetFrames,
+    GetMatchInfo,
+    GetMatchDetails,
+    RescheduleMatch,
+    UpdateCompletedMatch,
+  }
 }
