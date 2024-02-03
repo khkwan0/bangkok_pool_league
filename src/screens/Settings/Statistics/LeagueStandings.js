@@ -1,9 +1,10 @@
 import React from 'react'
-import {FlatList, View} from 'react-native'
+import {FlatList} from 'react-native'
 import {useLeague} from '~/lib/hooks'
 import {Text, TouchableRipple} from 'react-native-paper'
 import {useNavigation} from '@react-navigation/native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {View} from '@ybase'
 
 const MatchData = ({match}) => {
   const navigation = useNavigation()
@@ -141,12 +142,11 @@ const LeagueStandings = props => {
   }
 
   return (
-    <View pb={insets.bottom}>
-      <FlatList
-        data={standings}
-        renderItem={({item, index}) => <DivisionStandings data={item} />}
-      />
-    </View>
+    <FlatList
+      data={standings}
+      renderItem={({item, index}) => <DivisionStandings data={item} />}
+      ListFooterComponent={<View pb={insets.bottom} />}
+    />
   )
 }
 
