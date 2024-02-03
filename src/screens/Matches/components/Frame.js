@@ -145,6 +145,9 @@ const Frame = props => {
             )}
             {props.frame.winner !== props.matchInfo.home_team_id && (
               <Pressable
+                borderWidth={props.frame.winner === 0 ? 1 : 0}
+                p={5}
+                pressedBackgroundColor={colors.pressed}
                 onPress={() =>
                   HandleChooseFrameWin(
                     'home',
@@ -175,6 +178,9 @@ const Frame = props => {
             )}
             {props.frame.winner !== props.matchInfo.away_team_id && (
               <Pressable
+                borderWidth={1}
+                p={5}
+                pressedBackgroundColor={colors.pressed}
                 onPress={() =>
                   HandleChooseFrameWin(
                     'away',
