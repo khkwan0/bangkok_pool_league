@@ -3,6 +3,7 @@ import {FlatList, View} from 'react-native'
 import {useLeague} from '~/lib/hooks'
 import {Text, TouchableRipple} from 'react-native-paper'
 import {useNavigation} from '@react-navigation/native'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 const MatchData = ({match}) => {
   const navigation = useNavigation()
@@ -117,6 +118,7 @@ const DivisionStandings = ({data}) => {
 const LeagueStandings = props => {
   const league = useLeague()
   const [standings, setStandings] = React.useState([])
+  const insets = useSafeAreaInsets()
 
   React.useEffect(() => {
     ;(async () => {
@@ -139,7 +141,7 @@ const LeagueStandings = props => {
   }
 
   return (
-    <View>
+    <View pb={insets.bottom}>
       <FlatList
         data={standings}
         renderItem={({item, index}) => <DivisionStandings data={item} />}
