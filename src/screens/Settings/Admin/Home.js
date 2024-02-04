@@ -36,6 +36,20 @@ const Home = props => {
       contentContainerStyle={{flex: 1, backgroundColor: colors.background}}>
       <View flex={1} px={20} my={20}>
         <Pressable
+          onPress={() => props.navigation.navigate('admin_players')}
+          my={20}>
+          <Row alignItems="center">
+            <View flex={1}>
+              <Text bold fontSize="xxl">
+                players
+              </Text>
+            </View>
+            <View flex={1} alignItems="flex-end">
+              <MCI name="chevron-right" size={30} color={colors.onSurface} />
+            </View>
+          </Row>
+        </Pressable>
+        <Pressable
           onPress={() => props.navigation.navigate('admin_teams')}
           my={20}>
           <Row alignItems="center">

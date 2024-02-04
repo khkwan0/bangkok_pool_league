@@ -325,7 +325,7 @@ export const useLeague = () => {
 
   const MergePlayer = async (currentId, toMergeId) => {
     try {
-      const res = await Get('/users/merge/' + currentId + '/' + toMergeId)
+      const res = await Get('/admin/users/merge/' + currentId + '/' + toMergeId)
       return res
     } catch (e) {
       console.log(e)
@@ -413,6 +413,40 @@ export const useLeague = () => {
     }
   }
 
+  const SetPlayerAttribute = async (playerId, key, value) => {
+    try {
+      const res = await Post('/admin/player/attribute', {
+        playerId,
+        key,
+        value,
+      })
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
+  const GetAllPlayers = async () => {
+    try {
+      const res = await Get('/players/all')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
+  const GetRawPlayerInfo = async playerId => {
+    try {
+      const res = await Get('/player/raw/' + playerId)
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
   return {
     AcceptMergeRequest,
     ActivateSeason,
@@ -421,6 +455,7 @@ export const useLeague = () => {
     DenyMergeRequest,
     GetActiveMergeRequestCount,
     GetAllVenues,
+    GetAllPlayers,
     GetDivisionsBySeason,
     GetLiveScores,
     GetMatchById,
@@ -432,6 +467,7 @@ export const useLeague = () => {
     GetPlayerStatsInfo,
     GetPlayers,
     GetPostponed,
+    GetRawPlayerInfo,
     GetSeason,
     GetSeasonV2,
     GetStandings,
@@ -451,6 +487,7 @@ export const useLeague = () => {
     SaveNewPlayer,
     SaveNewTeam,
     SaveVenue,
+    SetPlayerAttribute,
     SetTeamDivision,
     Migrate,
   }
