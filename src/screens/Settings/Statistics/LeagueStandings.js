@@ -1,10 +1,10 @@
 import React from 'react'
 import {FlatList} from 'react-native'
-import {useLeague} from '~/lib/hooks'
-import {Text, TouchableRipple} from 'react-native-paper'
+import {useLeague, useYBase} from '~/lib/hooks'
+import {TouchableRipple} from 'react-native-paper'
 import {useNavigation} from '@react-navigation/native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import {View} from '@ybase'
+import {Row, Text, View} from '@ybase'
 
 const MatchData = ({match}) => {
   const navigation = useNavigation()
@@ -40,33 +40,28 @@ const MatchData = ({match}) => {
 const TeamStandings = ({team, idx}) => {
   const [showAll, setShowAll] = React.useState(false)
   return (
-    <View style={{marginHorizontal: 20}}>
-      <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <View
-          style={{
-            flex: 4,
-          }}>
+    <View mx={20}>
+      <Row alignItems="center">
+        <View flex={4}>
           <TouchableRipple onPress={() => setShowAll(s => !s)}>
             <View style={{paddingVertical: 10}}>
-              <Text
-                variant="bodyLarge"
-                style={{fontWeight: 'bold', color: '#2c127a'}}>
+              <Text bold fontSize="xl">
                 {idx}&nbsp;
                 {team.name}
               </Text>
             </View>
           </TouchableRipple>
         </View>
-        <View style={{flex: 1}}>
+        <View flex={1}>
           <Text>{team.played}</Text>
         </View>
-        <View style={{flex: 1}}>
+        <View flex={1}>
           <Text>{team.points}</Text>
         </View>
-        <View style={{flex: 1}}>
+        <View flex={1}>
           <Text>{team.frames}</Text>
         </View>
-      </View>
+      </Row>
       {showAll && (
         <FlatList
           data={team.matches}
@@ -78,41 +73,38 @@ const TeamStandings = ({team, idx}) => {
 }
 
 const DivisionStandings = ({data}) => {
+  const {colors} = useYBase()
   return (
-    <View>
-      <FlatList
-        ListHeaderComponent={
+    <FlatList
+      style={{backgroundColor: colors.background}}
+      ListHeaderComponent={
+        <View bgColor={colors.background} px={20} mt={10}>
           <View>
-            <View style={{backgroundColor: '#eee', padding: 20}}>
-              <Text variant="titleLarge">{data.division}</Text>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginHorizontal: 20,
-              }}>
-              <View style={{flex: 4, alignItems: 'center'}}>
-                <Text>Team</Text>
-              </View>
-              <View style={{flex: 1, alignItems: 'flex-start'}}>
-                <Text>Plyd</Text>
-              </View>
-              <View style={{flex: 1}}>
-                <Text>Pts</Text>
-              </View>
-              <View style={{flex: 1}}>
-                <Text>Frms</Text>
-              </View>
-            </View>
+            <Text fontSize="xxl" bold>
+              {data.division}
+            </Text>
           </View>
-        }
-        data={data.teams}
-        renderItem={({item, index}) => (
-          <TeamStandings team={item} idx={index + 1} />
-        )}
-      />
-    </View>
+          <Row alignItems="center">
+            <View flex={4} alignItems="center">
+              <Text bold>Team</Text>
+            </View>
+            <View flex={1} alignItems="flex-start">
+              <Text bold>Plyd</Text>
+            </View>
+            <View flex={1}>
+              <Text bold>Pts</Text>
+            </View>
+            <View flex={1}>
+              <Text bold>Frms</Text>
+            </View>
+          </Row>
+        </View>
+      }
+      data={data.teams}
+      renderItem={({item, index}) => (
+        <TeamStandings team={item} idx={index + 1} />
+      )}
+    />
   )
 }
 
