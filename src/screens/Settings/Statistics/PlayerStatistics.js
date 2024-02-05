@@ -1,9 +1,11 @@
 import React from 'react'
 import {FlatList} from 'react-native'
-import {Row, Text, TextInput, View} from '@ybase'
-import {useLeague} from '~/lib/hooks'
+import {Pressable, Row, Text, TextInput, View} from '@ybase'
+import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
+import {useLeague, useYBase} from '~/lib/hooks'
 import {useSelector} from 'react-redux'
 import TrieSearch from 'trie-search'
+import {useTranslation} from 'react-i18next'
 
 const PlayerListing = ({data, idx}) => {
   const user = useSelector(_state => _state.userData).user
@@ -15,7 +17,7 @@ const PlayerListing = ({data, idx}) => {
     }
   }
   return (
-    <Row alignItems="center">
+    <Row alignItems="center" my={5}>
       <View flex={1}>
         <Text style={textStyle}>{data.rank}</Text>
       </View>
@@ -39,12 +41,26 @@ const PlayerListing = ({data, idx}) => {
 }
 
 const PlayerStatsHeader = props => {
+  const {t} = useTranslation()
+  const {colors} = useYBase()
   return (
     <View>
       <View>
         <TextInput
           value={props.searchQuery}
           onChangeText={text => props.setSearchQuery(text)}
+          placeholder={t('search')}
+          inputRightElement={
+            <View mr={10}>
+              <Pressable onPress={() => props.setSearchQuery('')}>
+                <MCI
+                  name="close-circle-outline"
+                  color={colors.onSurface}
+                  size={30}
+                />
+              </Pressable>
+            </View>
+          }
         />
       </View>
       <Row alignItems="center">
@@ -77,6 +93,7 @@ const PlayerStatistics = props => {
   const [isLoading, setIsLoading] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [list, setList] = React.useState([])
+  const {colors} = useYBase()
 
   const trie = React.useRef(new TrieSearch('name', {splitOnRegEx: false}))
 
@@ -119,7 +136,7 @@ const PlayerStatistics = props => {
     }
   }
   return (
-    <View px={20}>
+    <View px={20} bgColor={colors.background} flex={1}>
       <FlatList
         ListHeaderComponent={
           <PlayerStatsHeader

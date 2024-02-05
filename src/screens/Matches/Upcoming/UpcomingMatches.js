@@ -20,6 +20,7 @@ const UpcomingMatches = props => {
   const season = useSeason()
   const league = useLeague()
   const routeName = props.navigation.getState().routes[0].name
+  const {colors} = useYBase()
   const {t} = useTranslation()
 
   async function GetSeason() {
@@ -97,6 +98,7 @@ const UpcomingMatches = props => {
   if (isMounted) {
     return (
       <FlatList
+        contentContainerStyle={{backgroundColor: colors.background}}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
