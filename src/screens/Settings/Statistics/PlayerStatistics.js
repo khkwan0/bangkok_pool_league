@@ -93,7 +93,7 @@ const PlayerStatistics = props => {
     } else {
       setList(playerStats)
     }
-  }, [searchQuery])
+  }, [searchQuery, playerStats])
 
   React.useEffect(() => {
     ;(async () => {
