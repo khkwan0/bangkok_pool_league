@@ -5,10 +5,12 @@ import {useLeague, useYBase} from '~/lib/hooks'
 
 const Score = props => {
   const {width} = useWindowDimensions()
+  const {colors} = useYBase()
   return (
     <View w={width} my={10}>
       <Pressable
         borderWidth={1}
+        borderColor={colors.outline}
         mx={10}
         py={10}
         onPress={() => props.handlePress(props.item.id)}>
