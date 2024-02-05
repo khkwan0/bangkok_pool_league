@@ -1,8 +1,7 @@
 import React from 'react'
-import {FlatList, View} from 'react-native'
-import {useLeague} from '~/lib/hooks'
-import {ActivityIndicator, Text, TouchableRipple} from 'react-native-paper'
+import {useLeague, useYBase} from '~/lib/hooks'
 import {useNavigation} from '@react-navigation/native'
+import {ActivityIndicator, Pressable, Row, ScrollView, Text, View} from '@ybase'
 
 const TeamStanding = ({data, idx}) => {
   const [showMore, setShowMore] = React.useState(false)
@@ -14,14 +13,8 @@ const TeamStanding = ({data, idx}) => {
 
   return (
     <>
-      <TouchableRipple onPress={() => setShowMore(s => !s)}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 10,
-            paddingVertical: 5,
-          }}>
+      <Pressable onPress={() => setShowMore(s => !s)}>
+        <Row alignItems="center">
           <View style={{flex: 1}}>
             <Text>{idx + 1}</Text>
           </View>
@@ -39,8 +32,8 @@ const TeamStanding = ({data, idx}) => {
           <View style={{flex: 1}}>
             <Text>{data.frames}</Text>
           </View>
-        </View>
-      </TouchableRipple>
+        </Row>
+      </Pressable>
       <View>
         {showMore &&
           data.matches.map((match, matchIdx) => {
@@ -57,10 +50,15 @@ const TeamStanding = ({data, idx}) => {
               match.home_team === data.name ? match.away_team : match.home_team
             const homeAway = match.home_team === data.name ? 'Home' : 'Away'
             return (
-              <TouchableRipple
+              <Pressable
                 key={matchIdx}
                 onPress={() => HandleMatchPress(match.match_id)}>
-                <View style={{flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 5}}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingHorizontal: 20,
+                    paddingVertical: 5,
+                  }}>
                   <View style={{flex: 2}}>
                     <Text>{`vs ${vsTeam} (${homeAway})`}</Text>
                   </View>
@@ -68,7 +66,7 @@ const TeamStanding = ({data, idx}) => {
                     <Text style={{color: resColor}}>{result}</Text>
                   </View>
                 </View>
-              </TouchableRipple>
+              </Pressable>
             )
           })}
       </View>
@@ -76,10 +74,32 @@ const TeamStanding = ({data, idx}) => {
   )
 }
 
+const TeamStatisticsHeader = props => {
+  return (
+    <Row alignItems="center">
+      <View flex={1}>
+        <Text bold>Rank</Text>
+      </View>
+      <View flex={3}>
+        <Text bold>Team</Text>
+      </View>
+      <View flex={1}>
+        <Text bold>Pts</Text>
+      </View>
+      <View flex={1}>
+        <Text bold>W/L</Text>
+      </View>
+      <View flex={1}>
+        <Text bold>Frames</Text>
+      </View>
+    </Row>
+  )
+}
 const TeamStatistics = props => {
   const league = useLeague()
-  const [stats, setStats] = React.useState([])
+  const [stats, setStats] = React.useState({})
   const [isLoading, setIsLoading] = React.useState(false)
+  const {colors} = useYBase()
 
   React.useEffect(() => {
     ;(async () => {
@@ -113,35 +133,33 @@ const TeamStatistics = props => {
     )
   } else {
     return (
-      <FlatList
-        data={stats}
-        ListHeaderComponent={
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: 10,
-              paddingVertical: 5,
-            }}>
-            <View style={{flex: 1}}>
-              <Text>Rank</Text>
-            </View>
-            <View style={{flex: 3}}>
-              <Text>Team</Text>
-            </View>
-            <View style={{flex: 1}}>
-              <Text>Pts</Text>
-            </View>
-            <View style={{flex: 1}}>
-              <Text>W:L</Text>
-            </View>
-            <View style={{flex: 1}}>
-              <Text>Frames</Text>
-            </View>
-          </View>
-        }
-        renderItem={({item, index}) => <TeamStanding data={item} idx={index} />}
-      />
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 20,
+          backgroundColor: colors.background,
+        }}>
+        <View my={10}>
+          <Text bold fontSize="xl">
+            8-Ball
+          </Text>
+        </View>
+        <TeamStatisticsHeader />
+        {typeof stats.eightBall !== 'undefined' &&
+          stats.eightBall.map((item, index) => (
+            <TeamStanding key={'8b' + index} data={item} idx={index} />
+          ))}
+        <View my={10}>
+          <Text bold fontSize="xl">
+            9-Ball
+          </Text>
+        </View>
+        <TeamStatisticsHeader />
+        {typeof stats.nineBall !== 'undefined' &&
+          stats.nineBall.map((item, index) => (
+            <TeamStanding key={'9b' + index} data={item} idx={index} />
+          ))}
+      </ScrollView>
     )
   }
 }

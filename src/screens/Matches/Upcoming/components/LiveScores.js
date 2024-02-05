@@ -1,5 +1,5 @@
 import React from 'react'
-import {useWindowDimensions, FlatList} from 'react-native'
+import {AppState, useWindowDimensions, FlatList} from 'react-native'
 import {Pressable, Row, Text, View} from '@ybase'
 import {useLeague, useYBase} from '~/lib/hooks'
 
@@ -70,6 +70,18 @@ const LiveScores = props => {
       viewPosition: 0.5,
     })
   }
+
+  React.useEffect(() => {
+    const subscribe = AppState.addEventListener('change', nextAppState => {
+      console.log(nextAppState)
+      if (nextAppState !== 'active') {
+        clearInterval(timer.current)
+      }
+    })
+    return () => {
+      subscribe.remove()
+    }
+  })
 
   React.useEffect(() => {
     if (scores.length > 0) {

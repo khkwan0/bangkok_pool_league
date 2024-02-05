@@ -21,7 +21,6 @@ const UpcomingMatches = props => {
   const league = useLeague()
   const routeName = props.navigation.getState().routes[0].name
   const {t} = useTranslation()
-  const {colors} = useYBase()
 
   async function GetSeason() {
     try {
