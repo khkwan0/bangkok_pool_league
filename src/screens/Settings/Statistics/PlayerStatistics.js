@@ -1,29 +1,72 @@
 import React from 'react'
-import {FlatList, View} from 'react-native'
-import {Text} from '@ybase'
+import {FlatList} from 'react-native'
+import {Row, Text, TextInput, View} from '@ybase'
 import {useLeague} from '~/lib/hooks'
+import {useSelector} from 'react-redux'
+import TrieSearch from 'trie-search'
 
 const PlayerListing = ({data, idx}) => {
+  const user = useSelector(_state => _state.userData).user
+  let textStyle = {}
+  if (typeof user.id !== 'undefined' && user.id === data.playerId) {
+    textStyle = {
+      fontWeight: 'bold',
+      fontSize: 16,
+    }
+  }
   return (
-    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-      <View style={{flex: 1}}>
-        <Text>{idx + 1}</Text>
+    <Row alignItems="center">
+      <View flex={1}>
+        <Text style={textStyle}>{data.rank}</Text>
       </View>
-      <View style={{flex: 2}}>
-        <Text>{data.name}</Text>
+      <View flex={2}>
+        <Text style={textStyle}>{data.name}</Text>
       </View>
-      <View style={{flex: 1}}>
-        <Text>{data.played}</Text>
+      <View flex={1}>
+        <Text style={textStyle}>{data.played}</Text>
       </View>
-      <View style={{flex: 1}}>
-        <Text>{data.won}</Text>
+      <View flex={1}>
+        <Text style={textStyle}>{data.won}</Text>
       </View>
-      <View style={{flex: 1}}>
-        <Text>{data.rawPerfDisp}</Text>
+      <View flex={1}>
+        <Text style={textStyle}>{data.rawPerfDisp}</Text>
       </View>
-      <View style={{flex: 1}}>
-        <Text>{data.adjPerfDisp}</Text>
+      <View flex={1}>
+        <Text style={textStyle}>{data.adjPerfDisp}</Text>
       </View>
+    </Row>
+  )
+}
+
+const PlayerStatsHeader = props => {
+  return (
+    <View>
+      <View>
+        <TextInput
+          value={props.searchQuery}
+          onChangeText={text => props.setSearchQuery(text)}
+        />
+      </View>
+      <Row alignItems="center">
+        <View flex={1}>
+          <Text bold>rank</Text>
+        </View>
+        <View flex={2}>
+          <Text bold>player</Text>
+        </View>
+        <View flex={1}>
+          <Text bold>played</Text>
+        </View>
+        <View flex={1}>
+          <Text bold>points</Text>
+        </View>
+        <View flex={1}>
+          <Text bold>raw_perf</Text>
+        </View>
+        <View flex={1}>
+          <Text bold>adj_perf</Text>
+        </View>
+      </Row>
     </View>
   )
 }
@@ -32,6 +75,25 @@ const PlayerStatistics = props => {
   const league = useLeague()
   const [playerStats, setPlayerStats] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(false)
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const [list, setList] = React.useState([])
+
+  const trie = React.useRef(new TrieSearch('name', {splitOnRegEx: false}))
+
+  React.useEffect(() => {
+    if (playerStats.length > 0) {
+      trie.current.addAll(playerStats)
+    }
+  }, [playerStats])
+
+  React.useEffect(() => {
+    if (searchQuery.length > 0) {
+      const _list = trie.current.search(searchQuery)
+      setList(_list)
+    } else {
+      setList(playerStats)
+    }
+  }, [searchQuery])
 
   React.useEffect(() => {
     ;(async () => {
@@ -57,9 +119,15 @@ const PlayerStatistics = props => {
     }
   }
   return (
-    <View>
+    <View px={20}>
       <FlatList
-        data={playerStats}
+        ListHeaderComponent={
+          <PlayerStatsHeader
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
+        }
+        data={list}
         renderItem={({item, index}) => (
           <PlayerListing data={item} idx={index} />
         )}

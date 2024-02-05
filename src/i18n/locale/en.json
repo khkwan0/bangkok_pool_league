@@ -114,5 +114,12 @@
   "camera": "Camera",
   "avatar": "Avatar",
   "upload": "Upload",
-  "change": "Change"
+  "change": "Change",
+  "rank": "Rank",
+  "player": "Player",
+  "played": "Played",
+  "won": "Won",
+  "raw_perf": "Raw perf",
+  "adj_perf": "Adjusted Perf",
+  "points": "Points"
 }

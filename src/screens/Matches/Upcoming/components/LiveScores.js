@@ -64,16 +64,17 @@ const LiveScores = props => {
       currentSlide.current = 0
     }
 
-    flatlist.current.scrollToIndex({
-      index: currentSlide.current,
-      animated: true,
-      viewPosition: 0.5,
-    })
+    if (flatlist.current) {
+      flatlist.current.scrollToIndex({
+        index: currentSlide.current,
+        animated: true,
+        viewPosition: 0.5,
+      })
+    }
   }
 
   React.useEffect(() => {
     const subscribe = AppState.addEventListener('change', nextAppState => {
-      console.log(nextAppState)
       if (nextAppState !== 'active') {
         clearInterval(timer.current)
       } else {
