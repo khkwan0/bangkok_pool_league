@@ -76,6 +76,8 @@ const LiveScores = props => {
       console.log(nextAppState)
       if (nextAppState !== 'active') {
         clearInterval(timer.current)
+      } else {
+        timer.current = setInterval(() => AdvanceTicker(), 4000)
       }
     })
     return () => {
