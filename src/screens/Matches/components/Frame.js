@@ -145,7 +145,7 @@ const Frame = props => {
             )}
             {props.frame.winner !== props.matchInfo.home_team_id && (
               <Pressable
-                borderWidth={props.frame.winner === 0 ? 1 : 0}
+                borderWidth={1}
                 p={5}
                 pressedBackgroundColor={colors.pressed}
                 onPress={() =>
