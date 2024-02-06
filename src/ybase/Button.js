@@ -38,6 +38,17 @@ export const Button = props => {
 
   const [isPressed, setIsPressed] = React.useState(false)
 
+  const shadow =
+    !isOutline && !isGhost
+      ? {
+          shadowColor: '#000',
+          shadowOffset: {width: 0, height: 1},
+          shadowOpacity: 0.8,
+          shadowRadius: 2,
+          elevation: 5,
+        }
+      : {}
+
   return (
     <Pressable
       borderWidth={isOutline ? 1 : props.borderWidth ?? 0}
@@ -49,6 +60,7 @@ export const Button = props => {
       minWidth={props.minWidth ?? 0}
       style={pressed => {
         return [
+          shadow,
           {
             paddingVertical: props.py ?? 18,
             paddingHorizontal: props.px ?? 18,
@@ -73,6 +85,7 @@ export const Button = props => {
         alignItems="center">
         {typeof props.leftIcon !== 'undefined' && <>{props.leftIcon}</>}
         <Text
+          style={{fontWeight: props.fontWeight ?? 'normal'}}
           color={
             props.disabled
               ? disabledColor

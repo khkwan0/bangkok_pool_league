@@ -6,6 +6,10 @@ import {useTranslation} from 'react-i18next'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {ActivityIndicator, View} from '@ybase'
 import {AppState} from 'react-native'
+import messaging from '@react-native-firebase/messaging'
+import PushNotificationIOS from '@react-native-community/push-notification-ios'
+import {Platform} from 'react-native'
+import notifee, {AndroidImportance} from '@notifee/react-native'
 
 const Main = props => {
   const account = useAccount()
@@ -15,6 +19,19 @@ const Main = props => {
   const {colors, setColorMode} = useYBase()
 
   const appState = React.useRef(AppState.currentState)
+
+  React.useEffect(() => {
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      console.log(remoteMessage)
+
+      if (Platform.OS === 'ios') {
+        PushNotificationIOS.setApplicationIconBadgeNumber(
+          remoteMessage.notification.ios.badge,
+        )
+      } else {
+      }
+    })
+  }, [])
 
   async function FetchUser() {
     try {
@@ -62,6 +79,27 @@ const Main = props => {
       }
     })()
     return () => setIsMounted(false)
+  }, [])
+
+  React.useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log(JSON.stringify(remoteMessage, null, 2))
+    })
+    return unsubscribe
+  }, [])
+
+  async function CreateChannel() {
+    await notifee.createChannel({
+      id: 'App Wide',
+      name: 'General',
+      vibration: true,
+      lights: true,
+      importance: AndroidImportance.HIGH,
+    })
+  }
+
+  React.useEffect(() => {
+    CreateChannel()
   }, [])
 
   if (isMounted) {

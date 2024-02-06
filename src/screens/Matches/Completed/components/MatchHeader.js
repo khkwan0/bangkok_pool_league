@@ -8,6 +8,9 @@ import {
   RadioButton,
 } from 'react-native-paper'
 import {useMatch} from '~/lib/hooks'
+import {useSelector} from 'react-redux'
+import {DateTime} from 'luxon'
+import DatePicker from 'react-native-date-picker'
 
 const MatchHeader = props => {
   const [isLoading, setIsLoading] = React.useState(false)
@@ -20,7 +23,11 @@ const MatchHeader = props => {
     show: false,
     cb: null,
   })
+  const [showDatePicker, setShowDatePicker] = React.useState(false)
+  const [matchDate, setMatchDate] = React.useState(props.matchData.date)
+  const [err, setErr] = React.useState('')
   const match = useMatch()
+  const user = useSelector(_state => _state.userData).user
 
   async function DoSetFirstBreak(teamId) {
     setFirstBreak(teamId)
@@ -36,6 +43,22 @@ const MatchHeader = props => {
       setShowDialogFirstBreak({show: true, cb: () => DoSetFirstBreak(teamId)})
     } else {
       DoSetFirstBreak(teamId)
+    }
+  }
+
+  async function HandleDateChange(newDate) {
+    try {
+      setErr('')
+      setShowDatePicker(false)
+      const res = await match.RescheduleMatch(props.matchData.matchId, newDate)
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        setMatchDate(newDate.toISOString())
+      } else {
+        setErr(res.error)
+      }
+    } catch (e) {
+      console.log(e)
+      setErr('server_error')
     }
   }
 
@@ -61,6 +84,23 @@ const MatchHeader = props => {
         </Dialog>
       </Portal>
       <View px={20}>
+        {user.role_id === 9 && (
+          <Button mode="outlined" onPress={() => setShowDatePicker(true)}>
+            <Text fontSize="xl" bold textAlign="center">
+              {DateTime.fromISO(matchDate).toLocaleString(
+                DateTime.DATE_SHORT,
+              )}
+            </Text>
+          </Button>
+        )}
+        <DatePicker
+          modal
+          onConfirm={date => HandleDateChange(date)}
+          mode="date"
+          date={new Date(DateTime.fromISO(props.matchData.date).toMillis())}
+          open={showDatePicker}
+          onCancel={() => setShowDatePicker(false)}
+        />
         <Row alignItems="center">
           <View flex={2}>
             <Text bold fontSize="xl" textAlign="center">

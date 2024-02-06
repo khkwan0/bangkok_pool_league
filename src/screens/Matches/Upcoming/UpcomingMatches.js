@@ -7,6 +7,7 @@ import {useSelector, useDispatch} from 'react-redux'
 import {useTranslation} from 'react-i18next'
 import {SetSeason} from '~/redux/seasonSlice'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
+import LiveScores from './components/LiveScores'
 
 const UpcomingMatches = props => {
   const dispatch = useDispatch()
@@ -19,8 +20,8 @@ const UpcomingMatches = props => {
   const season = useSeason()
   const league = useLeague()
   const routeName = props.navigation.getState().routes[0].name
-  const {t} = useTranslation()
   const {colors} = useYBase()
+  const {t} = useTranslation()
 
   async function GetSeason() {
     try {
@@ -33,6 +34,17 @@ const UpcomingMatches = props => {
 
   function HandlePress(idx) {
     props.navigation.navigate('Match Screen', {matchInfo: fixtures[idx]})
+  }
+
+  async function HandleScorePress(matchId) {
+    try {
+      const res = await league.GetMatchById(matchId)
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        props.navigation.navigate('Match Screen', {matchInfo: res.data})
+      }
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   async function GetMatches(filtered = false) {
@@ -85,16 +97,26 @@ const UpcomingMatches = props => {
 
   if (isMounted) {
     return (
-      <View flex={1} bgColor={colors.background} px={20}>
-        <FlatList
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={GetMatches} />
-          }
-          ListHeaderComponent={
-            <View>
-              {!user.id && (
+      <FlatList
+        contentContainerStyle={{backgroundColor: colors.background}}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              typeof user?.teams !== 'undefined' &&
+              user.teams.length > 0 &&
+              showMineOnly
+                ? GetMatches(true)
+                : GetMatches(false)
+            }}
+          />
+        }
+        ListHeaderComponent={
+          <>
+            {!user.id && (
+              <View my={10} px={20}>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   onPress={() =>
                     props.navigation.navigate('Login', {
                       previous: routeName,
@@ -102,51 +124,52 @@ const UpcomingMatches = props => {
                   }>
                   {t('login_to_see_your_matches')}
                 </Button>
-              )}
-              {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
-                user.id && (
-                  <View style={{paddingVertical: 10}}>
-                    <Text style={{textAlign: 'center'}}>
-                      You are not affiliated with a team.
-                    </Text>
-                  </View>
-                )}
-              {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
-                <View my={20}>
-                  <BouncyCheckbox
-                    text={t('show_mine_only')}
-                    textStyle={{textDecorationLine: 'none'}}
-                    isChecked={showMineOnly}
-                    onPress={() => setShowMineOnly(s => !s)}
-                  />
+              </View>
+            )}
+            <LiveScores handlePress={HandleScorePress} />
+            {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
+              user.id && (
+                <View py={10} px={20}>
+                  <Text style={{textAlign: 'center'}}>
+                    You are not affiliated with a team.
+                  </Text>
                 </View>
               )}
-            </View>
-          }
-          ListFooterComponent={
-            isMounted && fixtures.length === 0 ? (
-              <View my={30}>
-                <Text textAlign="center" fontSize="xxxl">
-                  No upcoming matches for season: {seasonNumber}
-                </Text>
+            {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
+              <View my={20} px={20}>
+                <BouncyCheckbox
+                  text={t('show_mine_only')}
+                  textStyle={{textDecorationLine: 'none'}}
+                  isChecked={showMineOnly}
+                  onPress={() => setShowMineOnly(s => !s)}
+                />
               </View>
-            ) : null
-          }
-          keyExtractor={(item, index) =>
-            item.home_team_id + item.away_team_id + item.date + index
-          }
-          ItemSeparatorComponent={<View my={10} />}
-          data={fixtures}
-          renderItem={({item, index}) => (
-            <MatchCard
-              match={item}
-              idx={index}
-              handlePress={HandlePress}
-              showMineOnly={showMineOnly}
-            />
-          )}
-        />
-      </View>
+            )}
+          </>
+        }
+        ListFooterComponent={
+          isMounted && fixtures.length === 0 ? (
+            <View my={30} px={20}>
+              <Text textAlign="center" fontSize="xxxl">
+                No upcoming matches for season: {seasonNumber}
+              </Text>
+            </View>
+          ) : null
+        }
+        keyExtractor={(item, index) =>
+          item.home_team_id + item.away_team_id + item.date + index
+        }
+        ItemSeparatorComponent={<View my={10} />}
+        data={fixtures}
+        renderItem={({item, index}) => (
+          <MatchCard
+            match={item}
+            idx={index}
+            handlePress={HandlePress}
+            showMineOnly={showMineOnly}
+          />
+        )}
+      />
     )
   } else {
     return null

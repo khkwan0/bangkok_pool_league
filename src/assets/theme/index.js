@@ -70,6 +70,7 @@ export const theme = {
 
         completedFrame: '#fff',
         completedFrameAlt: '#ccc',
+        profilePicBackground: '#fff',
 
         success: '#3abb70',
         alert: '#DE5852', // red-400
@@ -160,6 +161,7 @@ export const theme = {
 
         frameBackground: '#333',
         altFrameBackground: '#444',
+        profilePicBackground: '#aaa',
 
         infoSurface: '#26272B', // neutral-200
         onInfoSurface: '#f5f6f9', // neutral-700

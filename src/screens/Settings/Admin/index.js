@@ -6,6 +6,7 @@ import AdminLogin from './AdminLogin'
 import Divisions from './Divisions'
 import Leagues from './Leagues'
 import TeamMigrations from './TeamMigrations'
+import Players from './Players'
 import Seasons from './Seasons'
 import {useYBase} from '~/lib/hooks'
 import {View} from '@ybase'
@@ -29,6 +30,11 @@ const Admin = props => {
         <AdminStack.Screen name="admin_seasons" component={Seasons} />
         <AdminStack.Screen name="admin_divisions" component={Divisions} />
         <AdminStack.Screen name="admin_leagues" component={Leagues} />
+        <AdminStack.Screen
+          name="admin_players"
+          component={Players}
+          options={{headerTitle: 'Admin Players'}}
+        />
         <AdminStack.Screen
           name="admin_team_migrations"
           component={TeamMigrations}

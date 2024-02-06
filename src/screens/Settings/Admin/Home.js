@@ -36,8 +36,22 @@ const Home = props => {
       contentContainerStyle={{flex: 1, backgroundColor: colors.background}}>
       <View flex={1} px={20} my={20}>
         <Pressable
+          onPress={() => props.navigation.navigate('admin_players')}
+          py={20}>
+          <Row alignItems="center">
+            <View flex={1}>
+              <Text bold fontSize="xxl">
+                players
+              </Text>
+            </View>
+            <View flex={1} alignItems="flex-end">
+              <MCI name="chevron-right" size={30} color={colors.onSurface} />
+            </View>
+          </Row>
+        </Pressable>
+        <Pressable
           onPress={() => props.navigation.navigate('admin_teams')}
-          my={20}>
+          py={20}>
           <Row alignItems="center">
             <View flex={1}>
               <Text bold fontSize="xxl">
@@ -65,7 +79,7 @@ const Home = props => {
         </Pressable>
         <Pressable
           onPress={() => props.navigation.navigate('admin_seasons')}
-          my={20}>
+          py={20}>
           <Row alignItems="center">
             <View flex={1}>
               <Text bold fontSize="xxl">
@@ -79,7 +93,7 @@ const Home = props => {
         </Pressable>
         <Pressable
           onPress={() => props.navigation.navigate('admin_merge_requests')}
-          my={20}>
+          py={20}>
           <Row alignItems="center">
             <View flex={1}>
               <Row alignItesm="center" space={10}>
@@ -96,7 +110,7 @@ const Home = props => {
         </Pressable>
         <Pressable
           onPress={() => props.navigation.navigate('admin_team_migrations')}
-          my={20}>
+          py={20}>
           <Row alignItems="center">
             <View flex={1}>
               <Text bold fontSize="xxl">
@@ -110,7 +124,7 @@ const Home = props => {
         </Pressable>
         <Pressable
           onPress={() => props.navigation.navigate('admin_login')}
-          my={20}>
+          py={20}>
           <Row alignItems="center">
             <View flex={1}>
               <Text bold fontSize="xxl">

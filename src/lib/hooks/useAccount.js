@@ -2,6 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useDispatch, useSelector} from 'react-redux'
 import {useNetwork} from '~/lib/hooks'
 import {SetUser, ClearUser} from '../../redux/userSlice'
+import messaging from '@react-native-firebase/messaging'
+import config from '~/config'
+import notifee, {AndroidImportance} from '@notifee/react-native'
 
 export const useAccount = () => {
   const dispatch = useDispatch()
@@ -27,6 +30,17 @@ export const useAccount = () => {
         !user.id
       ) {
         const userData = await Get('/user')
+        const token = await messaging().getToken()
+        const res = await Post('/user/token', {token: token})
+        if (typeof userData.role_id !== 'undefined' && userData.role_id === 9) {
+          await notifee.createChannel({
+            id: 'Admin',
+            name: 'Admin',
+            vibration: true,
+            lights: true,
+            importance: AndroidImportance.HIGH,
+          })
+        }
         dispatch(SetUser(userData))
         return userData
       }
@@ -59,6 +73,8 @@ export const useAccount = () => {
         if (typeof res.status !== 'undefined' && res.status === 'ok') {
           if (typeof res.data !== 'undefined' && res.data) {
             await AsyncStorage.setItem('jwt', res.data.token)
+            const token = await messaging().getToken()
+            await Post('/user/token', {token: token})
             dispatch(SetUser(res.data.user))
             return {status: 'ok'}
           }
@@ -202,6 +218,26 @@ export const useAccount = () => {
     }
   }
 
+  async function SaveAvatar(path) {
+    try {
+      const token = await AsyncStorage.getItem('jwt')
+      const data = new FormData()
+      data.append('photo', {uri: path, name: 'oho', type: 'image/jpg'})
+      const res = await fetch('https://' + config.domain + '/avatar', {
+        method: 'post',
+        body: data,
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      })
+      const json = await res.json()
+      return json
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   return {
     AdminLogin,
     FetchUser,
@@ -214,6 +250,7 @@ export const useAccount = () => {
     Recover,
     Verify,
     DeleteAccount,
+    SaveAvatar,
     SetFirstName,
     SetLastName,
     SetNickName,

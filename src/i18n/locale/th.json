@@ -108,5 +108,17 @@
   "match": "การแข่งขัน",
   "merge": "ผสาน",
   "request_submitted": "ส่งคำขอแล้ว",
-  "bangkok_pool_league": "พูลลีกกรุงเทพ"
+  "bangkok_pool_league": "พูลลีกกรุงเทพ",
+  "gallery": "ภาพถ่าย",
+  "camera": "กล้อง",
+  "avatar": "สัญลักษณ์",
+  "upload": "ที่อัพโหลด",
+  "change": "เปลี่ยน",
+  "rank": "ยศ",
+  "player": "นักกีฬา",
+  "played": "เสร็จ",
+  "won": "ชัย",
+  "raw_perf": "หยาบ",
+  "adj_perf": "สมดุล",
+  "points": "คะแนน"
 }

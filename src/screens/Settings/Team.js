@@ -95,7 +95,7 @@ const ChoosePlayer = props => {
   }, [props.allPlayers])
 
   React.useEffect(() => {
-    if (searchQuery.length > 1) {
+    if (searchQuery.length > 0) {
       const _list = trie.current.search(searchQuery)
       setList(_list)
     }
@@ -161,7 +161,7 @@ const AddNewPlayer = props => {
 
   async function HandleSave() {
     try {
-      if (newNickName && newNickName.length > 1) {
+      if (newNickName && newNickName.length > 0) {
         setLoading(true)
         const res = await league.SaveNewPlayer(
           newNickName,
@@ -198,7 +198,7 @@ const AddNewPlayer = props => {
   }
 
   React.useEffect(() => {
-    if (newNickName.length > 1) {
+    if (newNickName.length > 0) {
       setValid(true)
     }
   }, [newNickName])
@@ -300,7 +300,7 @@ const AddNewPlayer = props => {
 }
 
 const Team = props => {
-  const [team, setTeam] = React.useState([])
+  const [team, setTeam] = React.useState(props.team ?? [])
   const navigation = useNavigation()
   const user = useSelector(_state => _state.userData).user
   const [showAddNewPlayer, setShowAddNewPlayer] = React.useState(false)
@@ -357,9 +357,7 @@ const Team = props => {
     try {
       setShowAddNewPlayer(false)
       const res = await league.AddPlayerToTeam(playerId, team.id)
-      console.log(res, team.id)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        console.log('refreshing')
         RefreshTeam()
       } else {
         setErr(res.error)
