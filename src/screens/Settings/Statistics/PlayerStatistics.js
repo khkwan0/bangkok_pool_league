@@ -52,32 +52,30 @@ const PlayerStatsHeader = props => {
           value={props.gameVariety}>
           <Row alignItems="center">
             <Row flex={1} alignItems="center">
-              <Text>All</Text>
-              <RadioButton value="all" />
+              <Text>all</Text>
+              <RadioButton.Android value="all" />
             </Row>
             <Row flex={1} alignItems="center">
-              <Text>Singles</Text>
-              <RadioButton value="singles" />
+              <Text>singles</Text>
+              <RadioButton.Android value="singles" />
             </Row>
             <Row flex={1} alignItems="center">
-              <Text>Doubles</Text>
-              <RadioButton value="doubles" />
+              <Text>doubles</Text>
+              <RadioButton.Android value="doubles" />
             </Row>
           </Row>
         </RadioButton.Group>
       </View>
       <View mt={20}>
         <Row alignItems="center" flexWrap="wrap">
-          <Text>Show only players with at least </Text>
+          <Text>{t('show_only_players_with_minimum')}&nbsp;</Text>
           <TextInput
             style={{width: 60}}
             value={props.minimumGames}
             onChangeText={text => props.setMinimumGames(text)}
             keyboardType="numeric"
           />
-          <Text>
-           &nbsp;games
-          </Text>
+          <Text>&nbsp;{t('played').toLowerCase()}.</Text>
         </Row>
       </View>
       <View mt={20}>
@@ -131,6 +129,7 @@ const PlayerStatistics = props => {
   const {colors} = useYBase()
   const [minimumGames, setMinimumGames] = React.useState('20')
   const [gameVariety, setGameVariety] = React.useState('all')
+  const {t} = useTranslation()
 
   const trie = React.useRef(null)
 
@@ -174,6 +173,19 @@ const PlayerStatistics = props => {
   React.useEffect(() => {
     setIsLoading(true)
   }, [minimumGames, gameVariety])
+
+  React.useEffect(() => {
+    const _gameType = props?.route?.params?.gameType ?? 'all'
+    props.navigation.setOptions({
+      headerTitle: `${t('player_statistics')} ${
+        _gameType === 'all'
+          ? t('combined')
+          : _gameType === '8b'
+          ? t('eight_ball')
+          : t('nine_ball')
+      }`,
+    })
+  }, [props.route])
 
   async function GetPlayerStats() {
     try {

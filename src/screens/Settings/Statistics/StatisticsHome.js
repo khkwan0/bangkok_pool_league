@@ -1,9 +1,11 @@
 import React from 'react'
-import {Pressable, ScrollView, Text, View} from '@ybase'
+import {Pressable, Text, View} from '@ybase'
 import {useYBase} from '~/lib/hooks'
+import {ImageBackground} from 'react-native'
 
 const StatisticsHome = props => {
   const {colors} = useYBase()
+
   function ShowLeagueStandings() {
     props.navigation.navigate('League Standings')
   }
@@ -17,28 +19,56 @@ const StatisticsHome = props => {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={{
-        paddingHorizontal: 20,
-        backgroundColor: colors.background,
-        flexGrow: 1,
-      }}>
-      <Pressable onPress={() => ShowLeagueStandings()}>
-        <View style={{padding: 40}}>
-          <Text>League Standings</Text>
-        </View>
-      </Pressable>
-      <Pressable onPress={() => ShowTeamStats()}>
-        <View style={{padding: 40}}>
-          <Text>Team Statistics</Text>
-        </View>
-      </Pressable>
-      <Pressable onPress={() => ShowPlayerStats()}>
-        <View style={{padding: 40}}>
-          <Text>Player Statistics</Text>
-        </View>
-      </Pressable>
-    </ScrollView>
+    <View flex={1} bgColor={colors.background}>
+      <ImageBackground
+        source={require('../../../assets/img/bgs/bkkpool_logo.png')}
+        style={{flex: 1, width: '100%', height: '100%'}}
+        resizeMode="cover">
+        <Pressable
+          bgColor="#000b"
+          borderRadius={0}
+          flex={1}
+          onPress={() => ShowLeagueStandings()}
+          alignItems="center"
+          justifyContent="center">
+          <Text bold fontSize="xxl" color={colors.onPrimary}>
+            league_standings
+          </Text>
+        </Pressable>
+      </ImageBackground>
+      <ImageBackground
+        source={require('../../../assets/img/bgs/team.png')}
+        style={{flex: 1, width: '100%', height: '100%', marginTop: 2}}
+        resizeMode="cover">
+        <Pressable
+          flex={1}
+          bgColor="#000a"
+          borderRadius={0}
+          onPress={() => ShowTeamStats()}
+          alignItems="center"
+          justifyContent="center">
+          <Text bold fontSize="xxl" color={colors.onPrimary}>
+            team_statistics
+          </Text>
+        </Pressable>
+      </ImageBackground>
+      <ImageBackground
+        source={require('../../../assets/img/bgs/su.png')}
+        style={{flex: 1, width: '100%', height: '100%', marginTop: 2}}
+        resizeMode="cover">
+        <Pressable
+          bgColor="#000a"
+          flex={1}
+          borderRadius={0}
+          onPress={() => ShowPlayerStats()}
+          alignItems="center"
+          justifyContent="center">
+          <Text bold fontSize="xxl" color={colors.onPrimary}>
+            player_statistics
+          </Text>
+        </Pressable>
+      </ImageBackground>
+    </View>
   )
 }
 

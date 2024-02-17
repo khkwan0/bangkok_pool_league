@@ -120,5 +120,15 @@
   "won": "ชัย",
   "raw_perf": "หยาบ",
   "adj_perf": "สมดุล",
-  "points": "คะแนน"
+  "points": "คะแนน",
+  "player_statistics": "คะแนนผู้เล่น",
+  "league_standings": "อันดับลีก",
+  "team_statistics": "อันดับทีม",
+  "combined": "รวมกัน",
+  "nine_ball": "9 ลูก",
+  "eight_ball": "8 ลูก",
+  "all": "ทั้งหมด",
+  "singles": "คนโสด",
+  "doubles": "คู่ผสม",
+  "show_only_players_with_minimum": "เกมขั้นต่ำ"
 }

@@ -121,5 +121,15 @@
   "won": "Won",
   "raw_perf": "Raw perf",
   "adj_perf": "Adjusted Perf",
-  "points": "Points"
+  "points": "Points",
+  "player_statistics": "Player Statistics",
+  "league_standings": "League standings",
+  "team_statistics": "Team Statistics",
+  "combined": "Combined",
+  "eight_ball": "8 Ball",
+  "nine_ball": "9 Ball",
+  "all": "All",
+  "singles": "Singles",
+  "doubles": "Doubles",
+  "show_only_players_with_minimum": "Show only players with at least",
 }
