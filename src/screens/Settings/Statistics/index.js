@@ -8,17 +8,22 @@ import LeagueStandings from './LeagueStandings'
 import TeamStatistics from './TeamStatistics'
 import MatchScreen from './MatchScreen'
 import PlayerStatistics from './PlayerStatistics'
+import {useTranslation} from 'react-i18next'
 
 const StatisticsStack = createNativeStackNavigator()
 
 const StatisticsScreen = props => {
-  const navigation = useNavigation()
+  const {t} = useTranslation()
   return (
     <StatisticsStack.Navigator
       screenOptions={{
-        headerShown: false,
+        headerTitleAlign: 'center',
       }}>
-      <StatisticsStack.Screen name="Root" component={StatisticsHome} />
+      <StatisticsStack.Screen
+        name="Root"
+        component={StatisticsHome}
+        options={{headerTitle: t('statistics')}}
+      />
       <StatisticsStack.Screen
         name="League Standings"
         component={LeagueStandings}

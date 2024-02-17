@@ -194,7 +194,7 @@ const DrawerContent = props => {
               label={t('teams')}
             />
             <DrawerItem
-              navDest="Statistics"
+              navDest="StatisticsHome"
               icon="chart-areaspline-variant"
               label={t('statistics')}
             />

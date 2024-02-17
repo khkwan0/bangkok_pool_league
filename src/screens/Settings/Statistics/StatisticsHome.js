@@ -13,7 +13,7 @@ const StatisticsHome = props => {
   }
 
   function ShowPlayerStats() {
-    props.navigation.navigate('Player Statistics')
+    props.navigation.navigate('Player Statistics Menu')
   }
 
   return (
