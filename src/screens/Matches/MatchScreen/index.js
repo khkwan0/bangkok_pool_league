@@ -812,7 +812,7 @@ const MatchScreen = props => {
                       <ActivityIndicator />
                     </View>
                   )}
-                  <Row alignItems="center">
+                  <Row alignItems="center" mt={20}>
                     <View flex={2} justifyContent="center" alignItems="center">
                       <Pressable
                         onPress={() =>
