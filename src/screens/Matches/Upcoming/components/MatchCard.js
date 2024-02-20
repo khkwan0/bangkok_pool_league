@@ -40,10 +40,15 @@ const MatchCard = props => {
               DateTime.DATE_HUGE,
             )}
           </Text>
-          <Text>{t('where')}:</Text>
-          <Text>{props.match.name}</Text>
-          <Text>{props.match.location}</Text>
-          <Text>{props.match.phone}</Text>
+          <Row>
+            <View flex={2}>
+              <Text>{t('where')}:</Text>
+              <Text>{props.match.name}</Text>
+              <Text>{props.match.location}</Text>
+              <Text>{props.match.phone}</Text>
+            </View>
+            <View flex={1} />
+          </Row>
           {(props.match.latitude !== 0 || props.match.longitude !== 0) && (
             <Row>
               <Pressable

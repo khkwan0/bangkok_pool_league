@@ -24,6 +24,8 @@ import TeamStatistics from '@screens/Settings/Statistics/TeamStatistics'
 import PlayerStatisticsMenu from '@screens/Settings/Statistics/PlayerStatisticsMenu'
 import PlayerStatistics from '@screens/Settings/Statistics/PlayerStatistics'
 
+import Team from '@screens/Team'
+
 import Info from '@screens/Settings/Info'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
@@ -117,6 +119,7 @@ const Home = props => {
           component={Teams}
           name="Teams"
         />
+        <HomeStack.Screen component={Team} name="Team" />
         <HomeStack.Screen
           options={{headerTitle: t('divisions'), headerShown: false}}
           component={Divisions}

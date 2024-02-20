@@ -8,7 +8,7 @@ import {
   Portal,
   RadioButton,
 } from 'react-native-paper'
-import {Divider, Row, Text, View} from '@ybase'
+import {Divider, Pressable, Row, Text, View} from '@ybase'
 import Frame from '../components/Frame'
 import CompletedFrame from '../components/CompletedFrame'
 import TeamsHeadline from '../components/TeamsHeadline'
@@ -814,21 +814,35 @@ const MatchScreen = props => {
                   )}
                   <Row alignItems="center">
                     <View flex={2} justifyContent="center" alignItems="center">
-                      <Text textAlign="center" fontSize="xl">
-                        {matchInfo.home_team_short_name
-                          ? matchInfo.home_team_short_name
-                          : matchInfo.home_team_name}
-                      </Text>
+                      <Pressable
+                        onPress={() =>
+                          props.navigation.navigate('Team', {
+                            teamId: matchInfo.home_team_id,
+                          })
+                        }>
+                        <Text textAlign="center" bold fontSize="xxl">
+                          {matchInfo.home_team_short_name
+                            ? matchInfo.home_team_short_name
+                            : matchInfo.home_team_name}
+                        </Text>
+                      </Pressable>
                     </View>
                     <View flex={1} alignItems="center">
                       <Text>vs</Text>
                     </View>
                     <View flex={2} alignItems="center">
-                      <Text textAlign="center" fontSize="xl">
-                        {matchInfo.away_team_short_name
-                          ? matchInfo.away_team_short_name
-                          : matchInfo.away_team_name}
-                      </Text>
+                      <Pressable
+                        onPress={() =>
+                          props.navigation.navigate('Team', {
+                            teamId: matchInfo.away_team_id,
+                          })
+                        }>
+                        <Text textAlign="center" bold fontSize="xxl">
+                          {matchInfo.away_team_short_name
+                            ? matchInfo.away_team_short_name
+                            : matchInfo.away_team_name}
+                        </Text>
+                      </Pressable>
                     </View>
                   </Row>
                   <RadioButton.Group
