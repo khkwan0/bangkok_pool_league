@@ -1,5 +1,5 @@
 import React from 'react'
-import MatchScreen from '@screens/Settings/Statistics/MatchScreen'
+import MatchScreen from '@screens/Settings/MatchScreen'
 
 const PlayerMatchScreen = props => {
   const matchId = props.route.params.matchId
