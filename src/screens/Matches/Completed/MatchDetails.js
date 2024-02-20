@@ -56,7 +56,13 @@ const MatchDetails = props => {
         style={{backgroundColor: colors.surface}}
         data={matchDetails}
         keyExtractor={(item, idx) => 'asdasd' + idx}
-        renderItem={(item, idx) => <FrameDetail item={item} idx={idx} matchId={props.route.params.matchData.matchId} />}
+        renderItem={(item, idx) => (
+          <FrameDetail
+            item={item}
+            idx={idx}
+            matchId={props.route.params.matchData.matchId}
+          />
+        )}
         ItemSeparatorComponent={<Divider />}
       />
     </View>

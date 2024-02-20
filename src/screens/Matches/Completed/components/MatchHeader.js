@@ -62,7 +62,6 @@ const MatchHeader = props => {
     }
   }
 
-  console.log(JSON.stringify(props.matchData, null, 2))
   return (
     <>
       <Portal>
