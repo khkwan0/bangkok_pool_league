@@ -6,6 +6,7 @@ import {ActivityIndicator, Pressable, Row, ScrollView, Text, View} from '@ybase'
 const TeamStanding = ({data, idx}) => {
   const [showMore, setShowMore] = React.useState(false)
   const navigation = useNavigation()
+  const {colors} = useYBase()
 
   function HandleMatchPress(matchId) {
     navigation.navigate('Statistics Match Screen', {matchId: matchId})
@@ -41,11 +42,15 @@ const TeamStanding = ({data, idx}) => {
               match.home_team === data.name
                 ? match.home_frames > match.away_frames
                   ? 'W'
-                  : 'L'
+                  : match.home_frames < match.away_frames
+                  ? 'L'
+                  : 'T'
                 : match.home_frames < match.away_frames
                 ? 'W'
-                : 'L'
-            const resColor = result === 'W' ? '#00f' : '#f00'
+                : match.home_frames > match.away_frames
+                ? 'L'
+                : 'T'
+            const resColor = colors.onSurface
             const vsTeam =
               match.home_team === data.name ? match.away_team : match.home_team
             const homeAway = match.home_team === data.name ? 'Home' : 'Away'
