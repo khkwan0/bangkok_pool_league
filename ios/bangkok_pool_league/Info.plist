@@ -116,6 +116,8 @@
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>For changing your profile picture</string>
+  <key>NSCameraUsageDescription</key>
+  <string>For changing your profile picture</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>
