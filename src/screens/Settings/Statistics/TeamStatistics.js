@@ -1,12 +1,22 @@
 import React from 'react'
 import {useLeague, useYBase} from '~/lib/hooks'
 import {useNavigation} from '@react-navigation/native'
-import {ActivityIndicator, Pressable, Row, ScrollView, Text, View} from '@ybase'
+import {
+  ActivityIndicator,
+  Button,
+  Pressable,
+  Row,
+  ScrollView,
+  Text,
+  View,
+} from '@ybase'
+import {useTranslation} from 'react-i18next'
 
 const TeamStanding = ({data, idx}) => {
   const [showMore, setShowMore] = React.useState(false)
   const navigation = useNavigation()
-  const {colors} = useYBase()
+  const {colors, theme} = useYBase()
+  const {t} = useTranslation()
 
   function HandleMatchPress(matchId) {
     navigation.navigate('Statistics Match Screen', {matchId: matchId})
@@ -14,13 +24,19 @@ const TeamStanding = ({data, idx}) => {
 
   return (
     <>
-      <Pressable onPress={() => setShowMore(s => !s)}>
+      <Pressable onPress={() => setShowMore(s => !s)} py={5}>
         <Row alignItems="center">
           <View style={{flex: 1}}>
             <Text>{idx + 1}</Text>
           </View>
           <View style={{flex: 3}}>
-            <Text>{data.name}</Text>
+            <View
+              bgColor={colors.primary}
+              borderRadius={theme.roundness}
+              p={5}
+              mr={5}>
+              <Text color={colors.onPrimary}>{data.name}</Text>
+            </View>
           </View>
           <View style={{flex: 1}}>
             <Text>{data.points}</Text>
@@ -74,6 +90,18 @@ const TeamStanding = ({data, idx}) => {
               </Pressable>
             )
           })}
+        {showMore && (
+          <Button
+            py={5}
+            onPress={() =>
+              navigation.navigate('Team Internal', {
+                teamId: data.teamId,
+                teamName: data.name,
+              })
+            }>
+            {t('internal_stats')}
+          </Button>
+        )}
       </View>
     </>
   )

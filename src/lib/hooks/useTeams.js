@@ -42,5 +42,19 @@ export const useTeams = () => {
     }
   }
 
-  return {GetPlayers, AddExistingPlayerToTeam}
+  const GetTeamInternalStats = async teamId => {
+    try {
+      if (teamId) {
+        const res = await Get('/stats/team/players/internal/' + teamId)
+        return res
+      } else {
+        return {status: 'error', error: 'invalid_paramters'}
+      }
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
+  return {GetPlayers, AddExistingPlayerToTeam, GetTeamInternalStats}
 }
