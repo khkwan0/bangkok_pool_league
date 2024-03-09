@@ -5,6 +5,7 @@ import {SetUser, ClearUser} from '../../redux/userSlice'
 import messaging from '@react-native-firebase/messaging'
 import config from '~/config'
 import notifee, {AndroidImportance} from '@notifee/react-native'
+import { Platform } from 'react-native'
 
 export const useAccount = () => {
   const dispatch = useDispatch()
@@ -238,21 +239,58 @@ export const useAccount = () => {
     }
   }
 
+  const CheckVersion = async () => {
+    try {
+      const url =
+        Platform.OS === 'ios'
+          ? `https://itunes.apple.com/lookup?lang=en&bundleId=com.bangkok-pool-league&country=us&_=${new Date().valueOf()}`
+          : 'https://play.google.com/store/apps/details?id=com.bangkok_pool_league&hl=us'
+      const res = await fetch(url)
+      if (typeof res.ok !== 'undefined' && res.ok) {
+        if (Platform.OS === 'ios') {
+          const json = await res.json()
+          if (
+            typeof json.results !== 'undefined' &&
+            Array.isArray(json.results)
+          ) {
+            return json.results[0].version > config.prod.version
+          } else {
+            return false
+          }
+        } else {
+          const text = await res.text()
+          const version = text.match(/\[\[\[['"]((\d+\.)+\d+)['"]\]\],/)[1]
+          if (version) {
+            return version > config.prod.version
+          } else {
+            return false
+          }
+        }
+      } else {
+        return false
+      }
+    } catch (e) {
+      console.log(e)
+      return false
+    }
+  }
+
   return {
     AdminLogin,
+    CheckVersion,
+    DeleteAccount,
     FetchUser,
     LoadUser,
-    UserLogin,
     Logout,
     UpdateUser,
     SocialLogin,
     Register,
     Recover,
     Verify,
-    DeleteAccount,
     SaveAvatar,
     SetFirstName,
     SetLastName,
     SetNickName,
+    UserLogin,
   }
 }

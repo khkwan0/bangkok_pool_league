@@ -81,8 +81,8 @@ const UpcomingMatches = props => {
     } else {
       GetMatches(false)
     }
-  }, [showMineOnly])
-
+  }, [showMineOnly, user])
+/*
   React.useEffect(() => {
     if (
       typeof user?.teams !== 'undefined' &&
@@ -94,6 +94,7 @@ const UpcomingMatches = props => {
       GetMatches(false)
     }
   }, [user])
+  */
 
   if (isMounted) {
     return (

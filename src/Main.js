@@ -17,6 +17,7 @@ const Main = props => {
   const [isMounted, setIsMounted] = React.useState(false)
   const {i18n} = useTranslation()
   const {colors, setColorMode} = useYBase()
+  const [needsUpdate, setNeedsUpdate] = React.useState(false)
 
   const appState = React.useRef(AppState.currentState)
 
@@ -102,6 +103,16 @@ const Main = props => {
     CreateChannel()
   }, [])
 
+  async function CheckVersion() {
+    setNeedsUpdate(await account.CheckVersion)
+  }
+
+  console.log(needsUpdate)
+
+  React.useEffect(() => {
+    CheckVersion()
+  }, [])
+
   if (isMounted) {
     return (
       <View flex={1} bgColor={colors.background}>
@@ -109,7 +120,7 @@ const Main = props => {
       </View>
     )
   } else {
-    ;<View flex={1} justifyContent="center" alignItems="center">
+    <View flex={1} justifyContent="center" alignItems="center">
       <ActivityIndicator />
     </View>
   }
