@@ -116,7 +116,7 @@ const Main = props => {
     try {
       const url =
         Platform.OS === 'ios'
-          ? 'https://apps.apple.com/us/app/bangkok-pool-league/id6447631894'
+          ? 'https://apps.apple.com/app/bangkok-pool-league/id6447631894'
           : 'https://play.google.com/store/apps/details?id=com.bangkok_pool_league'
       const supported = await Linking.canOpenURL(url)
       if (supported) {
