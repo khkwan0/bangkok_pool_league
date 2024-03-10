@@ -11,10 +11,12 @@ import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import {Linking, Platform} from 'react-native'
 import notifee, {AndroidImportance} from '@notifee/react-native'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 const NeedUpdate = props => {
   const {colors} = useYBase()
   const [acknowledged, setAcknowledged] = React.useState(false)
+  const insets = useSafeAreaInsets()
 
   async function HandleUpdate() {
     try {
@@ -34,7 +36,7 @@ const NeedUpdate = props => {
 
   if (!acknowledged && props.needsUpdate) {
     return (
-      <Row alignItems="center">
+      <Row alignItems="center" pt={insets.top}>
         <View flex={1} />
         <View flex={2}>
           <Pressable
