@@ -11,6 +11,7 @@ import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import {Linking, Platform} from 'react-native'
 import notifee, {AndroidImportance} from '@notifee/react-native'
 import {FAB} from 'react-native-paper'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 const Main = props => {
   const account = useAccount()
@@ -19,6 +20,7 @@ const Main = props => {
   const {i18n} = useTranslation()
   const {colors, setColorMode} = useYBase()
   const [needsUpdate, setNeedsUpdate] = React.useState(false)
+  const insets = useSafeAreaInsets()
 
   const appState = React.useRef(AppState.currentState)
 
@@ -136,6 +138,7 @@ const Main = props => {
             label="An update is available"
             onPress={() => HandleUpdate()}
             icon="update"
+            style={{marginBottom: insets.bottom}}
           />
         )}
       </View>
