@@ -253,7 +253,6 @@ export const useAccount = () => {
             typeof json.results !== 'undefined' &&
             Array.isArray(json.results)
           ) {
-            console.log(json.results[0])
             return json.results[0].version > config.version
           } else {
             return false
