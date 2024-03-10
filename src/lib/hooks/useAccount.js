@@ -5,7 +5,7 @@ import {SetUser, ClearUser} from '../../redux/userSlice'
 import messaging from '@react-native-firebase/messaging'
 import config from '~/config'
 import notifee, {AndroidImportance} from '@notifee/react-native'
-import { Platform } from 'react-native'
+import {Platform} from 'react-native'
 
 export const useAccount = () => {
   const dispatch = useDispatch()
@@ -253,15 +253,17 @@ export const useAccount = () => {
             typeof json.results !== 'undefined' &&
             Array.isArray(json.results)
           ) {
-            return json.results[0].version > config.prod.version
+            console.log(json.results[0])
+            return json.results[0].version > config.version
           } else {
             return false
           }
         } else {
           const text = await res.text()
           const version = text.match(/\[\[\[['"]((\d+\.)+\d+)['"]\]\],/)[1]
+          console.log(version, config.version)
           if (version) {
-            return version > config.prod.version
+            return version > config.version
           } else {
             return false
           }

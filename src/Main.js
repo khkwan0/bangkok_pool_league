@@ -4,13 +4,59 @@ import {useAccount, useLeague, useYBase} from '~/lib/hooks'
 import '~/i18n'
 import {useTranslation} from 'react-i18next'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {ActivityIndicator, View} from '@ybase'
+import {ActivityIndicator, Pressable, Row, Text, View} from '@ybase'
 import {AppState} from 'react-native'
 import messaging from '@react-native-firebase/messaging'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
-import {Platform} from 'react-native'
+import {Linking, Platform} from 'react-native'
 import notifee, {AndroidImportance} from '@notifee/react-native'
+import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 
+const NeedUpdate = props => {
+  const {colors} = useYBase()
+  const [acknowledged, setAcknowledged] = React.useState(false)
+
+  async function HandleUpdate() {
+    try {
+      setAcknowledged(true)
+      const url =
+        Platform.OS === 'ios'
+          ? 'https://apps.apple.com/us/app/bangkok-pool-league/id6447631894'
+          : 'https://play.google.com/store/apps/details?id=com.bangkok_pool_league'
+      const supported = await Linking.canOpenURL(url)
+      if (supported) {
+        await Linking.openURL(url)
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  if (!acknowledged && props.needsUpdate) {
+    return (
+      <Row alignItems="center">
+        <View flex={1} />
+        <View flex={2}>
+          <Pressable
+            py={10}
+            bgColor={colors.error}
+            onPress={() => HandleUpdate()}>
+            <Text bold textAlign="center">
+              A new version is available.
+            </Text>
+          </Pressable>
+        </View>
+        <View flex={1} alignItems="flex-end">
+          <Pressable pr={20} onPress={() => setAcknowledged(true)}>
+            <MCI name="close" size={20} />
+          </Pressable>
+        </View>
+      </Row>
+    )
+  } else {
+    return null
+  }
+}
 const Main = props => {
   const account = useAccount()
   const league = useLeague()
@@ -61,6 +107,7 @@ const Main = props => {
         appState.current.match(/background|active/) &&
         nextAppState === 'active'
       ) {
+        CheckVersion()
         FetchUser()
       }
       appState.current = nextAppState
@@ -104,10 +151,8 @@ const Main = props => {
   }, [])
 
   async function CheckVersion() {
-    setNeedsUpdate(await account.CheckVersion)
+    setNeedsUpdate(await account.CheckVersion())
   }
-
-  console.log(needsUpdate)
 
   React.useEffect(() => {
     CheckVersion()
@@ -116,13 +161,16 @@ const Main = props => {
   if (isMounted) {
     return (
       <View flex={1} bgColor={colors.background}>
+        <NeedUpdate needsUpdate={needsUpdate} />
         <Home />
       </View>
     )
   } else {
-    <View flex={1} justifyContent="center" alignItems="center">
-      <ActivityIndicator />
-    </View>
+    return (
+      <View flex={1} justifyContent="center" alignItems="center">
+        <ActivityIndicator />
+      </View>
+    )
   }
 
   /*
