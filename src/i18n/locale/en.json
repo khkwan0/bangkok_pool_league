@@ -132,5 +132,6 @@
   "singles": "Singles",
   "doubles": "Doubles",
   "show_only_players_with_minimum": "Show only players with at least",
-  "internal_stats": "Internal stats"
+  "internal_stats": "Internal stats",
+  "update_available": "An update is available"
 }
