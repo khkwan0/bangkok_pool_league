@@ -175,7 +175,9 @@ const PlayerDetails = props => {
         <View my={20}>
           <Row alignItems="center" space={10}>
             <View flex={1}>
-              <Text fontSize="xl">Merge with id:</Text>
+              <Text fontSize="xl">
+                Merge with id: (this id will be the master)
+              </Text>
             </View>
             <View flex={3}>
               <TextInput
