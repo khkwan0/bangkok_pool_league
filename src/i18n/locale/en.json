@@ -134,5 +134,7 @@
   "show_only_players_with_minimum": "Show only players with at least",
   "internal_stats": "Internal stats",
   "update_available": "An update is available",
-  "show_postponed": "Show postponed matches"
+  "show_postponed": "Show postponed matches",
+  "verification_code": "Verification code",
+  "new_password": "New password"
 }
