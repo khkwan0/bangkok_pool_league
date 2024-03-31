@@ -35,6 +35,12 @@ const MatchCard = props => {
               ? props.match.away_team_short_name
               : props.match.away_team_name}{' '}
           </Text>
+          {DateTime.fromISO(props.match.date).startOf('day') <
+            DateTime.now().startOf('day') && (
+            <Text textAlign="center" bold color={colors.error}>
+              MAKE UP MATCH
+            </Text>
+          )}
           <Text variant="titleMedium" style={{textAlign: 'center'}}>
             {DateTime.fromISO(props.match.date).toLocaleString(
               DateTime.DATE_HUGE,

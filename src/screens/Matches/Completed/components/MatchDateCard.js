@@ -74,7 +74,7 @@ const MatchDateCard = props => {
                       fromCompleted: true,
                     })
                   : navigation.navigate('Match Details', {
-                      matchData: props.matchDate.matches[idx],
+                      matchData: match,
                     })
               }
               key={'match' + idx}>

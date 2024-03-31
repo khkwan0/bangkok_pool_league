@@ -8,6 +8,7 @@ import {useTranslation} from 'react-i18next'
 import {SetSeason} from '~/redux/seasonSlice'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
 import LiveScores from './components/LiveScores'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const UpcomingMatches = props => {
   const dispatch = useDispatch()
@@ -16,6 +17,7 @@ const UpcomingMatches = props => {
   const [refreshing, setRefreshing] = React.useState(false)
   const [isMounted, setIsMounted] = React.useState(false)
   const [showMineOnly, setShowMineOnly] = React.useState(true)
+  const [showPostponed, setShowPostponed] = React.useState(false)
   const [seasonNumber, setSeasonNumber] = React.useState('')
   const season = useSeason()
   const league = useLeague()
@@ -47,7 +49,7 @@ const UpcomingMatches = props => {
     }
   }
 
-  async function GetMatches(filtered = false) {
+  async function GetMatches(filtered = false, postponed = false) {
     try {
       setRefreshing(true)
       const query = []
@@ -56,14 +58,17 @@ const UpcomingMatches = props => {
       } else {
         query.push('noteam=true')
       }
-      query.push('newonly=true')
+      if (postponed) {
+        query.push('newonly=false')
+      } else {
+        query.push('newonly=true')
+      }
       const res = await season.GetMatches(query)
       setFixtures(res)
     } catch (e) {
       console.log(e)
     } finally {
       setRefreshing(false)
-      setIsMounted(true)
     }
   }
 
@@ -72,17 +77,25 @@ const UpcomingMatches = props => {
   }, [])
 
   React.useEffect(() => {
-    if (
-      typeof user?.teams !== 'undefined' &&
-      user.teams.length > 0 &&
-      showMineOnly
-    ) {
-      GetMatches(true)
+    if (typeof user?.teams !== 'undefined' && user.teams.length > 0) {
+      if (showMineOnly) {
+        if (showPostponed) {
+          GetMatches(true, true)
+        } else {
+          GetMatches(true, false)
+        }
+      } else {
+        if (showPostponed) {
+          GetMatches(false, true)
+        } else {
+          GetMatches(false, false)
+        }
+      }
     } else {
-      GetMatches(false)
+      GetMatches(false, false)
     }
-  }, [showMineOnly, user])
-/*
+  }, [showMineOnly, showPostponed, user])
+  /*
   React.useEffect(() => {
     if (
       typeof user?.teams !== 'undefined' &&
@@ -96,6 +109,44 @@ const UpcomingMatches = props => {
   }, [user])
   */
 
+  async function HandleSavePostponedOption() {
+    try {
+      await AsyncStorage.setItem(
+        'postponed',
+        JSON.stringify({showPostponed: showPostponed}),
+      )
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  React.useEffect(() => {
+    if (isMounted) {
+      HandleSavePostponedOption()
+    }
+  }, [showPostponed])
+  async function HandleTogglePostponed() {
+    setShowPostponed(s => !s)
+  }
+
+  async function HandleGetPostponedOption() {
+    try {
+      const res = await AsyncStorage.getItem('postponed')
+      if (res) {
+        const _res = JSON.parse(res)
+        setShowPostponed(_res.showPostponed)
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setIsMounted(true)
+    }
+  }
+
+  React.useEffect(() => {
+    HandleGetPostponedOption()
+  }, [])
+
   if (isMounted) {
     return (
       <FlatList
@@ -104,11 +155,23 @@ const UpcomingMatches = props => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => {
-              typeof user?.teams !== 'undefined' &&
-              user.teams.length > 0 &&
-              showMineOnly
-                ? GetMatches(true)
-                : GetMatches(false)
+              if (typeof user?.teams !== 'undefined' && user.teams.length > 0) {
+                if (showMineOnly) {
+                  if (showPostponed) {
+                    GetMatches(true, true)
+                  } else {
+                    GetMatches(true, false)
+                  }
+                } else {
+                  if (showPostponed) {
+                    GetMatches(false, true)
+                  } else {
+                    GetMatches(false, false)
+                  }
+                }
+              } else {
+                GetMatches(false, false)
+              }
             }}
           />
         }
@@ -137,13 +200,21 @@ const UpcomingMatches = props => {
                 </View>
               )}
             {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
-              <View my={20} px={20}>
+              <View mb={15} px={20}>
                 <BouncyCheckbox
                   text={t('show_mine_only')}
                   textStyle={{textDecorationLine: 'none'}}
                   isChecked={showMineOnly}
                   onPress={() => setShowMineOnly(s => !s)}
                 />
+                <View mt={10}>
+                  <BouncyCheckbox
+                    text={t('show_postponed')}
+                    textStyle={{textDecorationLine: 'none'}}
+                    isChecked={showPostponed}
+                    onPress={() => HandleTogglePostponed()}
+                  />
+                </View>
               </View>
             )}
           </>

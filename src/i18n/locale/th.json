@@ -132,5 +132,6 @@
   "doubles": "คู่ผสม",
   "show_only_players_with_minimum": "เกมขั้นต่ำ",
   "internal_stats": "ผู้เล่นในทีม",
-  "update_available": "อัปเดตพร้อมแล้ว"
+  "update_available": "อัปเดตพร้อมแล้ว",
+  "show_postponed": "การแสดงถูกเลื่อนออกไป"
 }

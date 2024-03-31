@@ -86,7 +86,7 @@ export const useSeason = () => {
 
   const GetCompletedMatchesBySeason = async season => {
     try {
-      const res = await Get('/matches/completed/season/' + season)
+      const res = await Get('/v2/matches/completed/season/' + season)
       return res
     } catch (e) {
       console.log(e)
