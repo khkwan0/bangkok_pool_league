@@ -559,7 +559,7 @@
 				CODE_SIGN_ENTITLEMENTS = bangkok_pool_league/bangkok_pool_league.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 67;
+				CURRENT_PROJECT_VERSION = 68;
 				DEVELOPMENT_TEAM = 2MXCL8R3KW;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = bangkok_pool_league/Info.plist;
@@ -569,7 +569,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.54;
+				MARKETING_VERSION = 1.55;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -594,7 +594,7 @@
 				CODE_SIGN_ENTITLEMENTS = bangkok_pool_league/bangkok_pool_leagueRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 67;
+				CURRENT_PROJECT_VERSION = 68;
 				DEVELOPMENT_TEAM = 2MXCL8R3KW;
 				INFOPLIST_FILE = bangkok_pool_league/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Bangkok Pool League";
@@ -603,7 +603,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.54;
+				MARKETING_VERSION = 1.55;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
