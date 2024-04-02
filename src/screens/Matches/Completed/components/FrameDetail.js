@@ -64,6 +64,7 @@ const FrameDetails = props => {
         </Dialog>
       </Portal>
       <View my={10} px={20} key={'complete_frame_detail' + props.idx}>
+        {isAdmin && <Text textAlign="center">{props.item.item.frameId}</Text>}
         <Row alignItems="center">
           <View flex={1}>
             {homePlayers.map((player, idx) => (

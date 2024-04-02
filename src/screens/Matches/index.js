@@ -19,6 +19,7 @@ const Matches = props => {
         screenOptions={{
           headerShown: false,
           tabBarLabelStyle: {fontSize: 16},
+          tabBarStyle: {backgroundColor: colors.background},
         }}>
         <Tab.Screen
           name="Upcoming"

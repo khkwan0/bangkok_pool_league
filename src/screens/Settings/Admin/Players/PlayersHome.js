@@ -8,12 +8,13 @@ import PlayerCard from './components/PlayerCard'
 
 const Players = props => {
   const league = useLeague()
+  const [toShow, setToShow] = React.useState([])
   const [players, setPlayers] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
 
   const trie = React.useRef(
-    new TrieSearch(['nickname', 'firstname', 'lastname'], {
+    new TrieSearch(['nickname', 'firstname', 'lastname', 'player_id'], {
       splitOnRegEx: false,
     }),
   )
@@ -23,6 +24,8 @@ const Players = props => {
       setIsLoading(true)
       const res = await league.GetAllPlayers()
       setPlayers(res.data)
+      trie.current.addAll(res.data)
+      setToShow(res.data)
     } catch (e) {
       console.log(e)
     } finally {
@@ -35,21 +38,17 @@ const Players = props => {
   }, [])
 
   React.useEffect(() => {
-    if (players.length > 0) {
-      trie.current.addAll(players)
-    }
-  }, [players])
-
-  React.useEffect(() => {
     if (searchQuery.length > 1) {
       const list = trie.current.search(searchQuery)
-      setPlayers(list)
+      setToShow(list)
+    } else if (searchQuery.length === 0) {
+      HandleClearQuery()
     }
   }, [searchQuery])
 
   function HandleClearQuery() {
     setSearchQuery('')
-    GetPlayers()
+    setToShow(players)
   }
 
   if (isLoading) {
@@ -68,7 +67,7 @@ const Players = props => {
             clearQuery={HandleClearQuery}
           />
         }
-        data={players}
+        data={toShow}
         keyExtractor={(item, index) => item.player_name + '_' + index}
         renderItem={({item, index}) => (
           <PlayerCard player={item} idx={index} navigation={props.navigation} />

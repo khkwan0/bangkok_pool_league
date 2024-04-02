@@ -9,20 +9,18 @@ import {Row, Text, View} from '@ybase'
 const MatchData = ({match}) => {
   const navigation = useNavigation()
   return (
-    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-      <View style={{flex: 1, alignItems: 'center'}}>
+    <Row alignItems="center">
+      <View flex={1} alignItems="center">
         <Text>{match.home ? 'H' : 'A'}</Text>
       </View>
-      <View style={{flex: 4}}>
+      <View flex={4}>
         <TouchableRipple
           onPress={() =>
             navigation.navigate('Statistics Match Screen', {
               matchId: match.matchId,
             })
           }>
-          <Text
-            variant="bodyMedium"
-            style={{fontWeight: 'bold', color: '#2c127a', paddingVertical: 5}}>
+          <Text bold variant="bodyMedium" style={{paddingVertical: 5}}>
             {match.vs}
           </Text>
         </TouchableRipple>
@@ -33,7 +31,7 @@ const MatchData = ({match}) => {
       <View style={{flex: 1}}>
         <Text>{match.frames}</Text>
       </View>
-    </View>
+    </Row>
   )
 }
 
@@ -80,7 +78,7 @@ const DivisionStandings = ({data}) => {
       ListHeaderComponent={
         <View bgColor={colors.background} px={20} mt={10}>
           <View>
-            <Text fontSize="xxl" bold>
+            <Text fontSize="xxl" bold color={colors.on}>
               {data.division}
             </Text>
           </View>

@@ -35,15 +35,26 @@ const MatchCard = props => {
               ? props.match.away_team_short_name
               : props.match.away_team_name}{' '}
           </Text>
+          {DateTime.fromISO(props.match.date).startOf('day') <
+            DateTime.now().startOf('day') && (
+            <Text textAlign="center" bold color={colors.error}>
+              MAKE UP MATCH
+            </Text>
+          )}
           <Text variant="titleMedium" style={{textAlign: 'center'}}>
             {DateTime.fromISO(props.match.date).toLocaleString(
               DateTime.DATE_HUGE,
             )}
           </Text>
-          <Text>{t('where')}:</Text>
-          <Text>{props.match.name}</Text>
-          <Text>{props.match.location}</Text>
-          <Text>{props.match.phone}</Text>
+          <Row>
+            <View flex={2}>
+              <Text>{t('where')}:</Text>
+              <Text>{props.match.name}</Text>
+              <Text>{props.match.location}</Text>
+              <Text>{props.match.phone}</Text>
+            </View>
+            <View flex={1} />
+          </Row>
           {(props.match.latitude !== 0 || props.match.longitude !== 0) && (
             <Row>
               <Pressable

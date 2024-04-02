@@ -85,13 +85,15 @@ const MatchHeader = props => {
       </Portal>
       <View px={20}>
         {user.role_id === 9 && (
-          <Button mode="outlined" onPress={() => setShowDatePicker(true)}>
-            <Text fontSize="xl" bold textAlign="center">
-              {DateTime.fromISO(matchDate).toLocaleString(
-                DateTime.DATE_SHORT,
-              )}
-            </Text>
-          </Button>
+          <View mt={20}>
+            <Button mode="outlined" onPress={() => setShowDatePicker(true)}>
+              <Text fontSize="xl" bold textAlign="center">
+                {DateTime.fromISO(matchDate).toLocaleString(
+                  DateTime.DATE_SHORT,
+                )}
+              </Text>
+            </Button>
+          </View>
         )}
         <DatePicker
           modal
@@ -136,6 +138,19 @@ const MatchHeader = props => {
             </Row>
           </Row>
         </RadioButton.Group>
+        <Row alignItems="center">
+          <View flex={1}>
+            <Text textAlign="center" fontSize="xxxl" bold>
+              {props.matchData.home_frames}
+            </Text>
+          </View>
+          <View flex={1} />
+          <View flex={1}>
+            <Text textAlign="center" fontSize="xxxl" bold>
+              {props.matchData.away_frames}
+            </Text>
+          </View>
+        </Row>
       </View>
     </>
   )

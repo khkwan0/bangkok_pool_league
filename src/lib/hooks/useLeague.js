@@ -57,9 +57,30 @@ export const useLeague = () => {
     }
   }
 
-  const GetPlayerStats = async (seasonId = null) => {
+  const GetPlayerStats = async (
+    seasonId = null,
+    minimumGames = 1,
+    gameType = '',
+    gameVariety = 'all',
+  ) => {
     try {
-      const stats = await Get('/stats/players/' + seasonId)
+      let query = `minimum=${minimumGames}`
+      if (gameType) {
+        query += `&gameType=${gameType}`
+      }
+      let singlesOnly = false
+      let doublesOnly = false
+      if (gameVariety === 'singles') {
+        singlesOnly = true
+      } else if (gameVariety === 'doubles') {
+        doublesOnly = true
+      }
+      if (singlesOnly) {
+        query += '&singles=1'
+      } else if (doublesOnly) {
+        query += '&doubles=1'
+      }
+      const stats = await Get('/stats/players/' + seasonId + '?' + query)
       return stats
     } catch (e) {
       console.log(e)

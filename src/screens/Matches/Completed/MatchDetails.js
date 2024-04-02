@@ -15,21 +15,21 @@ const MatchDetails = props => {
 
   React.useEffect(() => {
     props.navigation.setOptions({
-      headerTitle: t('match') + ' #' + props.route.params.matchData.matchId,
+      headerTitle: t('match') + ' #' + props.route.params.matchData.match_id,
     })
   }, [])
 
   React.useEffect(() => {
     ;(async () => {
       try {
-        const res = await GetMatchDetails(props.route.params.matchData.matchId)
+        const res = await GetMatchDetails(props.route.params.matchData.match_id)
         if (typeof res.status !== 'undefined' && res.status === 'ok') {
           if (res.data.length > 0) {
             setMatchDetails(res.data)
           } else {
             props.navigation.replace('Post Match Screen', {
               matchInfo: {
-                match_id: props.route.params.matchData.matchId,
+                match_id: props.route.params.matchData.match_id,
                 away_team_id: props.route.params.matchData.away_team_id,
                 home_team_id: props.route.params.matchData.home_team_id,
                 home_team_name: props.route.params.matchData.home_team_name,
@@ -56,7 +56,13 @@ const MatchDetails = props => {
         style={{backgroundColor: colors.surface}}
         data={matchDetails}
         keyExtractor={(item, idx) => 'asdasd' + idx}
-        renderItem={(item, idx) => <FrameDetail item={item} idx={idx} matchId={props.route.params.matchData.matchId} />}
+        renderItem={(item, idx) => (
+          <FrameDetail
+            item={item}
+            idx={idx}
+            matchId={props.route.params.matchData.match_id}
+          />
+        )}
         ItemSeparatorComponent={<Divider />}
       />
     </View>

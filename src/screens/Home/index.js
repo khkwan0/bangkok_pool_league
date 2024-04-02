@@ -16,7 +16,17 @@ import AvatarPicker from '@screens/Settings/AvatarPicker'
 import Profile from '@screens/Settings/Profile'
 import Seasons from '@screens/Settings/Seasons'
 import Schedules from '@screens/Settings/Schedules'
-import Statistics from '@screens/Settings/Statistics'
+
+import StatisticsHome from '@screens/Settings/Statistics/StatisticsHome'
+import LeagueStandings from '@screens/Settings/Statistics/LeagueStandings'
+import StatisticsMatchScreen from '@screens/Settings/Statistics/MatchScreen'
+import TeamStatistics from '@screens/Settings/Statistics/TeamStatistics'
+import PlayerStatisticsMenu from '@screens/Settings/Statistics/PlayerStatisticsMenu'
+import PlayerStatistics from '@screens/Settings/Statistics/PlayerStatistics'
+import TeamInternal from '@screens/Settings/Statistics/TeamInternal'
+
+import Team from '@screens/Team'
+
 import Info from '@screens/Settings/Info'
 import {useTranslation} from 'react-i18next'
 import {useYBase} from '~/lib/hooks'
@@ -28,7 +38,7 @@ const HomeStack = createStackNavigator()
 
 const Home = props => {
   const {t} = useTranslation()
-  const {colors, colorMode} = useYBase()
+  const {colors} = useYBase()
 
   return (
     <View flex={1} bgColor={colors.backgroundColor}>
@@ -38,7 +48,7 @@ const Home = props => {
           headerTitleStyle: {color: colors.onHeaderBackground},
           headerTintColor: colors.onHeaderBackground,
           headerTitleAlign: 'center',
-          presentation: 'transparentModal',
+          //  presentation: 'transparentModal',
         }}>
         <HomeStack.Screen
           component={Matches}
@@ -51,9 +61,29 @@ const Home = props => {
           name="Settings"
         />
         <HomeStack.Screen
+          name="StatisticsHome"
+          component={StatisticsHome}
           options={{headerTitle: t('statistics')}}
-          component={Statistics}
-          name="Statistics"
+        />
+        <HomeStack.Screen name="League Standings" component={LeagueStandings} />
+        <HomeStack.Screen
+          name="Statistics Match Screen"
+          component={StatisticsMatchScreen}
+        />
+        <HomeStack.Screen name="Team Statistics" component={TeamStatistics} />
+        <HomeStack.Screen
+          name="Player Statistics"
+          component={PlayerStatistics}
+        />
+        <HomeStack.Screen
+          name="Team Internal"
+          options={{headerTitle: t('statistics')}}
+          component={TeamInternal}
+        />
+        <HomeStack.Screen
+          name="Player Statistics Menu"
+          options={{headerTitle: t('statistics')}}
+          component={PlayerStatisticsMenu}
         />
         <HomeStack.Screen
           options={{headerTitle: t('info_and_guides'), headerShown: false}}
@@ -95,6 +125,7 @@ const Home = props => {
           component={Teams}
           name="Teams"
         />
+        <HomeStack.Screen component={Team} name="Team" />
         <HomeStack.Screen
           options={{headerTitle: t('divisions'), headerShown: false}}
           component={Divisions}

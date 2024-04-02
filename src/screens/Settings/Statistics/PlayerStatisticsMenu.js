@@ -3,20 +3,8 @@ import {Pressable, Text, View} from '@ybase'
 import {useYBase} from '~/lib/hooks'
 import {ImageBackground} from 'react-native'
 
-const StatisticsHome = props => {
+const PlayerStatisticsMenu = props => {
   const {colors} = useYBase()
-
-  function ShowLeagueStandings() {
-    props.navigation.navigate('League Standings')
-  }
-
-  function ShowTeamStats() {
-    props.navigation.navigate('Team Statistics')
-  }
-
-  function ShowPlayerStats() {
-    props.navigation.navigate('Player Statistics Menu')
-  }
 
   return (
     <View flex={1} bgColor={colors.background}>
@@ -28,43 +16,47 @@ const StatisticsHome = props => {
           bgColor="#000b"
           borderRadius={0}
           flex={1}
-          onPress={() => ShowLeagueStandings()}
           alignItems="center"
-          justifyContent="center">
+          justifyContent="center"
+          onPress={() => props.navigation.navigate('Player Statistics')}>
           <Text bold fontSize="xxl" color={colors.onPrimary}>
-            league_standings
+            combined
           </Text>
         </Pressable>
       </ImageBackground>
       <ImageBackground
-        source={require('../../../assets/img/bgs/team.png')}
-        style={{flex: 1, width: '100%', height: '100%', marginTop: 2}}
+        source={require('../../../assets/img/bgs/nineball.png')}
+        style={{flex: 1, width: '100%', height: '100%'}}
         resizeMode="cover">
         <Pressable
           flex={1}
-          bgColor="#000a"
+          bgColor="#000d"
           borderRadius={0}
-          onPress={() => ShowTeamStats()}
           alignItems="center"
-          justifyContent="center">
+          justifyContent="center"
+          onPress={() =>
+            props.navigation.navigate('Player Statistics', {gameType: '9b'})
+          }>
           <Text bold fontSize="xxl" color={colors.onPrimary}>
-            team_statistics
+            nine_ball 
           </Text>
         </Pressable>
       </ImageBackground>
       <ImageBackground
-        source={require('../../../assets/img/bgs/su.png')}
-        style={{flex: 1, width: '100%', height: '100%', marginTop: 2}}
+        source={require('../../../assets/img/bgs/eightball.png')}
+        style={{flex: 1, width: '100%', height: '100%'}}
         resizeMode="cover">
         <Pressable
-          bgColor="#000a"
-          flex={1}
+          bgColor="#000d"
           borderRadius={0}
-          onPress={() => ShowPlayerStats()}
+          flex={1}
           alignItems="center"
-          justifyContent="center">
+          justifyContent="center"
+          onPress={() =>
+            props.navigation.navigate('Player Statistics', {gameType: '8b'})
+          }>
           <Text bold fontSize="xxl" color={colors.onPrimary}>
-            player_statistics
+            eight_ball
           </Text>
         </Pressable>
       </ImageBackground>
@@ -72,4 +64,4 @@ const StatisticsHome = props => {
   )
 }
 
-export default StatisticsHome
+export default PlayerStatisticsMenu
