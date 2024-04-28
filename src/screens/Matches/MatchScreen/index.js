@@ -266,6 +266,9 @@ const MatchScreen = props => {
                     history: [],
                   }
                 }
+                if (typeof matchInfo.meta.notes === 'undefined') {
+                  matchInfo.meta.notes = []
+                }
                 matchInfo.meta.notes.push(data)
               }
               if (data.type === 'finalize') {
@@ -331,6 +334,9 @@ const MatchScreen = props => {
             notes: [],
             history: [],
           }
+        }
+        if (typeof matchInfo.meta.history === 'undefined') {
+          matchInfo.meta.history = []
         }
         matchInfo.meta.history.push(data)
       })

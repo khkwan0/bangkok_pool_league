@@ -66,7 +66,10 @@ const Roster = props => {
             </View>
           }
           stickyHeaderIndices={[0]}
-          data={props.route.params.teams[props.route.params.frameInfo.teamId]}
+          keyExtractor={(item, index) => 'playercard' + index}
+          data={props.route.params.teams[
+            props.route.params.frameInfo.teamId
+          ].sort((a, b) => (a.nickname > b.nickname ? 1 : -1))}
           renderItem={({item, index}) => {
             // check to see if how many times a player can play in a section (aka mfpp)
             let i = 0
