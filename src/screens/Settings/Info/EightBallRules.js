@@ -8,7 +8,7 @@ const Rule = props => {
     <View my={20} px={20}>
       <View>
         <Text>
-          {props.idx + 1} <Text bold>{props.rule.title}</Text>
+          {props.idx + 1}. <Text bold>{props.rule.title}</Text>
         </Text>
       </View>
       <View mt={5}>
