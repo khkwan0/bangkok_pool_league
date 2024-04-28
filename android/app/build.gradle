@@ -78,8 +78,8 @@ android {
         applicationId "com.bangkok_pool_league"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 68
-        versionName "1.55"
+        versionCode 69
+        versionName "1.56"
         vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
