@@ -38,7 +38,7 @@ const Seasons = props => {
             current_season
           </Text>
           <Text textAlign="center" bold fontSize={84}>
-            {season.id}
+            {season.identifier}
           </Text>
         </View>
         <View flex={1} />

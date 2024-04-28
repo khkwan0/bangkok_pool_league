@@ -5,7 +5,7 @@ export const useLeague = () => {
 
   const AddNewSeason = async (name = '', shortName = '', description = '') => {
     try {
-      if (name && shortName) {
+      if (name) {
         const res = await Post('/admin/season/new', {
           name,
           shortName,
@@ -468,6 +468,16 @@ export const useLeague = () => {
     }
   }
 
+  const GetGameTypes = async () => {
+    try {
+      const res = await Get('/gametypes')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
   return {
     AcceptMergeRequest,
     ActivateSeason,
@@ -478,6 +488,7 @@ export const useLeague = () => {
     GetAllVenues,
     GetAllPlayers,
     GetDivisionsBySeason,
+    GetGameTypes,
     GetLiveScores,
     GetMatchById,
     GetMatchesBySeason,

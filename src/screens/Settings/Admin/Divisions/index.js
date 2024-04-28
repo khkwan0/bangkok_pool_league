@@ -1,11 +1,12 @@
 import React from 'react'
-import {Pressable, Row, Text, View} from '@ybase'
+import {Button, Row, Text, TextInput, View} from '@ybase'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useTranslation} from 'react-i18next'
 import MCI from 'react-native-vector-icons/MaterialCommunityIcons'
 import {useLeague, useYBase} from '~/lib/hooks'
 import {FlatList} from 'react-native'
 import SeasonPicker from '@components/SeasonPicker'
+import GameTypePicker from '@components/GameTypePicker'
 
 const Division = props => {
   const division = props.item.item
@@ -40,6 +41,9 @@ const Divisions = props => {
   const {t} = useTranslation()
   const [season, setSeason] = React.useState(null)
   const [divisions, setDivisions] = React.useState([])
+  const [showAdd, setShowAdd] = React.useState(false)
+  const [divisionName, setDivisionName] = React.useState('')
+  const [gameType, setGameType] = React.useState('')
 
   React.useEffect(() => {
     ;(async () => {
@@ -67,6 +71,21 @@ const Divisions = props => {
     GetDivisionsBySeason()
   }, [season])
 
+  function DoCancel() {
+    setDivisionName('')
+    setShowAdd(false)
+  }
+
+  async function DoSave() {
+    try {
+      if (divisionName && gameType) {
+        const res = await league.SaveDivision(divisionName)
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   if (season) {
     return (
       <View flex={1} px={20} bgColor={colors.background}>
@@ -74,6 +93,27 @@ const Divisions = props => {
         <Text textAlign="center" bold fontSize="xxxl" mb={20}>
           {t('season_number', {n: season})}
         </Text>
+        <Button onPress={() => setShowAdd(true)}>
+          <Text>Add division</Text>
+        </Button>
+        {showAdd && (
+          <View>
+            <TextInput
+              onChangeText={text => setDivisionName(text)}
+              value={divisionName}
+              placeholder="Name (required) Ex: 8 Ball - A"
+            />
+            <GameTypePicker gameType={gameType} setGameType={setGameType} />
+            <Row alignItems="center">
+              <View flex={1}>
+                <Button onPress={() => DoCancel()}>Cancel</Button>
+              </View>
+              <View flex={1}>
+                <Button onPress={() => DoSave()}>Save</Button>
+              </View>
+            </Row>
+          </View>
+        )}
         <FlatList
           data={divisions}
           renderItem={(item, idx) => (

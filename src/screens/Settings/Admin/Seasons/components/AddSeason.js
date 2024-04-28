@@ -25,7 +25,7 @@ const AddSeason = props => {
     try {
       setErr('')
       setLoading(true)
-      if (name && shortName) {
+      if (name) {
         const res = await league.AddNewSeason(name, shortName, description)
         if (typeof res.status !== 'undefined' && res.status === 'ok') {
           props.refresh()
@@ -54,14 +54,14 @@ const AddSeason = props => {
           <View my={5}>
             <TextInput
               value={name}
-              placeholder="Name (required)"
+              placeholder="Name Example 'Q2 2024' (required)"
               onChangeText={text => setName(text)}
             />
           </View>
           <View my={5}>
             <TextInput
               value={shortName}
-              placeholder="Short Name (required)"
+              placeholder="Short Name (optional)"
               onChangeText={text => setShortName(text)}
             />
           </View>

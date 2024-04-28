@@ -150,7 +150,10 @@ const UpcomingMatches = props => {
   if (isMounted) {
     return (
       <FlatList
-        contentContainerStyle={{backgroundColor: colors.background}}
+        contentContainerStyle={{
+          backgroundColor: colors.background,
+          flexGrow: 1,
+        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

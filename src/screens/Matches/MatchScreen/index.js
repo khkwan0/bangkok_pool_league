@@ -75,6 +75,7 @@ const MatchScreen = props => {
     setSocket(io('https://' + config.domain, {autoConnect: false}))
     return () => {
       if (socket) {
+        console.log('disconnecting socket')
         socket.disconnect()
       }
     }
@@ -726,7 +727,6 @@ const MatchScreen = props => {
       console.log(e)
     }
   }
-
   React.useEffect(() => {
     if (finalizedAway && finalizedHome) {
       if (
