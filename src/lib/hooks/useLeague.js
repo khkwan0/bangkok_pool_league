@@ -478,6 +478,16 @@ export const useLeague = () => {
     }
   }
 
+  const GetRules = async () => {
+    try {
+      const res = await Get('/rules')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
   return {
     AcceptMergeRequest,
     ActivateSeason,
@@ -500,6 +510,7 @@ export const useLeague = () => {
     GetPlayers,
     GetPostponed,
     GetRawPlayerInfo,
+    GetRules,
     GetSeason,
     GetSeasonV2,
     GetStandings,

@@ -4,6 +4,8 @@ import {useTranslation} from 'react-i18next'
 import InfoHome from './Home'
 import PrivacyPolicy from './PrivacyPolicy'
 import {useYBase} from '~/lib/hooks'
+import NineBallRules from './NineBallRules'
+import EightBallRules from './EightBallRules'
 
 const InfoStack = createStackNavigator()
 
@@ -28,6 +30,16 @@ const Info = props => {
         component={PrivacyPolicy}
         name="Privacy Policy"
         options={{headerTitle: t('privacy_policy')}}
+      />
+      <InfoStack.Screen
+        component={NineBallRules}
+        name="Nine Ball Rules"
+        options={{headerTitle: '9-Ball Rules'}}
+      />
+      <InfoStack.Screen
+        component={EightBallRules}
+        name="Eight Ball Rules"
+        options={{headerTitle: '8-Ball Rules'}}
       />
     </InfoStack.Navigator>
   )
