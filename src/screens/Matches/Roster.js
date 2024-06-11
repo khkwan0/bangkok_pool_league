@@ -52,6 +52,7 @@ const Roster = props => {
           <NewPlayerInput
             frameInfo={props.route.params.frameInfo}
             handleSelect={HandleSelect}
+            cancel={() => setShowAddNew(false)}
           />
         </ScrollView>
       )}
