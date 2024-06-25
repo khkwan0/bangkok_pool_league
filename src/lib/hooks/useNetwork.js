@@ -52,7 +52,7 @@ export const useNetwork = () => {
     }
   }
 
-  const SocketSend = (
+  const SocketSend = async (
     type = '',
     matchId = 0,
     data = {},
@@ -61,6 +61,7 @@ export const useNetwork = () => {
     nickname,
     socket,
   ) => {
+    const token = await AsyncStorage.getItem('jwt')
     const user = {
       id: userId,
       nickname: nickname,
@@ -70,6 +71,7 @@ export const useNetwork = () => {
       matchId: matchId,
       timestamp: Date.now(),
       playerId: user.id ?? 0,
+      jwt: token ? token : '',
       nickname: user.nickname,
       dest: dest,
       data: {...data},
