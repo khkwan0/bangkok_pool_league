@@ -42,8 +42,9 @@ const PlayerListing = ({data, idx}) => {
 }
 
 const SectionHeader = ({title}) => {
+  const {colors} = useYBase()
   return (
-    <>
+    <View bgColor={colors.background}>
       <Text fontSize="xxl">{title}</Text>
       <Row alignItems="center">
         <View flex={1}>
@@ -65,7 +66,7 @@ const SectionHeader = ({title}) => {
           <Text bold>adj_perf</Text>
         </View>
       </Row>
-    </>
+    </View>
   )
 }
 
