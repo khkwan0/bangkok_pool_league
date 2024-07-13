@@ -1,5 +1,5 @@
 import React from 'react'
-import {ActivityIndicator, Button, Row, Text, TextInput, View} from '@ybase'
+import {ActivityIndicator, Row, Text, TextInput, View} from '@ybase'
 import {useTranslation} from 'react-i18next'
 import {useYBase, useLeague} from '~/lib/hooks'
 import RNPickerSelect from 'react-native-picker-select'
@@ -184,8 +184,15 @@ const PlayerStatisticsByDivision = props => {
   } else {
     return (
       <View bgColor={colors.background} flex={1} px={20}>
-        <View bgColor={colors.backdrop}>
+        <View bgColor={colors.primary}>
           <RNPickerSelect
+            style={{
+              color: colors.onPrimary,
+              inputIOS: {
+                padding: 30,
+                fontSize: 20,
+              },
+            }}
             placeholder={{label: t('division'), value: ''}}
             onValueChange={val => setSelectedDivision(val)}
             items={divisions}
