@@ -1,5 +1,5 @@
 import React from 'react'
-import {Pressable, Text, View} from '@ybase'
+import {Pressable, Row, Text, View} from '@ybase'
 import {useYBase} from '~/lib/hooks'
 import {ImageBackground} from 'react-native'
 
@@ -8,6 +8,24 @@ const PlayerStatisticsMenu = props => {
 
   return (
     <View flex={1} bgColor={colors.background}>
+      <ImageBackground
+        source={require('../../../assets/img/bgs/tato.png')}
+        style={{flex: 1, width: '100%', height: '100%'}}
+        resizeMode="cover">
+        <Pressable
+          bgColor="#000b"
+          borderRadius={0}
+          flex={1}
+          alignItems="center"
+          justifyContent="center"
+          onPress={() =>
+            props.navigation.navigate('Player Division Statistics')
+          }>
+          <Text bold fontSize="xxl" color={colors.onPrimary}>
+            division
+          </Text>
+        </Pressable>
+      </ImageBackground>
       <ImageBackground
         source={require('../../../assets/img/bgs/bkkpool_logo.png')}
         style={{flex: 1, width: '100%', height: '100%'}}

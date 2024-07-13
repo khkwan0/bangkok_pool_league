@@ -135,5 +135,6 @@
   "update_available": "อัปเดตพร้อมแล้ว",
   "show_postponed": "การแสดงถูกเลื่อนออกไป",
   "verification_code": "รหัส",
-  "new_password": "รหัสผ่านใหม่"
+  "new_password": "รหัสผ่านใหม่",
+  "division": "หมวด"
 }

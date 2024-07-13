@@ -1,5 +1,4 @@
 import React from 'react'
-import RNPickerSelect from 'react-native-picker-select'
 import {Picker} from '@react-native-picker/picker'
 import {useLeague, useYBase} from '~/lib/hooks'
 import {useTranslation} from 'react-i18next'

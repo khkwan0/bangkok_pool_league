@@ -23,6 +23,7 @@ import StatisticsMatchScreen from '@screens/Settings/Statistics/MatchScreen'
 import TeamStatistics from '@screens/Settings/Statistics/TeamStatistics'
 import PlayerStatisticsMenu from '@screens/Settings/Statistics/PlayerStatisticsMenu'
 import PlayerStatistics from '@screens/Settings/Statistics/PlayerStatistics'
+import PlayerStatisticsByDivision from '../Settings/Statistics/PlayerStatisticsByDivision'
 import TeamInternal from '@screens/Settings/Statistics/TeamInternal'
 
 import Team from '@screens/Team'
@@ -74,6 +75,10 @@ const Home = props => {
         <HomeStack.Screen
           name="Player Statistics"
           component={PlayerStatistics}
+        />
+        <HomeStack.Screen
+          name="Player Division Statistics"
+          component={PlayerStatisticsByDivision}
         />
         <HomeStack.Screen
           name="Team Internal"

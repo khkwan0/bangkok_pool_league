@@ -126,6 +126,18 @@ export const useLeague = () => {
     }
   }
 
+  const GetPlayerStatsByDivision = async (seasonId = 'null') => {
+    try {
+      const res = await Get(
+        '/league/season/' + seasonId + '/division/player/stats',
+      )
+      return res
+    } catch (e) {
+      console.log(e)
+      return []
+    }
+  }
+
   const SaveNewPlayer = async (
     nickName = '',
     firstName = '',
@@ -506,6 +518,7 @@ export const useLeague = () => {
     GetMyMergeRequests,
     GetPlayerInfo,
     GetPlayerStats,
+    GetPlayerStatsByDivision,
     GetPlayerStatsInfo,
     GetPlayers,
     GetPostponed,
