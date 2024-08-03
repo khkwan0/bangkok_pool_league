@@ -67,3 +67,4 @@ strings.xml
 google-services.json
 config.js
 *.swp
+sentry.properties

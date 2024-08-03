@@ -12,6 +12,19 @@ import BootSplash from 'react-native-bootsplash'
 import Main from './src/Main'
 import messaging from '@react-native-firebase/messaging'
 import {PermissionsAndroid, Platform} from 'react-native'
+import * as Sentry from '@sentry/react-native'
+
+Sentry.init({
+  dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
+  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+  // We recommend adjusting this value in production.
+  tracesSampleRate: 1.0,
+  _experiments: {
+    // profilesSampleRate is relative to tracesSampleRate.
+    // Here, we'll capture profiles for 100% of transactions.
+    profilesSampleRate: 1.0,
+  },
+})
 
 const App = () => {
   React.useEffect(() => {
@@ -61,4 +74,4 @@ const App = () => {
   )
 }
 
-export default App
+export default Sentry.wrap(App)
