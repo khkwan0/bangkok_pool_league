@@ -40,26 +40,30 @@ const Login = props => {
   }, [])
 
   async function HandleFacebookLogin() {
-    const res = await LoginManager.logInWithPermissions(['public_profile'])
-    if (res.isCancelled) {
-      console.log('cancelled')
-    }
-    const data = await AccessToken.getCurrentAccessToken()
-    if (!data) {
-      console.log('no data')
-    } else {
-      const res = await SocialLogin('facebook', data)
-      if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        if (typeof props.route.params?.previous !== 'undefined') {
-          props.navigation.navigate(props.route?.params?.previous)
-        } else {
-          props.navigation.goBack()
-        }
+    try {
+      const res = await LoginManager.logInWithPermissions(['public_profile'])
+      if (res.isCancelled) {
+        console.log('cancelled')
+      }
+      const data = await AccessToken.getCurrentAccessToken()
+      if (!data) {
+        console.log('no data')
       } else {
-        if (res.status === 'error' && res.error) {
-          setErr(res.error)
+        const res = await SocialLogin('facebook', data)
+        if (typeof res.status !== 'undefined' && res.status === 'ok') {
+          if (typeof props.route.params?.previous !== 'undefined') {
+            props.navigation.navigate(props.route?.params?.previous)
+          } else {
+            props.navigation.goBack()
+          }
+        } else {
+          if (res.status === 'error' && res.error) {
+            setErr(res.error)
+          }
         }
       }
+    } catch (e) {
+      setErr('Problem.  Please try again.')
     }
   }
 

@@ -129,6 +129,7 @@ const PlayerStatistics = props => {
   const {colors} = useYBase()
   const [minimumGames, setMinimumGames] = React.useState('20')
   const [gameVariety, setGameVariety] = React.useState('all')
+  const [err, setErr] = React.useState('')
   const {t} = useTranslation()
 
   const trie = React.useRef(null)
@@ -154,11 +155,15 @@ const PlayerStatistics = props => {
   }, [playerStats])
 
   React.useEffect(() => {
-    if (searchQuery.length > 0) {
-      const _list = trie.current.search(searchQuery)
-      setList(_list)
-    } else {
-      setList(playerStats)
+    try {
+      if (searchQuery.length > 0) {
+        const _list = trie.current.search(searchQuery)
+        setList(_list)
+      } else {
+        setList(playerStats)
+      }
+    } catch (e) {
+      setErr('Problem please go back and try again')
     }
   }, [searchQuery, playerStats])
 
@@ -204,6 +209,11 @@ const PlayerStatistics = props => {
 
   return (
     <View px={20} bgColor={colors.background} flex={1}>
+      {err && (
+        <Text bold color={colors.error} fontSize="xl" my={10}>
+          {err}
+        </Text>
+      )}
       <PlayerStatsHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
