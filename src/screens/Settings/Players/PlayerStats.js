@@ -127,7 +127,7 @@ const PlayerStats = props => {
           <Button onPress={() => props.navigation.goBack()}>
             {`${playerInfo.name} (${playerInfo.firstname} ${playerInfo.lastname})`}
           </Button>
-          <Text>{playerInfo.nationality.en}</Text>
+          <Text>{playerInfo?.nationality?.en ?? ''}</Text>
           <View>
             {playerInfo.teams.map((team, idx) => {
               if (idx === playerInfo.teams.length - 1) {
