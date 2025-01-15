@@ -1,0 +1,46 @@
+import React from 'react'
+import Row from '@/components/Row'
+import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView as View} from '@/components/ThemedView'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+
+function FrameDetails(props) {
+  const {homePlayers, awayPlayers} = props.item.item
+  const homeWin = props.item.item.home_win
+
+  return (
+    <>
+      <View className="my-2 px-4" key={'complete_frame_detail' + props.idx}>
+        <Row className="items-center">
+          <View style={{flex: 1}}>
+            {homePlayers.map((player, idx) => (
+              <View key={'home_compelted' + idx}>
+                {idx !== 0 && <Text>and</Text>}
+                <Text type="subtitle">{player.nickname}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={{flex: 1}} justifyContent="center" alignItems="center">
+            {homeWin === 1 && <MCI name="check" size={30} color="green" />}
+          </View>
+          <View style={{flex: 0.3}} alignItems="center">
+            <Text>vs</Text>
+          </View>
+          <View style={{flex: 1}} justifyContent="center" alignItems="center">
+            {homeWin === 0 && <MCI name="check" size={30} color="green" />}
+          </View>
+          <View style={{flex: 1}} alignItems="flex-end">
+            {awayPlayers.map((player, idx) => (
+              <View key={'away_completed' + idx} alignItems="flex-end">
+                {idx !== 0 && <Text>and</Text>}
+                <Text type="subtitle">{player.nickname}</Text>
+              </View>
+            ))}
+          </View>
+        </Row>
+      </View>
+    </>
+  )
+}
+
+export default FrameDetails

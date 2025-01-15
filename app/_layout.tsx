@@ -1,39 +1,48 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import {LeagueProvider} from '@/context/LeagueContext'
+import * as SplashScreen from 'expo-splash-screen'
+import {useFonts} from 'expo-font'
+import {useEffect} from 'react'
+import {MatchProvider} from '@/context/MatchContext'
+import {Stack} from 'expo-router'
+import {useLeague} from '@/hooks'
+import {useAccount} from '@/hooks'
+import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native'
+import {Appearance, useColorScheme, PermissionsAndroid, Platform} from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme()
+
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  })
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync()
     }
-  }, [loaded]);
+  }, [loaded])
 
-  if (!loaded) {
-    return null;
-  }
+  useEffect(() => {
+    ;(async () => {
+      const savedColorScheme = await AsyncStorage.getItem('theme')
+      if (!savedColorScheme) {
+        Appearance.setColorScheme(null)
+      } else {
+        Appearance.setColorScheme(savedColorScheme as ColorSchemeName)
+      }
+    })()
+  }, [])
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+      <LeagueProvider>
+        <MatchProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{headerShown: false}} />
+          </Stack>
+        </MatchProvider>
+      </LeagueProvider>
     </ThemeProvider>
-  );
+  )
 }
