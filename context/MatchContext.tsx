@@ -5,7 +5,7 @@ import config from '@/app/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useLeagueContext} from './LeagueContext'
 import StatsHeader from '@/components/StatsHeader'
-import {FrameType, MatchInfoDataType} from '@/app/Match/types'
+import {FrameType, MatchInfoDataType} from '@/components/Match/types'
 
 type JoinStatusType = {
   status: string
