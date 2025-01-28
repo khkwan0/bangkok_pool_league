@@ -145,5 +145,8 @@
   "remove_player_warning": "การกระทำนี้ไม่สามารถยกเลิกได้",
   "remove": "ลบ",
   "nationality": "สัญชาติ",
-  "not_provided": "ไม่ได้กำหนด"
+  "not_provided": "ไม่ได้กำหนด",
+  "league_history": "ประวัติลีก",
+  "game_type": "ประเภทการแข่งขัน",
+  "partner": "คู่สมรส"
 }

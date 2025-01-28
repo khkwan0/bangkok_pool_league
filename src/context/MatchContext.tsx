@@ -4,7 +4,7 @@ import {io} from 'socket.io-client'
 import config from '@/app/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useLeagueContext} from './LeagueContext'
-import StatsHeader from '@/components/StatsHeader'
+import StatsHeader from '@/components/PlayerStatistics/StatsHeader'
 import {FrameType, MatchInfoDataType} from '@/components/Match/types'
 
 type JoinStatusType = {

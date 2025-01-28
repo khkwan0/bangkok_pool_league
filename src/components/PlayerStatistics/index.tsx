@@ -6,10 +6,10 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import Row from '@/components/Row'
 import {Image, ScrollView} from 'react-native'
 import config from '@/app/config'
-import StatsHeader from '@/components/StatsHeader'
+import StatsHeader from '@/components/PlayerStatistics/StatsHeader'
 import Stats from '@/components/Stats'
-import StatsDoubles from '@/components/StatsDoubles'
-import StatsMatchPerformance from '@/components/StatsMatchPerformance'
+import StatsDoubles from '@/components/PlayerStatistics/StatsDoubles'
+import StatsMatchPerformance from '@/components/PlayerStatistics/StatsMatchPerformance'
 
 interface PlayerInfo {
   player_id: number
@@ -173,7 +173,7 @@ export default function PlayerStatistics({
         doublesStats && (
           <View className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6">
             <StatsHeader isDoubles={true} isMatchPerformance={false} />
-            <StatsDoubles stats={doublesStats} playerSelect={() => {}} />
+            <StatsDoubles stats={doublesStats} />
           </View>
         )
       )}

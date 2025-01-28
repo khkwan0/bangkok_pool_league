@@ -146,5 +146,8 @@
   "remove_player_warning": "This action cannot be undone.",
   "remove": "Remove",
   "nationality": "Nationality",
-  "not_provided": "Not provided"
+  "not_provided": "Not provided",
+  "league_history": "League history",
+  "game_type": "Game type",
+  "partner": "Partner"
 }

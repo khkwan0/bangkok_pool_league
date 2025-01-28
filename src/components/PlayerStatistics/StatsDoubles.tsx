@@ -2,7 +2,7 @@ import React from 'react'
 import {Pressable} from 'react-native'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
-
+import {useRouter} from 'expo-router'
 type StatType = {
   playerId: number
   nickname: string
@@ -13,11 +13,11 @@ type StatType = {
 }
 
 interface PropType {
-  stats: Array<StatType>
-  playerSelect: any
+  stats: StatType[]
 }
 
 export default function StatsDoubles(props: PropType) {
+  const router = useRouter()
   const stats = props.stats
   return (
     <>
@@ -26,7 +26,14 @@ export default function StatsDoubles(props: PropType) {
         return (
           <View className="flex-row" key={stat + '_' + index}>
             <Pressable
-              onPress={() => props.playerSelect(playerId)}
+              onPress={() => {
+                router.dismissTo({
+                  pathname: '/completed/match/player',
+                  params: {
+                    params: JSON.stringify({playerId: playerId}),
+                  },
+                })
+              }}
               className="w-2"
               style={{flex: 2}}>
               <Text type="link">{stat.nickname}</Text>

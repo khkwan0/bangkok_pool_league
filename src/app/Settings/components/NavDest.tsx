@@ -1,9 +1,10 @@
 import React from 'react'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {Pressable, View} from 'react-native'
+import {Pressable} from 'react-native'
 import {Href, Link} from 'expo-router'
 import {useTheme} from '@react-navigation/native'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {ThemedView as View} from '@/components/ThemedView'
 
 interface NavDestProps {
   url: Href<string | object>
@@ -13,6 +14,8 @@ interface NavDestProps {
 
 export default function NavDest(props: NavDestProps) {
   const {colors} = useTheme()
+
+  console.log(props.url)
 
   return (
     <Link href={props.url} asChild>
