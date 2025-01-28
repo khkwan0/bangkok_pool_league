@@ -19,7 +19,6 @@ interface PropType {
 
 export default function StatsDoubles(props: PropType) {
   const stats = props.stats
-  const fw = 'normal'
   return (
     <>
       {stats.map((stat, index) => {
@@ -29,20 +28,17 @@ export default function StatsDoubles(props: PropType) {
             <Pressable
               onPress={() => props.playerSelect(playerId)}
               className="w-2"
-              style={{flex: 3}}>
-              <Text style={{fontWeight: fw}}>{stat.nickname}</Text>
+              style={{flex: 2}}>
+              <Text type="link">{stat.nickname}</Text>
             </Pressable>
-            <View className="w-1">
-              <Text style={{fontWeight: fw}}>{stat.played}</Text>
+            <View style={{flex: 1}}>
+              <Text>{stat.played}</Text>
             </View>
-            <View className="w-1">
-              <Text style={{fontWeight: fw}}>{stat.won}</Text>
+            <View style={{flex: 1}}>
+              <Text>{stat.won}</Text>
             </View>
-            <View className="w-1">
-              <Text style={{fontWeight: fw}}>{stat.winp}</Text>
-            </View>
-            <View className="w-1">
-              <Text style={{fontWeight: fw}}>{stat.wgtd}</Text>
+            <View style={{flex: 1}}>
+              <Text>{stat.winp}</Text>
             </View>
           </View>
         )

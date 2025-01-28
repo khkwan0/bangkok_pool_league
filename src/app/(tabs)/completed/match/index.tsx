@@ -1,19 +1,31 @@
 import React from 'react'
-import {useLocalSearchParams, useNavigation} from 'expo-router'
+import {useLocalSearchParams, useNavigation, useRouter} from 'expo-router'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useMatch} from '@/hooks'
-import {FlatList} from 'react-native'
+import {FlatList, Pressable} from 'react-native'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {DateTime} from 'luxon'
 
 type Frame = {
   frameId: number
-  homePlayers: {nickName: string}[]
-  awayPlayers: {nickName: string}[]
+  homePlayers: {nickName: string; id: number}[]
+  awayPlayers: {nickName: string; id: number}[]
   homeWin: number
 }
 
+type MatchDetails = Frame[]
+
+type MatchMetadata = {
+  matchDate: string
+  home_team_name: string
+  away_team_name: string
+  home_frames: number
+  away_frames: number
+}
+
 function FrameRow({frame, index}: {frame: Frame; index: number}) {
+  const router = useRouter()
   return (
     <View className="p-4 rounded-lg bg-white border border-slate-200 shadow-sm">
       <View className="mb-4">
@@ -26,12 +38,24 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
         <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
           <View style={{flex: 1, alignItems: 'flex-start'}}>
             {frame.homePlayers.map((player, idx) => (
-              <Text
-                type="subtitle"
+              <Pressable
                 key={idx}
-                className="text-base text-slate-700 font-medium leading-relaxed">
-                {player.nickName}
-              </Text>
+                onPress={() => {
+                  router.push({
+                    pathname: '/completed/match/player',
+                    params: {
+                      params: JSON.stringify({
+                        playerId: player.playerId,
+                      }),
+                    },
+                  })
+                }}>
+                <Text
+                  type="subtitle"
+                  className="text-base text-slate-700 font-medium leading-relaxed">
+                  {player.nickName}
+                </Text>
+              </Pressable>
             ))}
           </View>
           <View style={{flex: 0.5, alignItems: 'flex-end'}}>
@@ -50,7 +74,7 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
 
         {/* Away Team Side */}
         <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
-          <View style={{flex: 0.5, alignItems: 'flex-start'}} >
+          <View style={{flex: 0.5, alignItems: 'flex-start'}}>
             {frame.homeWin === 0 && (
               <View className="px-2 py-1">
                 <MCI name="check-circle" size={24} color="rgb(22, 163, 74)" />
@@ -59,9 +83,20 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
           </View>
           <View style={{flex: 1, alignItems: 'flex-end'}}>
             {frame.awayPlayers.map((player, idx) => (
-              <Text key={idx} className="text-right" type="subtitle">
-                {player.nickName}
-              </Text>
+              <Pressable
+                key={idx}
+                onPress={() => {
+                  router.push({
+                    pathname: '/completed/match/player',
+                    params: {
+                      params: JSON.stringify({playerId: player.playerId}),
+                    },
+                  })
+                }}>
+                <Text key={idx} className="text-right" type="subtitle">
+                  {player.nickName}
+                </Text>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -71,25 +106,27 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
 }
 
 export default function CompletedMatchDetails() {
-  const {
-    matchId,
-    matchDate,
-    home_team_name,
-    away_team_name,
-    home_frames,
-    away_frames,
-  } = useLocalSearchParams()
+  const {params} = useLocalSearchParams()
+  const matchId = React.useMemo(
+    () => JSON.parse(params as string).matchId,
+    [params],
+  )
   const matchHook = useMatch()
   const [matchDetails, setMatchDetails] = React.useState<MatchDetails | null>(
     null,
   )
   const [loading, setLoading] = React.useState(true)
   const navigation = useNavigation()
+  const [matchMetadata, setMatchMetadata] =
+    React.useState<MatchMetadata | null>(null)
+
   React.useEffect(() => {
-    async function getMatchDetails() {
+    async function getMatchDetails(matchId: number) {
       try {
-        const res = await matchHook.GetMatchDetails(Number(matchId))
+        const res = await matchHook.GetMatchDetails(matchId)
         setMatchDetails(res.data)
+        const res2 = await matchHook.GetMatchMetadata(matchId)
+        setMatchMetadata(res2.data)
       } catch (error) {
         console.error('Failed to fetch match details:', error)
       } finally {
@@ -98,7 +135,7 @@ export default function CompletedMatchDetails() {
     }
 
     if (matchId) {
-      getMatchDetails()
+      getMatchDetails(matchId)
     }
   }, [matchId])
 
@@ -124,8 +161,8 @@ export default function CompletedMatchDetails() {
     )
   }
 
-  const isHomeWinner = home_frames > away_frames
-  const isAwayWinner = away_frames > home_frames
+  const isHomeWinner = matchMetadata?.home_frames > matchMetadata?.away_frames
+  const isAwayWinner = matchMetadata?.away_frames > matchMetadata?.home_frames
 
   return (
     <View className="flex-1 p-4">
@@ -135,18 +172,24 @@ export default function CompletedMatchDetails() {
             Match #{matchId}
           </Text>
           <View>
-            <Text className="text-sm text-slate-500">{matchDate}</Text>
+            <Text className="text-sm text-slate-500">
+              {DateTime.fromISO(matchMetadata?.matchDate).toLocaleString(
+                DateTime.DATE_MED,
+              )}
+            </Text>
           </View>
         </View>
         <View className="flex-row items-center">
           <View className="flex-1 items-center">
             <Text
               className={`text-base font-semibold mb-1 ${isHomeWinner ? 'text-blue-600' : 'text-slate-700'}`}>
-              {home_team_name}
+              {matchMetadata?.home_team_name}
             </Text>
             <Text
               className={`text-2xl font-bold ${isHomeWinner ? 'text-blue-600' : 'text-slate-700'}`}>
-              {home_frames ? home_frames.toString() : '0'}
+              {matchMetadata?.home_frames
+                ? matchMetadata?.home_frames.toString()
+                : '0'}
             </Text>
           </View>
           <View className="w-16 items-center">
@@ -155,11 +198,13 @@ export default function CompletedMatchDetails() {
           <View className="flex-1 items-center">
             <Text
               className={`text-base font-semibold mb-1 ${isAwayWinner ? 'text-blue-600' : 'text-slate-700'}`}>
-              {away_team_name}
+              {matchMetadata?.away_team_name}
             </Text>
             <Text
               className={`text-2xl font-bold ${isAwayWinner ? 'text-blue-600' : 'text-slate-700'}`}>
-              {away_frames ? away_frames.toString() : '0'}
+              {matchMetadata?.away_frames
+                ? matchMetadata?.away_frames.toString()
+                : '0'}
             </Text>
           </View>
         </View>

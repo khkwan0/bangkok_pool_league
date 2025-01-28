@@ -39,3 +39,4 @@ app-example
 config.js
 xxx*
 *xxx
+.yarn

@@ -144,5 +144,6 @@
   "confirm_remove_player": "ลบ {{player}} ออกจาก {{team}}?",
   "remove_player_warning": "การกระทำนี้ไม่สามารถยกเลิกได้",
   "remove": "ลบ",
-  "cancel": "ยกเลิก"
+  "nationality": "สัญชาติ",
+  "not_provided": "ไม่ได้กำหนด"
 }

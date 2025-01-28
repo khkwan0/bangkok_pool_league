@@ -30,12 +30,9 @@ export default function CompletedMatch({item}: CompletedMatchProps) {
     router.push({
       pathname: '/completed/match',
       params: {
-        matchId: item.match_id,
-        matchDate: matchDate,
-        home_team_name: item.home_team_name,
-        away_team_name: item.away_team_name,
-        home_frames: item.home_frames,
-        away_frames: item.away_frames,
+        params: JSON.stringify({
+          matchId: item.match_id,
+        }),
       },
     })
   }

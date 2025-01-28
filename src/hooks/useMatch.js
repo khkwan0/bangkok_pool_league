@@ -56,10 +56,20 @@ export const useMatch = () => {
     }
   }
 
+  const GetMatchMetadata = async matchId => {
+    try {
+      const res = await Get('/match/meta/' + matchId)
+      return res
+    } catch (e) {
+      throw new Error(e)
+    }
+  }
+
   return {
     GetFrames,
     GetMatchInfo,
     GetMatchDetails,
+    GetMatchMetadata,
     RescheduleMatch,
     UpdateCompletedMatch,
   }

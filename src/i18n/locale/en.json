@@ -145,5 +145,6 @@
   "confirm_remove_player": "Remove {{player}} from {{team}}?",
   "remove_player_warning": "This action cannot be undone.",
   "remove": "Remove",
-  "cancel": "Cancel"
+  "nationality": "Nationality",
+  "not_provided": "Not provided"
 }

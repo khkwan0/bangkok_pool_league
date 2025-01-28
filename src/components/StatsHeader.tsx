@@ -15,35 +15,38 @@ export default function StatsHeader(props: PropType) {
       : 'Frames'
   return (
     <View className="flex-row">
-      <View className="w-2/3">
-        <Text className="font-bold">{header}</Text>
-      </View>
       {!props.isMatchPerformance && (
         <>
-          <View className="w-1/4">
-            <Text className="font-bold">Played</Text>
+          <View flex={2}>
+            <Text className="font-bold">
+              {props.isDoubles ? 'partner' : 'game_type'}
+            </Text>
           </View>
-          <View className="w-1/4">
-            <Text className="font-bold">Won</Text>
+          <View flex={1}>
+            <Text className="font-bold">played</Text>
           </View>
-          <View className="w-1/4">
-            <Text className="font-bold">Win %</Text>
+          <View flex={1}>
+            <Text className="font-bold">won</Text>
           </View>
-          <View className="w-1/4">
-            <Text className="font-bold">Wgtd %</Text>
+          <View flex={1}>
+            <Text className="font-bold text-center">
+              <Text>win</Text> %
+            </Text>
           </View>
         </>
       )}
       {props.isMatchPerformance && (
         <>
-          <View className="w-1/3">
+          <View flex={3}>
+            <Text className="font-bold">Date</Text>
+          </View>
+          <View flex={2} className="items-center">
             <Text className="font-bold">Sgl.</Text>
+            <Text>Played/Won</Text>
           </View>
-          <View className="w-1/3">
+          <View flex={3} className="items-end">
             <Text className="font-bold">Dbl.</Text>
-          </View>
-          <View className="w-1/3">
-            <Text className="font-bold">Wgtd %</Text>
+            <Text>Played/Won</Text>
           </View>
         </>
       )}

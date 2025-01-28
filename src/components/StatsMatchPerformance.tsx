@@ -1,43 +1,45 @@
 import React from 'react'
 import {Pressable} from 'react-native'
-import { ThemedView as View } from '@/components/ThemedView'
+import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {DateTime} from 'luxon'
-import {useNavigation} from '@react-navigation/native'
+import {useRouter} from 'expo-router'
 
 const StatsMatchPerformance = ({stats}) => {
-  const navigation = useNavigation()
+  const router = useRouter()
   return (
     <View>
       {stats.map((stat, index) => {
         return (
           <View className="flex-row items-center" key={stat.date + '_' + index}>
-            <View className="w-2/5" flex={2}>
+            <View flex={3}>
               <Pressable
                 style={{paddingVertical: 5}}
                 onPress={() =>
-                  navigation.navigate('Player Match Screen', {
-                    matchId: stat.matchId,
+                  router.dismissTo({
+                    pathname: '/completed/match',
+                    params: {
+                      params: JSON.stringify({
+                        matchId: stat.matchId,
+                      }),
+                    },
                   })
                 }>
-                <Text style={{color: 'purple'}} variant="labelLarge">
-                  {DateTime.fromISO(stat.date).toFormat('dd.MM.yyyy')}
+                <Text type="link">
+                  {DateTime.fromISO(stat.date).toLocaleString(
+                    DateTime.DATE_MED,
+                  )}
                 </Text>
               </Pressable>
             </View>
-            <View className="w-1/5" flex={1}>
+            <View flex={2} className="items-center">
               <Text>
-                {stat.singlesPlayed}/{stat.singlesWon}
+                {stat.singlesWon}/{stat.singlesPlayed}
               </Text>
             </View>
-            <View className="w-1/5" flex={1}>
+            <View flex={3} className="items-end">
               <Text>
-                {stat.doublesPlayed}/{stat.doublesWon}
-              </Text>
-            </View>
-            <View className="w-1/5" flex={1}>
-              <Text>
-                {stat.doublesPlayed}/{stat.doublesWon}
+                {stat.doublesWon}/{stat.doublesPlayed}
               </Text>
             </View>
           </View>
