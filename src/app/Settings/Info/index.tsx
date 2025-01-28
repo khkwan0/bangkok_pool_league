@@ -33,7 +33,7 @@ export default function Info() {
         <Pressable
           onPress={() =>
             router.push({
-              pathname: '/Settings/Privacy',
+              pathname: '/Settings/Info/PrivacyPolicy',
             })
           }
           className="py-2 px-2">
