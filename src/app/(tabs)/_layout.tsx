@@ -1,15 +1,9 @@
 import {Tabs} from 'expo-router'
-import {Link} from 'expo-router'
-import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {TabBarIcon} from '@/components/navigation/TabBarIcon'
-import {Colors} from '@/constants/Colors'
-import {useColorScheme, useThemeColor} from '@/hooks'
 import {useTranslation} from 'react-i18next'
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme()
   const {t} = useTranslation()
-  const textColor = useThemeColor({}, 'text')
 
   return (
     <Tabs>
@@ -24,6 +18,7 @@ export default function TabLayout() {
               color={color}
             />
           ),
+          tabBarLabel: t('home'),
         }}
       />
       <Tabs.Screen
@@ -47,6 +42,19 @@ export default function TabLayout() {
           tabBarIcon: ({color, focused}) => (
             <TabBarIcon
               name={focused ? 'code-slash' : 'code-slash-outline'}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="teams"
+        options={{
+          title: t('teams'),
+          headerShown: false,
+          tabBarIcon: ({color, focused}) => (
+            <TabBarIcon
+              name={focused ? 'people' : 'people-outline'}
               color={color}
             />
           ),

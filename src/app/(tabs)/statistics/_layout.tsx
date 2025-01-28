@@ -12,10 +12,6 @@ export default function StatisticsLayout() {
           headerRight: () => <SettingsButton />,
         }}
       />
-      <Stack.Screen
-        name="statistics/index"
-        options={{headerRight: () => <SettingsButton />}}
-      />
     </Stack>
   )
 }

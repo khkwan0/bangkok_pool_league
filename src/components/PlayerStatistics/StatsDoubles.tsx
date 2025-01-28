@@ -28,7 +28,7 @@ export default function StatsDoubles(props: PropType) {
             <Pressable
               onPress={() => {
                 router.dismissTo({
-                  pathname: '/completed/match/player',
+                  pathname: '../player',
                   params: {
                     params: JSON.stringify({playerId: playerId}),
                   },

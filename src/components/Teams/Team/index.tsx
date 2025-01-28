@@ -1,5 +1,5 @@
 import React from 'react'
-import {FlatList, Image, Pressable, Alert, Modal, Appearance} from 'react-native'
+import {FlatList, Image, Pressable, Alert, Modal} from 'react-native'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTeams, useLeague} from '@/hooks'
@@ -9,6 +9,7 @@ import {useTranslation} from 'react-i18next'
 import {useLeagueContext, LeagueContextType} from '@/context/LeagueContext'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useNavigation} from '@react-navigation/native'
+import {useRouter} from 'expo-router'
 
 type PlayerType = {
   nickname: string
@@ -51,7 +52,7 @@ const MemberSection = ({
 }) => {
   const {t} = useTranslation()
   const league = useLeague()
-
+  const router = useRouter()
   if (!players || players.length === 0) return null
 
   const handlePromote = async (playerId: number) => {
@@ -94,7 +95,14 @@ const MemberSection = ({
           className="p-3 mb-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
           <Row className="items-center">
             <View className="flex-1 flex-row items-center">
-              <View className="mr-4">
+              <Pressable
+                className="mr-4"
+                onPress={() =>
+                  router.push({
+                    pathname: './team/player',
+                    params: {params: JSON.stringify({playerId: player.id})},
+                  })
+                }>
                 <Text type="defaultSemiBold">
                   {player.flag} {player.nickname}
                 </Text>
@@ -108,7 +116,7 @@ const MemberSection = ({
                       .join(' ')}
                   </Text>
                 )}
-              </View>
+              </Pressable>
               {player.profile_picture && (
                 <Image
                   source={{uri: config.profileUrl + player.profile_picture}}

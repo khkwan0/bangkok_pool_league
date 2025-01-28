@@ -1,4 +1,4 @@
-import TeamMembers from '@/components/Teams/Team/TeamMembers'
+import TeamMembers from '@/components/Teams/Team'
 import {useLocalSearchParams} from 'expo-router'
 
 export default function Team() {

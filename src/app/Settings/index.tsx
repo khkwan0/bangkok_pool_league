@@ -8,8 +8,12 @@ import Feather from '@expo/vector-icons/Feather'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useTranslation} from 'react-i18next'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import NavDest from './components/NavDest'
-import {Href} from 'expo-router'
+import NavDest from '@/components/NavDest'
+
+interface User {
+  id: number
+  nickname: string
+}
 
 export default function Settings() {
   const {colors, dark} = useTheme()
@@ -17,7 +21,7 @@ export default function Settings() {
   const insets = useSafeAreaInsets()
   const {t} = useTranslation()
 
-  const user = state.user
+  const user = state.user as User
 
   async function ToggleTheme() {
     try {
@@ -54,7 +58,7 @@ export default function Settings() {
         {typeof user.id !== 'undefined' && (
           <View>
             <Text>{user.nickname}</Text>
-            <Text>{user.id}</Text>
+            <Text>{String(user.id)}</Text>
           </View>
         )}
         {(typeof user?.id === 'undefined' || !user.id) && (
@@ -62,37 +66,45 @@ export default function Settings() {
             <NavDest icon="login" text={t('login')} url="/Auth" />
           </View>
         )}
-        <NavDest icon="account-group" text={t('teams')} url={("/Settings/Teams") as Href} />
+        <NavDest
+          icon="account-group"
+          text={t('teams')}
+          url={'/Settings/teams'}
+        />
         <NavDest
           icon="chart-areaspline-variant"
           text={t('statistics')}
-          url={("/Settings/Stats") as Href}
+          url={'/Settings/Stats'}
         />
         <NavDest
           icon="division"
           text={t('divisions')}
-          url={("/Settings/Divisions") as Href}
+          url={'/Settings/Divisions'}
         />
         <NavDest
           icon="leaf-circle-outline"
           text={t('seasons')}
-          url={("/Settings/Seasons") as Href}
+          url={'/Settings/Seasons'}
         />
-        <NavDest icon="map-marker" text={t('venues')} url={("/Settings/Venues") as Href} />
+        <NavDest
+          icon="map-marker"
+          text={t('venues')}
+          url={'/Settings/Venues'}
+        />
         <NavDest
           icon="account-outline"
           text={t('players')}
-          url={("/Settings/Players") as Href}
+          url={'/Settings/Players'}
         />
         <NavDest
           icon="information-outline"
           text={t('info_and_guides')}
-          url={("/Settings/Info") as Href}
+          url={'/Settings/Info'}
         />
         <NavDest
           icon="cog"
           text={t('preferences')}
-          url={("/Settings/Preferences") as Href}
+          url={'/Settings/Preferences'}
         />
       </View>
       <View

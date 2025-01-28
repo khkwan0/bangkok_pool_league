@@ -19,13 +19,14 @@ type TeamType = {
 type TeamCardProps = {
   team: TeamType
   index: number
+  fromTabs?: boolean
 }
 
-function TeamCard({team, index}: TeamCardProps) {
+function TeamCard({team, index, fromTabs}: TeamCardProps) {
   function handlePress() {
     router.push({
-      pathname: '/Settings/Teams/Team',
-      params: {teamId: team.id},
+      pathname: './teams/team',
+      params: {params: JSON.stringify({teamId: team.id})},
     })
   }
 
@@ -52,14 +53,16 @@ function TeamCard({team, index}: TeamCardProps) {
   )
 }
 
-export default function TeamList() {
-  const [teams, setTeams] = React.useState<TeamType[]>([])
-  const [refreshing, setRefreshing] = React.useState(false)
-  const [showMineOnly, setShowMineOnly] = React.useState(false)
-  const league = useLeague()
-  const {t} = useTranslation()
+export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
   const {state} = useLeagueContext()
   const user = state.user
+  const [teams, setTeams] = React.useState<TeamType[]>([])
+  const [refreshing, setRefreshing] = React.useState(false)
+  const [showMineOnly, setShowMineOnly] = React.useState(
+    typeof user.id !== 'undefined' ? true : false,
+  )
+  const league = useLeague()
+  const {t} = useTranslation()
 
   const userTeams = React.useMemo(() => {
     return user?.teams?.map((team: {id: number}) => team.id) || []
@@ -97,10 +100,12 @@ export default function TeamList() {
 
   async function loadShowMineOnly() {
     try {
-      const stored = await AsyncStorage.getItem('my_teams_only')
-      if (stored) {
-        const {showMineOnly: value} = JSON.parse(stored)
-        setShowMineOnly(value)
+      if (user?.id) {
+        const stored = await AsyncStorage.getItem('my_teams_only')
+        if (stored) {
+          const {showMineOnly: value} = JSON.parse(stored)
+          setShowMineOnly(value)
+        }
       }
     } catch (error) {
       console.error('Failed to load show mine only preference:', error)
@@ -118,7 +123,7 @@ export default function TeamList() {
   return (
     <View className="flex-1">
       {userTeams.length > 0 && (
-        <View className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+        <View className="px-4 py-3 border-b border-slate-200">
           <BouncyCheckbox
             text={t('show_my_teams')}
             textStyle={{textDecorationLine: 'none'}}
@@ -129,11 +134,12 @@ export default function TeamList() {
       )}
       <FlatList
         data={teams}
-        renderItem={({item, index}) => <TeamCard team={item} index={index} />}
+        renderItem={({item, index}) => (
+          <TeamCard team={item} index={index} fromTabs={fromTabs} />
+        )}
         keyExtractor={item => item.id.toString()}
         refreshing={refreshing}
         onRefresh={getTeams}
-        className="flex-1 bg-slate-50 pt-2 pb-8"
       />
     </View>
   )

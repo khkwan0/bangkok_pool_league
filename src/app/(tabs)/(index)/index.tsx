@@ -11,7 +11,6 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useTranslation} from 'react-i18next'
 import {useTheme} from '@react-navigation/native'
 import {Link, router} from 'expo-router'
-import {useNavigation} from '@react-navigation/native'
 
 interface ItemType {
   home_team_id: number

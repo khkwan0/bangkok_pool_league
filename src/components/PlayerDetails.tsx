@@ -178,9 +178,9 @@ export default function PlayerDetails({playerId}: PlayerDetailsProps) {
         <Button
           onPress={() =>
             router.push({
-              pathname: '/completed/match/player/statistics',
+              pathname: './player/statistics',
               params: {
-                params: JSON.stringify({playerInfo})
+                params: JSON.stringify({playerInfo}),
               },
             })
           }>

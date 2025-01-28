@@ -187,7 +187,7 @@ export default function TeamsHome() {
   }
 }
 */
-import TeamList from '@/components/Teams/TeamList'
+import TeamList from '@/components/Teams'
 
 export default function TeamsHome() {
   return <TeamList />

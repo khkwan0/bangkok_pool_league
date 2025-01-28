@@ -4,12 +4,9 @@ import {useFonts} from 'expo-font'
 import {useEffect} from 'react'
 import {MatchProvider} from '@/context/MatchContext'
 import {Stack} from 'expo-router'
-import {useLeague} from '@/hooks'
-import {useAccount} from '@/hooks'
 import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native'
 import {Appearance, useColorScheme, PermissionsAndroid, Platform} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-
 export default function RootLayout() {
   const colorScheme = useColorScheme()
 
