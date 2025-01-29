@@ -7,6 +7,9 @@ import {Stack} from 'expo-router'
 import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native'
 import {Appearance, useColorScheme, PermissionsAndroid, Platform} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import '@/i18n'
+import '../../global.css'
+
 export default function RootLayout() {
   const colorScheme = useColorScheme()
 
