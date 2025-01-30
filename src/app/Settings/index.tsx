@@ -1,6 +1,6 @@
 import {Appearance, Pressable, ScrollView, Switch, View} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {useTheme} from '@react-navigation/native'
+import {useTheme, useNavigation} from '@react-navigation/native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import config from '@/app/config.js'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -9,6 +9,7 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useTranslation} from 'react-i18next'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import NavDest from '@/components/NavDest'
+import {useEffect} from 'react'
 
 interface User {
   id: number
@@ -19,7 +20,14 @@ export default function Settings() {
   const {colors, dark} = useTheme()
   const {state, dispatch} = useLeagueContext()
   const insets = useSafeAreaInsets()
+  const navigation = useNavigation()
   const {t} = useTranslation()
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: t('settings'),
+    })
+  }, [navigation, t])
 
   const user = state.user as User
 

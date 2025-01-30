@@ -32,7 +32,7 @@ const Rule = (props: RuleProps) => {
   )
 }
 
-export default function NineBallRules() {
+export default function EightBallRules() {
   const {t} = useTranslation()
   const {params} = useLocalSearchParams()
   const allRules = React.useMemo(
@@ -43,14 +43,14 @@ export default function NineBallRules() {
 
   React.useEffect(() => {
     const _rules = allRules.filter(
-      (rule: {section: string}) => rule.section === '9 Ball',
+      (rule: {section: string}) => rule.section === '8 Ball',
     )
     setRules(_rules)
   }, [allRules])
 
   return (
     <View className="flex-1">
-      <Stack.Screen options={{title: t('nine_ball_rules')}} />
+      <Stack.Screen options={{title: t('eight_ball_rules')}} />
       <FlatList
         className="py-2"
         keyExtractor={(item, index) => index.toString()}

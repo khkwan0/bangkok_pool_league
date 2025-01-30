@@ -148,5 +148,7 @@
   "not_provided": "ไม่ได้กำหนด",
   "league_history": "ประวัติลีก",
   "game_type": "ประเภทการแข่งขัน",
-  "partner": "คู่สมรส"
+  "partner": "คู่สมรส",
+  "eight_ball_rules": "กฎ 8 ลูก",
+  "nine_ball_rules": "กฎ 9 ลูก"
 }
