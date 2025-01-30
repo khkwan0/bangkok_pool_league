@@ -5,11 +5,29 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {DateTime} from 'luxon'
 import {useRouter} from 'expo-router'
 
-const StatsMatchPerformance = ({stats}) => {
+type ValidPath = '/(tabs)/completed/match'
+
+type StatType = {
+  date: string
+  matchId: number
+  singlesWon: number
+  singlesPlayed: number
+  doublesWon: number
+  doublesPlayed: number
+}
+
+const StatsMatchPerformance = ({
+  stats,
+  path,
+}: {
+  stats: StatType[]
+  path: ValidPath
+}) => {
   const router = useRouter()
+  console.log(path)
   return (
     <View>
-      {stats.map((stat, index) => {
+      {stats.map((stat: StatType, index: number) => {
         return (
           <View className="flex-row items-center" key={stat.date + '_' + index}>
             <View flex={3}>
@@ -17,7 +35,7 @@ const StatsMatchPerformance = ({stats}) => {
                 style={{paddingVertical: 5}}
                 onPress={() =>
                   router.dismissTo({
-                    pathname: '/completed/match',
+                    pathname: path ?? '/(tabs)/completed/match',
                     params: {
                       params: JSON.stringify({
                         matchId: stat.matchId,

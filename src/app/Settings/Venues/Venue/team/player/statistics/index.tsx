@@ -14,5 +14,5 @@ export default function PlayerStats() {
     })
   }, [playerInfo])
 
-  return <PlayerStatistics playerInfo={playerInfo} />
+  return <PlayerStatistics playerInfo={playerInfo} path="./statistics/match" />
 }

@@ -25,8 +25,10 @@ interface PlayerInfo {
 
 export default function PlayerStatistics({
   playerInfo,
+  path,
 }: {
   playerInfo: PlayerInfo
+  path: string
 }) {
   const season = useSeason()
   const [stats, setStats] = useState<any>(null)
@@ -190,7 +192,7 @@ export default function PlayerStatistics({
               Match Performance
             </Text>
             <StatsHeader isDoubles={false} isMatchPerformance={true} />
-            <StatsMatchPerformance stats={matchPerformance} />
+            <StatsMatchPerformance stats={matchPerformance} path={path} />
           </View>
         )
       )}
