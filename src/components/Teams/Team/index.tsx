@@ -1,5 +1,12 @@
 import React from 'react'
-import {FlatList, Image, Pressable, Alert, Modal} from 'react-native'
+import {
+  FlatList,
+  Image,
+  Pressable,
+  Alert,
+  Modal,
+  useColorScheme,
+} from 'react-native'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTeams, useLeague} from '@/hooks'
@@ -53,6 +60,7 @@ const MemberSection = ({
   const {t} = useTranslation()
   const league = useLeague()
   const router = useRouter()
+  const colorScheme = useColorScheme()
   if (!players || players.length === 0) return null
 
   const handlePromote = async (playerId: number) => {
@@ -133,7 +141,11 @@ const MemberSection = ({
                     <MCI
                       name="arrow-up-circle"
                       size={24}
-                      color="rgb(107, 33, 168)"
+                      color={
+                        colorScheme === 'dark'
+                          ? 'rgb(216, 180, 254)'
+                          : 'rgb(107, 33, 168)'
+                      }
                     />
                   </Pressable>
                 )}
@@ -144,7 +156,11 @@ const MemberSection = ({
                     <MCI
                       name="arrow-down-circle"
                       size={24}
-                      color="rgb(107, 33, 168)"
+                      color={
+                        colorScheme === 'dark'
+                          ? 'rgb(216, 180, 254)'
+                          : 'rgb(107, 33, 168)'
+                      }
                     />
                   </Pressable>
                 )}
@@ -174,6 +190,7 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
   const {t} = useTranslation()
   const {state} = useLeagueContext() as LeagueContextType
   const navigation = useNavigation()
+  const colorScheme = useColorScheme()
   const isCaptain = React.useMemo(() => {
     return teamData.captains.some(
       (captain: PlayerType) => captain.id === state.user?.id,
@@ -368,7 +385,11 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
                     <MCI
                       name="arrow-up-circle"
                       size={24}
-                      color="rgb(107, 33, 168)"
+                      color={
+                        colorScheme === 'dark'
+                          ? 'rgb(216, 180, 254)'
+                          : 'rgb(107, 33, 168)'
+                      }
                     />
                   </Pressable>
                   <Pressable
@@ -379,7 +400,11 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
                     <MCI
                       name="account-remove"
                       size={24}
-                      color="rgb(185, 28, 28)"
+                      color={
+                        colorScheme === 'dark'
+                          ? 'rgb(254, 202, 202)'
+                          : 'rgb(185, 28, 28)'
+                      }
                     />
                   </Pressable>
                 </View>
