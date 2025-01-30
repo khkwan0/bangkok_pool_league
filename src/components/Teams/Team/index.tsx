@@ -175,10 +175,14 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
   const {state} = useLeagueContext() as LeagueContextType
   const navigation = useNavigation()
   const isCaptain = React.useMemo(() => {
-    return teamData.captains.some((captain: PlayerType) => captain.id === state.user?.id)
+    return teamData.captains.some(
+      (captain: PlayerType) => captain.id === state.user?.id,
+    )
   }, [teamData.captains, state.user?.id])
   const isAssistant = React.useMemo(() => {
-    return teamData.assistants.some((assistant: PlayerType) => assistant.id === state.user?.id)
+    return teamData.assistants.some(
+      (assistant: PlayerType) => assistant.id === state.user?.id,
+    )
   }, [teamData.assistants, state.user?.id])
   const isAdmin = React.useMemo(() => {
     return state.user?.role_id === 9

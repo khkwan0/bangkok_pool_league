@@ -154,5 +154,13 @@
   "game_type": "Game type",
   "partner": "Partner",
   "eight_ball_rules": "Eight Ball Rules",
-  "nine_ball_rules": "Nine Ball Rules"
+  "nine_ball_rules": "Nine Ball Rules",
+  "language": "Language",
+  "english_name": "English",
+  "thai_name": "Thai",
+  "english_in_english": "English",
+  "english_in_thai": "อังกฤษ",
+  "thai_in_english": "Thai",
+  "thai_in_thai": "ภาษาไทย",
+  "no_venues_with_teams": "No venues with active teams in the current season"
 }

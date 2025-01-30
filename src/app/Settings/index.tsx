@@ -109,7 +109,9 @@ export default function Settings() {
                 )}
               </View>
               <View className="flex-1 ml-4">
-                <Text className="text-lg font-semibold text-right">{user.nickname}</Text>
+                <Text className="text-lg font-semibold text-right">
+                  {user.nickname}
+                </Text>
                 <Text className="text-sm opacity-60 text-right">
                   ID: {String(user.id)}
                 </Text>

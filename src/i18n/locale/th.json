@@ -153,5 +153,13 @@
   "game_type": "ประเภทการแข่งขัน",
   "partner": "คู่สมรส",
   "eight_ball_rules": "กฎ 8 ลูก",
-  "nine_ball_rules": "กฎ 9 ลูก"
+  "nine_ball_rules": "กฎ 9 ลูก",
+  "language": "ภาษา",
+  "english_name": "อังกฤษ",
+  "thai_name": "ภาษาไทย",
+  "english_in_english": "English",
+  "english_in_thai": "อังกฤษ",
+  "thai_in_english": "Thai",
+  "thai_in_thai": "ภาษาไทย",
+  "no_venues_with_teams": "ไม่มีสถานที่ที่มีทีมที่ใช้งานอยู่ในฤดูกาลปัจจุบัน"
 }
