@@ -1,4 +1,11 @@
-import {Appearance, Pressable, ScrollView, Switch, View} from 'react-native'
+import {
+  Appearance,
+  Image,
+  Pressable,
+  ScrollView,
+  Switch,
+  View,
+} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTheme, useNavigation} from '@react-navigation/native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -14,6 +21,20 @@ import {useEffect} from 'react'
 interface User {
   id: number
   nickname: string
+  profile_picture?: string
+}
+
+const SectionHeader = ({title}: {title: string}) => {
+  const {colors} = useTheme()
+  return (
+    <View className="mt-6 mb-2 border-b border-gray-600">
+      <Text
+        className="text-sm uppercase tracking-wider mb-1"
+        style={{color: colors.primary}}>
+        {title}
+      </Text>
+    </View>
+  )
 }
 
 export default function Settings() {
@@ -31,9 +52,9 @@ export default function Settings() {
 
   const user = state.user as User
 
-  async function ToggleTheme() {
+  async function ToggleTheme(value: boolean) {
     try {
-      const newTheme = dark ? 'light' : 'dark'
+      const newTheme = value ? 'dark' : 'light'
       Appearance.setColorScheme(newTheme)
       await AsyncStorage.setItem('theme', newTheme)
     } catch (e) {
@@ -47,33 +68,64 @@ export default function Settings() {
   }
 
   return (
-    <ScrollView className="mx-8" contentContainerStyle={{flexGrow: 1}}>
+    <ScrollView
+      className="flex-1"
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingHorizontal: 16,
+        paddingTop: 8,
+      }}>
       <View className="flex-1">
-        <View className="flex-row mt-4 items-center">
-          <View className="flex-1">
-            <Text>Build {config.build}</Text>
-          </View>
-          <View className="flex-1 flex-row items-center justify-end">
-            <Feather name="sun" color={colors.text} size={20} />
-            <Switch
-              value={dark}
-              onChange={() => ToggleTheme()}
-              trackColor={{false: colors.text, true: colors.text}}
-            />
-            <MCI name="weather-night" color={colors.text} size={20} />
+        {/* App Info & Theme Section */}
+        <View className="bg-gray-800/20 rounded-xl p-4 mb-4">
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-sm opacity-75">Build {config.build}</Text>
+            <View className="flex-row items-center space-x-2 bg-gray-800/30 rounded-lg p-2">
+              <Feather name="sun" color={colors.text} size={18} />
+              <Switch
+                value={dark}
+                onValueChange={ToggleTheme}
+                trackColor={{false: colors.primary, true: colors.primary}}
+                thumbColor={colors.text}
+              />
+              <MCI name="weather-night" color={colors.text} size={18} />
+            </View>
           </View>
         </View>
+
+        {/* User Section */}
         {typeof user.id !== 'undefined' && (
-          <View>
-            <Text>{user.nickname}</Text>
-            <Text>{String(user.id)}</Text>
+          <View className="bg-gray-800/20 rounded-xl p-4 mb-4">
+            <View className="flex-row items-center">
+              <View className="h-16 w-16 rounded-full bg-gray-700/50 items-center justify-center overflow-hidden">
+                {user.profile_picture ? (
+                  <Image
+                    source={{uri: config.profileUrl + user.profile_picture}}
+                    className="h-16 w-16"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <MCI name="account" size={32} color={colors.text} />
+                )}
+              </View>
+              <View className="flex-1 ml-4">
+                <Text className="text-lg font-semibold text-right">{user.nickname}</Text>
+                <Text className="text-sm opacity-60 text-right">
+                  ID: {String(user.id)}
+                </Text>
+              </View>
+            </View>
           </View>
         )}
+
         {(typeof user?.id === 'undefined' || !user.id) && (
-          <View className="mt-10">
+          <View className="my-4">
             <NavDest icon="login" text={t('login')} url="/Auth" />
           </View>
         )}
+
+        {/* League Management */}
+        <SectionHeader title={t('league_management')} />
         <NavDest
           icon="account-group"
           text={t('teams')}
@@ -94,6 +146,9 @@ export default function Settings() {
           text={t('seasons')}
           url={'/Settings/Seasons'}
         />
+
+        {/* Venue & Players */}
+        <SectionHeader title={t('people_and_places')} />
         <NavDest
           icon="map-marker"
           text={t('venues')}
@@ -104,6 +159,9 @@ export default function Settings() {
           text={t('players')}
           url={'/Settings/Players'}
         />
+
+        {/* App Settings */}
+        <SectionHeader title={t('app_settings')} />
         <NavDest
           icon="information-outline"
           text={t('info_and_guides')}
@@ -115,15 +173,17 @@ export default function Settings() {
           url={'/Settings/Preferences'}
         />
       </View>
-      <View
-        className="flex-1 justify-end"
-        style={{paddingBottom: insets.bottom}}>
+
+      {/* Logout Section */}
+      <View className="mt-auto pb-4" style={{paddingBottom: insets.bottom}}>
         {typeof user?.id !== 'undefined' && user.id && (
-          <Pressable onPress={() => HandleLogout()}>
-            <View className="flex-row items-center gap-20">
-              <MCI name="logout" color={colors.text} size={30} />
-              <Text>{t('logout')}</Text>
-            </View>
+          <Pressable
+            onPress={HandleLogout}
+            className="flex-row items-center py-3 px-4 bg-red-500/10 rounded-lg">
+            <MCI name="logout" color="#ef4444" size={24} />
+            <Text className="ml-4" style={{color: '#ef4444'}}>
+              {t('logout')}
+            </Text>
           </Pressable>
         )}
       </View>
