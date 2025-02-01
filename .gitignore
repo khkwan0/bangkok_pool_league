@@ -40,3 +40,4 @@ config.js
 xxx*
 *xxx
 .yarn
+*.working

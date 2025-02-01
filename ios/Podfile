@@ -20,7 +20,7 @@ prepare_react_native_project!
 use_frameworks! :linkage => :static
 $RNFirebaseAsStaticsFramwork = true
 
-target 'bangkokpoolleague' do
+target 'bangkok_pool_league' do
   use_expo_modules!
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'

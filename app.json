@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "bangkok-pool-league",
-    "slug": "bangkok-pool-league",
+    "name": "bangkok_pool_league",
+    "slug": "bangkok_pool_league",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
