@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Bangkok Pool League</string>
+    <string name="facebook_app_id">[YOUR_FACEBOOK_APP_ID]</string>
+    <string name="facebook_client_token">[YOUR_CLIENT_TOKEN]</string>
+    <string name="fb_login_protocol_scheme">fb[YOUR_FACEBOOK_APP_ID]</string>
+</resources> 

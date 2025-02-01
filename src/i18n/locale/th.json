@@ -13,6 +13,7 @@
   "completed": "สมบูรณ์",
   "upcoming": "ที่กำลังจะมาถึง",
   "login": "ล็อคอิน",
+  "email_login": "เข้าสู่ระบบด้วยอีเมล",
   "home": "ฐาน",
   "away": "ทีมออกไป",
   "seasons": "คราว",
@@ -161,5 +162,9 @@
   "english_in_thai": "อังกฤษ",
   "thai_in_english": "Thai",
   "thai_in_thai": "ภาษาไทย",
-  "no_venues_with_teams": "ไม่มีสถานที่ที่มีทีมที่ใช้งานอยู่ในฤดูกาลปัจจุบัน"
+  "no_venues_with_teams": "ไม่มีสถานที่ที่มีทีมที่ใช้งานอยู่ในฤดูกาลปัจจุบัน",
+  "enter_email_for_recovery": "ป้อนอีเมลของคุณเพื่อรับรหัสกู้คืน",
+  "email_placeholder": "อีเมล@ตัวอย่าง.com",
+  "sign_in_to_access": "เข้าสู่ระบบเพื่อเข้าถึงบัญชีของคุณ",
+  "password_placeholder": "••••••••"
 }

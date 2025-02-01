@@ -13,6 +13,7 @@
   "upcoming": "Upcoming",
   "completed": "Completed",
   "login": "Login",
+  "email_login": "Email Login",
   "home": "Home",
   "away": "Away",
   "seasons": "Seasons",
@@ -162,5 +163,9 @@
   "english_in_thai": "อังกฤษ",
   "thai_in_english": "Thai",
   "thai_in_thai": "ภาษาไทย",
-  "no_venues_with_teams": "No venues with active teams in the current season"
+  "no_venues_with_teams": "No venues with active teams in the current season",
+  "enter_email_for_recovery": "Enter your email to receive a recovery code",
+  "email_placeholder": "email@example.com",
+  "sign_in_to_access": "Sign in to access your account",
+  "password_placeholder": "••••••••"
 }

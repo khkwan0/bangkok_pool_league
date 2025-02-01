@@ -46,8 +46,8 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>bkkleague</string>
-      </array>
-    </dict>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
@@ -96,5 +96,16 @@
 	<string>Automatic</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>FacebookAppID</key>
+	<string>879205039819790</string>
+	<key>FacebookClientToken</key>
+	<string>f58a315457e05a07ba9c795c0dc4cdf7</string>
+	<key>FacebookDisplayName</key>
+	<string>Bangkok Pool League</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-share-api</string>
+	</array>
 </dict>
 </plist>
