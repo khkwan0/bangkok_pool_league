@@ -5,6 +5,8 @@ import {router} from 'expo-router'
 import LineLogin from '@khkwan0/react-native-line'
 import {useAccount} from '@/hooks'
 import {LoginManager, AccessToken} from 'react-native-fbsdk-next'
+import {useTranslation} from 'react-i18next'
+import {useNavigation} from '@react-navigation/native'
 import {
   AppleButton,
   appleAuth,
@@ -25,6 +27,14 @@ export default function AuthHome() {
   const [disabledLoginButton, setDisabledLoginButton] = React.useState(false)
   const colorScheme = useColorScheme()
   const width = Dimensions.get('window').width
+  const {t} = useTranslation()
+  const navigation = useNavigation()
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: t('authorization'),
+    })
+  }, [navigation, t])
 
   async function HandleLineLogin() {
     try {
