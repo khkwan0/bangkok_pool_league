@@ -13,6 +13,7 @@ import {useTheme} from '@react-navigation/native'
 import {useRouter, usePathname} from 'expo-router'
 import Button from '@/components/Button'
 import {MaterialIcons} from '@expo/vector-icons'
+import {useNavigation} from '@react-navigation/native'
 
 interface ItemType {
   home_team_id: number
@@ -35,6 +36,7 @@ export default function UpcomingMatches(props: any) {
   const {t} = useTranslation()
   const [needsUpdate, setNeedsUpdate] = React.useState(false)
   const router = useRouter()
+  const navigation = useNavigation()
 
   const pathname = usePathname()
 
@@ -232,6 +234,7 @@ export default function UpcomingMatches(props: any) {
             {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
               <View className="mb-1 mx-3 mt-1 p-5" style={{borderRadius: 10}}>
                 <BouncyCheckbox
+                  disabled={refreshing}
                   text={t('show_mine_only')}
                   textStyle={{textDecorationLine: 'none'}}
                   isChecked={showMineOnly}
@@ -239,6 +242,7 @@ export default function UpcomingMatches(props: any) {
                 />
                 <View className="mt-6">
                   <BouncyCheckbox
+                    disabled={refreshing}
                     text={t('show_postponed')}
                     textStyle={{textDecorationLine: 'none'}}
                     isChecked={showPostponed}

@@ -10,7 +10,7 @@ import {
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTeams, useLeague} from '@/hooks'
-import config from '@/app/config'
+import config from '@/config'
 import Row from '@/components/Row'
 import {useTranslation} from 'react-i18next'
 import {useLeagueContext, LeagueContextType} from '@/context/LeagueContext'

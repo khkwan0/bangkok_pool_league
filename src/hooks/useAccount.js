@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useNetwork} from '@/hooks/useNetwork'
 import messaging from '@react-native-firebase/messaging'
-import config from '@/app/config'
+import config from '@/config'
 import notifee, {AndroidImportance} from '@notifee/react-native'
 import {Platform} from 'react-native'
 import {useLeagueContext} from '@/context/LeagueContext'

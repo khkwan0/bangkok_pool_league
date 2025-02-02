@@ -18,7 +18,11 @@ import '../../global.css'
 import messaging from '@react-native-firebase/messaging'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import notifee, {AndroidImportance} from '@notifee/react-native'
+import {SettingsButton} from '@/components/navigation/SettingsButton'
+import {useTranslation} from 'react-i18next'
+
 export default function RootLayout() {
+  const {t} = useTranslation()
   const colorScheme = useColorScheme()
 
   const [loaded] = useFonts({
@@ -101,7 +105,13 @@ export default function RootLayout() {
       <LeagueProvider>
         <MatchProvider>
           <Stack>
-            <Stack.Screen name="(tabs)" options={{headerShown: false}} />
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                headerTitle: t('bangkok_pool_league'),
+                headerShown: false,
+              }}
+            />
           </Stack>
         </MatchProvider>
       </LeagueProvider>

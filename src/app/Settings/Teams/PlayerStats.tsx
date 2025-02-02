@@ -7,7 +7,7 @@ import StatsHeader from '@/components/PlayerStatistics/StatsHeader'
 import Stats from '@/components/Stats'
 import StatsDoubles from '@/components/PlayerStatistics/StatsDoubles'
 import StatsMatchPerformance from '@/components/PlayerStatistics/StatsMatchPerformance'
-import config from '@/app/config'
+import config from '@/config'
 import {useSeason, useLeague} from '@/hooks'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 

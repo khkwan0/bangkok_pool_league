@@ -1,5 +1,5 @@
 import React from 'react'
-import config from '@/app/config'
+import config from '@/config'
 import {io} from 'socket.io-client'
 
 type JoinStatusType = {

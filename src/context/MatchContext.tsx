@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useReducer} from 'react'
 import {useMatch, useTeams} from '@/hooks'
 import {io} from 'socket.io-client'
-import config from '@/app/config'
+import config from '@/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useLeagueContext} from './LeagueContext'
 import StatsHeader from '@/components/PlayerStatistics/StatsHeader'

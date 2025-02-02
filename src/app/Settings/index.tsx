@@ -9,7 +9,7 @@ import {
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTheme, useNavigation} from '@react-navigation/native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import config from '@/app/config.js'
+import config from '@/config.js'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import Feather from '@expo/vector-icons/Feather'
 import {useLeagueContext} from '@/context/LeagueContext'

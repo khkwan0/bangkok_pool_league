@@ -1,4 +1,4 @@
-import config from '@/app/config'
+import config from '@/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 // import {socket} from '~/socket'
 
