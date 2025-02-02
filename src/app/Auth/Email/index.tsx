@@ -162,6 +162,15 @@ export default function Email() {
                 {loading ? t('loading') : t('login')}
               </Text>
             </Button>
+
+            {/* Register Link */}
+            <Pressable
+              onPress={() => router.push({pathname: '/Auth/Email/register'})}
+              className="items-center py-4">
+              <Text className="text-blue-600 dark:text-blue-400">
+                {t('dont_have_account')} <Text className="font-semibold">{t('register')}</Text>
+              </Text>
+            </Pressable>
           </View>
         </View>
       </ScrollView>

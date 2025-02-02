@@ -168,5 +168,7 @@
   "enter_email_for_recovery": "Enter your email to receive a recovery code",
   "email_placeholder": "email@example.com",
   "sign_in_to_access": "Sign in to access your account",
-  "password_placeholder": "••••••••"
+  "password_placeholder": "••••••••",
+  "dont_have_account": "Don't have an account?",
+  "register": "Register"
 }

@@ -5,9 +5,12 @@ import {
   TouchableOpacity,
   ViewStyle,
   TextStyle,
+  useColorScheme,
+  Pressable,
 } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import type {Icon} from '@expo/vector-icons/build/createIconSet'
+import {useState} from 'react'
 
 interface CustomTextInputProps extends TextInputProps {
   leftIcon?: typeof MaterialCommunityIcons
@@ -20,6 +23,7 @@ interface CustomTextInputProps extends TextInputProps {
   iconColor?: string
   containerStyle?: ViewStyle
   inputStyle?: TextStyle
+  error?: boolean
 }
 
 export default function CustomTextInput({
@@ -34,17 +38,54 @@ export default function CustomTextInput({
   style,
   containerStyle,
   inputStyle,
+  error,
   ...props
 }: CustomTextInputProps) {
+  const colorScheme = useColorScheme()
+  const isDark = colorScheme === 'dark'
+  const [isFocused, setIsFocused] = useState(false)
+
+  const defaultContainerStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+    backgroundColor: isDark ? '#1f2937' : '#f3f4f6',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: error
+      ? '#ef4444'
+      : isFocused
+        ? isDark
+          ? '#60a5fa'
+          : '#3b82f6'
+        : isDark
+          ? '#374151'
+          : '#e5e7eb',
+  }
+
+  const defaultInputStyle: TextStyle = {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingLeft: LeftIcon ? 44 : 16,
+    paddingRight: RightIcon ? 44 : 16,
+    color: isDark ? '#fff' : '#000',
+    fontSize: 16,
+  }
+
+  const computedIconColor = error
+    ? '#ef4444'
+    : isFocused
+      ? isDark
+        ? '#60a5fa'
+        : '#3b82f6'
+      : isDark
+        ? '#9ca3af'
+        : '#6b7280'
+
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        position: 'relative',
-        ...containerStyle,
-      }}
-    >
+    <View style={{...defaultContainerStyle, ...containerStyle}}>
       {LeftIcon && (
         <TouchableOpacity
           onPress={onLeftIconPress}
@@ -52,28 +93,21 @@ export default function CustomTextInput({
           style={{
             position: 'absolute',
             zIndex: 1,
-            padding: 8,
-            left: 0,
-          }}
-        >
-          <LeftIcon size={iconSize} color={iconColor} {...leftIconProps} />
+            padding: 10,
+            left: 2,
+          }}>
+          <LeftIcon
+            size={iconSize}
+            color={computedIconColor}
+            {...leftIconProps}
+          />
         </TouchableOpacity>
       )}
       <RNTextInput
-        style={[
-          {
-            flex: 1,
-            height: 40,
-            borderWidth: 1,
-            borderColor: '#ccc',
-            borderRadius: 8,
-            paddingHorizontal: 12,
-            paddingLeft: LeftIcon ? 40 : 12,
-            paddingRight: RightIcon ? 40 : 12,
-            ...inputStyle,
-          },
-          style,
-        ]}
+        style={[defaultInputStyle, inputStyle, style]}
+        placeholderTextColor={isDark ? '#9ca3af' : '#6b7280'}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         {...props}
       />
       {RightIcon && (
@@ -83,11 +117,14 @@ export default function CustomTextInput({
           style={{
             position: 'absolute',
             zIndex: 1,
-            padding: 8,
-            right: 0,
-          }}
-        >
-          <RightIcon size={iconSize} color={iconColor} {...rightIconProps} />
+            padding: 10,
+            right: 2,
+          }}>
+          <RightIcon
+            size={iconSize}
+            color={computedIconColor}
+            {...rightIconProps}
+          />
         </TouchableOpacity>
       )}
     </View>
