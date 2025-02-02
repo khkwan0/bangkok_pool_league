@@ -75,7 +75,6 @@ export const useAccount = () => {
         */
         if (typeof res.status !== 'undefined' && res.status === 'ok') {
           if (typeof res.data !== 'undefined' && res.data) {
-            console.log(res.data)
             await AsyncStorage.setItem('jwt', res.data.token)
             const token = await messaging().getToken()
             await Post('/user/token', {token: token})
