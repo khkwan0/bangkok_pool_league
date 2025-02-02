@@ -14,7 +14,7 @@ import Button from '@/components/Button'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import {useNavigation} from '@react-navigation/native'
 import TextInput from '@/components/TextInput'
-
+import {useLocalSearchParams} from 'expo-router'
 export default function Email() {
   const {t} = useTranslation()
   const [email, setEmail] = React.useState('')
@@ -23,6 +23,7 @@ export default function Email() {
   const [loading, setLoading] = React.useState(false)
   const [showPassword, setShowPassword] = React.useState(false)
   const {UserLogin} = useAccount()
+  const {from} = useLocalSearchParams()
   const navigation = useNavigation()
 
   React.useEffect(() => {
@@ -50,7 +51,11 @@ export default function Email() {
 
       const res = await UserLogin(email, password)
       if (res?.status === 'ok') {
-        router.back()
+        if (from) {
+          router.dismissTo(from)
+        } else {
+          router.back()
+        }
       } else {
         setError(t('invalid_creds'))
       }

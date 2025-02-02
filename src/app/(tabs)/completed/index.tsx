@@ -6,7 +6,7 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import CompletedMatch from '@/components/Completed/CompletedMatch'
 import {useTranslation} from 'react-i18next'
-import {useRouter} from 'expo-router'
+import {useRouter, usePathname} from 'expo-router'
 import Button from '@/components/Button'
 import {MaterialIcons} from '@expo/vector-icons'
 
@@ -25,6 +25,7 @@ export default function CompletedHome() {
   const league = useLeague()
   const {t} = useTranslation()
   const user = state.user
+  const pathname = usePathname()
   const [matches, setMatches] = React.useState<CompletedMatchType[]>([])
   const [refreshing, setRefreshing] = React.useState(false)
   const router = useRouter()
@@ -61,7 +62,7 @@ export default function CompletedHome() {
           <Text className="text-lg text-gray-500 text-center mb-6">
             {t('no_completed_matches')}
           </Text>
-          <Button onPress={() => router.push('/Auth')}>
+          <Button onPress={() => router.push({pathname: '/Auth', params: {from: pathname}})}>
             {t('login_to_see_your_matches')}
           </Button>
         </View>

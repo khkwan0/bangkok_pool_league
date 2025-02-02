@@ -13,7 +13,7 @@ import {
 } from '@invertase/react-native-apple-authentication'
 import {Platform, useColorScheme} from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-
+import {useLocalSearchParams} from 'expo-router'
 interface StatusType {
   status: string
   error?: string
@@ -28,6 +28,7 @@ export default function AuthHome() {
   const colorScheme = useColorScheme()
   const width = Dimensions.get('window').width
   const {t} = useTranslation()
+  const {from} = useLocalSearchParams()
   const navigation = useNavigation()
 
   useEffect(() => {
@@ -189,7 +190,7 @@ export default function AuthHome() {
           )}
 
           <Pressable
-            onPress={() => router.push('/Auth/Email')}
+            onPress={() => router.push({pathname: '/Auth/Email', params: {from: from}})}
             className="bg-gray-100 dark:bg-gray-800 rounded-[8px] overflow-hidden my-1">
             <View className="flex-row items-center justify-center h-[48px] px-4">
               <MaterialCommunityIcons

@@ -10,9 +10,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useTranslation} from 'react-i18next'
 import {useTheme} from '@react-navigation/native'
-import {useRouter} from 'expo-router'
+import {useRouter, usePathname} from 'expo-router'
 import Button from '@/components/Button'
 import {MaterialIcons} from '@expo/vector-icons'
+
 interface ItemType {
   home_team_id: number
   away_team_id: number
@@ -34,6 +35,8 @@ export default function UpcomingMatches(props: any) {
   const {t} = useTranslation()
   const [needsUpdate, setNeedsUpdate] = React.useState(false)
   const router = useRouter()
+
+  const pathname = usePathname()
 
   async function GetSeason() {
     try {
@@ -212,7 +215,7 @@ export default function UpcomingMatches(props: any) {
           <>
             {!user.id && (
               <View className="my-4 mx-6">
-                <Button onPress={() => router.push('/Auth')}>
+                <Button onPress={() => router.push({pathname: '/Auth', params: {from: pathname}})}>
                   {t('login_to_see_your_matches')}
                 </Button>
               </View>
