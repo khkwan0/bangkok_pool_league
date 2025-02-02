@@ -3,6 +3,7 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {DateTime} from 'luxon'
 import {Pressable} from 'react-native'
 import {router} from 'expo-router'
+import {useColorScheme} from 'nativewind'
 
 type CompletedMatchProps = {
   item: {
@@ -25,6 +26,7 @@ export default function CompletedMatch({item}: CompletedMatchProps) {
   const originalDate = item.original_date
     ? DateTime.fromISO(item.original_date).toLocaleString(DateTime.DATE_MED)
     : null
+  const colorscheme = useColorScheme()
 
   function handlePress() {
     router.push({
@@ -37,6 +39,7 @@ export default function CompletedMatch({item}: CompletedMatchProps) {
     })
   }
 
+  const isDark = colorscheme.colorScheme === 'dark'
   return (
     <Pressable onPress={handlePress}>
       <View className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
@@ -45,34 +48,46 @@ export default function CompletedMatch({item}: CompletedMatchProps) {
             Match #{item.match_id}
           </Text>
           <View>
-            <Text className="text-sm text-slate-500">{matchDate}</Text>
+            <Text
+              type="subtitle"
+              className="text-slate-500 dark:text-slate-200">
+              {matchDate}
+            </Text>
             {originalDate && (
-              <Text className="text-sm text-slate-500">({originalDate})</Text>
+              <Text type="subtitle" className="text-sm text-slate-500">
+                ({originalDate})
+              </Text>
             )}
           </View>
         </View>
         <View className="flex-row items-center mb-4">
           <View className="flex-1 items-center">
             <Text
-              className={`text-base font-semibold mb-1 ${isHomeWinner ? 'text-blue-600' : 'text-slate-700'}`}>
+              type="subtitle"
+              className={`mb-1`}
+              style={isHomeWinner ? {color: isDark ? '#0f0' : '00f'} : {}}>
               {item.home_team_name}
             </Text>
             <Text
-              className={`text-2xl font-bold ${isHomeWinner ? 'text-blue-600' : 'text-slate-700'}`}>
+              type="subtitle"
+              style={isHomeWinner ? {color: isDark ? '#0f0' : '00f'} : {}}>
               {item.home_frames ? item.home_frames.toString() : '0'}
             </Text>
           </View>
           <View className="w-16 items-center">
-            <Text className="text-sm text-slate-400 font-medium">vs</Text>
+            <Text>vs</Text>
           </View>
           <View className="flex-1 items-center">
             <Text
-              className={`text-base font-semibold mb-1 ${isAwayWinner ? 'text-blue-600' : 'text-slate-700'}`}>
+              type="subtitle"
+              className={`mb-1`}
+              style={!isHomeWinner ? {color: isDark ? '#0f0' : '#00f'} : {}}>
               {item.away_team_name}
             </Text>
             <Text
-              className={`text-2xl font-bold ${isAwayWinner ? 'text-blue-600' : 'text-slate-700'}`}>
-              {item.away_frames ? item.away_frames.toString() : '0'}
+              type="subtitle"
+              style={!isHomeWinner ? {color: isDark ? '#0f0' : '00f'} : {}}>
+              {item.home_frames ? item.away_frames.toString() : '0'}
             </Text>
           </View>
         </View>

@@ -13,6 +13,7 @@
   "vs": "Vs",
   "upcoming": "Upcoming",
   "completed": "Completed",
+  "no_completed_matches": "No completed matches found",
   "login": "Login",
   "email_login": "Email Login",
   "home": "Home",
@@ -130,7 +131,7 @@
   "adj_perf": "Adjusted Perf",
   "points": "Points",
   "player_statistics": "Player Statistics",
-  "league_standings": "League standings",
+  "league_standings": "League Standings",
   "team_statistics": "Team Statistics",
   "combined": "Combined",
   "eight_ball": "8 Ball",
@@ -170,5 +171,6 @@
   "sign_in_to_access": "Sign in to access your account",
   "password_placeholder": "••••••••",
   "dont_have_account": "Don't have an account?",
-  "register": "Register"
+  "register": "Register",
+  "no_upcoming_matches_for_season": "No upcoming matches for season: {season}"
 }

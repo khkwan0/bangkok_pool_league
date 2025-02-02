@@ -32,11 +32,19 @@ export default function Email() {
   }, [navigation, t])
 
   async function handleLogin() {
+    setError('')
+    setLoading(true)
+
     try {
-      setError('')
-      setLoading(true)
       if (!email || !password) {
         setError(t('invalid_parameters'))
+        return
+      }
+
+      // Add email validation like in register
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        setError(t('invalid_email'))
         return
       }
 
@@ -72,10 +80,15 @@ export default function Email() {
 
           {/* Error Message */}
           {error ? (
-            <View className="bg-red-100 dark:bg-red-900/30 px-4 py-3 rounded-lg mb-6">
-              <Text className="text-red-600 dark:text-red-400 text-center">
-                {error}
-              </Text>
+            <View className="mb-4">
+              <View className="flex-row items-center space-x-2">
+                <MaterialCommunityIcons
+                  name="alert-circle-outline"
+                  size={24}
+                  color="#EF4444"
+                />
+                <Text className="text-red-500 flex-1">{error}</Text>
+              </View>
             </View>
           ) : null}
 
@@ -94,14 +107,12 @@ export default function Email() {
                 keyboardType="email-address"
                 leftIcon={MaterialCommunityIcons}
                 leftIconProps={{name: 'email-outline'}}
-                iconSize={20}
-                iconColor="#6b7280"
+                iconSize={22}
+                error={!!error && !email}
                 containerStyle={{
-                  backgroundColor: '#f3f4f6',
                   borderRadius: 8,
                 }}
                 inputStyle={{
-                  backgroundColor: '#f3f4f6',
                   borderWidth: 0,
                   height: 48,
                   paddingLeft: 44,
@@ -128,14 +139,12 @@ export default function Email() {
                   name: showPassword ? 'eye-off-outline' : 'eye-outline',
                 }}
                 onRightIconPress={() => setShowPassword(!showPassword)}
-                iconSize={20}
-                iconColor="#6b7280"
+                iconSize={22}
+                error={!!error && !password}
                 containerStyle={{
-                  backgroundColor: '#f3f4f6',
                   borderRadius: 8,
                 }}
                 inputStyle={{
-                  backgroundColor: '#f3f4f6',
                   borderWidth: 0,
                   height: 48,
                   paddingLeft: 44,
@@ -168,7 +177,8 @@ export default function Email() {
               onPress={() => router.push({pathname: '/Auth/Email/register'})}
               className="items-center py-4">
               <Text className="text-blue-600 dark:text-blue-400">
-                {t('dont_have_account')} <Text className="font-semibold">{t('register')}</Text>
+                {t('dont_have_account')} {' '}
+                <Text className="font-semibold">{t('register')}</Text>
               </Text>
             </Pressable>
           </View>

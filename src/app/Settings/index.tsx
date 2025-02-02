@@ -16,8 +16,8 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useTranslation} from 'react-i18next'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import NavDest from '@/components/NavDest'
-import {useEffect} from 'react'
-
+import React, {useEffect, useState} from 'react'
+import {useColorScheme} from 'react-native'
 interface User {
   id: number
   nickname: string
@@ -40,6 +40,7 @@ const SectionHeader = ({title}: {title: string}) => {
 export default function Settings() {
   const {colors, dark} = useTheme()
   const {state, dispatch} = useLeagueContext()
+  const [isDark, setIsDark] = useState(useColorScheme() === 'dark')
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
   const {t} = useTranslation()
@@ -54,17 +55,24 @@ export default function Settings() {
 
   async function ToggleTheme(value: boolean) {
     try {
-      const newTheme = value ? 'dark' : 'light'
-      Appearance.setColorScheme(newTheme)
-      await AsyncStorage.setItem('theme', newTheme)
+      setIsDark(value)
+      await AsyncStorage.setItem('theme', value ? 'dark' : 'light')
     } catch (e) {
       console.log(e)
     }
   }
 
-  function HandleLogout() {
-    console.log('handle logout')
-    dispatch({type: 'DEL_USER'})
+  React.useEffect(() => {
+    Appearance.setColorScheme(isDark ? 'dark' : 'light')
+  }, [isDark])
+
+  async function HandleLogout() {
+    try {
+      await AsyncStorage.removeItem('jwt')
+      dispatch({type: 'DEL_USER'})
+    } catch (e) {
+      console.error('Error removing token:', e)
+    }
   }
 
   return (
@@ -83,7 +91,7 @@ export default function Settings() {
             <View className="flex-row items-center space-x-2 bg-gray-800/30 rounded-lg p-2">
               <Feather name="sun" color={colors.text} size={18} />
               <Switch
-                value={dark}
+                value={isDark}
                 onValueChange={ToggleTheme}
                 trackColor={{false: colors.primary, true: colors.primary}}
                 thumbColor={colors.text}

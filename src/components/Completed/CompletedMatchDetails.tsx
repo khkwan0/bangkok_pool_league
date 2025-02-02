@@ -6,6 +6,7 @@ import {useMatch} from '@/hooks'
 import {FlatList, Pressable} from 'react-native'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {DateTime} from 'luxon'
+import {useColorScheme} from 'nativewind'
 
 type Frame = {
   frameId: number
@@ -50,11 +51,7 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
                     },
                   })
                 }}>
-                <Text
-                  type="subtitle"
-                  className="text-base text-slate-700 font-medium leading-relaxed">
-                  {player.nickName}
-                </Text>
+                <Text type="subtitle">{player.nickName}</Text>
               </Pressable>
             ))}
           </View>
@@ -114,6 +111,8 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
   const navigation = useNavigation()
   const [matchMetadata, setMatchMetadata] =
     React.useState<MatchMetadata | null>(null)
+  const colorscheme = useColorScheme()
+  const isDark = colorscheme.colorScheme === 'dark'
 
   React.useEffect(() => {
     async function getMatchDetails(matchId: number) {
@@ -167,7 +166,7 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
             Match #{matchId}
           </Text>
           <View>
-            <Text className="text-sm text-slate-500">
+            <Text type="subtitle">
               {DateTime.fromISO(matchMetadata?.matchDate).toLocaleString(
                 DateTime.DATE_MED,
               )}
@@ -177,11 +176,18 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
         <View className="flex-row items-center">
           <View className="flex-1 items-center">
             <Text
-              className={`text-base font-semibold mb-1 ${isHomeWinner ? 'text-blue-600' : 'text-slate-700'}`}>
+              type="subtitle"
+              className={`mb-1`}
+              style={
+                isHomeWinner ? (isDark ? {color: '#0f0'} : {color: '#00f'}) : {}
+              }>
               {matchMetadata?.home_team_name}
             </Text>
             <Text
-              className={`text-2xl font-bold ${isHomeWinner ? 'text-blue-600' : 'text-slate-700'}`}>
+              type="subtitle"
+              style={
+                isHomeWinner ? (isDark ? {color: '#0f0'} : {color: '#00f'}) : {}
+              }>
               {matchMetadata?.home_frames
                 ? matchMetadata?.home_frames.toString()
                 : '0'}
@@ -192,11 +198,19 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
           </View>
           <View className="flex-1 items-center">
             <Text
-              className={`text-base font-semibold mb-1 ${isAwayWinner ? 'text-blue-600' : 'text-slate-700'}`}>
+              type="subtitle"
+              className={`mb-1`}
+              style={
+                isAwayWinner ? (isDark ? {color: '#0f0'} : {color: '#00f'}) : {}
+              }>
               {matchMetadata?.away_team_name}
             </Text>
             <Text
-              className={`text-2xl font-bold ${isAwayWinner ? 'text-blue-600' : 'text-slate-700'}`}>
+              type="subtitle"
+              className={`mb-1`}
+              style={
+                isAwayWinner ? (isDark ? {color: '#0f0'} : {color: '#00f'}) : {}
+              }>
               {matchMetadata?.away_frames
                 ? matchMetadata?.away_frames.toString()
                 : '0'}

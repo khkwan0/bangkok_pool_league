@@ -1,5 +1,5 @@
 import React from 'react'
-import {Button, FlatList, RefreshControl} from 'react-native'
+import {FlatList, RefreshControl} from 'react-native'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import MatchCard from '@/components/upcoming/MatchCard'
@@ -10,8 +10,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useTranslation} from 'react-i18next'
 import {useTheme} from '@react-navigation/native'
-import {Link, router} from 'expo-router'
-
+import {useRouter} from 'expo-router'
+import Button from '@/components/Button'
+import {MaterialIcons} from '@expo/vector-icons'
 interface ItemType {
   home_team_id: number
   away_team_id: number
@@ -32,6 +33,7 @@ export default function UpcomingMatches(props: any) {
   const account = useAccount()
   const {t} = useTranslation()
   const [needsUpdate, setNeedsUpdate] = React.useState(false)
+  const router = useRouter()
 
   async function GetSeason() {
     try {
@@ -210,9 +212,9 @@ export default function UpcomingMatches(props: any) {
           <>
             {!user.id && (
               <View className="my-4 mx-6">
-                <Link href="/Auth" asChild>
-                  <Button title={t('login_to_see_your_matches')} />
-                </Link>
+                <Button onPress={() => router.push('/Auth')}>
+                  {t('login_to_see_your_matches')}
+                </Button>
               </View>
             )}
             <LiveScores handlePress={HandleScorePress} />
@@ -246,9 +248,15 @@ export default function UpcomingMatches(props: any) {
         }
         ListFooterComponent={
           isMounted && fixtures.length === 0 ? (
-            <View className="my-14 mx-6 p-2">
-              <Text className="text-center text-2xl">
-                No upcoming matches for season: {state.season}
+            <View className="p-6 rounded-2xl shadow-sm items-center mx-20">
+              <MaterialIcons
+                name="event-available"
+                size={48}
+                color="#6b7280"
+                className="mb-4"
+              />
+              <Text className="text-lg text-gray-500 text-center mb-6">
+                {t('no_upcoming_matches_for_season', {season: state.season})}
               </Text>
             </View>
           ) : null

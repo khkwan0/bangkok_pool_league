@@ -1,16 +1,19 @@
-import {useThemeColor} from '@/hooks/useThemeColor'
 import {useTranslation} from 'react-i18next'
-import {Pressable, PressableProps, Text, useColorScheme} from 'react-native'
+import {Pressable, PressableProps, useColorScheme, View} from 'react-native'
+import {ThemedText as Text} from '@/components/ThemedText'
 
 export type ThemedButtonProps = PressableProps & {
   lightColor?: string
   darkColor?: string
   children?: any
+  icon?: React.ReactNode
 }
+
 export default function Button({
   style,
   disabled,
   children,
+  icon,
   ...rest
 }: ThemedButtonProps) {
   const colorScheme = useColorScheme()
@@ -39,11 +42,14 @@ export default function Button({
     return (
       <Pressable
         disabled={disabled}
-        className="bg-blue-200 active:bg-purple-700 p-4 rounded border"
+        className="bg-blue-600 active:bg-purple-700 p-5 rounded-lg border"
         {...rest}>
         {typeof children === 'object' && [children]}
         {typeof children === 'string' && (
-          <Text className="text-center">{t(children)}</Text>
+          <View className="flex-row items-center gap-2 justify-center">
+            {icon}
+            <Text className="text-center" style={{fontSize: 18}}>{t(children)}</Text>
+          </View>
         )}
       </Pressable>
     )
@@ -55,9 +61,12 @@ export default function Button({
         {...rest}>
         {typeof children === 'object' && [children]}
         {typeof children === 'string' && (
-          <Text className="text-center text-xl color-neutral-50">
-            {t(children)}
-          </Text>
+          <View className="flex-row items-center gap-2 justify-center">
+            {icon}
+            <Text className="text-center text-xl color-neutral-50">
+              {t(children)}
+            </Text>
+          </View>
         )}
       </Pressable>
     )

@@ -43,8 +43,8 @@ export default function Match() {
           ListHeaderComponent={<MatchHeader matchData={matchDetails} />}
           data={matchDetails}
           keyExtractor={(item, idx) => 'asdasd' + idx}
-          renderItem={(item, idx) => (
-            <FrameDetail item={item} idx={idx} matchId={matchInfo.matchId} />
+          renderItem={({item, index}) => (
+            <FrameDetail item={item} idx={index} matchId={matchInfo.matchId} />
           )}
           ItemSeparatorComponent={<Divider />}
         />

@@ -188,9 +188,9 @@ PODS:
   - GoogleUtilities/UserDefaults (8.0.2):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - hermes-engine (0.76.5):
-    - hermes-engine/Pre-built (= 0.76.5)
-  - hermes-engine/Pre-built (0.76.5)
+  - hermes-engine (0.76.6):
+    - hermes-engine/Pre-built (= 0.76.6)
+  - hermes-engine/Pre-built (0.76.6)
   - LineSDKSwift (5.8.2):
     - LineSDKSwift/Core (= 5.8.2)
   - LineSDKSwift/Core (5.8.2)
@@ -2348,7 +2348,7 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: ee5c2d2242816773fbf79e5b0563f5355ef1c315
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
-  hermes-engine: 06a9c6900587420b90accc394199527c64259db4
+  hermes-engine: 1949ca944b195a8bde7cbf6316b9068e19cf53c6
   LineSDKSwift: 52bce568988f61f4a529b0ee629525a0cb85b9fe
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47

@@ -128,9 +128,9 @@
   "raw_perf": "หยาบ",
   "adj_perf": "สมดุล",
   "points": "คะแนน",
-  "player_statistics": "คะแนนผู้เล่น",
+  "player_statistics": "สถิติผู้เล่น",
   "league_standings": "อันดับลีก",
-  "team_statistics": "อันดับทีม",
+  "team_statistics": "สถิติทีม",
   "combined": "รวมกัน",
   "nine_ball": "9 ลูก",
   "eight_ball": "8 ลูก",
@@ -169,5 +169,7 @@
   "sign_in_to_access": "เข้าสู่ระบบเพื่อเข้าถึงบัญชีของคุณ",
   "password_placeholder": "••••••••",
   "dont_have_account": "ยังไม่มีบัญชี?",
-  "register": "ลงทะเบียน"
+  "register": "ลงทะเบียน",
+  "no_completed_matches": "ไม่มีการแข่งขันที่เสร็จสิ้น",
+  "no_upcoming_matches_for_season": "ไม่มีการแข่งขันที่กำลังจะมาถึงสำหรับฤดูกาล: {season}"
 }

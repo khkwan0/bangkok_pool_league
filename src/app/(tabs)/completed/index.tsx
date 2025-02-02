@@ -6,6 +6,9 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import CompletedMatch from '@/components/Completed/CompletedMatch'
 import {useTranslation} from 'react-i18next'
+import {useRouter} from 'expo-router'
+import Button from '@/components/Button'
+import {MaterialIcons} from '@expo/vector-icons'
 
 type CompletedMatchType = {
   match_id: number
@@ -24,6 +27,7 @@ export default function CompletedHome() {
   const user = state.user
   const [matches, setMatches] = React.useState<CompletedMatchType[]>([])
   const [refreshing, setRefreshing] = React.useState(false)
+  const router = useRouter()
 
   const getCompletedMatches = useCallback(
     async (teams: {id: number}[]) => {
@@ -46,24 +50,44 @@ export default function CompletedHome() {
 
   if (matches.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-lg text-gray-500 text-center">
-          {t('no_completed_matches')}
-        </Text>
+      <View flex={1} className="px-4 justify-center items-center">
+        <View className="bg-white p-6 rounded-2xl shadow-sm w-full max-w-[300px] items-center">
+          <MaterialIcons
+            name="event-available"
+            size={48}
+            color="#6b7280"
+            className="mb-4"
+          />
+          <Text className="text-lg text-gray-500 text-center mb-6">
+            {t('no_completed_matches')}
+          </Text>
+          <Button onPress={() => router.push('/Auth')}>
+            {t('login_to_see_your_matches')}
+          </Button>
+        </View>
       </View>
     )
   }
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-gray-50">
       <FlatList
         data={matches}
         keyExtractor={item => item.match_id.toString()}
-        renderItem={({item}) => <CompletedMatch item={item} />}
+        renderItem={({item}) => (
+          <View className="bg-white mx-4 mb-4 rounded-xl shadow-sm overflow-hidden">
+            <CompletedMatch item={item} />
+          </View>
+        )}
         refreshing={refreshing}
         onRefresh={() => getCompletedMatches(user.teams || [])}
-        contentContainerClassName="p-4 pb-8"
-        ItemSeparatorComponent={() => <View className="h-4" />}
+        contentContainerClassName="py-4"
+        ListHeaderComponent={
+          <Text className="text-2xl font-bold px-4 mb-2 text-gray-800">
+            {t('completed_matches')}
+          </Text>
+        }
+        ListFooterComponent={<View className="h-4" />}
       />
     </View>
   )

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {ThemedView as View} from '@/components/ThemedView'
 import {useNavigation} from '@react-navigation/native'
 import {useTranslation} from 'react-i18next'
@@ -7,12 +8,12 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useState} from 'react'
 import {FlatList} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {useThemeColor} from '@/hooks/useThemeColor'
 import Row from '@/components/Row'
 import {TouchableRipple} from 'react-native-paper'
 import {router} from 'expo-router'
+import type {Match, Team, DivisionData} from '@/types'
 
-function MatchData({match}) {
+function MatchData({match}: {match: Match}) {
   return (
     <Row alignItems="center">
       <View style={{flex: 1}} className="items-center">
@@ -34,16 +35,16 @@ function MatchData({match}) {
         </TouchableRipple>
       </View>
       <View style={{flex: 1}}>
-        <Text>{match.pts}</Text>
+        <Text>{match.pts.toString()}</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text>{match.frames}</Text>
+        <Text>{match.frames.toString()}</Text>
       </View>
     </Row>
   )
 }
 
-function TeamStandings({team, idx}) {
+function TeamStandings({team, idx}: {team: Team; idx: number}) {
   const [showAll, setShowAll] = React.useState(false)
   return (
     <View className="px-4">
@@ -59,13 +60,13 @@ function TeamStandings({team, idx}) {
           </TouchableRipple>
         </View>
         <View style={{flex: 1}}>
-          <Text>{team.played}</Text>
+          <Text>{team.played.toString()}</Text>
         </View>
         <View style={{flex: 1}}>
-          <Text>{team.points}</Text>
+          <Text>{team.points.toString()}</Text>
         </View>
         <View style={{flex: 1}}>
-          <Text>{team.frames}</Text>
+          <Text>{team.frames.toString()}</Text>
         </View>
       </Row>
       {showAll && (
@@ -77,7 +78,9 @@ function TeamStandings({team, idx}) {
     </View>
   )
 }
-function DivisionStandings({data}) {
+
+function DivisionStandings({data}: {data: DivisionData}) {
+  const {t} = useTranslation()
   return (
     <FlatList
       ListHeaderComponent={
@@ -88,22 +91,22 @@ function DivisionStandings({data}) {
           <Row alignItems="center">
             <View style={{flex: 4}} className="items-center">
               <Text type="default" className="font-bold">
-                Team
+                {t('team')}
               </Text>
             </View>
             <View style={{flex: 1}} className="items-start">
               <Text type="default" className="font-bold">
-                Plyd
+                {t('played')}
               </Text>
             </View>
             <View style={{flex: 1}}>
               <Text type="default" className="font-bold">
-                Pts
+                {t('points')}
               </Text>
             </View>
             <View style={{flex: 1}}>
               <Text type="default" className="font-bold">
-                Frms
+                {t('frames')}
               </Text>
             </View>
           </Row>
@@ -121,7 +124,7 @@ export default function LeagueStandings() {
   const navigation = useNavigation()
   const {t} = useTranslation()
   const league = useLeague()
-  const [standings, setStandings] = useState([])
+  const [standings, setStandings] = useState<DivisionData[]>([])
   const inset = useSafeAreaInsets()
 
   React.useEffect(() => {
@@ -132,7 +135,7 @@ export default function LeagueStandings() {
   }, [])
 
   React.useEffect(() => {
-    league.GetStandings().then((standings) => {
+    league.GetStandings().then((standings: DivisionData[]) => {
       setStandings(standings)
     })
   }, [])

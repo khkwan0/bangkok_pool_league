@@ -129,8 +129,8 @@ export default function AuthHome() {
         </Text>
 
         {err ? (
-          <View className="bg-red-100 dark:bg-red-900/30 px-4 py-2 rounded-lg mb-6">
-            <Text className="text-red-600 dark:text-red-400 text-center">
+          <View className="bg-red-100 dark:bg-red-900/30 px-6 py-4 rounded-xl mb-6 border border-red-200 dark:border-red-800">
+            <Text className="text-red-600 dark:text-red-400 text-center font-medium">
               {err}
             </Text>
           </View>
