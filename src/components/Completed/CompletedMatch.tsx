@@ -30,7 +30,7 @@ export default function CompletedMatch({item}: CompletedMatchProps) {
 
   function handlePress() {
     router.push({
-      pathname: '/completed/match',
+      pathname: './match',
       params: {
         params: JSON.stringify({
           matchId: item.match_id,

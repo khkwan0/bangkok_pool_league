@@ -3,20 +3,30 @@ import Row from '@/components/Row'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {Pressable} from 'react-native'
+import {router} from 'expo-router'
 
 export default function FrameDetails(props: any) {
-  const {homePlayers, awayPlayers} = props.item.item
-  const homeWin = props.item.item.home_win
+  const {homePlayers, awayPlayers, home_win: homeWin} = props.item
 
   return (
     <>
       <View className="my-2 px-4" key={'complete_frame_detail' + props.idx}>
         <Row className="items-center">
           <View style={{flex: 1}}>
-            {homePlayers.map((player: {nickname: string}, idx: number) => (
+            {homePlayers.map((player: {nickname: string, playerId: number}, idx: number) => (
               <View key={'home_compelted' + idx}>
-                {idx !== 0 && <Text>and</Text>}
-                <Text type="subtitle">{player.nickname}</Text>
+                <Pressable onPress={() => router.push({
+                  pathname: './match/player',
+                  params: {
+                    params: JSON.stringify({
+                      playerId: player.playerId,
+                    }),
+                  },
+                })}>
+                  {idx !== 0 && <Text>and</Text>}
+                  <Text type="subtitle">{player.nickname}</Text>
+                </Pressable>
               </View>
             ))}
           </View>

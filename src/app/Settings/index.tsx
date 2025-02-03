@@ -139,7 +139,7 @@ export default function Settings() {
         <NavDest
           icon="account-group"
           text={t('teams')}
-          url={'/Settings/teams'}
+          url={'/Settings/Teams'}
         />
         <NavDest
           icon="chart-areaspline-variant"

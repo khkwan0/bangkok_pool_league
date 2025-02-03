@@ -6,8 +6,8 @@ import {useTranslation} from 'react-i18next'
 import {useSeason} from '@/hooks'
 import {FlatList} from 'react-native'
 import Divider from '@/components/Divider'
-import MatchHeader from './components/MatchHeader'
-import FrameDetail from './components/FrameDetail'
+import MatchHeader from '@/components/Completed/MatchHeader'
+import FrameDetail from '@/components/Completed/FrameDetail'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 export default function Match() {
   const {params} = useLocalSearchParams()
