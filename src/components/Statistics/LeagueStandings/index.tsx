@@ -35,7 +35,7 @@ function MatchData({match}: {match: Match}) {
         </TouchableRipple>
       </View>
       <View style={{flex: 1}}>
-        <Text>{match.pts ? match.pts.toString() : ''}</Text>
+        <Text>{typeof match.pts === 'number' ? match.pts.toString() : ''}</Text>
       </View>
       <View style={{flex: 1}}>
         <Text>{match.frames ? match.frames.toString() : ''}</Text>

@@ -14,21 +14,26 @@ export default function FrameDetails(props: any) {
       <View className="my-2 px-4" key={'complete_frame_detail' + props.idx}>
         <Row className="items-center">
           <View style={{flex: 1}}>
-            {homePlayers.map((player: {nickname: string, playerId: number}, idx: number) => (
-              <View key={'home_compelted' + idx}>
-                <Pressable onPress={() => router.push({
-                  pathname: './match/player',
-                  params: {
-                    params: JSON.stringify({
-                      playerId: player.playerId,
-                    }),
-                  },
-                })}>
-                  {idx !== 0 && <Text>and</Text>}
-                  <Text type="subtitle">{player.nickname}</Text>
-                </Pressable>
-              </View>
-            ))}
+            {homePlayers.map(
+              (player: {nickname: string; playerId: number}, idx: number) => (
+                <View key={'home_compelted' + idx}>
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: './match/player',
+                        params: {
+                          params: JSON.stringify({
+                            playerId: player.playerId,
+                          }),
+                        },
+                      })
+                    }>
+                    {idx !== 0 && <Text>and</Text>}
+                    <Text type="subtitle">{player.nickname}</Text>
+                  </Pressable>
+                </View>
+              ),
+            )}
           </View>
           <View style={{flex: 1}} justifyContent="center" alignItems="center">
             {homeWin === 1 && <MCI name="check" size={30} color="green" />}
