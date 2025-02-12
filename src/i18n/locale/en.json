@@ -172,5 +172,15 @@
   "password_placeholder": "••••••••",
   "dont_have_account": "Don't have an account?",
   "register": "Register",
-  "no_upcoming_matches_for_season": "No upcoming matches for season: {season}"
+  "no_upcoming_matches_for_season": "No upcoming matches for season: {season}",
+  "loading_singles_statistics": "Loading singles statistics...",
+  "loading_doubles_statistics": "Loading doubles statistics...",
+  "loading_match_performance": "Loading match performance...",
+  "match_performance": "Match Performance",
+  "statistics_legend": "Statistics Legend",
+  "statistics_legend_confirmed": "• All performance figures are based on confirmed matches only",
+  "statistics_legend_weighted": "• Weighted performance: Doubles frames are weighted with 50% weight",
+  "statistics_legend_adjusted": "• Adjusted performance: The overall weighted performance is multiplied by (frames-1)/frames to account for small sample sizes",
+  "player_profile": "Player Profile",
+  "player_id": "Player ID"
 }
