@@ -20,6 +20,10 @@ type CompletedMatchType = {
   away_frames: number
 }
 
+type ApiResponse = {
+  data: CompletedMatchType[]
+}
+
 export default function CompletedHome() {
   const {state} = useLeagueContext()
   const league = useLeague()
@@ -34,7 +38,9 @@ export default function CompletedHome() {
     async (teams: {id: number}[]) => {
       try {
         setRefreshing(true)
-        const res = await league.GetCompletedMatchesByTeamId(teams)
+        const res = (await league.GetCompletedMatchesByTeamId(
+          teams,
+        )) as ApiResponse
         setMatches(res.data)
       } catch (error) {
         console.error('Failed to fetch matches:', error)
@@ -47,6 +53,7 @@ export default function CompletedHome() {
 
   React.useEffect(() => {
     getCompletedMatches(user.teams || [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.teams])
 
   if (matches.length === 0) {
@@ -62,7 +69,10 @@ export default function CompletedHome() {
           <Text className="text-lg text-gray-500 text-center mb-6">
             {t('no_completed_matches')}
           </Text>
-          <Button onPress={() => router.push({pathname: '/Auth', params: {from: pathname}})}>
+          <Button
+            onPress={() =>
+              router.push({pathname: '/Auth', params: {from: pathname}})
+            }>
             {t('login_to_see_your_matches')}
           </Button>
         </View>
@@ -83,11 +93,6 @@ export default function CompletedHome() {
         refreshing={refreshing}
         onRefresh={() => getCompletedMatches(user.teams || [])}
         contentContainerClassName="py-4"
-        ListHeaderComponent={
-          <Text className="text-2xl font-bold px-4 mb-2 text-gray-800">
-            {t('completed_matches')}
-          </Text>
-        }
         ListFooterComponent={<View className="h-4" />}
       />
     </View>

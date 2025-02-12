@@ -19,7 +19,6 @@ type CompletedMatchProps = {
 
 export default function CompletedMatch({item}: CompletedMatchProps) {
   const isHomeWinner = item.home_frames > item.away_frames
-  const isAwayWinner = item.away_frames > item.home_frames
   const matchDate = DateTime.fromISO(item.date).toLocaleString(
     DateTime.DATE_MED,
   )
@@ -30,7 +29,7 @@ export default function CompletedMatch({item}: CompletedMatchProps) {
 
   function handlePress() {
     router.push({
-      pathname: './match',
+      pathname: './completed/match',
       params: {
         params: JSON.stringify({
           matchId: item.match_id,
