@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {useSeason} from '@/hooks/useSeason'
 import {useState} from 'react'
 import React from 'react'
@@ -10,6 +11,7 @@ import StatsHeader from '@/components/PlayerStatistics/StatsHeader'
 import Stats from '@/components/Stats'
 import StatsDoubles from '@/components/PlayerStatistics/StatsDoubles'
 import StatsMatchPerformance from '@/components/PlayerStatistics/StatsMatchPerformance'
+import {useTranslation} from 'react-i18next'
 
 interface PlayerInfo {
   player_id: number
@@ -23,13 +25,12 @@ interface PlayerInfo {
   pic?: string | null
 }
 
-export default function PlayerStatistics({
-  playerInfo,
-  path,
-}: {
+interface Props {
   playerInfo: PlayerInfo
-  path: string
-}) {
+  path: '/statistics/PlayerStatistics' | '/(tabs)/completed/match'
+}
+
+export default function PlayerStatistics({playerInfo, path}: Props) {
   const season = useSeason()
   const [stats, setStats] = useState<any>(null)
   const [doublesStats, setDoublesStats] = useState<any>(null)
@@ -38,6 +39,7 @@ export default function PlayerStatistics({
   const [isDoubleStatsLoading, setIsDoubleStatsLoading] = useState(false)
   const [isMatchPerformanceLoading, setIsMatchPerformanceLoading] =
     useState(false)
+  const {t} = useTranslation()
 
   React.useEffect(() => {
     ;(async () => {
@@ -117,18 +119,18 @@ export default function PlayerStatistics({
         <Row className="items-center">
           <View style={{flex: 3}}>
             <Text type="title" className="mb-2">
-              {playerInfo.name || 'Player Profile'}
+              {playerInfo.name || t('player_profile')}
             </Text>
             <View className="space-y-1">
               <Text
                 type="subtitle"
                 className="text-gray-600 dark:text-gray-400">
-                {playerInfo.flag} {playerInfo.nationality?.en || 'not_provided'}
+                {playerInfo.flag} {playerInfo.nationality?.en || t('not_provided')}
               </Text>
               <Text
                 type="subtitle"
                 className="text-gray-600 dark:text-gray-400">
-                Player ID: {playerInfo.player_id}
+                {t('player_id')}: {playerInfo.player_id}
               </Text>
             </View>
           </View>
@@ -155,11 +157,14 @@ export default function PlayerStatistics({
       {/* Singles Statistics */}
       {isLoading ? (
         <View className="p-6">
-          <Text>Loading singles statistics...</Text>
+          <Text>{t('loading_singles_statistics')}</Text>
         </View>
       ) : (
         stats && (
           <View className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6">
+            <Text type="title" className="mb-4">
+              {t('singles_performance')}
+            </Text>
             <StatsHeader isDoubles={false} isMatchPerformance={false} />
             <Stats stats={stats} />
           </View>
@@ -169,11 +174,14 @@ export default function PlayerStatistics({
       {/* Doubles Statistics */}
       {isDoubleStatsLoading ? (
         <View className="p-6">
-          <Text>Loading doubles statistics...</Text>
+          <Text>{t('loading_doubles_statistics')}</Text>
         </View>
       ) : (
         doublesStats && (
           <View className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6">
+            <Text type="title" className="mb-4">
+              {t('doubles_performance')}
+            </Text>
             <StatsHeader isDoubles={true} isMatchPerformance={false} />
             <StatsDoubles stats={doublesStats} />
           </View>
@@ -183,13 +191,13 @@ export default function PlayerStatistics({
       {/* Match Performance */}
       {isMatchPerformanceLoading ? (
         <View className="p-6">
-          <Text>Loading match performance...</Text>
+          <Text>{t('loading_match_performance')}</Text>
         </View>
       ) : (
         matchPerformance && (
           <View className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6">
             <Text type="title" className="mb-4">
-              Match Performance
+              {t('match_performance')}
             </Text>
             <StatsHeader isDoubles={false} isMatchPerformance={true} />
             <StatsMatchPerformance stats={matchPerformance} path={path} />
@@ -200,18 +208,17 @@ export default function PlayerStatistics({
       {/* Statistics Legend */}
       <View className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
         <Text type="subtitle" className="mb-2">
-          Statistics Legend
+          {t('statistics_legend')}
         </Text>
         <View className="space-y-2">
           <Text className="text-gray-600 dark:text-gray-400">
-            • All performance figures are based on confirmed matches only
+            {t('statistics_legend_confirmed')}
           </Text>
           <Text className="text-gray-600 dark:text-gray-400">
-            • Weighted performance: Doubles frames are weighted with 50% weight
+            {t('statistics_legend_weighted')}
           </Text>
           <Text className="text-gray-600 dark:text-gray-400">
-            • Adjusted performance: The overall weighted performance is
-            multiplied by (frames-1)/frames to account for small sample sizes
+            {t('statistics_legend_adjusted')}
           </Text>
         </View>
       </View>

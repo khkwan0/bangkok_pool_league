@@ -17,7 +17,6 @@ export default function MatchCard({matchInfo}: MatchInfoType) {
   const {state} = useLeagueContext()
   const match = useMatch()
   const user = state.user
-  console.log(matchInfo)
 
   function ShowLocation(lat: number, long: number) {
     showLocation({

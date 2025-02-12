@@ -4,7 +4,7 @@ export interface League {
   GetStandings(): Promise<DivisionData[]>
   GetCompletedMatchesByTeamId(
     teams: {id: number}[],
-  ): Promise<CompletedMatchType[]>
+  ): Promise<{data: CompletedMatchType[]}>
   // Add other methods as needed
 }
 
