@@ -12,6 +12,10 @@ export type MatchInfoDataType = {
   logo?: string
   match_id: number
   date: string
+  home_confirmed: number
+  away_confirmed: number
+  team_role_id: number
+  player_team_id: number
 }
 
 export interface MatchInfoType {

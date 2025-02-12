@@ -65,7 +65,23 @@ export const useMatch = () => {
     }
   }
 
+  const ConfirmMatch = async (matchId, teamId) => {
+    try {
+      const res = await Post('/match/confirm/' + matchId, {
+        teamId: teamId,
+      })
+      if (res.status === 'ok') {
+        return true
+      } else {
+        return false
+      }
+    } catch (e) {
+      throw new Error(e)
+    }
+  }
+
   return {
+    ConfirmMatch,
     GetFrames,
     GetMatchInfo,
     GetMatchDetails,

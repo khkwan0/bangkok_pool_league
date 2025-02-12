@@ -2,7 +2,7 @@ import {createContext, useContext, useReducer} from 'react'
 
 interface User {
   id?: number
-  role_id?: number
+  role_id: number
   teams?: Array<{id: number, team_role_id: number}>
 }
 

@@ -71,6 +71,7 @@ export default function RootLayout() {
   useEffect(() => {
     ;(async () => {
       const savedColorScheme = await AsyncStorage.getItem('theme')
+      console.log(savedColorScheme)
       if (!savedColorScheme) {
         Appearance.setColorScheme(null)
       } else {
