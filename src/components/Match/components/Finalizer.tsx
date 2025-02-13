@@ -18,14 +18,14 @@ export default function Finalizer() {
       <Row>
         <View flex={1}>
           <Pressable className={homeStyle}>
-            <Text textAlign="center" type="subtitle">
+            <Text className="text-center" type="subtitle">
               {t('finalize')} {t('home')}
             </Text>
           </Pressable>
         </View>
         <View flex={1}>
           <Pressable className={awayStyle}>
-            <Text textAlign="center" type="subtitle">
+            <Text className="text-center" type="subtitle">
               {t('finalize')} {t('away')}
             </Text>
           </Pressable>

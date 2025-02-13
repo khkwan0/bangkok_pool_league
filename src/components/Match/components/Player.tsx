@@ -111,28 +111,28 @@ export default function Player({
       {teamId === homeTeamId &&
         state.firstBreak === homeTeamId &&
         state.frameData[frameIndex].frameNumber % 2 === 1 && (
-          <Text textAlign="center" style={{color: textColor}}>
+          <Text className="text-center" style={{color: textColor}}>
             break
           </Text>
         )}
       {teamId === homeTeamId &&
         state.firstBreak === awayTeamId &&
         state.frameData[frameIndex].frameNumber % 2 === 0 && (
-          <Text textAlign="center" style={{color: textColor}}>
+          <Text className="text-center" style={{color: textColor}}>
             break
           </Text>
         )}
       {teamId === awayTeamId &&
         state.firstBreak === awayTeamId &&
         state.frameData[frameIndex].frameNumber % 2 === 1 && (
-          <Text textAlign="center" style={{color: textColor}}>
+          <Text className="text-center" style={{color: textColor}}>
             break
           </Text>
         )}
       {teamId === awayTeamId &&
         state.firstBreak === homeTeamId &&
         state.frameData[frameIndex].frameNumber % 2 === 0 && (
-          <Text textAlign="center" style={{color: textColor}}>
+          <Text className="text-center" style={{color: textColor}}>
             break
           </Text>
         )}

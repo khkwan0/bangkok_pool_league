@@ -20,13 +20,13 @@ export default function Score() {
   return (
     <Row>
       <View flex={2}>
-        <Text textAlign="center" type="title">
+        <Text className="text-center" type="title">
           {homeScore}
         </Text>
       </View>
       <View flex={1} />
       <View flex={2}>
-        <Text textAlign="center" type="title">
+        <Text className="text-center" type="title">
           {awayScore}
         </Text>
       </View>

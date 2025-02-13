@@ -8,7 +8,7 @@ import {router} from 'expo-router'
 export default function VSHeader({matchInfo}: MatchInfoType) {
   return (
     <Row>
-      <View flex={3}>
+      <View style={{flex: 3}} className="items-center">
         <Pressable
           onPress={() =>
             router.push({
@@ -18,15 +18,15 @@ export default function VSHeader({matchInfo}: MatchInfoType) {
               },
             })
           }>
-          <Text textAlign="right" type="title">
+          <Text className="text-right" type="title">
             {matchInfo.home_team_short_name}
           </Text>
         </Pressable>
       </View>
-      <View flex={1}>
-        <Text textAlign="center">VS</Text>
+      <View style={{flex: 1}}>
+        <Text className="text-center">VS</Text>
       </View>
-      <View flex={3}>
+      <View style={{flex: 3}} className="items-center">
         <Pressable
           onPress={() =>
             router.push({
@@ -36,7 +36,7 @@ export default function VSHeader({matchInfo}: MatchInfoType) {
               },
             })
           }>
-          <Text textAlign="left" type="title">
+          <Text className="text-left" type="title">
             {matchInfo.away_team_short_name}
           </Text>
         </Pressable>

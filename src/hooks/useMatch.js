@@ -71,9 +71,24 @@ export const useMatch = () => {
         teamId: teamId,
       })
       if (res.status === 'ok') {
-        return true
+        return res.data
       } else {
-        return false
+        return null
+      }
+    } catch (e) {
+      throw new Error(e)
+    }
+  }
+
+  const UnconfirmMatch = async (matchId, teamId) => {
+    try {
+      const res = await Post('/match/unconfirm/' + matchId, {
+        teamId: teamId,
+      })
+      if (res.status === 'ok') {
+        return res.data
+      } else {
+        return null
       }
     } catch (e) {
       throw new Error(e)
@@ -87,6 +102,7 @@ export const useMatch = () => {
     GetMatchDetails,
     GetMatchMetadata,
     RescheduleMatch,
+    UnconfirmMatch,
     UpdateCompletedMatch,
   }
 }

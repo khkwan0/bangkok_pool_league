@@ -60,7 +60,7 @@ export default function Frame({item, index}: FrameProps) {
   } else {
     return (
       <View className="pb-2 px-4">
-        <Text textAlign="center">
+        <Text className="text-center">
           {t('frame')} {item.frameNumber}
         </Text>
         <Row>
