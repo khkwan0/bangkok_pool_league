@@ -78,6 +78,7 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
     matchInfo.team_role_id,
     matchInfo.player_team_id,
   )
+
   return (
     <View
       style={{
@@ -135,12 +136,12 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
         </Pressable>
       </Link>
       <View>
-        {matchInfo.home_confirmed && matchInfo.away_confirmed && (
+        {matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0 && (
           <View>
             <Text>Match is confirmed</Text>
           </View>
         )}
-        {matchInfo.home_confirmed &&
+        {matchInfo.home_confirmed > 0 &&
           !matchInfo.away_confirmed &&
           matchInfo.player_team_id === matchInfo.home_team_id && (
             <View>
@@ -150,7 +151,7 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
               )}
             </View>
           )}
-        {matchInfo.away_confirmed &&
+        {matchInfo.away_confirmed > 0 &&
           !matchInfo.home_confirmed &&
           matchInfo.player_team_id === matchInfo.away_team_id && (
             <View>
