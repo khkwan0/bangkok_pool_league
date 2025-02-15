@@ -11,8 +11,10 @@ import {MatchInfoDataType} from '@/components/Match/types'
 import Button from '@/components/Button'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatch} from '@/hooks/useMatch'
+import {useRouter} from 'expo-router'
 
 export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
+  const router = useRouter()
   const [matchInfo, setMatchInfo] = React.useState<MatchInfoDataType>(
     props.matchInfo,
   )
@@ -20,6 +22,30 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
   const {state} = useLeagueContext()
   const match = useMatch()
   const user = state.user
+  console.log(matchInfo.postponed_proposal)
+
+  React.useEffect(() => {
+    if (typeof user?.teams !== 'undefined' && user.teams.length > 0) {
+      let i = 0
+      let found = false
+      while (i < user.teams.length && !found) {
+        if (user.teams[i].id === matchInfo.home_team_id) {
+          const _matchInfo = {...matchInfo}
+          _matchInfo.team_role_id = user.teams[i].team_role_id
+          _matchInfo.player_team_id = matchInfo.home_team_id
+          setMatchInfo(_matchInfo)
+          found = true
+        } else if (user.teams[i].id === matchInfo.away_team_id) {
+          const _matchInfo = {...matchInfo}
+          _matchInfo.team_role_id = user.teams[i].team_role_id
+          _matchInfo.player_team_id = matchInfo.away_team_id
+          setMatchInfo(_matchInfo)
+          found = true
+        }
+        i++
+      }
+    }
+  }, [])
 
   function ShowLocation(lat: number, long: number) {
     showLocation({
@@ -50,6 +76,13 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
     }
   }
 
+  async function HandlePostpone() {
+    router.push({
+      pathname: '/PostponeScreen',
+      params: {matchInfo: JSON.stringify(matchInfo)},
+    })
+  }
+
   async function HandleUnconfirm() {
     const res = await match.UnconfirmMatch(
       matchInfo.match_id,
@@ -77,6 +110,7 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
     matchInfo.home_confirmed,
     matchInfo.team_role_id,
     matchInfo.player_team_id,
+    matchInfo.postponed_proposal,
   )
 
   return (
@@ -101,6 +135,16 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
                   .setZone('Asia/Bangkok')
                   .toLocaleString(DateTime.DATE_HUGE)}
               </Text>
+              {matchInfo.postponed_proposal?.newDate && !(matchInfo.home_confirmed && matchInfo.away_confirmed) && (
+                <View style={{backgroundColor: 'red', padding: 10, borderRadius: 10}}>
+                <Text type="subtitle"className="text-center">proposed_date</Text>
+                <Text type="subtitle" className="text-center">
+                  {DateTime.fromISO(matchInfo.postponed_proposal.newDate)
+                  .setZone('Asia/Bangkok')
+                  .toLocaleString(DateTime.DATE_HUGE)}
+                </Text>
+                </View>
+              )}
             </View>
             <Row>
               <View flex={2}>
@@ -146,9 +190,7 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
           matchInfo.player_team_id === matchInfo.home_team_id && (
             <View>
               <Text>Waiting for away team to confirm</Text>
-              {user.role_id > 0 && (
-                <Button onPress={() => HandleUnconfirm()}>Unconfirm</Button>
-              )}
+              <Button onPress={() => HandleUnconfirm()}>Unconfirm</Button>
             </View>
           )}
         {matchInfo.away_confirmed > 0 &&
@@ -156,27 +198,48 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
           matchInfo.player_team_id === matchInfo.away_team_id && (
             <View>
               <Text>Waiting for home team to confirm</Text>
-              {user.role_id > 0 && (
-                <Button onPress={() => HandleUnconfirm()}>Unconfirm</Button>
-              )}
+              <Button onPress={() => HandleUnconfirm()}>Unconfirm</Button>
             </View>
           )}
-        {!matchInfo.home_confirmed &&
+        {!matchInfo.home_confirmed && !matchInfo.away_confirmed &&
           matchInfo.player_team_id === matchInfo.home_team_id &&
-          user.role_id > 0 && (
-            <View>
-              {user.role_id > 0 && (
-                <Button onPress={() => HandleConfirm()}>Confirm</Button>
+          (matchInfo.team_role_id > 0 || user.role_id === 9) && (
+            <View className="my-2">
+              <View className="my-2">
+                {!matchInfo.postponed_proposal?.isHome ? (
+                  <Button onPress={() => HandleConfirm()}>{t('confirm')}</Button>
+                ) : null}
+              </View>
+              {matchInfo.postponed_proposal?.newDate && (
+                <View className="flex-row gap-2 items-center">
+                  <View className="flex-1">
+                    <Text>{matchInfo.home_team_short_name} proposed date:</Text>
+                    <Text>{matchInfo.postponed_proposal?.newDate ? DateTime.fromISO(matchInfo.postponed_proposal.newDate).toFormat('dd LLL yyyy hh:mm a') : ''}</Text>
+                  </View>
+                  <View className="flex-1">
+                    <Button onPress={() => HandlePostpone()}>
+                      {matchInfo.postponed_proposal && t('edit_date')}
+                    </Button>
+                  </View>
+                </View>
+              )}
+              {!matchInfo.postponed_proposal?.newDate && (
+                <Button onPress={() => HandlePostpone()}>{t('postpone')}</Button>
               )}
             </View>
           )}
-        {!matchInfo.away_confirmed &&
+        {!matchInfo.away_confirmed && !matchInfo.home_confirmed &&
           matchInfo.player_team_id === matchInfo.away_team_id &&
-          user.role_id > 0 && (
-            <View>
-              {user.role_id > 0 && (
-                <Button onPress={() => HandleConfirm()}>Confirm</Button>
-              )}
+          (matchInfo.team_role_id > 0 || user.role_id === 9) && (
+            <View className="my-2">
+              <View className="my-2">
+                {matchInfo.postponed_proposal?.isHome ? (
+                  <Button onPress={() => HandleConfirm()}>Confirm</Button>
+                ) : null}
+              </View>
+              <View>
+                <Button onPress={() => HandlePostpone()}>Postpone</Button>
+              </View>
             </View>
           )}
       </View>

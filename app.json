@@ -11,7 +11,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "appleTeamId": "2MXCL8R3KW"
+      "appleTeamId": "2MXCL8R3KW",
+      "userAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {

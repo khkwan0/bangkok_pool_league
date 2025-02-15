@@ -16,6 +16,12 @@ export type MatchInfoDataType = {
   away_confirmed: number
   team_role_id: number
   player_team_id: number
+  postponed_proposal?: {
+    isHome: boolean
+    newDate: string
+    timestamp: string
+    userId: number
+  } | null
 }
 
 export interface MatchInfoType {

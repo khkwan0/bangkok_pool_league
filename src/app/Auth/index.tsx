@@ -3,7 +3,7 @@ import {Dimensions, Image, Pressable, ScrollView, View} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {router} from 'expo-router'
 import LineLogin from '@khkwan0/react-native-line'
-import {useAccount} from '@/hooks'
+import {useAccount} from '@/hooks/useAccount'
 import {LoginManager, AccessToken} from 'react-native-fbsdk-next'
 import {useTranslation} from 'react-i18next'
 import {useNavigation} from '@react-navigation/native'
@@ -190,7 +190,9 @@ export default function AuthHome() {
           )}
 
           <Pressable
-            onPress={() => router.push({pathname: '/Auth/Email', params: {from: from}})}
+            onPress={() =>
+              router.push({pathname: '/Auth/Email', params: {from: from}})
+            }
             className="bg-gray-100 dark:bg-gray-800 rounded-[8px] overflow-hidden my-1">
             <View className="flex-row items-center justify-center h-[48px] px-4">
               <MaterialCommunityIcons

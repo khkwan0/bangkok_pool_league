@@ -56,6 +56,15 @@ export const useMatch = () => {
     }
   }
 
+  const ProposeRescheduleMatch = async proposedData => {
+    try {
+      const res = await Post('/match/reschedule', proposedData)
+      return res
+    } catch (e) {
+      throw new Error(e)
+    }
+  }
+
   const GetMatchMetadata = async matchId => {
     try {
       const res = await Get('/match/meta/' + matchId)
@@ -101,6 +110,7 @@ export const useMatch = () => {
     GetMatchInfo,
     GetMatchDetails,
     GetMatchMetadata,
+    ProposeRescheduleMatch,
     RescheduleMatch,
     UnconfirmMatch,
     UpdateCompletedMatch,

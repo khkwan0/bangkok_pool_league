@@ -241,7 +241,7 @@ export default function UpcomingMatches(props: any) {
                 </View>
               )}
             {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
-              <View className="mb-1 mx-3 mt-1 p-5" style={{borderRadius: 10}}>
+              <View className="mx-3 my-1 p-5 rounded-lg shadow-sm">
                 <BouncyCheckbox
                   disabled={refreshing}
                   text={t('show_mine_only')}
@@ -252,7 +252,7 @@ export default function UpcomingMatches(props: any) {
               </View>
             )}
             {
-              <View className="mt-6">
+              <View className="mx-3 p-5 rounded-lg shadow-sm">
                 <BouncyCheckbox
                   disabled={refreshing}
                   text={t('show_postponed')}
@@ -266,7 +266,7 @@ export default function UpcomingMatches(props: any) {
         }
         ListFooterComponent={
           isMounted && fixtures.length === 0 ? (
-            <View className="p-6 rounded-2xl shadow-sm items-center mx-20">
+            <View className="mt-4 p-6 rounded-2xl shadow-sm items-center mx-20">
               <MaterialIcons
                 name="event-available"
                 size={48}
