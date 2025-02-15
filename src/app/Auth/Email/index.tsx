@@ -7,7 +7,7 @@ import {
   Pressable,
 } from 'react-native'
 import {useTranslation} from 'react-i18next'
-import {useAccount} from '@/hooks'
+import {useAccount} from '@/hooks/useAccount'
 import {router} from 'expo-router'
 import React from 'react'
 import Button from '@/components/Button'
@@ -179,7 +179,9 @@ export default function Email() {
 
             {/* Register Link */}
             <Pressable
-              onPress={() => router.push({pathname: '/Auth/Email/register'})}
+              onPress={() =>
+                router.push('./Register', {relativeToDirectory: true})
+              }
               className="items-center py-4">
               <Text className="text-blue-600 dark:text-blue-400">
                 {t('dont_have_account')} {' '}

@@ -182,5 +182,14 @@
   "statistics_legend_weighted": "• Weighted performance: Doubles frames are weighted with 50% weight",
   "statistics_legend_adjusted": "• Adjusted performance: The overall weighted performance is multiplied by (frames-1)/frames to account for small sample sizes",
   "player_profile": "Player Profile",
-  "player_id": "Player ID"
+  "player_id": "Player ID",
+  "nickname_placeholder": "Enter your nickname",
+  "first_name_placeholder": "Enter your first name",
+  "last_name_placeholder": "Enter your last name",
+  "nickname_required": "Nickname is required",
+  "email_label": "Email *",
+  "nickname_label": "Nickname *",
+  "first_name_label": "First Name (Optional)",
+  "last_name_label": "Last Name (Optional)",
+  "email_registration_success": "Registration Successful! Welcome to Bangkok Pool League"
 }

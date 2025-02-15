@@ -151,6 +151,9 @@ export const useAccount = () => {
         firstName,
         lastName,
       })
+      if (res.status === 'ok') {
+        await AsyncStorage.setItem('jwt', res.data.token)
+      }
       return res
     } catch (e) {
       console.log(e)

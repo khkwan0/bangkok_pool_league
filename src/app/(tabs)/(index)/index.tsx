@@ -20,6 +20,7 @@ interface ItemType {
   away_team_id: number
   date: string
 }
+
 export default function UpcomingMatches(props: any) {
   const {colors} = useTheme()
   const {state, dispatch}: any = useLeagueContext()
@@ -129,7 +130,11 @@ export default function UpcomingMatches(props: any) {
         }
       }
     } else {
-      GetMatches(false, false)
+      if (showPostponed) {
+        GetMatches(false, true)
+      } else {
+        GetMatches(false, false)
+      }
     }
   }, [showMineOnly, showPostponed, user])
   /*
@@ -162,6 +167,7 @@ export default function UpcomingMatches(props: any) {
       HandleSavePostponedOption()
     }
   }, [showPostponed])
+
   async function HandleTogglePostponed() {
     setShowPostponed(s => !s)
   }
@@ -217,7 +223,10 @@ export default function UpcomingMatches(props: any) {
           <>
             {!user.id && (
               <View className="my-4 mx-6">
-                <Button onPress={() => router.push({pathname: '/Auth', params: {from: pathname}})}>
+                <Button
+                  onPress={() =>
+                    router.push({pathname: '/Auth', params: {from: pathname}})
+                  }>
                   {t('login_to_see_your_matches')}
                 </Button>
               </View>
@@ -240,17 +249,19 @@ export default function UpcomingMatches(props: any) {
                   isChecked={showMineOnly}
                   onPress={() => setShowMineOnly(s => !s)}
                 />
-                <View className="mt-6">
-                  <BouncyCheckbox
-                    disabled={refreshing}
-                    text={t('show_postponed')}
-                    textStyle={{textDecorationLine: 'none'}}
-                    isChecked={showPostponed}
-                    onPress={() => HandleTogglePostponed()}
-                  />
-                </View>
               </View>
             )}
+            {
+              <View className="mt-6">
+                <BouncyCheckbox
+                  disabled={refreshing}
+                  text={t('show_postponed')}
+                  textStyle={{textDecorationLine: 'none'}}
+                  isChecked={showPostponed}
+                  onPress={() => HandleTogglePostponed()}
+                />
+              </View>
+            }
           </>
         }
         ListFooterComponent={

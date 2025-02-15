@@ -13,6 +13,7 @@ import CustomTextInput from '@/components/TextInput'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import {useTranslation} from 'react-i18next'
 import {useRouter} from 'expo-router'
+import {useAccount} from '@/hooks/useAccount'
 
 export default function RegisterScreen() {
   const {t} = useTranslation()
@@ -23,14 +24,18 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [nickname, setNickname] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const router = useRouter()
+  const {Register} = useAccount()
 
   const handleRegister = async () => {
     setError('')
     setLoading(true)
 
     try {
-      if (!email || !password || !confirmPassword) {
+      if (!email || !password || !confirmPassword || !nickname) {
         setError(t('invalid_parameters'))
         return
       }
@@ -51,9 +56,20 @@ export default function RegisterScreen() {
         return
       }
 
-      // TODO: Implement actual registration logic here
-      console.log('Registration data:', {email, password})
-    } catch (err) {
+      const response = await Register(
+        email,
+        password,
+        confirmPassword,
+        nickname,
+        firstName,
+        lastName,
+      )
+      if (response?.status === 'ok') {
+        router.replace('../RegisterSuccess')
+      } else {
+        setError(t(response?.error || 'server_error'))
+      }
+    } catch (err: any) {
       setError(t('server_error'))
       console.error(err)
     } finally {
@@ -82,17 +98,10 @@ export default function RegisterScreen() {
             </Text>
           </View>
 
-          {/* Error Message */}
-          {error ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : null}
-
           {/* Form */}
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>{t('email')}</Text>
+              <Text style={styles.label}>{t('email_label')}</Text>
               <CustomTextInput
                 value={email}
                 onChangeText={setEmail}
@@ -104,6 +113,46 @@ export default function RegisterScreen() {
                 leftIconProps={{name: 'email-outline'}}
                 iconSize={22}
                 error={!!error && !email}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>{t('nickname_label')}</Text>
+              <CustomTextInput
+                value={nickname}
+                onChangeText={setNickname}
+                placeholder={t('nickname_placeholder')}
+                autoCapitalize="none"
+                leftIcon={MaterialCommunityIcons}
+                leftIconProps={{name: 'account-outline'}}
+                iconSize={22}
+                error={!!error && !nickname}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>{t('first_name')}</Text>
+              <CustomTextInput
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder={t('first_name_placeholder')}
+                autoCapitalize="words"
+                leftIcon={MaterialCommunityIcons}
+                leftIconProps={{name: 'account-outline'}}
+                iconSize={22}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>{t('last_name')}</Text>
+              <CustomTextInput
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder={t('last_name_placeholder')}
+                autoCapitalize="words"
+                leftIcon={MaterialCommunityIcons}
+                leftIconProps={{name: 'account-outline'}}
+                iconSize={22}
               />
             </View>
 
@@ -150,6 +199,13 @@ export default function RegisterScreen() {
                 error={!!error && !confirmPassword}
               />
             </View>
+
+            {/* Error Message */}
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
 
             {/* Register Button */}
             <TouchableOpacity

@@ -181,5 +181,14 @@
   "statistics_legend_weighted": "• ผลงานถ่วงน้ำหนัก: เฟรมคู่จะถูกถ่วงน้ำหนักที่ 50%",
   "statistics_legend_adjusted": "• ผลงานที่ปรับแล้ว: ผลงานถ่วงน้ำหนักรวมจะคูณด้วย (เฟรม-1)/เฟรม เพื่อคำนวณขนาดตัวอย่างที่น้อย",
   "player_profile": "โปรไฟล์ผู้เล่น",
-  "player_id": "รหัสผู้เล่น"
+  "player_id": "รหัสผู้เล่น",
+  "nickname_placeholder": "กรอกชื่อเล่นของคุณ",
+  "first_name_placeholder": "กรอกชื่อจริงของคุณ",
+  "last_name_placeholder": "กรอกนามสกุลของคุณ",
+  "nickname_required": "กรุณากรอกชื่อเล่น",
+  "email_label": "อีเมล *",
+  "nickname_label": "ชื่อเล่น *",
+  "first_name_label": "ชื่อจริง (ไม่จำเป็น)",
+  "last_name_label": "นามสกุล (ไม่จำเป็น)",
+  "email_registration_success": "ลงทะเบียนสำเร็จ! ยินดีต้อนรับสู่พูลลีกกรุงเทพ"
 }
