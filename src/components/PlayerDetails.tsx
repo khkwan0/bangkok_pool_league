@@ -18,6 +18,7 @@ export default function PlayerDetails({playerId}: PlayerDetailsProps) {
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
   const navigation = useNavigation()
+
   React.useEffect(() => {
     async function fetchPlayerInfo() {
       try {
