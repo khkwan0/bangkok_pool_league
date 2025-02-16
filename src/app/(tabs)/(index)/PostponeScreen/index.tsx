@@ -4,5 +4,5 @@ import {useLocalSearchParams} from 'expo-router'
 export default function PostponeScreen() {
   const {matchInfo} = useLocalSearchParams()
 
-  return <PostPone matchInfo={matchInfo} />
+  return <PostPone matchInfo={JSON.parse(matchInfo)} />
 }

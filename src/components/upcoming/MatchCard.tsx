@@ -13,16 +13,13 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatch} from '@/hooks/useMatch'
 import {useRouter} from 'expo-router'
 
-export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
+export default function MatchCard({matchInfo}: {matchInfo: MatchInfoDataType}) {
   const router = useRouter()
-  const [matchInfo, setMatchInfo] = React.useState<MatchInfoDataType>(
-    props.matchInfo,
-  )
+
   const {t} = useTranslation()
   const {state} = useLeagueContext()
   const match = useMatch()
   const user = state.user
-  console.log(matchInfo.postponed_proposal)
 
   React.useEffect(() => {
     if (typeof user?.teams !== 'undefined' && user.teams.length > 0) {
@@ -33,13 +30,13 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
           const _matchInfo = {...matchInfo}
           _matchInfo.team_role_id = user.teams[i].team_role_id
           _matchInfo.player_team_id = matchInfo.home_team_id
-          setMatchInfo(_matchInfo)
+          matchInfo = {..._matchInfo}
           found = true
         } else if (user.teams[i].id === matchInfo.away_team_id) {
           const _matchInfo = {...matchInfo}
           _matchInfo.team_role_id = user.teams[i].team_role_id
           _matchInfo.player_team_id = matchInfo.away_team_id
-          setMatchInfo(_matchInfo)
+          matchInfo = {..._matchInfo}
           found = true
         }
         i++
@@ -71,7 +68,6 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
         } else {
           _matchInfo.away_confirmed = res.confirmed
         }
-        setMatchInfo(_matchInfo)
       }
     }
   }
@@ -224,7 +220,7 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
                 </View>
               )}
               {!matchInfo.postponed_proposal?.newDate && (
-                <Button onPress={() => HandlePostpone()}>{t('postpone')}</Button>
+                <Button onPress={() => HandlePostpone()}>{t('reschedule')}</Button>
               )}
             </View>
           )}
@@ -234,11 +230,11 @@ export default function MatchCard(props: {matchInfo: MatchInfoDataType}) {
             <View className="my-2">
               <View className="my-2">
                 {matchInfo.postponed_proposal?.isHome ? (
-                  <Button onPress={() => HandleConfirm()}>Confirm</Button>
+                  <Button onPress={() => HandleConfirm()}>{t('confirm_proposed_date')}</Button>
                 ) : null}
               </View>
               <View>
-                <Button onPress={() => HandlePostpone()}>Postpone</Button>
+                <Button onPress={() => HandlePostpone()}>{t('propose_new_date')}</Button>
               </View>
             </View>
           )}

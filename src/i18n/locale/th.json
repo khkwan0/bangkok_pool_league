@@ -190,5 +190,16 @@
   "nickname_label": "ชื่อเล่น *",
   "first_name_label": "ชื่อจริง (ไม่จำเป็น)",
   "last_name_label": "นามสกุล (ไม่จำเป็น)",
-  "email_registration_success": "ลงทะเบียนสำเร็จ! ยินดีต้อนรับสู่พูลลีกกรุงเทพ"
+  "email_registration_success": "ลงทะเบียนสำเร็จ! ยินดีต้อนรับสู่พูลลีกกรุงเทพ",
+  "postpone_match": "คุณต้องการเลื่อนการแข่งขันนี้อย่างไร?",
+  "postpone_indefinitely": "เลื่อนไม่มีกำหนด",
+  "schedule_for_later": "กำหนดเวลาภายหลัง",
+  "proposed_date": "วันที่เสนอ",
+  "no_date_selected": "ยังไม่ได้เลือกวันที่",
+  "failed_to_postpone": "ไม่สามารถเลื่อนการแข่งขันได้",
+  "confirm_postpone_indefinitely": "คุณแน่ใจหรือไม่ว่าต้องการเลื่อนการแข่งขันนี้ไม่มีกำหนด?",
+  "confirm_postpone_date": "คุณแน่ใจหรือไม่ว่าต้องการเลื่อนการแข่งขันนี้เป็นวันที่ {date}?",
+  "edit_date": "แก้ไขวันที่",
+  "propose_new_date": "เสนอวันที่ใหม่",
+  "confirm_proposed_date": "ยืนยันวันที่เสนอ"
 }

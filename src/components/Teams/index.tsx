@@ -105,6 +105,12 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
         if (stored) {
           const {showMineOnly: value} = JSON.parse(stored)
           setShowMineOnly(value)
+        } else {
+          if (user.teams && user.teams.length > 0) {
+            setShowMineOnly(true)
+          } else {
+            setShowMineOnly(false)
+          }
         }
       }
     } catch (error) {
@@ -122,17 +128,17 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
 
   return (
     <View className="flex-1">
-      {userTeams.length > 0 && (
-        <View className="px-4 py-3 border-b border-slate-200">
-          <BouncyCheckbox
-            text={t('show_my_teams')}
-            textStyle={{textDecorationLine: 'none'}}
-            isChecked={showMineOnly}
-            onPress={handleSetShowMineOnly}
-          />
-        </View>
-      )}
       <FlatList
+        ListHeaderComponent={
+          <View className="px-4 py-3 border-b border-slate-200">
+            <BouncyCheckbox
+              text={t('show_my_teams')}
+              textStyle={{textDecorationLine: 'none'}}
+              isChecked={showMineOnly}
+              onPress={handleSetShowMineOnly}
+            />
+          </View>
+        }
         data={teams}
         renderItem={({item, index}) => (
           <TeamCard team={item} index={index} fromTabs={fromTabs} />

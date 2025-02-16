@@ -191,5 +191,16 @@
   "nickname_label": "Nickname *",
   "first_name_label": "First Name (Optional)",
   "last_name_label": "Last Name (Optional)",
-  "email_registration_success": "Registration Successful! Welcome to Bangkok Pool League"
+  "email_registration_success": "Registration Successful! Welcome to Bangkok Pool League",
+  "postpone_match": "How would you like to postpone this match?",
+  "postpone_indefinitely": "Postpone Indefinitely",
+  "schedule_for_later": "Schedule for Later",
+  "proposed_date": "Proposed Date",
+  "no_date_selected": "No date selected",
+  "failed_to_postpone": "Failed to postpone match",
+  "confirm_postpone_indefinitely": "Are you sure you want to postpone this match indefinitely?",
+  "confirm_postpone_date": "Are you sure you want to postpone this match to {date}?",
+  "edit_date": "Edit Date",
+  "propose_new_date": "Propose New Date",
+  "confirm_proposed_date": "Confirm Proposed Date"
 }
