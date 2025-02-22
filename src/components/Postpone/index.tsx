@@ -10,6 +10,7 @@ import {router} from 'expo-router'
 import {DateTime} from 'luxon'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import {useTranslation} from 'react-i18next'
+import {useNavigation} from '@react-navigation/native'
 
 export default function Postpone({matchInfo}: {matchInfo: any}) {
   const {state} = useLeagueContext()
@@ -25,12 +26,14 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
     useState(false)
   const [dateSelected, setDateSelected] = useState(false)
   const [showConfirmPostponeDate, setShowConfirmPostponeDate] = useState(false)
-  const [newDate, setNewDate] = useState(null)
+  const [newDate, setNewDate] = useState<Date | null>(null)
   const [isMounted, setIsMounted] = useState(false)
   const parsedMatchInfo =
     typeof matchInfo === 'string' ? JSON.parse(matchInfo) : matchInfo
   const [error, setError] = useState('')
+  const [wasCancelled, setWasCancelled] = useState(false)
   const {t} = useTranslation()
+  const navigation = useNavigation()
 
   async function handleIndefinitePostpone() {
     try {
@@ -50,12 +53,19 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
             parsedMatchInfo.player_team_id === parsedMatchInfo.home_team_id,
           userId: user.id,
           newDate: newDate,
+          teamId: parsedMatchInfo.player_team_id,
           timestamp: new Date().toISOString(),
         },
       })
       if (res.status === 'ok') {
         setPostponedDate(newDate)
         setShowConfirmPostponeDate(false)
+        router.back()
+        router.setParams({
+          params: JSON.stringify({
+            refresh: true,
+          }),
+        })
       } else {
         setError('Failed to postpone to date')
       }
@@ -64,9 +74,50 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
     }
   }
 
+  const handleConfirmMatch = async () => {
+    try {
+      const res = await match.ConfirmMatch(
+        parsedMatchInfo.match_id,
+        parsedMatchInfo.player_team_id,
+      )
+      if (res.status === 'ok') {
+        router.back()
+        router.setParams({
+          params: JSON.stringify({
+            refresh: true,
+          }),
+        })
+      } else {
+        setError(t('failed_to_confirm_match'))
+      }
+    } catch (error) {
+      console.error('Failed to confirm match:', error)
+      setError(t('failed_to_confirm_match'))
+    }
+  }
+
   React.useEffect(() => {
+    navigation.setOptions({
+      title: t('reschedule_match'),
+    })
     setIsMounted(true)
   }, [])
+
+  function handleCancel() {
+    setShowDatePicker(false)
+    setWasCancelled(true)
+  }
+
+  function handleHide() {
+    if (!wasCancelled) {
+      setShowConfirmPostponeDate(true)
+    }
+  }
+
+  function handleOpenDatePicker() {
+    setShowDatePicker(true)
+    setWasCancelled(false)
+  }
 
   if (isMounted) {
     return (
@@ -81,10 +132,10 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
               {t('postpone_indefinitely')}
             </Button>
 
-            <Button onPress={() => setShowDatePicker(true)}>
+            <Button onPress={() => handleOpenDatePicker()}>
               {matchInfo.postponed_proposal?.newDate
                 ? t('propose_a_new_date')
-                : t('schedule_for_later')}
+                : t('reschedule')}
             </Button>
           </View>
         </View>
@@ -100,6 +151,18 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
                   )
                 : t('no_date_selected')}
             </Text>
+            {/* if the match is postponed and the user is NOT on the team that proposed the date, show the confirm button */}
+            {postponedDate &&
+              ((parsedMatchInfo.postponed_proposal?.isHome === true &&
+                parsedMatchInfo.player_team_id !==
+                  parsedMatchInfo.home_team_id) ||
+                (parsedMatchInfo.postponed_proposal?.isHome === false &&
+                  parsedMatchInfo.player_team_id ===
+                    parsedMatchInfo.home_team_id)) && (
+                <Button onPress={() => handleConfirmMatch()}>
+                  {t('confirm')}
+                </Button>
+              )}
           </View>
           {error ? (
             <View className="my-4" style={styles.errorContainer}>
@@ -115,8 +178,8 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
           mode="datetime"
           is24Hour={false}
           minuteInterval={30}
-          onHide={() => setShowConfirmPostponeDate(true)}
-          onCancel={() => setShowDatePicker(false)}
+          onHide={handleHide}
+          onCancel={handleCancel}
           onConfirm={date => {
             setNewDate(date)
             setDateSelected(true)

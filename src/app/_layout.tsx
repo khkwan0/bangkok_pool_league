@@ -44,7 +44,7 @@ export default function RootLayout() {
       if (enabled) {
         console.log('Authorization status: ', authStatus)
       }
-    } else {
+    } else if (Platform.OS === 'android') {
       PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
       )

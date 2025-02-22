@@ -30,10 +30,8 @@ export const useAccount = () => {
         !user.id
       ) {
         const userData = await Get('/user')
-        /*
         const token = await messaging().getToken()
         const res = await Post('/user/token', {token: token})
-        */
         if (typeof userData.role_id !== 'undefined' && userData.role_id === 9) {
           await notifee.createChannel({
             id: 'Admin',

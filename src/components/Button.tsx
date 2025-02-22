@@ -8,7 +8,9 @@ export type ThemedButtonProps = PressableProps & {
   children?: any
   icon?: React.ReactNode
   type?: 'primary' | 'outline'
+  rest?: any
 }
+
 
 export default function Button({
   style,
@@ -49,6 +51,7 @@ export default function Button({
       <Pressable
         disabled={disabled}
         className={`${bgColor} p-4 rounded-lg`}
+        style={{...style, ...rest}}
         {...rest}>
         {typeof children === 'object' && [children]}
         {typeof children === 'string' && (
@@ -71,6 +74,7 @@ export default function Button({
       <Pressable
         disabled={disabled}
         className={`${bgColor} p-4 rounded-lg`}
+        style={{...style, ...rest}}
         {...rest}>
         {typeof children === 'object' && [children]}
         {typeof children === 'string' && (

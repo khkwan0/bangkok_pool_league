@@ -80,7 +80,7 @@ export const useMatch = () => {
         teamId: teamId,
       })
       if (res.status === 'ok') {
-        return res.data
+        return res
       } else {
         return null
       }

@@ -51,6 +51,17 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>FacebookAppID</key>
+	<string>879205039819790</string>
+	<key>FacebookClientToken</key>
+	<string>f58a315457e05a07ba9c795c0dc4cdf7</string>
+	<key>FacebookDisplayName</key>
+	<string>Bangkok Pool League</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-share-api</string>
+	</array>
 	<key>LSMinimumSystemVersion</key>
 	<string>12.0</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -69,6 +80,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>SplashScreen</string>
@@ -96,16 +108,5 @@
 	<string>Automatic</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>FacebookAppID</key>
-	<string>879205039819790</string>
-	<key>FacebookClientToken</key>
-	<string>f58a315457e05a07ba9c795c0dc4cdf7</string>
-	<key>FacebookDisplayName</key>
-	<string>Bangkok Pool League</string>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>fbapi</string>
-		<string>fb-messenger-share-api</string>
-	</array>
 </dict>
 </plist>
