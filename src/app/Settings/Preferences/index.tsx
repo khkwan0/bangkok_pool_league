@@ -2,17 +2,23 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTheme, useNavigation} from '@react-navigation/native'
 import {useTranslation} from 'react-i18next'
-import {Pressable} from 'react-native'
+import {Pressable, Switch} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import i18n from '@/i18n'
 import {useEffect, useState} from 'react'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {useLeagueContext} from '@/context/LeagueContext'
+import {useAccount} from '@/hooks/useAccount'
 
 export default function Preferences() {
   const {colors} = useTheme()
   const {t} = useTranslation()
   const navigation = useNavigation()
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language)
+  const [isMounted, setIsMounted] = useState(false)
+  const {state, dispatch} = useLeagueContext()
+  const user = state.user
+  const account = useAccount()
 
   useEffect(() => {
     navigation.setOptions({
@@ -36,6 +42,23 @@ export default function Preferences() {
       console.error('Failed to change language:', error)
     }
   }
+
+  async function SavePreferences() {
+    try {
+      await account.SavePreferences(user.preferences)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+  useEffect(() => {
+    if (isMounted) {
+      SavePreferences()
+    }
+  }, [user])
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   return (
     <View className="flex-1 p-4">
@@ -98,6 +121,42 @@ export default function Preferences() {
               )}
             </View>
           </Pressable>
+        </View>
+      </View>
+      <View className="bg-gray-800/20 rounded-xl p-4">
+        <Text className="text-lg font-semibold mb-4">{t('notifications')}</Text>
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text>push_notifications</Text>
+          </View>
+          <View>
+            <Switch
+              value={user?.preferences?.enabledPushNotifications ?? true}
+              onValueChange={val => {
+                dispatch({
+                  type: 'SET_PREFERENCES',
+                  payload: {enabledPushNotifications: val},
+                })
+              }}
+            />
+          </View>
+        </View>
+        <View className="flex-row items-center justify-between my-4">
+          <View>
+            <Text>silent_notifications</Text>
+          </View>
+          <View>
+            <Switch
+              value={user?.preferences?.silentPushNotifications ?? true}
+              onValueChange={val => {
+                dispatch({
+                  type: 'SET_PREFERENCES',
+                  payload: {silentPushNotifications: val},
+                })
+              }}
+              disabled={!user?.preferences?.enabledPushNotifications}
+            />
+          </View>
         </View>
       </View>
     </View>

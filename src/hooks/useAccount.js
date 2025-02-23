@@ -321,6 +321,15 @@ export const useAccount = () => {
     }
   }
 
+  async function SavePreferences(preferences) {
+    try {
+      const res = await Post('/user/preferences', {preferences})
+      return res
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return {
     AdminLogin,
     CheckVersion,
@@ -338,6 +347,7 @@ export const useAccount = () => {
     Recover,
     Verify,
     SaveAvatar,
+    SavePreferences,
     SetFirstName,
     SetLastName,
     SetNickName,

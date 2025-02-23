@@ -1,4 +1,6 @@
+import {getAccountUsername} from 'expo/config'
 import {createContext, useContext, useReducer} from 'react'
+import {useAccount} from '@/hooks/useAccount'
 
 interface User {
   id?: number
@@ -8,6 +10,10 @@ interface User {
   nickname?: string
   first_name?: string
   last_name?: string
+  preferences?: {
+    enabledPushNotifications?: boolean
+    silentPushNotifications?: boolean
+  }
 }
 
 interface LeagueState {
@@ -54,6 +60,16 @@ const LeagueReducer = (state: any, action: any) => {
         messageCount: action.payload,
       }
     }
+    case 'SET_PREFERENCES': {
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          preferences: {...(state.user.preferences ?? {}), ...action.payload},
+        },
+      }
+    }
+
     default:
       return state
   }
