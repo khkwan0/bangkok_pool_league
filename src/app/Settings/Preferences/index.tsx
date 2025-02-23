@@ -154,7 +154,14 @@ export default function Preferences() {
                   payload: {silentPushNotifications: val},
                 })
               }}
-              disabled={!user?.preferences?.enabledPushNotifications}
+              disabled={
+                typeof user?.preferences?.enabledPushNotifications ===
+                'undefined'
+                  ? false
+                  : user.preferences.enabledPushNotifications
+                    ? false
+                    : true
+              }
             />
           </View>
         </View>
