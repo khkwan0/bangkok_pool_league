@@ -18,11 +18,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import NavDest from '@/components/NavDest'
 import React, {useEffect, useState} from 'react'
 import {useColorScheme} from 'react-native'
-interface User {
-  id: number
-  nickname: string
-  profile_picture?: string
-}
+import {useAccount} from '@/hooks/useAccount'
 
 const SectionHeader = ({title}: {title: string}) => {
   const {colors} = useTheme()
@@ -38,12 +34,13 @@ const SectionHeader = ({title}: {title: string}) => {
 }
 
 export default function Settings() {
-  const {colors, dark} = useTheme()
+  const {colors} = useTheme()
   const {state, dispatch} = useLeagueContext()
   const [isDark, setIsDark] = useState(useColorScheme() === 'dark')
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
   const {t} = useTranslation()
+  const account = useAccount()
 
   useEffect(() => {
     navigation.setOptions({
@@ -51,7 +48,8 @@ export default function Settings() {
     })
   }, [navigation, t])
 
-  const user = state.user as User
+  const user = state.user
+  const messageCount = state.messageCount
 
   async function ToggleTheme(value: boolean) {
     try {
@@ -65,6 +63,14 @@ export default function Settings() {
   React.useEffect(() => {
     Appearance.setColorScheme(isDark ? 'dark' : 'light')
   }, [isDark])
+
+  React.useEffect(() => {
+    async function GetUnreadMessageCount() {
+      const count = await account.GetUnreadMessageCount()
+      dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
+    }
+    GetUnreadMessageCount()
+  }, [])
 
   async function HandleLogout() {
     try {
@@ -136,6 +142,12 @@ export default function Settings() {
 
         {/* League Management */}
         <SectionHeader title={t('league_management')} />
+        <NavDest
+          icon="email"
+          text={t('messages')}
+          url={'/Settings/Messages'}
+          messageCount={messageCount}
+        />
         <NavDest
           icon="account-group"
           text={t('teams')}

@@ -20,11 +20,13 @@ import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import notifee, {AndroidImportance} from '@notifee/react-native'
 import {SettingsButton} from '@/components/navigation/SettingsButton'
 import {useTranslation} from 'react-i18next'
+import {getAccountUsername} from 'expo/config'
+import {useAccount} from '@/hooks/useAccount'
 
 export default function RootLayout() {
   const {t} = useTranslation()
   const colorScheme = useColorScheme()
-
+  const account = useAccount()
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   })
@@ -57,12 +59,13 @@ export default function RootLayout() {
 
   useEffect(() => {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log(remoteMessage)
-
       if (Platform.OS === 'ios') {
-        PushNotificationIOS.setApplicationIconBadgeNumber(
-          remoteMessage.notification.ios.badge,
-        )
+        try {
+          const count = await account.GetUnreadMessageCount()
+          PushNotificationIOS.setApplicationIconBadgeNumber(count)
+        } catch (e) {
+          console.log(e)
+        }
       } else {
       }
     })
@@ -71,7 +74,6 @@ export default function RootLayout() {
   useEffect(() => {
     ;(async () => {
       const savedColorScheme = await AsyncStorage.getItem('theme')
-      console.log(savedColorScheme)
       if (!savedColorScheme) {
         Appearance.setColorScheme(null)
       } else {
@@ -82,7 +84,14 @@ export default function RootLayout() {
 
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log(JSON.stringify(remoteMessage, null, 2))
+      if (Platform.OS === 'ios') {
+        try {
+          const count = await account.GetUnreadMessageCount()
+          PushNotificationIOS.setApplicationIconBadgeNumber(count)
+        } catch (e) {
+          console.log(e)
+        }
+      }
     })
     return unsubscribe
   }, [])

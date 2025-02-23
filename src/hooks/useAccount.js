@@ -8,7 +8,7 @@ import {useLeagueContext} from '@/context/LeagueContext'
 
 export const useAccount = () => {
   const {state, dispatch} = useLeagueContext()
-  const user = state.user
+  const user = state?.user || null
   const {Get, Post} = useNetwork()
 
   const LoadUser = async () => {
@@ -31,6 +31,7 @@ export const useAccount = () => {
       ) {
         const userData = await Get('/user')
         const token = await messaging().getToken()
+        console.log(token)
         const res = await Post('/user/token', {token: token})
         if (typeof userData.role_id !== 'undefined' && userData.role_id === 9) {
           await notifee.createChannel({
@@ -279,13 +280,58 @@ export const useAccount = () => {
     }
   }
 
+  async function GetMessages(userId) {
+    try {
+      const res = await Get('/messages/' + userId)
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
+  async function MarkMessageAsRead(messageId) {
+    try {
+      const res = await Post('/message/read', {messageId})
+      return res
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async function DeleteMessage(messageId) {
+    try {
+      const res = await Post('/message/delete', {messageId})
+      return res
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async function GetUnreadMessageCount() {
+    try {
+      const res = await Get('/message/unread/count')
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        if (typeof res.data !== 'undefined' && res.data) {
+          return res.data
+        }
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   return {
     AdminLogin,
     CheckVersion,
     DeleteAccount,
+    DeleteMessage,
     FetchUser,
+    GetMessages,
+    GetUnreadMessageCount,
     LoadUser,
     Logout,
+    MarkMessageAsRead,
     UpdateUser,
     SocialLogin,
     Register,

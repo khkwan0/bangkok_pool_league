@@ -2,13 +2,18 @@ import {createContext, useContext, useReducer} from 'react'
 
 interface User {
   id?: number
-  role_id: number
+  role_id?: number
   teams?: Array<{id: number, team_role_id: number}>
+  profile_picture?: string
+  nickname?: string
+  first_name?: string
+  last_name?: string
 }
 
 interface LeagueState {
   user: User
   season: number
+  messageCount: number
 }
 
 export interface LeagueContextType {
@@ -20,6 +25,7 @@ const LeagueContext = createContext<LeagueContextType>({} as LeagueContextType)
 
 const initialState: LeagueState = {
   user: {},
+  messageCount: 0,
   season: 0,
 }
 
@@ -40,6 +46,12 @@ const LeagueReducer = (state: any, action: any) => {
       return {
         ...state,
         season: action.payload,
+      }
+    }
+    case 'SET_MESSAGE_COUNT': {
+      return {
+        ...state,
+        messageCount: action.payload,
       }
     }
     default:

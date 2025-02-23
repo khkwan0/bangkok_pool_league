@@ -205,6 +205,16 @@
   "confirm_proposed_date": "ยืนยันวันที่เสนอ",
   "reschedule": "เลื่อนการแข่งขัน",
   "match_confirmed": "ยืนยันการแข่งขันแล้ว",
-  "propose_new_date": "เสนอวันที่ใหม่",
-  "review_and_confirm": "ตรวจสอบและยืนยัน"
+  "review_and_confirm": "ตรวจสอบและยืนยัน",
+  "messages": "ข้อความ",
+  "no_messages": "ไม่มีข้อความ",
+  "mark_as_read": "ทำเครื่องหมายว่าอ่านแล้ว",
+  "delete_message": "ลบข้อความ",
+  "confirm_delete_message": "คุณแน่ใจหรือไม่ว่าต้องการลบข้อความนี้?",
+  "message_deleted": "ลบข้อความแล้ว",
+  "message_marked_read": "ทำเครื่องหมายข้อความว่าอ่านแล้ว",
+  "unread_messages": "ข้อความที่ยังไม่ได้อ่าน",
+  "read_messages": "ข้อความที่อ่านแล้ว",
+  "message_from": "ข้อความจาก",
+  "sent_on": "ส่งเมื่อ"
 }

@@ -14,6 +14,8 @@ import {useRouter, usePathname} from 'expo-router'
 import Button from '@/components/Button'
 import {MaterialIcons} from '@expo/vector-icons'
 import {useLocalSearchParams} from 'expo-router'
+import messaging from '@react-native-firebase/messaging'
+import PushNotificationIOS from '@react-native-community/push-notification-ios'
 
 interface ItemType {
   home_team_id: number
@@ -60,7 +62,6 @@ export default function UpcomingMatches(props: any) {
 
   async function FetchUser() {
     try {
-      console.log('Fetching user')
       await account.FetchUser()
     } catch (e) {
       console.log(e)

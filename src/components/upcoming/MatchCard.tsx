@@ -124,7 +124,7 @@ export default function MatchCard({
       }
     }
   }
-
+/*
   console.log(
     matchInfo?.away_confirmed,
     matchInfo?.home_confirmed,
@@ -132,6 +132,7 @@ export default function MatchCard({
     matchInfo?.player_team_id,
     matchInfo?.postponed_proposal,
   )
+    */
 
   if (!isMounted || !matchInfo) return null
 
