@@ -3,7 +3,7 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {useAccount} from '@/hooks/useAccount'
 import {useLeagueContext} from '@/context/LeagueContext'
 import React from 'react'
-import {FlatList, ActivityIndicator, Appearance, ScrollView} from 'react-native'
+import {FlatList, ActivityIndicator, Pressable} from 'react-native'
 import MessageCard from './MessageCard'
 import Button from '@/components/Button'
 import {useTranslation} from 'react-i18next'
@@ -56,14 +56,25 @@ export default function Messages() {
   }
 
   return (
-    <FlatList
-      data={messages}
-      renderItem={({item}) => <MessageCard message={item} />}
-      ListEmptyComponent={
-        <View className="py-8 justify-center items-center">
-          <Text className="opacity-60">{t('no_messages')}</Text>
+    <View style={{flex: 1}}>
+      <View style={{flex: 10}}>
+        <FlatList
+          data={messages}
+          renderItem={({item}) => <MessageCard message={item} />}
+          ListEmptyComponent={
+            <View className="py-8 justify-center items-center">
+              <Text className="opacity-60">{t('no_messages')}</Text>
+            </View>
+          }
+        />
+      </View>
+      {messages.length > 9 && (
+        <View
+          style={{flex: 1, paddingBottom: insets.bottom}}
+          className="items-center justify-center">
+          <Button onPress={() => {}}>{t('mark_all_read')}</Button>
         </View>
-      }
-    />
+      )}
+    </View>
   )
 }

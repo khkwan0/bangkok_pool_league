@@ -215,6 +215,36 @@ export default function UpcomingMatches(props: any) {
     HandleGetPostponedOption()
   }, [])
 
+  React.useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      if (Platform.OS === 'ios') {
+        try {
+          const count = await account.GetUnreadMessageCount()
+          PushNotificationIOS.setApplicationIconBadgeNumber(count)
+          dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    })
+    return unsubscribe
+  }, [])
+
+  React.useEffect(() => {
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      if (Platform.OS === 'ios') {
+        try {
+          const count = await account.GetUnreadMessageCount()
+          PushNotificationIOS.setApplicationIconBadgeNumber(count)
+          dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
+        } catch (e) {
+          console.error(e)
+        }
+      } else {
+      }
+    })
+  }, [])
+
   if (isMounted) {
     return (
       <View className="flex-1">

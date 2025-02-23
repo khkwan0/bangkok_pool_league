@@ -1,7 +1,7 @@
 import {LeagueProvider} from '@/context/LeagueContext'
 import * as SplashScreen from 'expo-splash-screen'
 import {useFonts} from 'expo-font'
-import {useEffect} from 'react'
+import React, {useEffect} from 'react'
 import {MatchProvider} from '@/context/MatchContext'
 import {Stack} from 'expo-router'
 import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native'
@@ -18,9 +18,7 @@ import '../../global.css'
 import messaging from '@react-native-firebase/messaging'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import notifee, {AndroidImportance} from '@notifee/react-native'
-import {SettingsButton} from '@/components/navigation/SettingsButton'
 import {useTranslation} from 'react-i18next'
-import {getAccountUsername} from 'expo/config'
 import {useAccount} from '@/hooks/useAccount'
 
 export default function RootLayout() {
@@ -58,20 +56,6 @@ export default function RootLayout() {
   }, [])
 
   useEffect(() => {
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      if (Platform.OS === 'ios') {
-        try {
-          const count = await account.GetUnreadMessageCount()
-          PushNotificationIOS.setApplicationIconBadgeNumber(count)
-        } catch (e) {
-          console.log(e)
-        }
-      } else {
-      }
-    })
-  }, [])
-
-  useEffect(() => {
     ;(async () => {
       const savedColorScheme = await AsyncStorage.getItem('theme')
       if (!savedColorScheme) {
@@ -80,20 +64,6 @@ export default function RootLayout() {
         Appearance.setColorScheme(savedColorScheme as ColorSchemeName)
       }
     })()
-  }, [])
-
-  useEffect(() => {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      if (Platform.OS === 'ios') {
-        try {
-          const count = await account.GetUnreadMessageCount()
-          PushNotificationIOS.setApplicationIconBadgeNumber(count)
-        } catch (e) {
-          console.log(e)
-        }
-      }
-    })
-    return unsubscribe
   }, [])
 
   async function CreateChannel() {
