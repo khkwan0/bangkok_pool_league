@@ -330,6 +330,15 @@ export const useAccount = () => {
     }
   }
 
+  async function MarkAllMessagesAsRead() {
+    try {
+      const res = await Post('/message/read/all')
+      return res
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return {
     AdminLogin,
     CheckVersion,
@@ -340,17 +349,18 @@ export const useAccount = () => {
     GetUnreadMessageCount,
     LoadUser,
     Logout,
+    MarkAllMessagesAsRead,
     MarkMessageAsRead,
-    UpdateUser,
-    SocialLogin,
     Register,
     Recover,
-    Verify,
     SaveAvatar,
-    SavePreferences,
     SetFirstName,
     SetLastName,
     SetNickName,
+    SavePreferences,
+    SocialLogin,
+    UpdateUser,
     UserLogin,
+    Verify,
   }
 }

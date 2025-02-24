@@ -1,23 +1,14 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import React from 'react'
-import {StyleSheet, TouchableOpacity, Appearance, Alert} from 'react-native'
+import {StyleSheet, TouchableOpacity, Alert} from 'react-native'
 import {DateTime} from 'luxon'
 import {useAccount} from '@/hooks/useAccount'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import {useTranslation} from 'react-i18next'
 import {useLeagueContext} from '@/context/LeagueContext'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
-
-interface MessageCardProps {
-  message: {
-    id: number
-    title: string
-    message: string
-    created_at: string
-    read_at: string
-  }
-}
+import {MessageCardProps} from './types'
 
 export default function MessageCard({message}: MessageCardProps) {
   const date = DateTime.fromISO(message.created_at)
