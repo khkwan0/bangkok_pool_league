@@ -10,7 +10,7 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import {MessageCardProps} from './types'
 
-export default function MessageCard({message}: MessageCardProps) {
+export default function MessageCard({message, showAll}: MessageCardProps) {
   const date = DateTime.fromISO(message.created_at)
   const account = useAccount()
   const [isRead, setIsRead] = React.useState(message.read_at)
@@ -61,6 +61,10 @@ export default function MessageCard({message}: MessageCardProps) {
   }
 
   if (isDeleted) {
+    return null
+  }
+
+  if (!showAll && isRead) {
     return null
   }
 

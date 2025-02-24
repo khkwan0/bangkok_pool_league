@@ -8,4 +8,5 @@ export interface Message {
 
 export interface MessageCardProps {
   message: Message
+  showAll: boolean
 }

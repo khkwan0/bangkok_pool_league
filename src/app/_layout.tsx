@@ -16,15 +16,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import '@/i18n'
 import '../../global.css'
 import messaging from '@react-native-firebase/messaging'
-import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import notifee, {AndroidImportance} from '@notifee/react-native'
 import {useTranslation} from 'react-i18next'
-import {useAccount} from '@/hooks/useAccount'
 
 export default function RootLayout() {
   const {t} = useTranslation()
   const colorScheme = useColorScheme()
-  const account = useAccount()
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   })

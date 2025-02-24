@@ -332,7 +332,7 @@ export const useAccount = () => {
 
   async function MarkAllMessagesAsRead() {
     try {
-      const res = await Post('/message/read/all')
+      const res = await Post('/message/read/all', {})
       return res
     } catch (e) {
       console.error(e)

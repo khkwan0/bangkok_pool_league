@@ -8,11 +8,12 @@ import {FlatList, ActivityIndicator} from 'react-native'
 import MessageCard from './MessageCard'
 import Button from '@/components/Button'
 import {useTranslation} from 'react-i18next'
-import {useTheme, useNavigation} from '@react-navigation/native'
+import {useNavigation} from '@react-navigation/native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import PushNotification from '@react-native-community/push-notification-ios'
 import {Message} from './types'
 import {DateTime} from 'luxon'
+import Ionicons from '@expo/vector-icons/Ionicons'
 
 export default function Messages() {
   const account = useAccount()
@@ -20,8 +21,9 @@ export default function Messages() {
   const userId = state.user.id
   const [messages, setMessages] = React.useState<Message[]>([])
   const [loading, setLoading] = React.useState(true)
+  const [showAll, setShowAll] = React.useState(false)
+  const [unreadCount, setUnreadCount] = React.useState(0)
   const {t} = useTranslation()
-  const {colors} = useTheme()
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
 
@@ -51,10 +53,17 @@ export default function Messages() {
     fetchMessages()
   }, [userId])
 
+  React.useEffect(() => {
+    const unreadCount = messages.filter(
+      (message: Message) => message.read_at === null,
+    ).length
+    setUnreadCount(unreadCount)
+  }, [messages])
+
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" />
       </View>
     )
   }
@@ -79,12 +88,30 @@ export default function Messages() {
     }
   }
 
+  function HandleToggleShowAll() {
+    setShowAll(!showAll)
+  }
+
   return (
     <View style={{flex: 1}}>
       <View style={{flex: 10}}>
         <FlatList
           data={messages}
-          renderItem={({item}) => <MessageCard message={item} />}
+          renderItem={({item}) => (
+            <MessageCard message={item} showAll={showAll} />
+          )}
+          stickyHeaderIndices={[0]}
+          ListHeaderComponent={
+            <View className="flex-row items-center justify-end px-4 py-3">
+              <Button onPress={HandleToggleShowAll} style={{padding: 8}}>
+                <Ionicons
+                  name={showAll ? 'eye-off-outline' : 'eye-outline'}
+                  size={24}
+                  color={'#ecedee'}
+                />
+              </Button>
+            </View>
+          }
           ListEmptyComponent={
             <View className="py-8 justify-center items-center">
               <Text className="opacity-60">{t('no_messages')}</Text>
@@ -92,7 +119,7 @@ export default function Messages() {
           }
         />
       </View>
-      {messages.length > 9 && (
+      {unreadCount > 0 && !showAll && (
         <View
           style={{flex: 1, paddingBottom: insets.bottom}}
           className="items-center justify-center">

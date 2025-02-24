@@ -99,6 +99,7 @@
   "main_player_id": "Main Player ID",
   "map": "Map",
   "mark_as_read": "Mark as read",
+  "mark_all_read": "Mark all as read",
   "match": "Match",
   "match_confirmed": "Match Confirmed",
   "match_details": "Match details",
