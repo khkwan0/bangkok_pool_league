@@ -142,12 +142,20 @@ export default function Settings() {
 
         {/* League Management */}
         <SectionHeader title={t('league_management')} />
+        {user.role_id === 9 && (
+          <NavDest
+            icon="account-group"
+            text={t('admin')}
+            url={'/Settings/Admin'}
+          />
+        )}
         <NavDest
           icon="email"
           text={t('messages')}
           url={'/Settings/Messages'}
           messageCount={messageCount}
         />
+        {/*}
         <NavDest
           icon="account-group"
           text={t('teams')}
@@ -156,7 +164,18 @@ export default function Settings() {
         <NavDest
           icon="chart-areaspline-variant"
           text={t('statistics')}
-          url={'/Settings/Stats'}
+          url={'/statistics'}
+        />
+        */}
+        <NavDest
+          icon="information-outline"
+          text={t('info_and_guides')}
+          url={'/Settings/Info'}
+        />
+        <NavDest
+          icon="plus-circle"
+          text={t('register_new_team')}
+          url={'/Settings/RegisterTeam'}
         />
         <NavDest
           icon="division"
@@ -184,11 +203,6 @@ export default function Settings() {
 
         {/* App Settings */}
         <SectionHeader title={t('app_settings')} />
-        <NavDest
-          icon="information-outline"
-          text={t('info_and_guides')}
-          url={'/Settings/Info'}
-        />
         <NavDest
           icon="cog"
           text={t('preferences')}
