@@ -10,9 +10,13 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import {useTranslation} from 'react-i18next'
-import {router, useNavigation} from 'expo-router'
+import {
+  router,
+  useNavigation,
+  useLocalSearchParams,
+  useFocusEffect,
+} from 'expo-router'
 import {Ionicons} from '@expo/vector-icons'
-import {setStatusBarBackgroundColor} from 'expo-status-bar'
 
 // Define venue type
 interface Venue {
@@ -33,6 +37,12 @@ export default function RegisterTeam() {
   const [loadingVenues, setLoadingVenues] = useState(true)
   const {t} = useTranslation()
   const navigation = useNavigation()
+
+  useFocusEffect(
+    React.useCallback(() => {
+      getVenues()
+    }, []),
+  )
 
   async function getVenues() {
     try {
@@ -92,10 +102,6 @@ export default function RegisterTeam() {
     navigation.setOptions({
       title: t('register_team'),
     })
-  }, [])
-
-  React.useEffect(() => {
-    getVenues()
   }, [])
 
   return (

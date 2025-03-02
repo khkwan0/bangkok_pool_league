@@ -47,7 +47,7 @@ export const useNetwork = () => {
       const json = await res.json()
       return json
     } catch (e) {
-      console.log('POST ' + endpoint, JSON.stringify(payload, null, 2), e)
+      // console.log('POST ' + endpoint, JSON.stringify(payload, null, 2), e)
       return {status: 'error', error: 'server_error'}
     }
   }

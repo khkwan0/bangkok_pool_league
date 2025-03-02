@@ -271,7 +271,7 @@ export const useLeague = () => {
 
   const SaveVenue = async venue => {
     try {
-      const res = await Post('/venue', {venue: venue})
+      const res = await Post('/v2/venue', {venue})
       return res
     } catch (e) {
       console.log(e)
