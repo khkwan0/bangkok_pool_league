@@ -104,6 +104,16 @@ export const useMatch = () => {
     }
   }
 
+  const PostponeIndefinitely = async matchId => {
+    try {
+      const res = await Post('/match/postpone/indefinitely/' + matchId)
+      return res
+    } catch (e) {
+      console.error(e)
+      throw new Error(e)
+    }
+  }
+
   return {
     ConfirmMatch,
     GetFrames,

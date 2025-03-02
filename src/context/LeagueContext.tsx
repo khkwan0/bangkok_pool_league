@@ -1,11 +1,9 @@
-import {getAccountUsername} from 'expo/config'
 import {createContext, useContext, useReducer} from 'react'
-import {useAccount} from '@/hooks/useAccount'
 
 interface User {
   id?: number
   role_id?: number
-  teams?: Array<{id: number, team_role_id: number}>
+  teams?: {id: number; team_role_id: number}[]
   profile_picture?: string
   nickname?: string
   first_name?: string

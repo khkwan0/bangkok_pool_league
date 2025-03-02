@@ -299,6 +299,25 @@ export const useLeague = () => {
     }
   }
 
+  const SaveNewTeamV2 = async (
+    name,
+    venue,
+    shortName = '',
+    veryShortName = '',
+  ) => {
+    try {
+      const res = await Post('/team', {
+        teamName: name,
+        venueId: venue,
+        shortName: shortName,
+        veryShortName: veryShortName,
+      })
+      return res
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   const AddPlayerToTeam = async (playerId, teamId) => {
     try {
       const res = await Post('/team/player', {playerId, teamId})
@@ -553,6 +572,7 @@ export const useLeague = () => {
     RemovePlayerFromTeam,
     SaveNewPlayer,
     SaveNewTeam,
+    SaveNewTeamV2,
     SaveVenue,
     SetPlayerAttribute,
     SetTeamDivision,
