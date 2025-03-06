@@ -46,7 +46,6 @@ export default function Match() {
           renderItem={({item, index}) => (
             <FrameDetail item={item} idx={index} matchId={matchInfo.matchId} />
           )}
-          ItemSeparatorComponent={<Divider />}
         />
       </View>
     )

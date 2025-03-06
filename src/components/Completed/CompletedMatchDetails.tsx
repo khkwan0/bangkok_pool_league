@@ -155,8 +155,10 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
     )
   }
 
-  const isHomeWinner = matchMetadata?.home_frames > matchMetadata?.away_frames
-  const isAwayWinner = matchMetadata?.away_frames > matchMetadata?.home_frames
+  const isHomeWinner =
+    (matchMetadata?.home_frames ?? 0) > (matchMetadata?.away_frames ?? 0)
+  const isAwayWinner =
+    (matchMetadata?.away_frames ?? 0) > (matchMetadata?.home_frames ?? 0)
 
   return (
     <View className="flex-1 p-4">
@@ -165,13 +167,15 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
           <Text className="text-base font-medium text-slate-600">
             Match #{matchId}
           </Text>
-          <View>
-            <Text type="subtitle">
-              {DateTime.fromISO(matchMetadata?.matchDate).toLocaleString(
-                DateTime.DATE_MED,
-              )}
-            </Text>
-          </View>
+          {typeof matchMetadata?.matchDate === 'string' && (
+            <View>
+              <Text type="subtitle">
+                {DateTime.fromISO(matchMetadata?.matchDate).toLocaleString(
+                  DateTime.DATE_MED,
+                )}
+              </Text>
+            </View>
+          )}
         </View>
         <View className="flex-row items-center">
           <View className="flex-1 items-center">

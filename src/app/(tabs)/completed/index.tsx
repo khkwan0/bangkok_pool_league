@@ -1,15 +1,13 @@
 import React, {useCallback} from 'react'
-import {FlatList} from 'react-native'
+import {FlatList, View} from 'react-native'
 import {useLeagueContext} from '@/context/LeagueContext'
-import {useLeague} from '@/hooks'
-import {ThemedView as View} from '@/components/ThemedView'
-import {ThemedText as Text} from '@/components/ThemedText'
+import {useLeague} from '@/hooks/useLeague'
 import CompletedMatch from '@/components/Completed/CompletedMatch'
 import {useTranslation} from 'react-i18next'
 import {useRouter, usePathname} from 'expo-router'
 import Button from '@/components/Button'
-import {MaterialIcons} from '@expo/vector-icons'
-
+import CompletedMatchesOther from '@/components/Completed/CompletedMatchesOther'
+import CompletedMatchesHeader from '@/components/Completed/CompletedMatchesHeader'
 type CompletedMatchType = {
   match_id: number
   date: string
@@ -24,15 +22,36 @@ type ApiResponse = {
   data: CompletedMatchType[]
 }
 
+function NoMatches() {
+  const {t} = useTranslation()
+  const {state} = useLeagueContext()
+  const user = state.user
+  const router = useRouter()
+  const pathname = usePathname()
+
+  return (
+    <View className="px-4">
+      {!user.id && (
+        <Button
+          onPress={() =>
+            router.push({pathname: '/Auth', params: {from: pathname}})
+          }>
+          {t('login_to_see_your_matches')}
+        </Button>
+      )}
+      <CompletedMatchesOther />
+    </View>
+  )
+}
+
 export default function CompletedHome() {
   const {state} = useLeagueContext()
   const league = useLeague()
-  const {t} = useTranslation()
   const user = state.user
-  const pathname = usePathname()
   const [matches, setMatches] = React.useState<CompletedMatchType[]>([])
   const [refreshing, setRefreshing] = React.useState(false)
-  const router = useRouter()
+  const [showAllByDate, setShowAllByDate] = React.useState(false)
+  const [showAllByTeam, setShowAllByTeam] = React.useState(false)
 
   const getCompletedMatches = useCallback(
     async (teams: {id: number}[]) => {
@@ -56,32 +75,9 @@ export default function CompletedHome() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.teams])
 
-  if (matches.length === 0) {
-    return (
-      <View flex={1} className="px-4 justify-center items-center">
-        <View className="bg-white p-6 rounded-2xl shadow-sm w-full max-w-[300px] items-center">
-          <MaterialIcons
-            name="event-available"
-            size={48}
-            color="#6b7280"
-            className="mb-4"
-          />
-          <Text className="text-lg text-gray-500 text-center mb-6">
-            {t('no_completed_matches')}
-          </Text>
-          <Button
-            onPress={() =>
-              router.push({pathname: '/Auth', params: {from: pathname}})
-            }>
-            {t('login_to_see_your_matches')}
-          </Button>
-        </View>
-      </View>
-    )
-  }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1">
       <FlatList
         data={matches}
         keyExtractor={item => item.match_id.toString()}
@@ -93,6 +89,7 @@ export default function CompletedHome() {
         refreshing={refreshing}
         onRefresh={() => getCompletedMatches(user.teams || [])}
         contentContainerClassName="py-4"
+        ListEmptyComponent={<NoMatches />}
         ListFooterComponent={<View className="h-4" />}
       />
     </View>

@@ -124,7 +124,7 @@ export default function MatchCard({
       }
     }
   }
-/*
+  /*
   console.log(
     matchInfo?.away_confirmed,
     matchInfo?.home_confirmed,
@@ -216,8 +216,8 @@ export default function MatchCard({
       <View>
         {matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0 && (
           <View>
-            <Text>match_confirmed</Text>
-            <Button onPress={() => HandleUnconfirm()}>Unconfirm</Button>
+            <Text>{t('match_confirmed')}</Text>
+            <Button onPress={() => HandleUnconfirm()}>{t('unconfirm')}</Button>
           </View>
         )}
         {matchInfo.home_confirmed > 0 &&
@@ -225,7 +225,9 @@ export default function MatchCard({
           matchInfo.player_team_id === matchInfo.home_team_id && (
             <View>
               <Text>Waiting for away team to confirm</Text>
-              <Button onPress={() => HandleUnconfirm()}>Unconfirm</Button>
+              <Button onPress={() => HandleUnconfirm()}>
+                {t('unconfirm')}
+              </Button>
             </View>
           )}
         {matchInfo.away_confirmed > 0 &&
@@ -233,7 +235,9 @@ export default function MatchCard({
           matchInfo.player_team_id === matchInfo.away_team_id && (
             <View>
               <Text>Waiting for home team to confirm</Text>
-              <Button onPress={() => HandleUnconfirm()}>Unconfirm</Button>
+              <Button onPress={() => HandleUnconfirm()}>
+                {t('unconfirm')}
+              </Button>
             </View>
           )}
         {/* Home team */}
@@ -251,7 +255,7 @@ export default function MatchCard({
                 {(typeof matchInfo?.postponed_proposal === 'undefined' ||
                   !matchInfo.postponed_proposal) && (
                   <Button onPress={() => HandleConfirm()}>
-                    {t('confirm')}
+                    {t('confirm_attendance')}
                   </Button>
                 )}
               </View>
@@ -300,7 +304,7 @@ export default function MatchCard({
                 {(typeof matchInfo?.postponed_proposal === 'undefined' ||
                   !matchInfo.postponed_proposal) && (
                   <Button onPress={() => HandleConfirm()}>
-                    {t('confirm')}
+                    {t('confirm_attendance')}
                   </Button>
                 )}
               </View>
