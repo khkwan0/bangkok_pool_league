@@ -24,7 +24,6 @@ const StatsMatchPerformance = ({
   path: ValidPath
 }) => {
   const router = useRouter()
-  console.log(path)
   return (
     <View>
       {stats.map((stat: StatType, index: number) => {

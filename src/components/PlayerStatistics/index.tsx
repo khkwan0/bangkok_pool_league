@@ -27,7 +27,10 @@ interface PlayerInfo {
 
 interface Props {
   playerInfo: PlayerInfo
-  path: '/statistics/PlayerStatistics' | '/(tabs)/completed/match'
+  path:
+    | '/statistics/PlayerStatistics'
+    | '/(tabs)/completed/match'
+    | '/Settings/Players/player/statistics'
 }
 
 export default function PlayerStatistics({playerInfo, path}: Props) {
@@ -125,7 +128,8 @@ export default function PlayerStatistics({playerInfo, path}: Props) {
               <Text
                 type="subtitle"
                 className="text-gray-600 dark:text-gray-400">
-                {playerInfo.flag} {playerInfo.nationality?.en || t('not_provided')}
+                {playerInfo.flag}{' '}
+                {playerInfo.nationality?.en || t('not_provided')}
               </Text>
               <Text
                 type="subtitle"

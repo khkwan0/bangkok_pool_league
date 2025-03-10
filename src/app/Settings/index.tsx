@@ -95,7 +95,7 @@ export default function Settings() {
       }}>
       <View className="flex-1">
         {/* App Info & Theme Section */}
-        <View className="bg-gray-800/20 rounded-xl p-4 mb-4">
+        <View className="bg-gray-800/20 dark:bg-gray-200/20 rounded-xl p-4 mb-4">
           <View className="flex-row items-center justify-between mb-2">
             <Text className="text-sm opacity-75">Build {config.build}</Text>
             <View className="flex-row items-center space-x-2 bg-gray-800/30 rounded-lg p-2">
@@ -113,13 +113,13 @@ export default function Settings() {
 
         {/* User Section */}
         {typeof user.id !== 'undefined' && (
-          <View className="bg-gray-800/20 rounded-xl p-4 mb-4">
+          <View className="bg-gray-800/20 dark:bg-gray-200/20 rounded-xl p-4 mb-4">
             <View className="flex-row items-center">
-              <View className="h-16 w-16 rounded-full bg-gray-700/50 items-center justify-center overflow-hidden">
+              <View className="h-24 w-24 rounded-full bg-gray-700/50 items-center justify-center overflow-hidden">
                 {user.profile_picture ? (
                   <Image
                     source={{uri: config.profileUrl + user.profile_picture}}
-                    className="h-16 w-16"
+                    className="h-24 w-24"
                     resizeMode="cover"
                   />
                 ) : (
@@ -161,7 +161,6 @@ export default function Settings() {
             messageCount={messageCount}
           />
         )}
-        {/*
         <NavDest
           icon="account-group"
           text={t('teams')}
@@ -172,7 +171,6 @@ export default function Settings() {
           text={t('statistics')}
           url={'/statistics'}
         />
-        */}
         <NavDest
           icon="information-outline"
           text={t('info_and_guides')}
@@ -185,6 +183,7 @@ export default function Settings() {
             url={'/Settings/RegisterTeam'}
           />
         )}
+        {/*
         <NavDest
           icon="division"
           text={t('divisions')}
@@ -195,7 +194,7 @@ export default function Settings() {
           text={t('seasons')}
           url={'/Settings/Seasons'}
         />
-
+        */}
         {/* Venue & Players */}
         <SectionHeader title={t('people_and_places')} />
         <NavDest

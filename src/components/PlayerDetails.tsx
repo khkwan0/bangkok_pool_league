@@ -126,9 +126,9 @@ export default function PlayerDetails({playerId}: PlayerDetailsProps) {
             <View style={{flex: 3}}>
               {playerInfo.flag && <Text>{playerInfo.flag}</Text>}
               <Text type="subtitle">
-                {playerInfo.nationality.en || 'not_provided'}
+                {playerInfo?.nationality?.en || 'not_provided'}
               </Text>
-              <Text type="subtitle">{playerInfo.nationality.th || ''}</Text>
+              <Text type="subtitle">{playerInfo?.nationality?.th || ''}</Text>
             </View>
           </Row>
         </View>
