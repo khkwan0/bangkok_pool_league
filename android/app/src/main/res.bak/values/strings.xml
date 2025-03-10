@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Bangkok Pool League</string>
+    <string name="facebook_app_id">879205039819790</string>
+    <string name="facebook_client_token">f58a315457e05a07ba9c795c0dc4cdf7</string>
+    <string name="line_channel_id" translatable="false">1660952585</string>
+    <string name="default_notification_channel_id">com.bangkok-pool-league</string>
+</resources>
