@@ -143,12 +143,22 @@ export default function Preferences() {
           </View>
         </View>
         <View className="flex-row items-center justify-between my-4">
-          <View>
+          <View className="flex-row items-center">
             <Text>{t('silent_notifications')}</Text>
           </View>
-          <View>
+          <View className="flex-row items-center">
+            <MCI
+              name="bell"
+              size={20}
+              color={
+                user?.preferences?.silentPushNotifications
+                  ? colors.text + '40'
+                  : colors.primary
+              }
+              style={{marginRight: 8}}
+            />
             <Switch
-              value={user?.preferences?.silentPushNotifications ?? true}
+              value={user?.preferences?.silentPushNotifications ?? false}
               onValueChange={val => {
                 dispatch({
                   type: 'SET_PREFERENCES',
@@ -163,6 +173,16 @@ export default function Preferences() {
                     ? false
                     : true
               }
+            />
+            <MCI
+              name="bell-off"
+              size={20}
+              color={
+                user?.preferences?.silentPushNotifications
+                  ? colors.primary
+                  : colors.text + '40'
+              }
+              style={{marginLeft: 8}}
             />
           </View>
         </View>
