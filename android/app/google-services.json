@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "10894389585",
+    "project_id": "bangkok-pool-league-b8100",
+    "storage_bucket": "bangkok-pool-league-b8100.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:10894389585:android:884ed72bb9bda801896370",
+        "android_client_info": {
+          "package_name": "com.bangkokpoolleague"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOuSdy496x4WIDtvRPTrJo8AHhoV3xx4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
