@@ -1,6 +1,7 @@
 import {
   Appearance,
   Image,
+  Platform,
   Pressable,
   ScrollView,
   Switch,
@@ -19,6 +20,7 @@ import NavDest from '@/components/NavDest'
 import React, {useEffect, useState} from 'react'
 import {useColorScheme} from 'react-native'
 import {useAccount} from '@/hooks/useAccount'
+import {isReanimated3} from 'react-native-reanimated'
 
 const SectionHeader = ({title}: {title: string}) => {
   const {colors} = useTheme()
@@ -61,7 +63,9 @@ export default function Settings() {
   }
 
   React.useEffect(() => {
-    Appearance.setColorScheme(isDark ? 'dark' : 'light')
+    if (Platform.OS !== 'web') {
+      Appearance.setColorScheme(isDark ? 'dark' : 'light')
+    }
   }, [isDark])
 
   React.useEffect(() => {
@@ -149,13 +153,15 @@ export default function Settings() {
             url={'/Settings/Admin'}
           />
         )}
-        <NavDest
-          icon="email"
-          text={t('messages')}
-          url={'/Settings/Messages'}
-          messageCount={messageCount}
-        />
-        {/*}
+        {user.id && (
+          <NavDest
+            icon="email"
+            text={t('messages')}
+            url={'/Settings/Messages'}
+            messageCount={messageCount}
+          />
+        )}
+        {/*
         <NavDest
           icon="account-group"
           text={t('teams')}
@@ -172,11 +178,13 @@ export default function Settings() {
           text={t('info_and_guides')}
           url={'/Settings/Info'}
         />
-        <NavDest
-          icon="plus-circle"
-          text={t('register_new_team')}
-          url={'/Settings/RegisterTeam'}
-        />
+        {user.id && (
+          <NavDest
+            icon="plus-circle"
+            text={t('register_new_team')}
+            url={'/Settings/RegisterTeam'}
+          />
+        )}
         <NavDest
           icon="division"
           text={t('divisions')}

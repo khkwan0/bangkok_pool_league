@@ -339,6 +339,21 @@ export const useAccount = () => {
     }
   }
 
+  async function SendMessage(senderId, recipientId, title, message) {
+    try {
+      const res = await Post('/message/send', {
+        senderId,
+        recipientId,
+        title,
+        message,
+      })
+      return res
+    } catch (e) {
+      console.error(e)
+      return {status: 'error', message: e.message}
+    }
+  }
+
   return {
     AdminLogin,
     CheckVersion,
@@ -354,6 +369,7 @@ export const useAccount = () => {
     Register,
     Recover,
     SaveAvatar,
+    SendMessage,
     SetFirstName,
     SetLastName,
     SetNickName,

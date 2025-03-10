@@ -11,6 +11,7 @@ import {
   AppleButton,
   appleAuth,
 } from '@invertase/react-native-apple-authentication'
+
 import {Platform, useColorScheme} from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import {useLocalSearchParams} from 'expo-router'
@@ -170,7 +171,7 @@ export default function AuthHome() {
             </View>
           </Pressable>
 
-          {Platform.OS !== 'android' && (
+          {Platform.OS !== 'android' && Platform.OS !== 'web' && (
             <View className="my-1">
               <AppleButton
                 buttonStyle={

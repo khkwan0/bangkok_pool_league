@@ -128,12 +128,20 @@ export default function UpcomingMatches(props: any) {
   }, [])
 
   React.useEffect(() => {
-    if (typeof user?.teams !== 'undefined' && user.teams.length > 0) {
-      if (showMineOnly) {
-        if (showPostponed) {
-          GetMatches(true, true)
+    if (isMounted) {
+      if (typeof user?.teams !== 'undefined' && user.teams.length > 0) {
+        if (showMineOnly) {
+          if (showPostponed) {
+            GetMatches(true, true)
+          } else {
+            GetMatches(true, false)
+          }
         } else {
-          GetMatches(true, false)
+          if (showPostponed) {
+            GetMatches(false, true)
+          } else {
+            GetMatches(false, false)
+          }
         }
       } else {
         if (showPostponed) {
@@ -142,14 +150,8 @@ export default function UpcomingMatches(props: any) {
           GetMatches(false, false)
         }
       }
-    } else {
-      if (showPostponed) {
-        GetMatches(false, true)
-      } else {
-        GetMatches(false, false)
-      }
     }
-  }, [showMineOnly, showPostponed, user])
+  }, [showMineOnly, showPostponed, user, isMounted])
   /*
   React.useEffect(() => {
     if (
@@ -216,33 +218,36 @@ export default function UpcomingMatches(props: any) {
   }, [])
 
   React.useEffect(() => {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      if (Platform.OS === 'ios') {
-        try {
-          const count = await account.GetUnreadMessageCount()
-          PushNotificationIOS.setApplicationIconBadgeNumber(count)
-          dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
-        } catch (e) {
-          console.error(e)
+    if (Platform.OS !== 'web') {
+      const unsubscribe = messaging().onMessage(async remoteMessage => {
+        if (Platform.OS === 'ios') {
+          try {
+            const count = await account.GetUnreadMessageCount()
+            PushNotificationIOS.setApplicationIconBadgeNumber(count)
+            dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
+          } catch (e) {
+            console.error(e)
+          }
         }
-      }
-    })
-    return unsubscribe
+      })
+      return unsubscribe
+    }
   }, [])
 
   React.useEffect(() => {
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      if (Platform.OS === 'ios') {
-        try {
+    if (Platform.OS !== 'web') {
+      messaging().setBackgroundMessageHandler(async remoteMessage => {
+        if (Platform.OS === 'ios') {
+          try {
           const count = await account.GetUnreadMessageCount()
           PushNotificationIOS.setApplicationIconBadgeNumber(count)
           dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
         } catch (e) {
-          console.error(e)
+            console.error(e)
+          }
         }
-      } else {
-      }
-    })
+      })
+    }
   }, [])
 
   if (isMounted) {

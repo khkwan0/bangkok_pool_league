@@ -46,6 +46,8 @@ const MemberSection = ({
   teamId,
   isCaptain,
   isAssistant,
+  isCaptainOtherTeam,
+  isAssistantOtherTeam,
   isAdmin,
   onRefresh,
 }: {
@@ -55,12 +57,16 @@ const MemberSection = ({
   isCaptain: boolean
   isAssistant: boolean
   isAdmin: boolean
+  isCaptainOtherTeam: boolean
+  isAssistantOtherTeam: boolean
   onRefresh: () => void
 }) => {
   const {t} = useTranslation()
   const league = useLeague()
   const router = useRouter()
   const colorScheme = useColorScheme()
+  const {state} = useLeagueContext()
+
   if (!players || players.length === 0) return null
 
   const handlePromote = async (playerId: number) => {
@@ -132,6 +138,33 @@ const MemberSection = ({
                 />
               )}
             </View>
+            {state.user.id && (
+              <View className="flex-row ml-2">
+                <Pressable
+                  className="p-1.5 bg-purple-50 dark:bg-purple-900 rounded-lg border border-purple-200 dark:border-purple-800"
+                  onPress={() =>
+                    router.push({
+                      pathname: '/Messages/New',
+                      params: {
+                        params: JSON.stringify({
+                          nickname: player.nickname,
+                          recipientId: player.id,
+                        }),
+                      },
+                    })
+                  }>
+                  <MCI
+                    name="message-text"
+                    size={24}
+                    color={
+                      colorScheme === 'dark'
+                        ? 'rgb(216, 180, 254)'
+                        : 'rgb(107, 33, 168)'
+                    }
+                  />
+                </Pressable>
+              </View>
+            )}
             {showControls && (
               <View className="flex-row ml-2">
                 {title.toLowerCase() !== 'captains' && (
@@ -196,6 +229,25 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
       (captain: PlayerType) => captain.id === state.user?.id,
     )
   }, [teamData.captains, state.user?.id])
+
+  const isCaptainOtherTeam = React.useMemo(() => {
+    if (state.user?.role_id && state.user.role_id > 0) {
+      return !teamData.captains.some(
+        (captain: PlayerType) => captain.id === state.user?.id,
+      )
+    }
+    return false
+  }, [state.user?.role_id, state.user?.teams, teamId])
+
+  const isAssistantOtherTeam = React.useMemo(() => {
+    if (state.user?.role_id && state.user.role_id > 0) {
+      return !teamData.assistants.some(
+        (assistant: PlayerType) => assistant.id === state.user?.id,
+      )
+    }
+    return false
+  }, [state.user?.role_id, state.user?.teams, teamId])
+
   const isAssistant = React.useMemo(() => {
     return teamData.assistants.some(
       (assistant: PlayerType) => assistant.id === state.user?.id,
@@ -322,6 +374,8 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
               isCaptain={isCaptain}
               isAssistant={isAssistant}
               isAdmin={isAdmin}
+              isCaptainOtherTeam={isCaptainOtherTeam}
+              isAssistantOtherTeam={isAssistantOtherTeam}
               onRefresh={refreshTeamInfo}
             />
             <MemberSection
@@ -331,6 +385,8 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
               isCaptain={isCaptain}
               isAssistant={isAssistant}
               isAdmin={isAdmin}
+              isCaptainOtherTeam={isCaptainOtherTeam}
+              isAssistantOtherTeam={isAssistantOtherTeam}
               onRefresh={refreshTeamInfo}
             />
             <Text type="defaultSemiBold" className="mb-2 text-lg">

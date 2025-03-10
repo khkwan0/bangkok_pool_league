@@ -53,14 +53,16 @@ export default function RootLayout() {
   }, [])
 
   useEffect(() => {
-    ;(async () => {
-      const savedColorScheme = await AsyncStorage.getItem('theme')
-      if (!savedColorScheme) {
+    if (Platform.OS !== 'web') {
+      ;(async () => {
+        const savedColorScheme = await AsyncStorage.getItem('theme')
+        if (!savedColorScheme) {
         Appearance.setColorScheme(null)
       } else {
-        Appearance.setColorScheme(savedColorScheme as ColorSchemeName)
-      }
-    })()
+          Appearance.setColorScheme(savedColorScheme as ColorSchemeName)
+        }
+      })()
+    }
   }, [])
 
   async function CreateChannel() {

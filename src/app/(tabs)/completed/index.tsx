@@ -7,7 +7,7 @@ import {useTranslation} from 'react-i18next'
 import {useRouter, usePathname} from 'expo-router'
 import Button from '@/components/Button'
 import CompletedMatchesOther from '@/components/Completed/CompletedMatchesOther'
-import CompletedMatchesHeader from '@/components/Completed/CompletedMatchesHeader'
+
 type CompletedMatchType = {
   match_id: number
   date: string
@@ -50,8 +50,6 @@ export default function CompletedHome() {
   const user = state.user
   const [matches, setMatches] = React.useState<CompletedMatchType[]>([])
   const [refreshing, setRefreshing] = React.useState(false)
-  const [showAllByDate, setShowAllByDate] = React.useState(false)
-  const [showAllByTeam, setShowAllByTeam] = React.useState(false)
 
   const getCompletedMatches = useCallback(
     async (teams: {id: number}[]) => {
@@ -74,7 +72,6 @@ export default function CompletedHome() {
     getCompletedMatches(user.teams || [])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.teams])
-
 
   return (
     <View className="flex-1">
