@@ -34,7 +34,7 @@ export default function PlayerCard({player}: {player: Player}) {
           <View className="flex-row items-center">
             <Text className="text-slate-600 dark:text-slate-300">
               {player.firstname}
-              {player.lastname ? player.lastname[0] + '.' : ''}
+              {player.lastname ? ` ${player.lastname[0]}` : ''}
             </Text>
             {player.flag && <Text className="ml-2">{player.flag}</Text>}
           </View>
