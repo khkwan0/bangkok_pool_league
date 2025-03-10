@@ -98,7 +98,7 @@ export default function Settings() {
         <View className="bg-gray-800/20 dark:bg-gray-200/20 rounded-xl p-4 mb-4">
           <View className="flex-row items-center justify-between mb-2">
             <Text className="text-sm opacity-75">Build {config.build}</Text>
-            <View className="flex-row items-center space-x-2 bg-gray-800/30 rounded-lg p-2">
+            <View className="flex-row items-center space-x-4 gap-x-2 bg-gray-800/30 rounded-lg p-2">
               <Feather name="sun" color={colors.text} size={18} />
               <Switch
                 value={isDark}
