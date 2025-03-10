@@ -354,6 +354,15 @@ export const useAccount = () => {
     }
   }
 
+  async function SaveLanguage(lang) {
+    try {
+      const res = await Post('/user/language', {language: lang})
+      return res
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return {
     AdminLogin,
     CheckVersion,
@@ -373,6 +382,7 @@ export const useAccount = () => {
     SetFirstName,
     SetLastName,
     SetNickName,
+    SaveLanguage,
     SavePreferences,
     SocialLogin,
     UpdateUser,

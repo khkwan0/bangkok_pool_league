@@ -38,6 +38,7 @@ export default function Preferences() {
       await i18n.changeLanguage(lang)
       await AsyncStorage.setItem('language', lang)
       setCurrentLanguage(lang)
+      await account.SaveLanguage(lang)
     } catch (error) {
       console.error('Failed to change language:', error)
     }
@@ -127,7 +128,7 @@ export default function Preferences() {
         <Text className="text-lg font-semibold mb-4">{t('notifications')}</Text>
         <View className="flex-row items-center justify-between">
           <View>
-            <Text>push_notifications</Text>
+            <Text>{t('push_notifications')}</Text>
           </View>
           <View>
             <Switch
@@ -143,7 +144,7 @@ export default function Preferences() {
         </View>
         <View className="flex-row items-center justify-between my-4">
           <View>
-            <Text>silent_notifications</Text>
+            <Text>{t('silent_notifications')}</Text>
           </View>
           <View>
             <Switch
