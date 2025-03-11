@@ -1,4 +1,4 @@
-package com.bangkokpoolleague
+package com.bangkok_pool_league
 
 import android.app.Application
 import android.content.res.Configuration
