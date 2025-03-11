@@ -12,6 +12,7 @@ import Button from '@/components/Button'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatch} from '@/hooks/useMatch'
 import {useRouter} from 'expo-router'
+import {Ionicons, MaterialIcons} from '@expo/vector-icons'
 
 export default function MatchCard({
   matchInfo: propsMatchInfo,
@@ -140,8 +141,13 @@ export default function MatchCard({
     <View
       style={{
         margin: 10,
-        padding: 10,
-        borderRadius: 10,
+        padding: 16,
+        borderRadius: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
       }}>
       <Link
         href={{
@@ -151,27 +157,44 @@ export default function MatchCard({
         asChild>
         <Pressable>
           <View>
-            <View>
-              <Text type="subtitle" className="text-center">
-                {matchInfo.home_team_short_name} vs{' '}
-                {matchInfo.away_team_short_name}
-              </Text>
-              <Text type="subtitle" className="text-center">
-                {DateTime.fromISO(matchInfo.date)
-                  .setZone('Asia/Bangkok')
-                  .toLocaleString(DateTime.DATE_HUGE)}
-              </Text>
+            {/* Header Section with Teams and Date */}
+            <View className="mb-4">
+              <View className="flex-row justify-center items-center mb-2">
+                <Text type="subtitle" className="text-center font-bold">
+                  {matchInfo.home_team_short_name}
+                </Text>
+                <View className="mx-2 px-3 py-1 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <Text type="subtitle" className="text-center">vs</Text>
+                </View>
+                <Text type="subtitle" className="text-center font-bold">
+                  {matchInfo.away_team_short_name}
+                </Text>
+              </View>
+              <View className="flex-row justify-center items-center">
+                <Ionicons name="calendar" size={18} style={{marginRight: 6}} />
+                <Text type="subtitle" className="text-center">
+                  {DateTime.fromISO(matchInfo.date)
+                    .setZone('Asia/Bangkok')
+                    .toLocaleString(DateTime.DATE_HUGE)}
+                </Text>
+              </View>
               {matchInfo.postponed_proposal?.newDate &&
                 !(matchInfo.home_confirmed && matchInfo.away_confirmed) && (
                   <View
                     style={{
-                      backgroundColor: 'red',
+                      backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                      borderColor: 'red',
+                      borderWidth: 1,
                       padding: 10,
                       borderRadius: 10,
+                      marginTop: 8,
                     }}>
-                    <Text type="subtitle" className="text-center">
-                      proposed_date
-                    </Text>
+                    <View className="flex-row items-center justify-center mb-1">
+                      <MaterialIcons name="warning" size={18} color="red" style={{marginRight: 6}} />
+                      <Text type="subtitle" className="text-center font-bold" style={{color: 'red'}}>
+                        {t('proposed_date')}
+                      </Text>
+                    </View>
                     <Text type="subtitle" className="text-center">
                       {DateTime.fromISO(matchInfo.postponed_proposal.newDate)
                         .setZone('Asia/Bangkok')
@@ -180,32 +203,38 @@ export default function MatchCard({
                   </View>
                 )}
             </View>
-            <Row>
+
+            {/* Venue Information */}
+            <Row className="mb-4">
               <View flex={2}>
-                <Text>Match ID: {matchInfo.match_id}</Text>
-                <Text>Where:</Text>
-                <Text>{matchInfo.name}</Text>
-                <Text>{matchInfo.location}</Text>
-                <Text>{matchInfo.phone}</Text>
+                <View className="mb-2">
+                  <Text className="text-gray-500 mb-1">{t('match')} ID: {matchInfo.match_id}</Text>
+                  <Text className="font-bold mb-1">{t('where')}:</Text>
+                  <Text className="text-lg">{matchInfo.name}</Text>
+                  <Text>{matchInfo.location}</Text>
+                  <Text>{matchInfo.phone}</Text>
+                </View>
                 {(matchInfo.latitude !== 0 || matchInfo.longitude !== 0) && (
-                  <View style={{flexDirection: 'row'}}>
+                  <View style={{flexDirection: 'row', marginTop: 6}}>
                     <Button
                       type="outline"
                       onPress={() =>
                         ShowLocation(matchInfo.latitude, matchInfo.longitude)
-                      }>
+                      }
+                      icon={<Ionicons name="location-outline" size={18} color="#4a90e2" />}>
                       {t('map')}
                     </Button>
                   </View>
                 )}
               </View>
               {matchInfo.logo && (
-                <View flex={1}>
+                <View flex={1} className="items-center justify-center">
                   <Image
                     source={{uri: matchInfo.logo}}
                     width={100}
                     height={150}
                     resizeMode="contain"
+                    style={{borderRadius: 8}}
                   />
                 </View>
               )}
@@ -213,60 +242,108 @@ export default function MatchCard({
           </View>
         </Pressable>
       </Link>
-      <View>
+
+      {/* Match Status and Actions */}
+      <View className="border-t border-gray-200 dark:border-gray-700 pt-3">
+        {/* Match Confirmed Section */}
         {matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0 && (
-          <View>
-            <Text>{t('match_confirmed')}</Text>
-            <Button onPress={() => HandleUnconfirm()}>{t('unconfirm')}</Button>
+          <View className="bg-green-100 dark:bg-green-900 p-3 rounded-lg mb-3">
+            <View className="flex-row items-center mb-2">
+              <Ionicons name="checkmark-circle" size={20} color="green" style={{marginRight: 8}} />
+              <Text className="font-bold">{t('match_confirmed')}</Text>
+            </View>
+            <Button 
+              type="outline" 
+              onPress={() => HandleUnconfirm()}
+              icon={<Ionicons name="close-circle-outline" size={18} color="#f87171" />}>
+              {t('unconfirm')}
+            </Button>
           </View>
         )}
+
+        {/* Waiting for Away Team */}
         {matchInfo.home_confirmed > 0 &&
           !matchInfo.away_confirmed &&
           matchInfo.player_team_id === matchInfo.home_team_id && (
-            <View>
-              <Text>Waiting for away team to confirm</Text>
-              <Button onPress={() => HandleUnconfirm()}>
+            <View className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg mb-3">
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="time-outline" size={20} color="#d97706" style={{marginRight: 8}} />
+                <Text className="font-bold">Waiting for away team to confirm</Text>
+              </View>
+              <Button 
+                type="outline" 
+                onPress={() => HandleUnconfirm()}
+                icon={<Ionicons name="close-circle-outline" size={18} color="#f87171" />}>
                 {t('unconfirm')}
               </Button>
             </View>
           )}
+
+        {/* Waiting for Home Team */}
         {matchInfo.away_confirmed > 0 &&
           !matchInfo.home_confirmed &&
           matchInfo.player_team_id === matchInfo.away_team_id && (
-            <View>
-              <Text>Waiting for home team to confirm</Text>
-              <Button onPress={() => HandleUnconfirm()}>
+            <View className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg mb-3">
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="time-outline" size={20} color="#d97706" style={{marginRight: 8}} />
+                <Text className="font-bold">Waiting for home team to confirm</Text>
+              </View>
+              <Button 
+                type="outline" 
+                onPress={() => HandleUnconfirm()}
+                icon={<Ionicons name="close-circle-outline" size={18} color="#f87171" />}>
                 {t('unconfirm')}
               </Button>
             </View>
           )}
-        {/* Home team */}
+
+        {/* Home team actions */}
         {!matchInfo.home_confirmed &&
           matchInfo.player_team_id === matchInfo.home_team_id &&
           (matchInfo.team_role_id > 0 || user.role_id === 9) && (
-            <View className="my-2">
+            <View className="my-3">
               <View className="my-2">
                 {matchInfo.postponed_proposal &&
                   (!matchInfo.postponed_proposal?.isHome ? (
-                    <Button onPress={() => HandlePostpone()}>
+                    <Button
+                      type="primary"
+                      onPress={() => HandlePostpone()}
+                      icon={
+                        <Ionicons
+                          name="calendar-outline"
+                          size={20}
+                          color="white"
+                        />
+                      }
+                      style={{marginBottom: 8}}>
                       {t('review_and_confirm')}
                     </Button>
                   ) : null)}
                 {(typeof matchInfo?.postponed_proposal === 'undefined' ||
                   !matchInfo.postponed_proposal) && (
-                  <Button onPress={() => HandleConfirm()}>
+                  <Button
+                    type="primary"
+                    onPress={() => HandleConfirm()}
+                    icon={
+                      <Ionicons
+                        name="checkmark-circle-outline"
+                        size={20}
+                        color="white"
+                      />
+                    }
+                    style={{marginBottom: 8}}>
                     {t('confirm_attendance')}
                   </Button>
                 )}
               </View>
               {matchInfo.postponed_proposal?.newDate && (
-                <View className="flex-row gap-2 items-center">
+                <View className="flex-row gap-2 items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
                   <View className="flex-1">
-                    <Text>
+                    <Text className="font-bold">
                       {matchInfo?.postponed_proposal?.isHome
                         ? matchInfo.home_team_short_name
                         : matchInfo.away_team_short_name}{' '}
-                      proposed date:
+                      {t('proposed_date')}:
                     </Text>
                     <Text>
                       {matchInfo.postponed_proposal?.newDate
@@ -277,45 +354,80 @@ export default function MatchCard({
                     </Text>
                   </View>
                   <View className="flex-1">
-                    <Button onPress={() => HandlePostpone()}>
+                    <Button
+                      type="outline"
+                      onPress={() => HandlePostpone()}
+                      icon={
+                        <MaterialIcons
+                          name="date-range"
+                          size={20}
+                          color="#4a90e2"
+                        />
+                      }>
                       {matchInfo.postponed_proposal && t('propose_new_date')}
                     </Button>
                   </View>
                 </View>
               )}
               {!matchInfo.postponed_proposal?.newDate && (
-                <Button onPress={() => HandlePostpone()}>
+                <Button
+                  type="outline"
+                  onPress={() => HandlePostpone()}
+                  icon={
+                    <MaterialIcons name="schedule" size={20} color="#4a90e2" />
+                  }>
                   {t('reschedule')}
                 </Button>
               )}
             </View>
           )}
-        {/* Away team */}
+
+        {/* Away team actions */}
         {!matchInfo.away_confirmed &&
           matchInfo.player_team_id === matchInfo.away_team_id &&
           (matchInfo.team_role_id > 0 || user.role_id === 9) && (
-            <View className="my-2">
+            <View className="my-3">
               <View className="my-2">
                 {matchInfo.postponed_proposal?.isHome ? (
-                  <Button onPress={() => HandlePostpone()}>
+                  <Button
+                    type="primary"
+                    onPress={() => HandlePostpone()}
+                    icon={
+                      <Ionicons
+                        name="calendar-outline"
+                        size={20}
+                        color="white"
+                      />
+                    }
+                    style={{marginBottom: 8}}>
                     {t('review_and_confirm')}
                   </Button>
                 ) : null}
                 {(typeof matchInfo?.postponed_proposal === 'undefined' ||
                   !matchInfo.postponed_proposal) && (
-                  <Button onPress={() => HandleConfirm()}>
+                  <Button
+                    type="primary"
+                    onPress={() => HandleConfirm()}
+                    icon={
+                      <Ionicons
+                        name="checkmark-circle-outline"
+                        size={20}
+                        color="white"
+                      />
+                    }
+                    style={{marginBottom: 8}}>
                     {t('confirm_attendance')}
                   </Button>
                 )}
               </View>
               {matchInfo.postponed_proposal?.newDate && (
-                <View className="flex-row gap-2 items-center">
+                <View className="flex-row gap-2 items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
                   <View className="flex-1">
-                    <Text>
+                    <Text className="font-bold">
                       {matchInfo?.postponed_proposal?.isHome
                         ? matchInfo.home_team_short_name
                         : matchInfo.away_team_short_name}{' '}
-                      proposed date:
+                      {t('proposed_date')}:
                     </Text>
                     <Text>
                       {matchInfo.postponed_proposal?.newDate
@@ -326,14 +438,28 @@ export default function MatchCard({
                     </Text>
                   </View>
                   <View className="flex-1">
-                    <Button onPress={() => HandlePostpone()}>
+                    <Button
+                      type="outline"
+                      onPress={() => HandlePostpone()}
+                      icon={
+                        <MaterialIcons
+                          name="date-range"
+                          size={20}
+                          color="#4a90e2"
+                        />
+                      }>
                       {matchInfo.postponed_proposal && t('propose_new_date')}
                     </Button>
                   </View>
                 </View>
               )}
               {!matchInfo.postponed_proposal?.newDate && (
-                <Button onPress={() => HandlePostpone()}>
+                <Button
+                  type="outline"
+                  onPress={() => HandlePostpone()}
+                  icon={
+                    <MaterialIcons name="schedule" size={20} color="#4a90e2" />
+                  }>
                   {t('reschedule')}
                 </Button>
               )}
