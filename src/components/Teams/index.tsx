@@ -25,7 +25,7 @@ type TeamCardProps = {
 function TeamCard({team, index, fromTabs}: TeamCardProps) {
   function handlePress() {
     router.push({
-      pathname: './Teams/team',
+      pathname: './teams/team',
       params: {params: JSON.stringify({teamId: team.id})},
     })
   }
