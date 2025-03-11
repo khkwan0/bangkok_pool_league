@@ -12,7 +12,7 @@ export default function VSHeader({matchInfo}: MatchInfoType) {
         <Pressable
           onPress={() =>
             router.push({
-              pathname: '/Match/Team',
+              pathname: '/Match/team',
               params: {
                 params: JSON.stringify({teamId: matchInfo.home_team_id}),
               },
@@ -30,7 +30,7 @@ export default function VSHeader({matchInfo}: MatchInfoType) {
         <Pressable
           onPress={() =>
             router.push({
-              pathname: '/Match/Team',
+              pathname: '/Match/team',
               params: {
                 params: JSON.stringify({teamId: matchInfo.away_team_id}),
               },
