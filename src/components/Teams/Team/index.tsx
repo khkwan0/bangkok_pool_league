@@ -34,8 +34,8 @@ type TeamType = {
   players: PlayerType[]
   venue_logo?: string
   name: string
+  id: number
 }
-
 interface TeamMembersProps {
   teamId: number
 }
@@ -358,14 +358,17 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
                 />
               ) : (
                 <View className="w-24 h-24 mb-2 bg-gray-200 dark:bg-gray-700 rounded-full items-center justify-center">
-                  <Text type="defaultSemiBold" className="text-2xl">
+                  <Text
+                    type="title"
+                    className="text-2xl bg-gray-500 dark:bg-red-500 py-6 px-8 rounded-full">
                     {teamData.name.charAt(0)}
                   </Text>
                 </View>
               )}
-              <Text type="defaultSemiBold" className="text-xl">
+              <Text type="subtitle" className="text-xl">
                 {teamData.name}
               </Text>
+              <Text>#{teamData.id}</Text>
             </View>
             <MemberSection
               title="captains"
