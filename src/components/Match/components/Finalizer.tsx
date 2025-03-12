@@ -8,17 +8,18 @@ import {useMatchContext} from '@/context/MatchContext'
 
 export default function Finalizer({matchInfo}: {matchInfo: any}) {
   const colorScheme = useColorScheme()
-  const {FinalizeMatch}: any = useMatchContext()
+  const {
+    state: matchState,
+    FinalizeMatch,
+    UnfinalizeMatch,
+  }: any = useMatchContext()
   const {state} = useLeagueContext()
-  console.log(state.user.teams)
 
   const backgroundTint = colorScheme === 'dark' ? '600' : '300'
   const red = `bg-red-${backgroundTint}`
   const blue = `bg-blue-${backgroundTint}`
   const homeStyle = `${red} mx-4 p-4 item-center rounded`
   const awayStyle = `${blue} mx-4 p-4 item-center rounded`
-
-  console.log(matchInfo)
 
   async function HandleFinalize(side: string) {
     if (
@@ -36,24 +37,51 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
     }
   }
 
+  function Unfinalize(side: string) {
+    if (
+      (state.user.teams?.includes(matchInfo.home_team_id) ||
+        state.user.role_id === 9) &&
+      side === 'home'
+    ) {
+      UnfinalizeMatch(side, matchInfo.home_team_id)
+    } else if (
+      (state.user.teams?.includes(matchInfo.away_team_id) ||
+        state.user.role_id === 9) &&
+      side === 'away'
+    ) {
+      UnfinalizeMatch(side, matchInfo.away_team_id)
+    }
+  }
+  
+
   return (
     <View>
       <Row>
         <View flex={1}>
           <Pressable
             className={homeStyle}
-            onPress={() => HandleFinalize('home')}>
+            onPress={() =>
+              matchState.finalizedHome
+                ? Unfinalize('home')
+                : HandleFinalize('home')
+            }>
             <Text className="text-center" type="subtitle">
-              {t('finalize')} {t('home')}
+              {matchState.finalizedHome ? t('unfinalize') : t('finalize')}
+              {t('home')}
             </Text>
           </Pressable>
         </View>
         <View flex={1}>
           <Pressable
             className={awayStyle}
-            onPress={() => HandleFinalize('away')}>
+            onPress={() =>
+              matchState.finalizedAway
+                ? Unfinalize('away')
+                : HandleFinalize('away')
+            }>
             <Text className="text-center" type="subtitle">
-              {t('finalize')} {t('away')}
+              {matchState.finalizedAway ? t('unfinalize') : t('finalize')}
+              {t('away')}
             </Text>
           </Pressable>
         </View>

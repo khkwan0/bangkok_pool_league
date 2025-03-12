@@ -36,6 +36,9 @@ type StateType = {
   teams: TeamsType
   matchInfo: MatchInfoDataType
   stats: StatsType
+  history: any[]
+  finalizedHome: boolean
+  finalizedAway: boolean
 }
 
 const MatchContext = createContext({})
@@ -46,7 +49,9 @@ const initialState: StateType = {
   teams: {},
   matchInfo: {} as MatchInfoDataType,
   stats: {},
-  hsitory: [],
+  history: [],
+  finalizedHome: false,
+  finalizedAway: false,
 }
 
 const MatchReducer = (state: StateType, action: any) => {
@@ -78,7 +83,7 @@ const MatchReducer = (state: StateType, action: any) => {
       // this is a get and set operation
       // can be called at the same time by incoming websocket data or
       // by user input
-      const {frameIndex, playerId, nickname, side, slot} = action.payload
+      const {frameIndex, playerId, side, slot} = action.payload
       const frame = {...state.frameData[frameIndex]}
       if (side === 'home') {
         frame.homePlayerIds[slot] = playerId
@@ -125,6 +130,18 @@ const MatchReducer = (state: StateType, action: any) => {
       return {
         ...state,
         history: action.payload,
+      }
+    }
+    case 'SET_FINALIZED_HOME': {
+      return {
+        ...state,
+        finalizedHome: action.payload,
+      }
+    }
+    case 'SET_FINALIZED_AWAY': {
+      return {
+        ...state,
+        finalizedAway: action.payload,
       }
     }
     default:
@@ -254,6 +271,8 @@ export const MatchProvider = (props: any) => {
               },
             })
           })()
+        } else if (data.type === 'finalize') {
+          FinalizeMatch(data.side, data.teamId)
         }
       }
     })
@@ -337,6 +356,15 @@ export const MatchProvider = (props: any) => {
     SocketSend('finalize', data)
   }
 
+  function UnfinalizeMatch(side: string, teamId: number) {
+    const data = {
+      teamId: teamId,
+      side: side,
+      matchId: parseInt(state.matchInfo.match_id),
+    }
+    SocketSend('unfinalize', data)
+  }
+
   async function UpdateTeams() {
     const {home_team_id, away_team_id} =
       matchInfoRef.current as MatchInfoDataType
@@ -404,7 +432,7 @@ export const MatchProvider = (props: any) => {
       socket.current.emit('matchupdate', toSend)
     }
   }
-/*
+  /*
   React.useEffect(() => {
     ;(async () => {
       try {
@@ -433,6 +461,7 @@ export const MatchProvider = (props: any) => {
         FinalizeMatch,
         SocketConnect,
         SocketDisconnect,
+        UnfinalizeMatch,
         UpdateFirstBreak,
         UpdateFramePlayers,
         UpdateFrameWin,
