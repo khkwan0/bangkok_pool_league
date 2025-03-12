@@ -1,5 +1,5 @@
 import React from 'react'
-import {Image, Pressable} from 'react-native'
+import {Image, Pressable, Appearance} from 'react-native'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import Row from '@/components/Row'
@@ -144,7 +144,7 @@ export default function MatchCard({
         padding: 16,
         borderRadius: 16,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
@@ -164,14 +164,23 @@ export default function MatchCard({
                   {matchInfo.home_team_short_name}
                 </Text>
                 <View className="mx-2 px-3 py-1 bg-blue-100 dark:bg-blue-900 rounded-full">
-                  <Text type="subtitle" className="text-center">vs</Text>
+                  <Text type="subtitle" className="text-center">
+                    vs
+                  </Text>
                 </View>
                 <Text type="subtitle" className="text-center font-bold">
                   {matchInfo.away_team_short_name}
                 </Text>
               </View>
               <View className="flex-row justify-center items-center">
-                <Ionicons name="calendar" size={18} style={{marginRight: 6}} />
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  style={{marginRight: 6}}
+                  color={
+                    Appearance.getColorScheme() === 'dark' ? 'white' : 'black'
+                  }
+                />
                 <Text type="subtitle" className="text-center">
                   {DateTime.fromISO(matchInfo.date)
                     .setZone('Asia/Bangkok')
@@ -190,8 +199,16 @@ export default function MatchCard({
                       marginTop: 8,
                     }}>
                     <View className="flex-row items-center justify-center mb-1">
-                      <MaterialIcons name="warning" size={18} color="red" style={{marginRight: 6}} />
-                      <Text type="subtitle" className="text-center font-bold" style={{color: 'red'}}>
+                      <MaterialIcons
+                        name="warning"
+                        size={18}
+                        color="red"
+                        style={{marginRight: 6}}
+                      />
+                      <Text
+                        type="subtitle"
+                        className="text-center font-bold"
+                        style={{color: 'red'}}>
                         {t('proposed_date')}
                       </Text>
                     </View>
@@ -208,7 +225,9 @@ export default function MatchCard({
             <Row className="mb-4">
               <View flex={2}>
                 <View className="mb-2">
-                  <Text className="text-gray-500 mb-1">{t('match')} ID: {matchInfo.match_id}</Text>
+                  <Text className="text-gray-500 mb-1">
+                    {t('match')} ID: {matchInfo.match_id}
+                  </Text>
                   <Text className="font-bold mb-1">{t('where')}:</Text>
                   <Text className="text-lg">{matchInfo.name}</Text>
                   <Text>{matchInfo.location}</Text>
@@ -221,7 +240,13 @@ export default function MatchCard({
                       onPress={() =>
                         ShowLocation(matchInfo.latitude, matchInfo.longitude)
                       }
-                      icon={<Ionicons name="location-outline" size={18} color="#4a90e2" />}>
+                      icon={
+                        <Ionicons
+                          name="location-outline"
+                          size={18}
+                          color="#4a90e2"
+                        />
+                      }>
                       {t('map')}
                     </Button>
                   </View>
@@ -244,18 +269,29 @@ export default function MatchCard({
       </Link>
 
       {/* Match Status and Actions */}
-      <View className="border-t border-gray-200 dark:border-gray-700 pt-3">
+      <View>
         {/* Match Confirmed Section */}
         {matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0 && (
-          <View className="bg-green-100 dark:bg-green-900 p-3 rounded-lg mb-3">
+          <View className="bg-green-100 dark:bg-green-900 p-3 rounded-lg mb-3 border-t border-gray-200 dark:border-gray-700">
             <View className="flex-row items-center mb-2">
-              <Ionicons name="checkmark-circle" size={20} color="green" style={{marginRight: 8}} />
+              <Ionicons
+                name="checkmark-circle"
+                size={20}
+                color="green"
+                style={{marginRight: 8}}
+              />
               <Text className="font-bold">{t('match_confirmed')}</Text>
             </View>
-            <Button 
-              type="outline" 
+            <Button
+              type="outline"
               onPress={() => HandleUnconfirm()}
-              icon={<Ionicons name="close-circle-outline" size={18} color="#f87171" />}>
+              icon={
+                <Ionicons
+                  name="close-circle-outline"
+                  size={18}
+                  color="#f87171"
+                />
+              }>
               {t('unconfirm')}
             </Button>
           </View>
@@ -265,15 +301,28 @@ export default function MatchCard({
         {matchInfo.home_confirmed > 0 &&
           !matchInfo.away_confirmed &&
           matchInfo.player_team_id === matchInfo.home_team_id && (
-            <View className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg mb-3">
+            <View className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg mb-3 border-t border-gray-700 dark:border-gray-400">
               <View className="flex-row items-center mb-2">
-                <Ionicons name="time-outline" size={20} color="#d97706" style={{marginRight: 8}} />
-                <Text className="font-bold">Waiting for away team to confirm</Text>
+                <Ionicons
+                  name="time-outline"
+                  size={20}
+                  color="#d97706"
+                  style={{marginRight: 8}}
+                />
+                <Text className="font-bold">
+                  Waiting for away team to confirm
+                </Text>
               </View>
-              <Button 
-                type="outline" 
+              <Button
+                type="outline"
                 onPress={() => HandleUnconfirm()}
-                icon={<Ionicons name="close-circle-outline" size={18} color="#f87171" />}>
+                icon={
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={18}
+                    color="#f87171"
+                  />
+                }>
                 {t('unconfirm')}
               </Button>
             </View>
@@ -283,15 +332,28 @@ export default function MatchCard({
         {matchInfo.away_confirmed > 0 &&
           !matchInfo.home_confirmed &&
           matchInfo.player_team_id === matchInfo.away_team_id && (
-            <View className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg mb-3">
+            <View className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg mb-3 border-t border-gray-200 dark:border-gray-700">
               <View className="flex-row items-center mb-2">
-                <Ionicons name="time-outline" size={20} color="#d97706" style={{marginRight: 8}} />
-                <Text className="font-bold">Waiting for home team to confirm</Text>
+                <Ionicons
+                  name="time-outline"
+                  size={20}
+                  color="#d97706"
+                  style={{marginRight: 8}}
+                />
+                <Text className="font-bold">
+                  Waiting for home team to confirm
+                </Text>
               </View>
-              <Button 
-                type="outline" 
+              <Button
+                type="outline"
                 onPress={() => HandleUnconfirm()}
-                icon={<Ionicons name="close-circle-outline" size={18} color="#f87171" />}>
+                icon={
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={18}
+                    color="#f87171"
+                  />
+                }>
                 {t('unconfirm')}
               </Button>
             </View>
@@ -301,7 +363,7 @@ export default function MatchCard({
         {!matchInfo.home_confirmed &&
           matchInfo.player_team_id === matchInfo.home_team_id &&
           (matchInfo.team_role_id > 0 || user.role_id === 9) && (
-            <View className="my-3">
+            <View className="my-3 border-t border-gray-200 dark:border-gray-700">
               <View className="my-2">
                 {matchInfo.postponed_proposal &&
                   (!matchInfo.postponed_proposal?.isHome ? (
@@ -386,7 +448,7 @@ export default function MatchCard({
         {!matchInfo.away_confirmed &&
           matchInfo.player_team_id === matchInfo.away_team_id &&
           (matchInfo.team_role_id > 0 || user.role_id === 9) && (
-            <View className="my-3">
+            <View className="my-3 border-t border-gray-700 dark:border-gray-400">
               <View className="my-2">
                 {matchInfo.postponed_proposal?.isHome ? (
                   <Button
