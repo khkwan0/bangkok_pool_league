@@ -133,10 +133,10 @@ export default function PlayerCard({
     <View className={'my-4 p-4 ' + backgroundColor}>
       <Row className={'items-center'}>
         <View style={{flex: 1}}>
-          <Text type="defaultSemiBold">{player.name ?? player.nickname}</Text>
+          <Text type="subtitle">{player.name ?? player.nickname}</Text>
           <Row>
             {(player.firstname || player.firstName) && (
-              <Text type="subtitle">
+              <Text type="defaultSemiBold">
                 {abbrevFirst
                   ? (player.firstname ?? player.firstName).substr(
                       0,
@@ -146,7 +146,7 @@ export default function PlayerCard({
               </Text>
             )}
             {(player.lastname || player.lastName) && (
-              <Text type="subtitle">
+              <Text type="defaultSemiBold">
                 &nbsp;
                 {abbrevLast
                   ? (player.lastname ?? player.lastName).substr(

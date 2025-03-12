@@ -15,14 +15,18 @@ export default function ChoosePlayer(props: any) {
   const {state}: any = useMatchContext()
   const navigation = useNavigation()
   console.log(params)
-  const {teamId, side, frameIndex, frameNumber, frameType, slot} = JSON.parse(params as string)
+  const {teamId, side, frameIndex, frameNumber, frameType, slot} = JSON.parse(
+    params as string,
+  )
 
   React.useEffect(() => {
     navigation.setOptions({title: t('roster')})
   }, [])
 
   const _team = state.teams[teamId as string]
-  const team = Object.keys(_team).map((key: string) => _team[key])
+  const team = Object.keys(_team)
+    .map((key: string) => _team[key])
+    .sort((a: any, b: any) => a.nickname.localeCompare(b.nickname))
 
   const currentSection = state.matchInfo.initialFrames[frameIndex].section
   const sectionFrames = []
@@ -39,7 +43,7 @@ export default function ChoosePlayer(props: any) {
       style={{backgroundColor: useThemeColor({}, 'background')}}
       ListHeaderComponent={
         <View className="mt-4">
-          <Pressable className="bg-blue-200 py-5 border rounded">
+          <Pressable className="bg-blue-200 dark:bg-blue-700 py-5 border rounded">
             <Link
               href={{
                 pathname: '/Match/ChoosePlayer/AddPlayer',
@@ -53,9 +57,7 @@ export default function ChoosePlayer(props: any) {
                   }),
                 },
               }}>
-              <Text type="link" textAlign="center">
-                add_new_player
-              </Text>
+              <Text className="text-center">add_new_player</Text>
             </Link>
           </Pressable>
         </View>
