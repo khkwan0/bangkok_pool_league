@@ -16,6 +16,7 @@ import Divider from '@/components/Divider'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useNavigation} from '@react-navigation/native'
 import {FrameType} from '@/components/Match/types'
+import CompletedMatchDetails from '@/components/Completed/CompletedMatchDetails'
 
 export default function ScoreSheet() {
   const {state, dispatch, SocketConnect, SocketDisconnect, UpdateTeams}: any =
@@ -50,7 +51,7 @@ export default function ScoreSheet() {
           homePlayerIds: [],
           awayPlayerIds: [],
           homeScore: 0,
-          awayScore: 0
+          awayScore: 0,
         }
         _frames.push(_frame)
         frameNumber++
@@ -134,12 +135,30 @@ export default function ScoreSheet() {
         if (typeof res.data.firstBreak !== 'undefined' && res.data.firstBreak) {
           dispatch({type: 'SET_FIRSTBREAK', payload: res.data.firstBreak})
         }
+        if (
+          typeof res.data.finalize_home !== 'undefined' &&
+          Object.keys(res.data.finalize_home).length > 0
+        ) {
+          dispatch({
+            type: 'SET_FINALIZED_HOME',
+            payload: true,
+          })
+        }
+        if (
+          typeof res.data.finalize_away !== 'undefined' &&
+          Object.keys(res.data.finalize_away).length > 0
+        ) {
+          dispatch({
+            type: 'SET_FINALIZED_AWAY',
+            payload: true,
+          })
+        }
       }
     } catch (e) {
       console.log(e)
     }
   }
-/*
+  /*
   React.useEffect(() => {
     ;(async () => {
       try {
@@ -161,6 +180,8 @@ export default function ScoreSheet() {
 
   if (!isMounted) {
     return null
+  } else if (state.finalizedHome && state.finalizedAway) {
+    return <CompletedMatchDetails matchId={matchInfo.match_id} />
   } else {
     return (
       <FlatList

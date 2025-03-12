@@ -57,13 +57,14 @@ const initialState: StateType = {
 const MatchReducer = (state: StateType, action: any) => {
   switch (action.type) {
     case 'CLEAR_MATCHSTATE': {
-      console.log('clar')
       return {
         firstBreak: null,
         frameData: [],
         teams: {},
         matchInfo: {} as MatchInfoDataType,
         stats: {},
+        finalizedHome: false,
+        finalizedAway: false,
       }
     }
     case 'SET_MATCHINFO': {
@@ -242,6 +243,30 @@ export const MatchProvider = (props: any) => {
             type: 'SET_FIRSTBREAK',
             payload: data.data.firstBreak,
           })
+        } else if (data.type === 'finalize') {
+          if (
+            typeof data?.data?.side !== 'undefined' &&
+            data.data.side === 'home'
+          ) {
+            dispatch({type: 'SET_FINALIZED_HOME', payload: true})
+          } else if (
+            typeof data?.data?.side !== 'undefined' &&
+            data.data.side === 'away'
+          ) {
+            dispatch({type: 'SET_FINALIZED_AWAY', payload: true})
+          }
+        } else if (data.type === 'unfinalize') {
+          if (
+            typeof data?.data?.side !== 'undefined' &&
+            data.data.side === 'home'
+          ) {
+            dispatch({type: 'SET_FINALIZED_HOME', payload: false})
+          } else if (
+            typeof data?.data?.side !== 'undefined' &&
+            data.data.side === 'away'
+          ) {
+            dispatch({type: 'SET_FINALIZED_AWAY', payload: false})
+          }
         }
       }
     })
@@ -271,11 +296,10 @@ export const MatchProvider = (props: any) => {
               },
             })
           })()
-        } else if (data.type === 'finalize') {
-          FinalizeMatch(data.side, data.teamId)
         }
       }
     })
+
     socket.current.on('historyupdate2', data => {
       dispatch({type: 'SET_HISTORY', payload: data})
     })

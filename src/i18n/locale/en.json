@@ -248,6 +248,7 @@
   "successfully_registered": "You have successfully registered your account.",
   "team": "Team",
   "team_created": "Team successfully created",
+  "unfinalize": "Unfinalize",
   "team_id": "Team ID",
   "team_name": "Team name",
   "team_name_required": "Team name is required",

@@ -52,7 +52,6 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
       UnfinalizeMatch(side, matchInfo.away_team_id)
     }
   }
-  
 
   return (
     <View>
@@ -67,7 +66,7 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
             }>
             <Text className="text-center" type="subtitle">
               {matchState.finalizedHome ? t('unfinalize') : t('finalize')}
-              {t('home')}
+              &nbsp;{t('home')}
             </Text>
           </Pressable>
         </View>
@@ -81,7 +80,7 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
             }>
             <Text className="text-center" type="subtitle">
               {matchState.finalizedAway ? t('unfinalize') : t('finalize')}
-              {t('away')}
+              &nbsp;{t('away')}
             </Text>
           </Pressable>
         </View>
