@@ -1,5 +1,11 @@
 import React from 'react'
-import {FlatList, RefreshControl, Linking, Platform} from 'react-native'
+import {
+  FlatList,
+  RefreshControl,
+  Linking,
+  Platform,
+  ActivityIndicator,
+} from 'react-native'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import MatchCard from '@/components/upcoming/MatchCard'
@@ -80,7 +86,7 @@ export default function UpcomingMatches(props: any) {
 
   async function HandleScorePress(matchId: number) {
     try {
-      const res = await league.GetMatchById(matchId)
+      const res = await league.getMatchById(matchId)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
         router.push({
           pathname: '/Match',
@@ -239,10 +245,10 @@ export default function UpcomingMatches(props: any) {
       messaging().setBackgroundMessageHandler(async remoteMessage => {
         if (Platform.OS === 'ios') {
           try {
-          const count = await account.GetUnreadMessageCount()
-          PushNotificationIOS.setApplicationIconBadgeNumber(count)
-          dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
-        } catch (e) {
+            const count = await account.GetUnreadMessageCount()
+            PushNotificationIOS.setApplicationIconBadgeNumber(count)
+            dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
+          } catch (e) {
             console.error(e)
           }
         }
@@ -253,112 +259,126 @@ export default function UpcomingMatches(props: any) {
   if (isMounted) {
     return (
       <View className="flex-1">
-        <FlatList
-          contentContainerStyle={{
-            backgroundColor: colors.background,
-            flexGrow: 1,
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => {
-                if (
-                  typeof user?.teams !== 'undefined' &&
-                  user.teams.length > 0
-                ) {
-                  if (showMineOnly) {
-                    if (showPostponed) {
-                      GetMatches(true, true)
+        {refreshing && (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        )}
+        {!refreshing && (
+          <FlatList
+            contentContainerStyle={{
+              backgroundColor: colors.background,
+              flexGrow: 1,
+            }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => {
+                  if (
+                    typeof user?.teams !== 'undefined' &&
+                    user.teams.length > 0
+                  ) {
+                    if (showMineOnly) {
+                      if (showPostponed) {
+                        GetMatches(true, true)
+                      } else {
+                        GetMatches(true, false)
+                      }
                     } else {
-                      GetMatches(true, false)
+                      if (showPostponed) {
+                        GetMatches(false, true)
+                      } else {
+                        GetMatches(false, false)
+                      }
                     }
                   } else {
-                    if (showPostponed) {
-                      GetMatches(false, true)
-                    } else {
-                      GetMatches(false, false)
-                    }
+                    GetMatches(false, false)
                   }
-                } else {
-                  GetMatches(false, false)
-                }
-              }}
-            />
-          }
-          ListHeaderComponent={
-            <>
-              {!user.id && (
-                <View className="my-4 mx-6">
-                  <Button
-                    onPress={() =>
-                      router.push({pathname: '/Auth', params: {from: pathname}})
-                    }>
-                    {t('login_to_see_your_matches')}
-                  </Button>
-                </View>
-              )}
-              <LiveScores handlePress={HandleScorePress} />
-              {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
-                user.id && (
-                  <View className="my-2 mx-2">
-                    <Text style={{textAlign: 'center'}}>
-                      You are not affiliated with a team.
-                    </Text>
+                }}
+              />
+            }
+            ListHeaderComponent={
+              <>
+                {!user.id && (
+                  <View className="my-4 mx-6">
+                    <Button
+                      onPress={() =>
+                        router.push({
+                          pathname: '/Auth',
+                          params: {from: pathname},
+                        })
+                      }>
+                      {t('login_to_see_your_matches')}
+                    </Button>
                   </View>
                 )}
-              {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
-                <View className="mx-3 my-1 p-5 rounded-lg shadow-sm">
-                  <BouncyCheckbox
-                    disabled={refreshing}
-                    text={t('show_mine_only')}
-                    textStyle={{textDecorationLine: 'none'}}
-                    isChecked={showMineOnly}
-                    onPress={() => setShowMineOnly(s => !s)}
+                <LiveScores handlePress={HandleScorePress} />
+                {(typeof user?.teams === 'undefined' ||
+                  user.teams.length < 1) &&
+                  user.id && (
+                    <View className="my-2 mx-2">
+                      <Text style={{textAlign: 'center'}}>
+                        You are not affiliated with a team.
+                      </Text>
+                    </View>
+                  )}
+                {typeof user?.teams !== 'undefined' &&
+                  user.teams.length > 0 && (
+                    <View className="mx-3 my-1 p-5 rounded-lg shadow-sm">
+                      <BouncyCheckbox
+                        disabled={refreshing}
+                        text={t('show_mine_only')}
+                        textStyle={{textDecorationLine: 'none'}}
+                        isChecked={showMineOnly}
+                        onPress={() => setShowMineOnly(s => !s)}
+                      />
+                    </View>
+                  )}
+                {
+                  <View className="mx-3 p-5 rounded-lg shadow-sm">
+                    <BouncyCheckbox
+                      disabled={refreshing}
+                      text={t('show_postponed')}
+                      textStyle={{textDecorationLine: 'none'}}
+                      isChecked={showPostponed}
+                      onPress={() => HandleTogglePostponed()}
+                    />
+                  </View>
+                }
+              </>
+            }
+            ListFooterComponent={
+              isMounted && fixtures.length === 0 ? (
+                <View className="mt-4 p-6 rounded-2xl shadow-sm items-center mx-20">
+                  <MaterialIcons
+                    name="event-available"
+                    size={48}
+                    color="#6b7280"
+                    className="mb-4"
                   />
+                  <Text className="text-lg text-gray-500 text-center mb-6">
+                    {t('no_upcoming_matches_for_season', {
+                      season: state.season,
+                    })}
+                  </Text>
                 </View>
-              )}
-              {
-                <View className="mx-3 p-5 rounded-lg shadow-sm">
-                  <BouncyCheckbox
-                    disabled={refreshing}
-                    text={t('show_postponed')}
-                    textStyle={{textDecorationLine: 'none'}}
-                    isChecked={showPostponed}
-                    onPress={() => HandleTogglePostponed()}
-                  />
-                </View>
-              }
-            </>
-          }
-          ListFooterComponent={
-            isMounted && fixtures.length === 0 ? (
-              <View className="mt-4 p-6 rounded-2xl shadow-sm items-center mx-20">
-                <MaterialIcons
-                  name="event-available"
-                  size={48}
-                  color="#6b7280"
-                  className="mb-4"
-                />
-                <Text className="text-lg text-gray-500 text-center mb-6">
-                  {t('no_upcoming_matches_for_season', {season: state.season})}
-                </Text>
-              </View>
-            ) : null
-          }
-          keyExtractor={(item: ItemType, index) =>
-            item.home_team_id + item.away_team_id + item.date + index
-          }
-          ItemSeparatorComponent={() => <View className="my-5" />}
-          data={fixtures}
-          renderItem={({item, index}) => (
-            <MatchCard
-              matchInfo={item}
-              idx={index}
-              handlePress={HandlePress}
-              showMineOnly={showMineOnly}
-            />
-          )}
-        />
+              ) : null
+            }
+            keyExtractor={(item: ItemType, index) =>
+              item.home_team_id + item.away_team_id + item.date + index
+            }
+            ItemSeparatorComponent={() => <View className="my-5" />}
+            data={fixtures}
+            renderItem={({item, index}) => (
+              <MatchCard
+                matchInfo={item}
+                idx={index}
+                handlePress={HandlePress}
+                showMineOnly={showMineOnly}
+              />
+            )}
+          />
+        )}
         {needsUpdate && (
           <View className="px-2">
             <Button
