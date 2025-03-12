@@ -328,6 +328,15 @@ export const MatchProvider = (props: any) => {
     }
   }
 
+  function FinalizeMatch(side: string, teamId: number) {
+    const data = {
+      teamId: teamId,
+      side: side,
+      matchId: parseInt(state.matchInfo.match_id),
+    }
+    SocketSend('finalize', data)
+  }
+
   async function UpdateTeams() {
     const {home_team_id, away_team_id} =
       matchInfoRef.current as MatchInfoDataType
@@ -421,6 +430,7 @@ export const MatchProvider = (props: any) => {
       value={{
         state,
         dispatch,
+        FinalizeMatch,
         SocketConnect,
         SocketDisconnect,
         UpdateFirstBreak,

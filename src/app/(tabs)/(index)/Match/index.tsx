@@ -181,7 +181,7 @@ export default function ScoreSheet() {
         ListFooterComponent={
           <>
             <View>
-              <Finalizer />
+              <Finalizer matchInfo={matchInfo} />
             </View>
             <View>
               <More matchId={matchInfo.match_id} />
