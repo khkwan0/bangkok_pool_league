@@ -336,7 +336,7 @@ export const MatchProvider = (props: any) => {
       nickname: nickname,
       playerIdx: slot,
       newPlayer: newPlayer,
-      type: frameType,
+      frameType: frameType,
     }
     SocketSend('players', data)
   }

@@ -84,7 +84,7 @@ export default function ScoreSheet() {
       awayScore: 0,
     })
     frames.current = [..._frames]
-    // return () => dispatch({type: 'CLEAR_MATCHSTATE', payload: null})
+    return () => dispatch({type: 'CLEAR_MATCHSTATE', payload: null})
   }, [])
 
   React.useEffect(() => {
@@ -178,6 +178,7 @@ export default function ScoreSheet() {
   }, [state.matchInfo])
   */
 
+  // console.log(state.finalizedHome, state.finalizedAway)
   if (!isMounted) {
     return null
   } else if (state.finalizedHome && state.finalizedAway) {
