@@ -8,7 +8,6 @@ import {router} from 'expo-router'
 
 type MatchDateItemProps = {
   date: {
-    date: string
     matches: {
       match_id: number
       match_status_id: number
@@ -73,8 +72,12 @@ export default function MatchDateItem({date}: MatchDateItemProps) {
             <TouchableOpacity
               onPress={() => {
                 router.push({
-                  pathname: './completed/match',
-                  params: {params: JSON.stringify({matchId: match.match_id})},
+                  pathname: '/completed/match',
+                  params: {
+                    params: JSON.stringify({
+                      matchId: match.match_id,
+                    }),
+                  },
                 })
               }}
               key={`${'completed'}-${match.match_id}`}

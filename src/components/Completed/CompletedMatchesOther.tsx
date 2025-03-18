@@ -4,6 +4,7 @@ import {useSeason} from '@/hooks/useSeason'
 import React from 'react'
 import {useLeagueContext} from '@/context/LeagueContext'
 import MatchDateItem from './MatchDateItem'
+import {useLocalSearchParams} from 'expo-router'
 
 type MatchDate = {
   date: string

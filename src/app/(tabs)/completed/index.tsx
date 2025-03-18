@@ -44,12 +44,29 @@ function NoMatches() {
   )
 }
 
+function ShowAllMatches() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const {t} = useTranslation()
+  return (
+    <View className="px-4 mb-4">
+      <Button
+        onPress={() =>
+          router.push({pathname: '/completed/all', params: {from: pathname}})
+        }>
+        {t('show_all_matches')}
+      </Button>
+    </View>
+  )
+}
+
 export default function CompletedHome() {
   const {state} = useLeagueContext()
   const league = useLeague()
   const user = state.user
   const [matches, setMatches] = React.useState<CompletedMatchType[]>([])
   const [refreshing, setRefreshing] = React.useState(false)
+  const [isMounted, setIsMounted] = React.useState(false)
 
   const getCompletedMatches = useCallback(
     async (teams: {id: number}[]) => {
@@ -63,6 +80,7 @@ export default function CompletedHome() {
         console.error('Failed to fetch matches:', error)
       } finally {
         setRefreshing(false)
+        setIsMounted(true)
       }
     },
     [league],
@@ -86,7 +104,8 @@ export default function CompletedHome() {
         refreshing={refreshing}
         onRefresh={() => getCompletedMatches(user.teams || [])}
         contentContainerClassName="py-4"
-        ListEmptyComponent={<NoMatches />}
+        ListHeaderComponent={matches.length > 0 ? <ShowAllMatches /> : null}
+        ListEmptyComponent={isMounted ? <NoMatches /> : null}
         ListFooterComponent={<View className="h-4" />}
       />
     </View>
