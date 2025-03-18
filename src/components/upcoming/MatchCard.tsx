@@ -160,15 +160,19 @@ export default function MatchCard({
             {/* Header Section with Teams and Date */}
             <View className="mb-4">
               <View className="flex-row justify-center items-center mb-2">
-                <Text type="subtitle" className="text-center font-bold">
+                <Text
+                  type="subtitle"
+                  className="text-center font-bold"
+                  style={{flex: 3}}>
                   {matchInfo.home_team_short_name}
                 </Text>
-                <View className="mx-2 px-3 py-1 bg-blue-100 dark:bg-blue-900 rounded-full">
-                  <Text type="subtitle" className="text-center">
-                    vs
-                  </Text>
-                </View>
-                <Text type="subtitle" className="text-center font-bold">
+                <Text type="subtitle" className="text-center" style={{flex: 1}}>
+                  vs
+                </Text>
+                <Text
+                  type="subtitle"
+                  className="text-center font-bold"
+                  style={{flex: 3}}>
                   {matchInfo.away_team_short_name}
                 </Text>
               </View>
