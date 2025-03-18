@@ -1,5 +1,5 @@
 import {ThemedView as View} from '@/components/ThemedView'
-import {FlatList} from 'react-native'
+import {FlatList, AppState} from 'react-native'
 import {
   Finalizer,
   FirstBreak,
@@ -10,7 +10,7 @@ import {
 } from '@/components/Match/components'
 import React from 'react'
 import {useMatchContext} from '@/context/MatchContext'
-import {useMatch} from '@/hooks'
+import {useMatch} from '@/hooks/useMatch'
 import {useLocalSearchParams} from 'expo-router'
 import Divider from '@/components/Divider'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
@@ -29,9 +29,32 @@ export default function ScoreSheet() {
   const matchInfo =
     typeof params !== 'undefined' ? JSON.parse(params as string) : {}
   const frames = React.useRef<FrameType[]>([])
+  const appState = React.useRef(AppState.currentState)
+  const [refreshing, setRefreshing] = React.useState(false)
 
   React.useEffect(() => {
     navigation.setOptions({title: '#' + matchInfo.match_id})
+  }, [])
+
+  React.useEffect(() => {
+    // Listen for app state changes (background to foreground)
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        console.log('App has come to the foreground from background state')
+        // Refresh match data when app comes back to foreground
+        GetFrames()
+        GetFirstBreak()
+      }
+      // Update app state reference
+      appState.current = nextAppState
+    })
+
+    return () => {
+      subscription.remove()
+    }
   }, [])
 
   React.useEffect(() => {
@@ -106,6 +129,7 @@ export default function ScoreSheet() {
   }, [])
 
   async function GetFrames() {
+    setRefreshing(true)
     const __frames = frames.current
     try {
       const res = await match.GetFrames(matchInfo.match_id)
@@ -125,6 +149,8 @@ export default function ScoreSheet() {
       setIsMounted(true)
     } catch (e) {
       console.log(e)
+    } finally {
+      setRefreshing(false)
     }
   }
 
@@ -187,6 +213,8 @@ export default function ScoreSheet() {
     return (
       <FlatList
         contentContainerStyle={{paddingBottom: insets.bottom}}
+        refreshing={refreshing}
+        onRefresh={() => GetFrames()}
         ListHeaderComponent={
           <>
             <View className="pb-1 pt-4">
