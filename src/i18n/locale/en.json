@@ -39,7 +39,7 @@
   "confirm_postpone_date": "Are you sure you want to postpone this match to {date}?",
   "confirm_postpone_indefinitely": "Are you sure you want to postpone this match indefinitely?",
   "confirm_proposed_date": "Confirm Proposed Date",
-  "confirm_remove_player": "Remove {{player}} from {{team}}?",
+  "confirm_remove_player": "Remove {player} from {team}?",
   "congratulations": "Congratualations",
   "continue": "Continue",
   "create_account": "Create account",
