@@ -240,7 +240,9 @@ export default function ScoreSheet() {
         }
         ItemSeparatorComponent={() => <Divider />}
         data={state.frameData}
-        renderItem={({item, index}) => <Frame item={item} index={index} />}
+        renderItem={({item, index}) => (
+          <Frame item={item} index={index} refreshing={refreshing} />
+        )}
       />
     )
   }

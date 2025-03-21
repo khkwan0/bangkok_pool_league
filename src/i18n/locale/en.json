@@ -30,6 +30,7 @@
   "combined": "Combined",
   "coming_soon": "Coming soon...",
   "completed": "Completed",
+  "completed_all": "All Completed Matches",
   "completed_matches": "Completed Matches",
   "confirm": "Confirm",
   "confirm_attendance": "Confirm attendance",
@@ -124,6 +125,7 @@
   "mark_all_read": "Mark all as read",
   "mark_as_read": "Mark as read",
   "match": "Match",
+  "matches": "Matches",
   "match_confirmed": "Match Confirmed",
   "match_details": "Match details",
   "match_info": "Match Info",
@@ -168,7 +170,9 @@
   "password_minimum_length": "Minimum password length: {n}",
   "password_mismatch": "Password mismatch",
   "password_placeholder": "••••••••",
-  "password_reset": "Password reset",
+  "password_requirements": "Password must be at least 8 characters long",
+  "password_reset": "Password Reset",
+  "password_reset_success": "Password Reset Successful",
   "people_and_places": "People & Places",
   "played": "Played",
   "player": "Player",
@@ -264,6 +268,7 @@
   "too_short": "Too short",
   "unread_messages": "Unread messages",
   "update_available": "An update is available",
+  "updating": "Updating...",
   "upcoming": "Upcoming",
   "upcoming_matches": "Upcoming Matches",
   "upload": "Upload",
@@ -288,5 +293,7 @@
   "vs": "Vs",
   "where": "Where",
   "win": "WIN",
-  "won": "Won"
+  "won": "Won",
+  "performance": "Performance",
+  "phone": "Phone"
 }

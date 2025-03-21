@@ -7,7 +7,7 @@ import {router} from 'expo-router'
 
 export default function VSHeader({matchInfo}: MatchInfoType) {
   return (
-    <Row>
+    <Row alignItems="center">
       <View style={{flex: 3}} className="items-center">
         <Pressable
           onPress={() =>
@@ -18,7 +18,7 @@ export default function VSHeader({matchInfo}: MatchInfoType) {
               },
             })
           }>
-          <Text className="text-right" type="title">
+          <Text className="text-center" type="title">
             {matchInfo.home_team_short_name}
           </Text>
         </Pressable>
@@ -36,7 +36,7 @@ export default function VSHeader({matchInfo}: MatchInfoType) {
               },
             })
           }>
-          <Text className="text-left" type="title">
+          <Text className="text-center" type="title">
             {matchInfo.away_team_short_name}
           </Text>
         </Pressable>

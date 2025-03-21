@@ -15,8 +15,7 @@ export default function Preferences() {
   const {t} = useTranslation()
   const navigation = useNavigation()
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language)
-  const [isMounted, setIsMounted] = useState(false)
-  const {state, dispatch} = useLeagueContext()
+  const {state} = useLeagueContext()
   const user = state.user
   const account = useAccount()
 
@@ -28,9 +27,14 @@ export default function Preferences() {
 
   useEffect(() => {
     // Load saved language on mount
-    AsyncStorage.getItem('language').then(lang => {
-      if (lang) setCurrentLanguage(lang)
-    })
+    const lang = state.user.language
+    if (lang) {
+      setCurrentLanguage(lang)
+    } else {
+      AsyncStorage.getItem('language').then(lang => {
+        if (lang) setCurrentLanguage(lang)
+      })
+    }
   }, [])
 
   const changeLanguage = async (lang: string) => {
@@ -44,22 +48,9 @@ export default function Preferences() {
     }
   }
 
-  async function SavePreferences() {
-    try {
-      await account.SavePreferences(user.preferences)
-    } catch (e) {
-      console.error(e)
-    }
-  }
   useEffect(() => {
-    if (isMounted) {
-      SavePreferences()
-    }
-  }, [user])
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+    account.SavePreferences(state.user.preferences)
+  }, [state.user.preferences])
 
   return (
     <View className="flex-1 p-4">
@@ -133,37 +124,31 @@ export default function Preferences() {
           <View>
             <Switch
               value={user?.preferences?.enabledPushNotifications ?? true}
-              onValueChange={val => {
-                dispatch({
-                  type: 'SET_PREFERENCES',
-                  payload: {enabledPushNotifications: val},
-                })
+              onValueChange={async val => {
+                await account.SetPushNotifications(val)
               }}
             />
           </View>
         </View>
         <View className="flex-row items-center justify-between my-4">
           <View className="flex-row items-center">
-            <Text>{t('silent_notifications')}</Text>
+            <Text>{t('sound_notifications')}</Text>
           </View>
           <View className="flex-row items-center">
             <MCI
-              name="bell"
+              name="bell-off"
               size={20}
               color={
-                user?.preferences?.silentPushNotifications
+                user?.preferences?.soundNotifications
                   ? colors.text + '40'
                   : colors.primary
               }
               style={{marginRight: 8}}
             />
             <Switch
-              value={user?.preferences?.silentPushNotifications ?? false}
-              onValueChange={val => {
-                dispatch({
-                  type: 'SET_PREFERENCES',
-                  payload: {silentPushNotifications: val},
-                })
+              value={user?.preferences?.soundNotifications ?? true}
+              onValueChange={async val => {
+                await account.SetSoundNotifications(val)
               }}
               disabled={
                 typeof user?.preferences?.enabledPushNotifications ===
@@ -175,10 +160,10 @@ export default function Preferences() {
               }
             />
             <MCI
-              name="bell-off"
+              name="bell"
               size={20}
               color={
-                user?.preferences?.silentPushNotifications
+                user?.preferences?.soundNotifications
                   ? colors.primary
                   : colors.text + '40'
               }

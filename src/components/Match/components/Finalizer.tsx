@@ -1,10 +1,11 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import Row from '@/components/Row'
-import {Pressable, useColorScheme} from 'react-native'
+import {ActivityIndicator, Pressable, useColorScheme} from 'react-native'
 import {t} from 'i18next'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatchContext} from '@/context/MatchContext'
+import React from 'react'
 
 export default function Finalizer({matchInfo}: {matchInfo: any}) {
   const colorScheme = useColorScheme()
@@ -14,6 +15,7 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
     UnfinalizeMatch,
   }: any = useMatchContext()
   const {state} = useLeagueContext()
+  const [loading, setLoading] = React.useState(false)
 
   const backgroundTint = colorScheme === 'dark' ? '600' : '300'
   const red = `bg-red-${backgroundTint}`
@@ -22,34 +24,48 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
   const awayStyle = `${blue} mx-4 p-4 item-center rounded`
 
   async function HandleFinalize(side: string) {
-    if (
-      (state.user.teams?.includes(matchInfo.home_team_id) ||
-        state.user.role_id === 9) &&
-      side === 'home'
-    ) {
-      FinalizeMatch(side, matchInfo.home_team_id)
-    } else if (
-      (state.user.teams?.includes(matchInfo.away_team_id) ||
-        state.user.role_id === 9) &&
-      side === 'away'
-    ) {
-      FinalizeMatch(side, matchInfo.away_team_id)
+    try {
+      setLoading(true)
+      if (
+        (state.user.teams?.includes(matchInfo.home_team_id) ||
+          state.user.role_id === 9) &&
+        side === 'home'
+      ) {
+        FinalizeMatch(side, matchInfo.home_team_id)
+      } else if (
+        (state.user.teams?.includes(matchInfo.away_team_id) ||
+          state.user.role_id === 9) &&
+        side === 'away'
+      ) {
+        FinalizeMatch(side, matchInfo.away_team_id)
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setLoading(false)
     }
   }
 
   function Unfinalize(side: string) {
-    if (
-      (state.user.teams?.includes(matchInfo.home_team_id) ||
-        state.user.role_id === 9) &&
-      side === 'home'
-    ) {
-      UnfinalizeMatch(side, matchInfo.home_team_id)
-    } else if (
-      (state.user.teams?.includes(matchInfo.away_team_id) ||
-        state.user.role_id === 9) &&
-      side === 'away'
-    ) {
-      UnfinalizeMatch(side, matchInfo.away_team_id)
+    try {
+      setLoading(true)
+      if (
+        (state.user.teams?.includes(matchInfo.home_team_id) ||
+          state.user.role_id === 9) &&
+        side === 'home'
+      ) {
+        UnfinalizeMatch(side, matchInfo.home_team_id)
+      } else if (
+        (state.user.teams?.includes(matchInfo.away_team_id) ||
+          state.user.role_id === 9) &&
+        side === 'away'
+      ) {
+        UnfinalizeMatch(side, matchInfo.away_team_id)
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -58,30 +74,46 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
       <Row>
         <View flex={1}>
           <Pressable
+            disabled={loading}
             className={homeStyle}
             onPress={() =>
               matchState.finalizedHome
                 ? Unfinalize('home')
                 : HandleFinalize('home')
             }>
-            <Text className="text-center" type="subtitle">
-              {matchState.finalizedHome ? t('unfinalize') : t('finalize')}
-              &nbsp;{t('home')}
-            </Text>
+            {loading ? (
+              <ActivityIndicator
+                size="small"
+                color={colorScheme === 'dark' ? 'white' : 'black'}
+              />
+            ) : (
+              <Text className="text-center" type="subtitle">
+                {matchState.finalizedHome ? t('unfinalize') : t('finalize')}
+                &nbsp;{t('home')}
+              </Text>
+            )}
           </Pressable>
         </View>
         <View flex={1}>
           <Pressable
+            disabled={loading}
             className={awayStyle}
             onPress={() =>
               matchState.finalizedAway
                 ? Unfinalize('away')
                 : HandleFinalize('away')
             }>
-            <Text className="text-center" type="subtitle">
-              {matchState.finalizedAway ? t('unfinalize') : t('finalize')}
-              &nbsp;{t('away')}
-            </Text>
+            {loading ? (
+              <ActivityIndicator
+                size="small"
+                color={colorScheme === 'dark' ? 'white' : 'black'}
+              />
+            ) : (
+              <Text className="text-center" type="subtitle">
+                {matchState.finalizedAway ? t('unfinalize') : t('finalize')}
+                &nbsp;{t('away')}
+              </Text>
+            )}
           </Pressable>
         </View>
       </Row>

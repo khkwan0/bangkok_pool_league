@@ -7,8 +7,9 @@ import {useMatchContext} from '@/context/MatchContext'
 import {useTranslation} from 'react-i18next'
 import WinButton from './WinButton'
 import Player from './Player'
+import React from 'react'
 
-export default function Frame({item, index}: FrameProps) {
+export default function Frame({item, index, refreshing}: FrameProps) {
   const {state, UpdateFrameWin}: any = useMatchContext()
   const {t} = useTranslation()
   const frameType = state.matchInfo.initialFrames[index].type
@@ -18,6 +19,12 @@ export default function Frame({item, index}: FrameProps) {
     const teamId = side === 'home' ? homeTeamId : awayTeamId
     UpdateFrameWin(side, index, teamId)
   }
+
+  React.useEffect(() => {
+    if (refreshing) {
+      // Future refresh logic can go here
+    }
+  }, [refreshing])
 
   const theme = useColorScheme()
   const borderColor = theme === 'dark' ? '#aaa' : '#222'
@@ -75,6 +82,7 @@ export default function Frame({item, index}: FrameProps) {
               frameNumber={item.frameNumber}
               frameType={frameType}
               playerIds={item.homePlayerIds}
+              refreshing={refreshing}
             />
           </View>
           <View flex={1} className="px-2 justify-center items-center">
@@ -107,6 +115,7 @@ export default function Frame({item, index}: FrameProps) {
               frameNumber={item.frameNumber}
               frameType={frameType}
               playerIds={item.awayPlayerIds}
+              refreshing={refreshing}
             />
           </View>
         </Row>

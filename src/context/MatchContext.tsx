@@ -394,7 +394,6 @@ export const MatchProvider = (props: any) => {
       matchInfoRef.current as MatchInfoDataType
     try {
       if (home_team_id && away_team_id) {
-        console.log('UpdateTeams', home_team_id, away_team_id)
         const _teams: TeamsType = {}
         const _homePlayers = await teams.GetPlayers(home_team_id, true)
         const _awayPlayers = await teams.GetPlayers(away_team_id, true)

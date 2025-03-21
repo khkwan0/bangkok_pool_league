@@ -1,5 +1,4 @@
 import {createContext, useContext, useReducer} from 'react'
-
 interface User {
   id?: number
   role_id?: number
@@ -8,9 +7,10 @@ interface User {
   nickname?: string
   first_name?: string
   last_name?: string
+  language?: string
   preferences?: {
     enabledPushNotifications?: boolean
-    silentPushNotifications?: boolean
+    soundNotifications?: boolean
   }
 }
 
@@ -67,7 +67,12 @@ const LeagueReducer = (state: any, action: any) => {
         },
       }
     }
-
+    case 'SET_LANGUAGE': {
+      return {
+        ...state,
+        user: {...state.user, language: action.payload},
+      }
+    }
     default:
       return state
   }

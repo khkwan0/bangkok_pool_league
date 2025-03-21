@@ -13,11 +13,17 @@ export interface League {
   RevokePrivileges(playerId: number, teamId: number): Promise<{status: string}>
   // Add other methods as needed
 }
+export interface Match {
+  GetMatchMetadata(matchId: number): Promise<MatchMetadata>
+  ConfirmMatch(matchId: number, teamId: number): Promise<{status: string}>
+  UnconfirmMatch(matchId: number, teamId: number): Promise<{status: string}>
+  GetMatchDetails(matchId: number): Promise<MatchDetails>
+}
 
 export function useLeague(): League
 export function useTeams(): Team[]
 export function usePlayers(): Player[]
-export function useMatches(): Match[]
+export function useMatch(): Match
 export function useLeague(): League
 export function useTeams(): Team[]
 export function usePlayers(): Player[]

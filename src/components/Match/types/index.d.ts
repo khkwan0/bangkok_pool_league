@@ -44,4 +44,5 @@ export type FrameType = {
 export interface FrameProps {
   item: FrameType
   index: number
+  refreshing: boolean
 }

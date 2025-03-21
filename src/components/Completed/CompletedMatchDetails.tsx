@@ -1,17 +1,17 @@
 import React from 'react'
-import {useLocalSearchParams, useNavigation, useRouter} from 'expo-router'
+import {useNavigation, useRouter} from 'expo-router'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useMatch} from '@/hooks'
 import {FlatList, Pressable} from 'react-native'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {DateTime} from 'luxon'
-import {useColorScheme} from 'nativewind'
+import {useColorScheme} from 'react-native'
 
 type Frame = {
   frameId: number
-  homePlayers: {nickName: string; id: number}[]
-  awayPlayers: {nickName: string; id: number}[]
+  homePlayers: {nickName: string; playerId: number}[]
+  awayPlayers: {nickName: string; playerId: number}[]
   homeWin: number
 }
 
@@ -27,6 +27,28 @@ type MatchMetadata = {
 
 function FrameRow({frame, index}: {frame: Frame; index: number}) {
   const router = useRouter()
+  const [homePressed, setHomePressed] = React.useState(false)
+  const [awayPressed, setAwayPressed] = React.useState(false)
+  const colorScheme = useColorScheme()
+
+  function handleHomePressIn() {
+    setHomePressed(true)
+  }
+
+  function handleHomePressOut() {
+    setHomePressed(false)
+  }
+
+  function handleAwayPressIn() {
+    setAwayPressed(true)
+  }
+
+  function handleAwayPressOut() {
+    setAwayPressed(false)
+  }
+
+  const textColor = colorScheme === 'dark' ? 'white' : 'black'
+
   return (
     <View className="p-4 rounded-lg bg-white border border-slate-200 shadow-sm">
       <View className="mb-4">
@@ -41,6 +63,8 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
             {frame.homePlayers.map((player, idx) => (
               <Pressable
                 key={idx}
+                onPressIn={handleHomePressIn}
+                onPressOut={handleHomePressOut}
                 onPress={() => {
                   router.push({
                     pathname: '/completed/match/player',
@@ -51,7 +75,11 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
                     },
                   })
                 }}>
-                <Text type="subtitle">{player.nickName}</Text>
+                <Text
+                  type="subtitle"
+                  style={{color: homePressed ? 'red' : textColor}}>
+                  {player.nickName}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -82,6 +110,8 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
             {frame.awayPlayers.map((player, idx) => (
               <Pressable
                 key={idx}
+                onPressIn={handleAwayPressIn}
+                onPressOut={handleAwayPressOut}
                 onPress={() => {
                   router.push({
                     pathname: '/completed/match/player',
@@ -90,7 +120,11 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
                     },
                   })
                 }}>
-                <Text key={idx} className="text-right" type="subtitle">
+                <Text
+                  key={idx}
+                  className="text-right"
+                  type="subtitle"
+                  style={{color: awayPressed ? 'red' : textColor}}>
                   {player.nickName}
                 </Text>
               </Pressable>
@@ -112,7 +146,7 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
   const [matchMetadata, setMatchMetadata] =
     React.useState<MatchMetadata | null>(null)
   const colorscheme = useColorScheme()
-  const isDark = colorscheme.colorScheme === 'dark'
+  const isDark = colorscheme === 'dark'
 
   React.useEffect(() => {
     async function getMatchDetails(matchId: number) {

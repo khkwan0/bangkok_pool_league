@@ -5,9 +5,11 @@ import React from 'react'
 import {MaterialIcons} from '@expo/vector-icons'
 import {useColorScheme} from 'nativewind'
 import {router} from 'expo-router'
+import {useTranslation} from 'react-i18next'
 
 type MatchDateItemProps = {
   date: {
+    date: string
     matches: {
       match_id: number
       match_status_id: number
@@ -16,6 +18,7 @@ type MatchDateItemProps = {
       away_team_name: string
       home_frames: number
       away_frames: number
+      division_name?: string
     }[]
   }
 }
@@ -25,6 +28,7 @@ export default function MatchDateItem({date}: MatchDateItemProps) {
   const [show, setShow] = React.useState(false)
   const colorscheme = useColorScheme()
   const isDark = colorscheme.colorScheme === 'dark'
+  const {t} = useTranslation()
 
   const count = React.useMemo(() => {
     return date.matches.reduce((acc, match) => {
@@ -61,7 +65,7 @@ export default function MatchDateItem({date}: MatchDateItemProps) {
         {count > 0 && (
           <View className="bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
             <Text className="text-sm font-medium text-blue-600 dark:text-blue-300">
-              {count} {count === 1 ? 'match' : 'matches'}
+              {count} {count === 1 ? t('match') : t('matches')}
             </Text>
           </View>
         )}
@@ -90,7 +94,7 @@ export default function MatchDateItem({date}: MatchDateItemProps) {
                 </View>
                 <View className="flex-[1] items-center">
                   <Text className="text-sm text-slate-400 dark:text-slate-500 font-medium">
-                    vs
+                    {t('vs')}
                   </Text>
                 </View>
                 <View className="flex-[3] items-center">
@@ -102,17 +106,17 @@ export default function MatchDateItem({date}: MatchDateItemProps) {
               <View className="flex-row items-center">
                 <View className="flex-[3] items-center">
                   <Text className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    {match.home_frames ?? 0}
+                    {String(match.home_frames ?? 0)}
                   </Text>
                 </View>
                 <View className="flex-[1] items-center">
                   <Text className="text-sm text-slate-400 dark:text-slate-500 font-medium">
-                    {match.division_name}
+                    {match.division_name || ''}
                   </Text>
                 </View>
                 <View className="flex-[3] items-center">
                   <Text className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                    {match.away_frames ?? 0}
+                    {String(match.away_frames ?? 0)}
                   </Text>
                 </View>
               </View>

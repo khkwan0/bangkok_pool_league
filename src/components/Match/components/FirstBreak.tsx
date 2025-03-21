@@ -27,7 +27,7 @@ export default function FirstBreak({matchInfo}: MatchInfoType) {
     <Row>
       <View flex={2} alignItems="center">
         <Pressable
-          disabled={loading}
+          disabled={state.firstBreak === matchInfo.home_team_id}
           onPress={() => HandleFirstBreak(matchInfo.home_team_id)}
           style={{alignItems: 'center'}}>
           <Row style={{gap: 10}}>
@@ -47,6 +47,7 @@ export default function FirstBreak({matchInfo}: MatchInfoType) {
       <View flex={1} />
       <View flex={2} alignItems="center">
         <Pressable
+          disabled={state.firstBreak === matchInfo.away_team_id}
           onPress={() => HandleFirstBreak(matchInfo.away_team_id)}
           style={{alignItems: 'center'}}>
           <Row style={{gap: 10}}>

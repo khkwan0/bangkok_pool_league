@@ -14,7 +14,6 @@ export default function ChoosePlayer(props: any) {
   const {params} = useLocalSearchParams()
   const {state}: any = useMatchContext()
   const navigation = useNavigation()
-  console.log(params)
   const {teamId, side, frameIndex, frameNumber, frameType, slot} = JSON.parse(
     params as string,
   )

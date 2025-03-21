@@ -31,8 +31,7 @@ export const useAccount = () => {
       ) {
         const userData = await Get('/user')
         const token = await messaging().getToken()
-        console.log(token)
-        const res = await Post('/user/token', {token: token})
+        await Post('/user/token', {token: token})
         if (typeof userData.role_id !== 'undefined' && userData.role_id === 9) {
           await notifee.createChannel({
             id: 'Admin',
@@ -42,6 +41,13 @@ export const useAccount = () => {
             importance: AndroidImportance.HIGH,
           })
         }
+        await notifee.createChannel({
+          id: 'General',
+          name: 'General',
+          vibration: true,
+          lights: true,
+          importance: AndroidImportance.HIGH,
+        })
         dispatch({type: 'SET_USER', payload: userData})
         return userData
       }
@@ -357,12 +363,34 @@ export const useAccount = () => {
   async function SaveLanguage(lang) {
     try {
       const res = await Post('/user/language', {language: lang})
+      dispatch({type: 'SET_LANGUAGE', payload: lang})
       return res
     } catch (e) {
       console.error(e)
     }
   }
 
+  async function SetPushNotifications(enabled) {
+    try {
+      dispatch({
+        type: 'SET_PREFERENCES',
+        payload: {enabledPushNotifications: enabled},
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  async function SetSoundNotifications(enabled) {
+    try {
+      dispatch({
+        type: 'SET_PREFERENCES',
+        payload: {soundNotifications: enabled},
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
   return {
     AdminLogin,
     CheckVersion,
@@ -382,6 +410,8 @@ export const useAccount = () => {
     SetFirstName,
     SetLastName,
     SetNickName,
+    SetPushNotifications,
+    SetSoundNotifications,
     SaveLanguage,
     SavePreferences,
     SocialLogin,

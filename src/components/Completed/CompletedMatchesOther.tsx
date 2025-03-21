@@ -4,7 +4,8 @@ import {useSeason} from '@/hooks/useSeason'
 import React from 'react'
 import {useLeagueContext} from '@/context/LeagueContext'
 import MatchDateItem from './MatchDateItem'
-import {useLocalSearchParams} from 'expo-router'
+import {useTranslation} from 'react-i18next'
+import {ThemedText as Text} from '@/components/ThemedText'
 
 type MatchDate = {
   date: string
@@ -24,6 +25,7 @@ export default function CompletedMatchesOther() {
   const {state} = useLeagueContext()
   const season = state.season
   const [matchDates, setMatchDates] = React.useState<MatchDate[]>([])
+  const {t} = useTranslation()
 
   React.useEffect(() => {
     const getCompletedMatches = async () => {
@@ -39,6 +41,13 @@ export default function CompletedMatchesOther() {
       renderItem={({item}) => <MatchDateItem date={item} />}
       keyExtractor={(item, index) => `${index.toString()}_${item.date}`}
       ItemSeparatorComponent={() => <View className="h-4" />}
+      ListEmptyComponent={() => (
+        <View className="p-4 items-center justify-center">
+          <View className="p-2">
+            <Text>{t('no_completed_matches')}</Text>
+          </View>
+        </View>
+      )}
     />
   )
 }
