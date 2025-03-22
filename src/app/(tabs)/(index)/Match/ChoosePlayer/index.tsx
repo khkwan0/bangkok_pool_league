@@ -36,28 +36,33 @@ export default function ChoosePlayer(props: any) {
     }
   })
 
+  function HandleChoosePlayer() {
+    router.push({
+      pathname: '/Match/ChoosePlayer/AddPlayer',
+      params: {
+        params: JSON.stringify({
+          frameIndex,
+          slot,
+          side,
+          frameNumber,
+          frameType,
+        }),
+      },
+    })
+  }
+
   return (
     <FlatList
       className="px-2"
       style={{backgroundColor: useThemeColor({}, 'background')}}
       ListHeaderComponent={
         <View className="mt-4">
-          <Pressable className="bg-blue-200 dark:bg-blue-700 py-5 border rounded">
-            <Link
-              href={{
-                pathname: '/Match/ChoosePlayer/AddPlayer',
-                params: {
-                  params: JSON.stringify({
-                    frameIndex,
-                    slot,
-                    side,
-                    frameNumber,
-                    frameType,
-                  }),
-                },
-              }}>
-              <Text className="text-center">add_new_player</Text>
-            </Link>
+          <Pressable
+            onPress={() => HandleChoosePlayer()}
+            className="bg-blue-200 dark:bg-blue-700 py-5 border rounded">
+            <Text className="text-center" style={{textAlign: 'center'}}>
+              add_new_player
+            </Text>
           </Pressable>
         </View>
       }
