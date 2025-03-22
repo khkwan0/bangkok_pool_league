@@ -8,7 +8,7 @@ import {useMatchContext} from '@/context/MatchContext'
 export default function More({matchId}: {matchId: number}) {
   return (
     <Pressable
-      className="items-center justify-center p-4 my-2 mx-4 bg-violet-300 dark:bg-violet-500 rounded-xl"
+      className="items-center justify-center p-4 my-2 mx-4 bg-violet-300 dark:bg-violet-500 rounded-lg"
       onPress={() =>
         router.push({
           pathname: '/Match/History',

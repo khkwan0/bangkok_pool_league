@@ -17,11 +17,8 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
   const {state} = useLeagueContext()
   const [loading, setLoading] = React.useState(false)
 
-  const backgroundTint = colorScheme === 'dark' ? '600' : '300'
-  const red = `bg-red-${backgroundTint}`
-  const blue = `bg-blue-${backgroundTint}`
-  const homeStyle = `${red} mx-4 p-4 item-center rounded`
-  const awayStyle = `${blue} mx-4 p-4 item-center rounded`
+  const homeStyle = `bg-red-400 dark:bg-red-600 mx-4 p-4 item-center rounded-lg`
+  const awayStyle = `bg-blue-400 dark:bg-blue-600 mx-4 p-4 item-center rounded-lg`
 
   async function HandleFinalize(side: string) {
     try {
