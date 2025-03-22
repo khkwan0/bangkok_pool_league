@@ -46,7 +46,6 @@ export default function History() {
       setRefreshing(true)
       const res = await match.GetMatchInfo(matchId)
       const _history = res?.data?.history ?? []
-      console.log('history', _history)
       const _historySorted = _history.sort((a: HistoryItem, b: HistoryItem) => {
         if (a?.timestamp && b?.timestamp) {
           return b.timestamp - a.timestamp
