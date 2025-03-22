@@ -18,12 +18,21 @@ import '../../global.css'
 import messaging from '@react-native-firebase/messaging'
 import notifee, {AndroidImportance} from '@notifee/react-native'
 import {useTranslation} from 'react-i18next'
+import * as Sentry from '@sentry/react-native'
 
-export default function RootLayout() {
+function RootLayout() {
   const {t} = useTranslation()
   const colorScheme = useColorScheme()
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  })
+
+  Sentry.init({
+    dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
+    tracesSampleRate: 1.0,
+    _experiments: {
+      profilesSampleRate: 1.0,
+    },
   })
 
   useEffect(() => {
@@ -97,3 +106,5 @@ export default function RootLayout() {
     </ThemeProvider>
   )
 }
+
+export default Sentry.wrap(RootLayout)
