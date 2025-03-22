@@ -290,6 +290,12 @@
   "vs": "กับ",
   "where": "ที่ไหน",
   "win": "ชนะ",
-  "won": "ชัย",
-  "unfinalize": "ยกเลิกการสรุป"
+  "won": "ชนะแล้ว",
+  "unfinalize": "ยกเลิกการสรุป",
+  "confirm_venue": "ยืนยันสถานที่",
+  "confirm_winner_change": "ยืนยันการเปลี่ยนผู้ชนะ",
+  "confirm_winner_change_message": "คุณแน่ใจหรือไม่ที่จะเปลี่ยนผู้ชนะของเฟรมนี้?",
+  "confirm_clear_winner": "ยืนยันการล้างผู้ชนะ",
+  "confirm_clear_winner_message": "คุณแน่ใจหรือไม่ที่จะล้างผู้ชนะของเฟรมนี้?",
+  "welcome_message": "ยินดีต้อนรับสู่พูลลีกกรุงเทพ"
 }

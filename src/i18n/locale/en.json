@@ -292,8 +292,14 @@
   "view": "View",
   "vs": "Vs",
   "where": "Where",
-  "win": "WIN",
+  "win": "Win",
   "won": "Won",
   "performance": "Performance",
-  "phone": "Phone"
+  "phone": "Phone",
+  "confirm_venue": "Confirm venue",
+  "confirm_winner_change": "Confirm Winner Change",
+  "confirm_winner_change_message": "Are you sure you want to change the winner of this frame?",
+  "confirm_clear_winner": "Confirm Clear Winner",
+  "confirm_clear_winner_message": "Are you sure you want to clear the winner of this frame?",
+  "welcome_message": "Welcome to Bangkok Pool League"
 }

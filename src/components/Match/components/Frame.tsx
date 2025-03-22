@@ -10,14 +10,19 @@ import Player from './Player'
 import React from 'react'
 
 export default function Frame({item, index, refreshing}: FrameProps) {
-  const {state, UpdateFrameWin}: any = useMatchContext()
+  const {state, UpdateFrameWin, ClearFrameWinner}: any = useMatchContext()
   const {t} = useTranslation()
   const frameType = state.matchInfo.initialFrames[index].type
 
   const {home_team_id: homeTeamId, away_team_id: awayTeamId} = state.matchInfo
-  function HandleWin(side: string): void {
+
+  function HandleWin(side: string, goldenBreak: boolean = false): void {
     const teamId = side === 'home' ? homeTeamId : awayTeamId
-    UpdateFrameWin(side, index, teamId)
+    UpdateFrameWin(side, index, teamId, goldenBreak)
+  }
+
+  function ClearWinner(): void {
+    ClearFrameWinner(index)
   }
 
   React.useEffect(() => {
@@ -91,6 +96,8 @@ export default function Frame({item, index, refreshing}: FrameProps) {
               HandleWin={HandleWin}
               side="home"
               teamId={homeTeamId}
+              ClearWinner={ClearWinner}
+              goldenBreak={item.goldenBreak}
             />
           </View>
           <View
@@ -102,6 +109,8 @@ export default function Frame({item, index, refreshing}: FrameProps) {
               HandleWin={HandleWin}
               side="away"
               teamId={awayTeamId}
+              ClearWinner={ClearWinner}
+              goldenBreak={item.goldenBreak}
             />
           </View>
           <View

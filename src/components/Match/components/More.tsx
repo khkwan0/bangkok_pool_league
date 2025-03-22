@@ -7,10 +7,14 @@ import {useMatchContext} from '@/context/MatchContext'
 
 export default function More({matchId}: {matchId: number}) {
   return (
-    <Pressable 
-      className="items-center justify-center p-4 my-2 mx-4 bg-violet-300 rounded-xl"
-      onPress={() => router.push({pathname: '/history', params: {params: JSON.stringify({match_id: matchId})}})}
-    >
+    <Pressable
+      className="items-center justify-center p-4 my-2 mx-4 bg-violet-300 dark:bg-violet-500 rounded-xl"
+      onPress={() =>
+        router.push({
+          pathname: '/Match/History',
+          params: {params: JSON.stringify({match_id: matchId})},
+        })
+      }>
       <Row className="items-center" style={{gap: 10}}>
         <MCI name="dots-triangle" size={20} />
         <Text type="subtitle">more</Text>
