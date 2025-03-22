@@ -297,5 +297,9 @@
   "confirm_winner_change_message": "คุณแน่ใจหรือไม่ที่จะเปลี่ยนผู้ชนะของเฟรมนี้?",
   "confirm_clear_winner": "ยืนยันการล้างผู้ชนะ",
   "confirm_clear_winner_message": "คุณแน่ใจหรือไม่ที่จะล้างผู้ชนะของเฟรมนี้?",
-  "welcome_message": "ยินดีต้อนรับสู่พูลลีกกรุงเทพ"
+  "welcome_message": "ยินดีต้อนรับสู่พูลลีกกรุงเทพ",
+  "continue_with_line": "เข้าสู่ระบบด้วย Line",
+  "continue_with_facebook": "เข้าสู่ระบบด้วย Facebook",
+  "continue_with_email": "เข้าสู่ระบบด้วยอีเมล",
+  "unable_to_login": "ไม่สามารถเข้าสู่ระบบได้"
 }

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {View, FlatList} from 'react-native'
+import {View, FlatList, ActivityIndicator} from 'react-native'
 import {useSeason} from '@/hooks/useSeason'
 import React from 'react'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -26,14 +26,29 @@ export default function CompletedMatchesOther() {
   const season = state.season
   const [matchDates, setMatchDates] = React.useState<MatchDate[]>([])
   const {t} = useTranslation()
+  const [isMounted, setIsMounted] = React.useState(false)
 
   React.useEffect(() => {
     const getCompletedMatches = async () => {
-      const res = await GetCompletedMatchesBySeason(season)
-      setMatchDates(res?.data ?? [])
+      try {
+        const res = await GetCompletedMatchesBySeason(season)
+        setMatchDates(res?.data ?? [])
+      } catch (e) {
+        console.log(e)
+      } finally {
+        setIsMounted(true)
+      }
     }
     getCompletedMatches()
   }, [])
+
+  if (!isMounted) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    )
+  }
 
   return (
     <FlatList

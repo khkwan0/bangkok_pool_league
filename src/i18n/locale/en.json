@@ -301,5 +301,9 @@
   "confirm_winner_change_message": "Are you sure you want to change the winner of this frame?",
   "confirm_clear_winner": "Confirm Clear Winner",
   "confirm_clear_winner_message": "Are you sure you want to clear the winner of this frame?",
-  "welcome_message": "Welcome to Bangkok Pool League"
+  "welcome_message": "Welcome to Bangkok Pool League",
+  "continue_with_line": "Continue with Line",
+  "continue_with_facebook": "Continue with Facebook",
+  "continue_with_email": "Continue with Email",
+  "unable_to_login": "Unable to Login"
 }

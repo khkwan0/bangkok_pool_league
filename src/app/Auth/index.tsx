@@ -146,11 +146,11 @@ export default function AuthHome() {
             <View className="flex-row items-center justify-center h-[48px] px-4">
               <Image
                 source={require('@/assets/social/line/btn_base.png')}
-                className="w-6 h-6"
+                className="w-12 h-12"
                 style={{marginRight: 12}}
               />
-              <Text className="text-white font-medium text-[16px]">
-                Continue with Line
+              <Text className="text-white font-medium text-[18px]">
+                {t('continue_with_line')}
               </Text>
             </View>
           </Pressable>
@@ -162,11 +162,11 @@ export default function AuthHome() {
             <View className="flex-row items-center justify-center h-[48px] px-4">
               <Image
                 source={require('@/assets/social/facebook/icon.png')}
-                className="w-6 h-6"
+                className="w-8 h-8"
                 style={{marginRight: 12}}
               />
-              <Text className="text-white font-medium text-[16px]">
-                Continue with Facebook
+              <Text className="text-white font-medium text-[18px]">
+                {t('continue_with_facebook')}
               </Text>
             </View>
           </Pressable>
@@ -202,8 +202,8 @@ export default function AuthHome() {
                 style={{marginRight: 12}}
                 color={colorScheme === 'dark' ? '#fff' : '#000'}
               />
-              <Text className="font-medium text-[16px] text-gray-900 dark:text-white">
-                Continue with Email
+              <Text className="font-medium text-[18px] text-gray-900 dark:text-white">
+                {t('continue_with_email')}
               </Text>
             </View>
           </Pressable>
