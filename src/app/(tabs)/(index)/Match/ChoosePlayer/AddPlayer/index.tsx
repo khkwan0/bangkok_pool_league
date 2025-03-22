@@ -1,7 +1,7 @@
 import React from 'react'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {FlatList, TextInput} from 'react-native'
+import {FlatList, TextInput, useColorScheme} from 'react-native'
 import Button from '@/components/Button'
 import TrieSearch from 'trie-search'
 import PlayerCard from '@/components/PlayerCard'
@@ -18,6 +18,8 @@ const ChoosePlayer = props => {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [list, setList] = React.useState([])
   const {t} = useTranslation()
+  const colorScheme = useColorScheme()
+
 
   const trie = React.useRef(new TrieSearch('nickname', {splitOnRegEx: false}))
 
@@ -38,7 +40,8 @@ const ChoosePlayer = props => {
     <View>
       <View>
         <TextInput
-          className="border rounded p-5"
+          style={colorScheme === 'dark' ? {borderColor: '#fff'} : {borderColor: '#000'}}
+          className="border border-gray-600 dark:border-gray-300 rounded p-5"
           disabled={
             typeof props.allPlayer === 'undefined' ||
             props.allPlayers?.length === 0
@@ -94,6 +97,7 @@ const AddNewPlayer = ({
   const [err, setErr] = React.useState('')
   const {t} = useTranslation()
   const league = useLeague()
+  const colorScheme = useColorScheme()
 
   async function HandleSave() {
     try {
@@ -150,36 +154,40 @@ const AddNewPlayer = ({
           <Text>Nickname (required)</Text>
           <TextInput
             onChangeText={text => setNickname(text)}
-            className="border rounded py-6 px-4"
+            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4"
             value={nickname}
             placeholder={t('nickname')}
+            placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
           />
         </View>
         <View className="my-4 mx-2">
           <Text>First Name (optional)</Text>
           <TextInput
-            className="border rounded py-6 px-4"
+            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4"
             onChangeText={text => setFirstName(text)}
             value={firstName}
             placeholder={t('firstname')}
+            placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
           />
         </View>
         <View className="my-4 mx-2">
           <Text>Last Name (optional)</Text>
           <TextInput
-            className="border rounded py-6 px-4"
+            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4"
             onChangeText={text => setLastName(text)}
             value={lastName}
             placeholder={t('lastname')}
+            placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
           />
         </View>
         <View className="my-4 mx-2">
           <Text>Email (optional)</Text>
           <TextInput
-            className="border rounded py-6 px-4"
+            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4"
             onChangeText={text => setEmail(text)}
             value={email}
             placeholder={t('email')}
+            placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
           />
         </View>
         <View>
@@ -226,6 +234,7 @@ const AddPlayer = props => {
   const navigation = useNavigation()
   const [query, setQuery] = React.useState('')
   const {state, UpdateFramePlayers}: any = useMatchContext()
+  const colorScheme = useColorScheme()
 
   const bgColor = useThemeColor({}, 'background')
   const {params} = useLocalSearchParams()
@@ -292,14 +301,15 @@ const AddPlayer = props => {
             <View className="m-10">
               <Text type="subtitle">add_existing_player</Text>
               <TextInput
-                className="border rounded p-5"
+                className="border border-gray-600 dark:border-gray-300 rounded p-5"
+                placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
                 readOnly={loading}
                 placeholder={loading ? t('loading') : t('search_name')}
                 onChangeText={text => setQuery(text)}
               />
             </View>
             <View className="mb-10">
-              <Text textAlign="center"> - OR -</Text>
+              <Text className="text-center"> - OR -</Text>
             </View>
           </>
         ) : null
