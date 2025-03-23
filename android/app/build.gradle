@@ -92,7 +92,7 @@ android {
         applicationId "com.bangkok_pool_league"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 93
+        versionCode 94
         versionName "1.61"
     }
     signingConfigs {
