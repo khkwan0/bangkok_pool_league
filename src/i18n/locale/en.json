@@ -324,5 +324,7 @@
   "all_fields_required": "All fields are required",
   "passwords_dont_match": "Passwords do not match",
   "password_too_short": "Password must be at least 6 characters",
-  "password_update_failed": "Failed to update password"
+  "password_update_failed": "Failed to update password",
+  "share": "Share",
+  "share_match": "Share Match"
 }

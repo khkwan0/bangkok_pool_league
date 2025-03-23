@@ -320,5 +320,7 @@
   "all_fields_required": "กรุณากรอกข้อมูลให้ครบถ้วน",
   "passwords_dont_match": "รหัสผ่านไม่ตรงกัน",
   "password_too_short": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
-  "password_update_failed": "ไม่สามารถอัปเดตรหัสผ่านได้"
+  "password_update_failed": "ไม่สามารถอัปเดตรหัสผ่านได้",
+  "share": "แชร์",
+  "share_match": "แชร์การแข่งขัน"
 }

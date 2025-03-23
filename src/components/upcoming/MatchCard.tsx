@@ -1,5 +1,5 @@
 import React from 'react'
-import {Image, Pressable, Appearance} from 'react-native'
+import {Image, Pressable, Appearance, Share} from 'react-native'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import Row from '@/components/Row'
@@ -125,15 +125,31 @@ export default function MatchCard({
       }
     }
   }
-  /*
-  console.log(
-    matchInfo?.away_confirmed,
-    matchInfo?.home_confirmed,
-    matchInfo?.team_role_id,
-    matchInfo?.player_team_id,
-    matchInfo?.postponed_proposal,
-  )
-    */
+
+  async function HandleShare() {
+    if (!matchInfo) return
+    
+    const matchDate = DateTime.fromISO(matchInfo.date)
+      .setZone('Asia/Bangkok')
+      .toLocaleString(DateTime.DATE_HUGE)
+    
+    let message = `${matchInfo.home_team_short_name} vs ${matchInfo.away_team_short_name}\n${matchDate}\n${matchInfo.name}\n${matchInfo.location}`
+    
+    // Add map link if coordinates are available
+    if (matchInfo.latitude !== 0 && matchInfo.longitude !== 0) {
+      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${matchInfo.latitude},${matchInfo.longitude}`
+      message += `\n\n${t('map')}: ${mapUrl}`
+    }
+    
+    try {
+      await Share.share({
+        message,
+        title: t('share_match'),
+      })
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   if (!isMounted || !matchInfo) return null
 
@@ -237,8 +253,8 @@ export default function MatchCard({
                   <Text>{matchInfo.location}</Text>
                   <Text>{matchInfo.phone}</Text>
                 </View>
-                {(matchInfo.latitude !== 0 || matchInfo.longitude !== 0) && (
-                  <View style={{flexDirection: 'row', marginTop: 6}}>
+                <View style={{flexDirection: 'row', marginTop: 6, gap: 8}}>
+                  {(matchInfo.latitude !== 0 || matchInfo.longitude !== 0) && (
                     <Button
                       type="outline"
                       onPress={() =>
@@ -253,8 +269,20 @@ export default function MatchCard({
                       }>
                       {t('map')}
                     </Button>
-                  </View>
-                )}
+                  )}
+                  <Button
+                    type="outline"
+                    onPress={HandleShare}
+                    icon={
+                      <Ionicons
+                        name="share-outline"
+                        size={18}
+                        color="#4a90e2"
+                      />
+                    }>
+                    {t('share')}
+                  </Button>
+                </View>
               </View>
               {matchInfo.logo && (
                 <View flex={1} className="items-center justify-center">
