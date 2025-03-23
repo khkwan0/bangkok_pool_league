@@ -21,16 +21,16 @@ export function ThemedText({
   let textSize = 'text-md'
   switch (type) {
     case 'default':
-      textSize = `text-lg`
+      textSize = `text-md`
       break
     case 'title':
-      textSize = `text-4xl`
+      textSize = `text-2xl`
       break
     case 'defaultSemiBold':
       textSize = `text-lg font-semibold`
       break
     case 'subtitle':
-      textSize = `text-2xl font-bold`
+      textSize = `text-lg font-bold`
       break
     case 'link':
       textSize = `text-lg`
