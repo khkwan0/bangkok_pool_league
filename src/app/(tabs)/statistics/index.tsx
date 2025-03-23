@@ -44,7 +44,7 @@ export default function StatisticsHome(props: any) {
     <View className="p-4 justify-center items-center flex-1">
       {isLoading ? (
         <ActivityIndicator size="large" />
-      ) : playerInfo ? (
+      ) : typeof user.id !== 'undefined' && user.id && playerInfo ? (
         <PlayerStatistics
           playerInfo={playerInfo}
           path="/statistics/PlayerStatistics"
