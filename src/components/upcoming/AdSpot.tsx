@@ -1,0 +1,83 @@
+import React from 'react'
+import {Pressable, useColorScheme} from 'react-native'
+import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView as View} from '@/components/ThemedView'
+import {useLeague} from '@/hooks/useLeague'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+
+export default function AdSpot(props: any) {
+  const league = useLeague()
+  const [title, setTitle] = React.useState('')
+  const [message, setMessage] = React.useState('')
+  const [showFull, setShowFull] = React.useState(false)
+  const [noAd, setNoAd] = React.useState(false)
+  const colorScheme = useColorScheme()
+
+  React.useEffect(() => {
+    async function GetAd() {
+      try {
+        const res = await league.GetAdSpot(props.item.index)
+        setTitle(res.title)
+        setMessage(res.message)
+      } catch (e) {
+        console.log(e)
+        setNoAd(true)
+      }
+    }
+    GetAd()
+  }, [])
+
+  if (noAd) {
+    return null
+  }
+
+  return (
+    <View
+      style={{
+        margin: 10,
+        padding: 16,
+        borderRadius: 16,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+      }}>
+      {!showFull && (
+        <Pressable onPress={() => setShowFull(!showFull)}>
+          <View className="flex-row justify-between">
+            <View className="flex-4 items-center">
+              <Text>{title}</Text>
+            </View>
+            <View className="flex-1 items-end">
+              <MCI
+                name="plus-circle"
+                size={24}
+                color={colorScheme === 'dark' ? 'white' : 'black'}
+              />
+            </View>
+          </View>
+        </Pressable>
+      )}
+      {showFull && (
+        <View>
+          <View className="flex-row justify-between">
+            <View className="flex-4 items-center">
+              <Text>{title}</Text>
+            </View>
+            <Pressable onPress={() => setShowFull(!showFull)}>
+              <MCI
+                name="minus-circle"
+                size={24}
+                color={colorScheme === 'dark' ? 'white' : 'black'}
+              />
+            </Pressable>
+          </View>
+          <View>
+            <Text>{message}</Text>
+          </View>
+        </View>
+      )}
+    </View>
+  )
+}

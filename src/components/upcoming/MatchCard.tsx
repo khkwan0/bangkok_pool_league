@@ -128,19 +128,19 @@ export default function MatchCard({
 
   async function HandleShare() {
     if (!matchInfo) return
-    
+
     const matchDate = DateTime.fromISO(matchInfo.date)
       .setZone('Asia/Bangkok')
       .toLocaleString(DateTime.DATE_HUGE)
-    
+
     let message = `${matchInfo.home_team_short_name} vs ${matchInfo.away_team_short_name}\n${matchDate}\n${matchInfo.name}\n${matchInfo.location}`
-    
+
     // Add map link if coordinates are available
     if (matchInfo.latitude !== 0 && matchInfo.longitude !== 0) {
       const mapUrl = `https://www.google.com/maps/search/?api=1&query=${matchInfo.latitude},${matchInfo.longitude}`
       message += `\n\n${t('map')}: ${mapUrl}`
     }
-    
+
     try {
       await Share.share({
         message,

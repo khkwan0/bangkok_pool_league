@@ -22,11 +22,13 @@ import {MaterialIcons} from '@expo/vector-icons'
 import {useLocalSearchParams} from 'expo-router'
 import messaging from '@react-native-firebase/messaging'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
-
+import AdSpot from '@/components/upcoming/AdSpot'
 interface ItemType {
   home_team_id: number
   away_team_id: number
   date: string
+  ad_spot?: boolean
+  key?: string
 }
 
 export default function UpcomingMatches(props: any) {
@@ -113,12 +115,28 @@ export default function UpcomingMatches(props: any) {
         query.push('newonly=true')
       }
       const res = await season.GetMatches(query)
-      setFixtures(res)
+      const _fixtures = AddAdSpots(res)
+      setFixtures(_fixtures)
     } catch (e) {
       console.log(e)
     } finally {
       setRefreshing(false)
     }
+  }
+
+  function AddAdSpots(_fixtures: any) {
+    let i = 0
+    while (i < _fixtures.length) {
+      if ((i % 4 === 0 && i !== 0) || i === 1) {
+        _fixtures.splice(i, 0, {
+          index: i,
+          key: 'ad_spot_' + i,
+          ad_spot: true,
+        })
+      }
+      i++
+    }
+    return _fixtures
   }
 
   React.useEffect(() => {
@@ -364,19 +382,38 @@ export default function UpcomingMatches(props: any) {
                 </View>
               ) : null
             }
-            keyExtractor={(item: ItemType, index) =>
-              item.home_team_id + item.away_team_id + item.date + index
-            }
-            ItemSeparatorComponent={() => <View className="my-5" />}
+            keyExtractor={(item: ItemType, index) => {
+              if (typeof item.ad_spot !== 'undefined' && item.ad_spot) {
+                return item.key
+              } else {
+                return item.home_team_id + item.away_team_id + item.date + index
+              }
+            }}
+            ItemSeparatorComponent={(leadingItem, trailingItem) => {
+              if (
+                typeof leadingItem.leadingItem.ad_spot !== 'undefined' &&
+                leadingItem.leadingItem.ad_spot
+              ) {
+                return null
+              } else {
+                return <View className="my-5" />
+              }
+            }}
             data={fixtures}
-            renderItem={({item, index}) => (
-              <MatchCard
-                matchInfo={item}
-                idx={index}
-                handlePress={HandlePress}
-                showMineOnly={showMineOnly}
-              />
-            )}
+            renderItem={({item, index}) => {
+              if (typeof item.ad_spot !== 'undefined' && item.ad_spot) {
+                return <AdSpot item={item} />
+              } else {
+                return (
+                  <MatchCard
+                    matchInfo={item}
+                    idx={index}
+                    handlePress={HandlePress}
+                    showMineOnly={showMineOnly}
+                  />
+                )
+              }
+            }}
           />
         )}
         {needsUpdate && (
