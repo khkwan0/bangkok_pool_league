@@ -23,22 +23,8 @@ type ApiResponse = {
 }
 
 function NoMatches() {
-  const {t} = useTranslation()
-  const {state} = useLeagueContext()
-  const user = state.user
-  const router = useRouter()
-  const pathname = usePathname()
-
   return (
     <View className="px-4">
-      {!user.id && (
-        <Button
-          onPress={() =>
-            router.push({pathname: '/Auth', params: {from: pathname}})
-          }>
-          {t('login_to_see_your_matches')}
-        </Button>
-      )}
       <CompletedMatchesOther />
     </View>
   )
