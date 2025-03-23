@@ -17,7 +17,6 @@ export default function AdSpot(props: any) {
     async function GetAd() {
       try {
         const res = await league.GetAdSpot(props.item.index)
-        console.log(res)
         if (typeof res?.title === 'string') {
           setTitle(res.title)
         }
