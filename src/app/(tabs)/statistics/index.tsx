@@ -38,8 +38,6 @@ export default function StatisticsHome(props: any) {
     }
   }, [user])
 
-  console.log('playerInfo', playerInfo)
-
   return (
     <View className="p-4 justify-center items-center flex-1">
       {isLoading ? (
