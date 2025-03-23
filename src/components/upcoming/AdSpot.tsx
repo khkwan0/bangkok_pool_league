@@ -17,8 +17,16 @@ export default function AdSpot(props: any) {
     async function GetAd() {
       try {
         const res = await league.GetAdSpot(props.item.index)
-        setTitle(res.title)
-        setMessage(res.message)
+        console.log(res)
+        if (typeof res?.title === 'string') {
+          setTitle(res.title)
+        }
+        if (typeof res?.message === 'string') {
+          setMessage(res.message)
+        }
+        if (typeof res?.title === 'undefined') {
+          setNoAd(true)
+        }
       } catch (e) {
         console.log(e)
         setNoAd(true)
