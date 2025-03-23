@@ -391,6 +391,53 @@ export const useAccount = () => {
       console.error(e)
     }
   }
+
+  async function GetUserEmailLogin() {
+    try {
+      const res = await Get('/user/email/login')
+      return res
+    } catch (e) {
+      console.error(e)
+      return null
+    }
+  }
+
+  async function UpdateEmail(email) {
+    try {
+      const res = await Post('/user/email/update', {email})
+      return res
+    } catch (e) {
+      console.error(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
+  async function UpdatePassword(currentPassword, newPassword) {
+    try {
+      const res = await Post('/user/password/update', {
+        currentPassword,
+        newPassword,
+      })
+      return res
+    } catch (e) {
+      console.error(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
+  async function SetUpEmail(email, password, confirmPassword) {
+    try {
+      const res = await Post('/user/email/setup', {
+        email,
+        password,
+        confirmPassword,
+      })
+      return res
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return {
     AdminLogin,
     CheckVersion,
@@ -399,6 +446,7 @@ export const useAccount = () => {
     FetchUser,
     GetMessages,
     GetUnreadMessageCount,
+    GetUserEmailLogin,
     LoadUser,
     Logout,
     MarkAllMessagesAsRead,
@@ -412,10 +460,13 @@ export const useAccount = () => {
     SetNickName,
     SetPushNotifications,
     SetSoundNotifications,
+    SetUpEmail,
     SaveLanguage,
     SavePreferences,
     SocialLogin,
     UpdateUser,
+    UpdateEmail,
+    UpdatePassword,
     UserLogin,
     Verify,
   }
