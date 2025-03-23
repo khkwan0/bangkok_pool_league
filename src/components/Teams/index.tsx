@@ -24,7 +24,8 @@ type TeamCardProps = {
 
 function TeamCard({team, index, fromTabs}: TeamCardProps) {
   function handlePress() {
-    router.push({
+    router.push(
+      {
         pathname: './team',
         params: {params: JSON.stringify({teamId: team.id})},
       },
@@ -134,14 +135,16 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
     <View className="flex-1">
       <FlatList
         ListHeaderComponent={
-          <View className="px-4 py-3 border-b border-slate-200">
-            <BouncyCheckbox
-              text={t('show_my_teams')}
-              textStyle={{textDecorationLine: 'none'}}
-              isChecked={showMineOnly}
-              onPress={handleSetShowMineOnly}
-            />
-          </View>
+          typeof user.id !== 'undefined' ? (
+            <View className="px-4 py-3 border-b border-slate-200">
+              <BouncyCheckbox
+                text={t('show_my_teams')}
+                textStyle={{textDecorationLine: 'none'}}
+                isChecked={showMineOnly}
+                onPress={handleSetShowMineOnly}
+              />
+            </View>
+          ) : null
         }
         data={teams}
         renderItem={({item, index}) => (
