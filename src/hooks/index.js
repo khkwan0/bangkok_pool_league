@@ -9,9 +9,11 @@ import {useTwitter} from './useTwitter'
 import {useWebsocket} from './useWebsocket'
 import {useThemeColor} from './useThemeColor'
 import {useColorScheme} from './useColorScheme'
+import {useAd} from './useAd'
 
 export {
   useAccount,
+  useAd,
   useColorScheme,
   useDisclose,
   useLeague,

@@ -529,16 +529,6 @@ export const useLeague = () => {
     }
   }
 
-  const GetAdSpot = async adSpotId => {
-    try {
-      const res = await Get('/ad/spot/' + adSpotId)
-      return res
-    } catch (e) {
-      console.log(e)
-      return null
-    }
-  }
-
   return {
     AcceptMergeRequest,
     ActivateSeason,
@@ -546,7 +536,6 @@ export const useLeague = () => {
     AddNewSeason,
     DenyMergeRequest,
     GetActiveMergeRequestCount,
-    GetAdSpot,
     GetAllVenues,
     GetAllPlayers,
     GetCompletedMatchesByTeamId,

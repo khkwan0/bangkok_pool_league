@@ -389,16 +389,6 @@ export default function UpcomingMatches(props: any) {
                 return item.home_team_id + item.away_team_id + item.date + index
               }
             }}
-            ItemSeparatorComponent={(leadingItem, trailingItem) => {
-              if (
-                typeof leadingItem.leadingItem.ad_spot !== 'undefined' &&
-                leadingItem.leadingItem.ad_spot
-              ) {
-                return null
-              } else {
-                return <View className="my-5" />
-              }
-            }}
             data={fixtures}
             renderItem={({item, index}) => {
               if (typeof item.ad_spot !== 'undefined' && item.ad_spot) {

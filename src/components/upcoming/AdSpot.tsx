@@ -1,22 +1,25 @@
 import React from 'react'
-import {Pressable, useColorScheme} from 'react-native'
+import {Pressable, useColorScheme, Linking} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeague} from '@/hooks/useLeague'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {useAd} from '@/hooks'
 
 export default function AdSpot(props: any) {
   const league = useLeague()
   const [title, setTitle] = React.useState('')
   const [message, setMessage] = React.useState('')
   const [showFull, setShowFull] = React.useState(false)
+  const [adId, setAdId] = React.useState('')
   const [noAd, setNoAd] = React.useState(false)
   const colorScheme = useColorScheme()
+  const adHook = useAd()
 
   React.useEffect(() => {
     async function GetAd() {
       try {
-        const res = await league.GetAdSpot(props.item.index)
+        const res = await adHook.GetAdSpot(props.item.index)
         if (typeof res?.title === 'string') {
           setTitle(res.title)
         }
@@ -25,6 +28,9 @@ export default function AdSpot(props: any) {
         }
         if (typeof res?.title === 'undefined') {
           setNoAd(true)
+        }
+        if (typeof res?.id !== 'undefined') {
+          setAdId(res.id)
         }
       } catch (e) {
         console.log(e)
@@ -36,6 +42,19 @@ export default function AdSpot(props: any) {
 
   if (noAd) {
     return null
+  }
+
+  async function HandleClick() {
+    if (typeof adId !== 'undefined') {
+      const res = await adHook.HandleClick(adId)
+      if (
+        typeof res?.status === 'string' &&
+        res.status === 'ok' &&
+        typeof res.url === 'string'
+      ) {
+        Linking.openURL(res.url)
+      }
+    }
   }
 
   return (
@@ -51,7 +70,7 @@ export default function AdSpot(props: any) {
         elevation: 3,
       }}>
       {!showFull && (
-        <Pressable onPress={() => setShowFull(!showFull)}>
+        <Pressable onPress={() => setShowFull(true)}>
           <View className="flex-row justify-between">
             <View className="flex-4 items-center">
               <Text>{title}</Text>
@@ -67,7 +86,7 @@ export default function AdSpot(props: any) {
         </Pressable>
       )}
       {showFull && (
-        <View>
+        <Pressable onPress={() => HandleClick()}>
           <View className="flex-row justify-between">
             <View className="flex-4 items-center">
               <Text>{title}</Text>
@@ -83,7 +102,7 @@ export default function AdSpot(props: any) {
           <View>
             <Text>{message}</Text>
           </View>
-        </View>
+        </Pressable>
       )}
     </View>
   )
