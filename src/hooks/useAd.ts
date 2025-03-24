@@ -23,5 +23,15 @@ export const useAd = () => {
     }
   }
 
-  return {HandleClick, GetAdSpot}
+  const GetFrequency = async () => {
+    try {
+      const res = await Get('/ad/frequency')
+      return res
+    } catch (e) {
+      console.log(e)
+      return null
+    }
+  }
+
+  return {HandleClick, GetAdSpot, GetFrequency}
 }

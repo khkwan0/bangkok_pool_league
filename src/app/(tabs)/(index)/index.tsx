@@ -9,7 +9,7 @@ import {
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import MatchCard from '@/components/upcoming/MatchCard'
-import {useLeague, useSeason, useAccount} from '@/hooks'
+import {useAd, useLeague, useSeason, useAccount} from '@/hooks'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
 import LiveScores from '@/components/upcoming/LiveScores'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -44,6 +44,7 @@ export default function UpcomingMatches(props: any) {
   const season = useSeason()
   const league = useLeague()
   const account = useAccount()
+  const adHook = useAd()
   const {t} = useTranslation()
   const [needsUpdate, setNeedsUpdate] = React.useState(false)
   const router = useRouter()
@@ -115,7 +116,7 @@ export default function UpcomingMatches(props: any) {
         query.push('newonly=true')
       }
       const res = await season.GetMatches(query)
-      const _fixtures = AddAdSpots(res)
+      const _fixtures = await AddAdSpots(res)
       setFixtures(_fixtures)
     } catch (e) {
       console.log(e)
@@ -124,19 +125,40 @@ export default function UpcomingMatches(props: any) {
     }
   }
 
-  function AddAdSpots(_fixtures: any) {
-    let i = 0
-    while (i < _fixtures.length) {
-      if ((i % 4 === 0 && i !== 0) || i === 1) {
-        _fixtures.splice(i, 0, {
-          index: i,
-          key: 'ad_spot_' + i,
+  async function AddAdSpots(_fixtures: any) {
+    const originalFixtures = [..._fixtures]
+    try {
+      let frequency = 0
+      const res = await adHook.GetFrequency()
+      if (
+        typeof res?.frequency !== 'undefined' &&
+        typeof res.frequency === 'number'
+      ) {
+        frequency = res.frequency
+      }
+      if (frequency > 0) {
+        let i = 0
+        while (i < _fixtures.length) {
+          if ((i % frequency === 0 && i !== 0) || i === 1) {
+            _fixtures.splice(i, 0, {
+              index: i,
+              key: 'ad_spot_' + i,
+              ad_spot: true,
+            })
+          }
+          i++
+        }
+        _fixtures.push({
+          index: _fixtures.length,
+          key: 'ad_spot_' + _fixtures.length,
           ad_spot: true,
         })
       }
-      i++
+      return _fixtures
+    } catch (e) {
+      console.error(e)
+      return originalFixtures
     }
-    return _fixtures
   }
 
   React.useEffect(() => {
