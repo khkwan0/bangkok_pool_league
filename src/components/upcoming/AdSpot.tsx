@@ -1,5 +1,5 @@
 import React from 'react'
-import {Pressable, useColorScheme, Linking} from 'react-native'
+import {Pressable, useColorScheme, Linking, Image, Dimensions} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeague} from '@/hooks/useLeague'
@@ -12,9 +12,11 @@ export default function AdSpot(props: any) {
   const [message, setMessage] = React.useState('')
   const [showFull, setShowFull] = React.useState(false)
   const [adId, setAdId] = React.useState('')
+  const [image, setImage] = React.useState(null)
   const [noAd, setNoAd] = React.useState(false)
   const colorScheme = useColorScheme()
   const adHook = useAd()
+  const width = Dimensions.get('window').width
 
   React.useEffect(() => {
     async function GetAd() {
@@ -31,6 +33,9 @@ export default function AdSpot(props: any) {
         }
         if (typeof res?.id !== 'undefined') {
           setAdId(res.id)
+        }
+        if (typeof res?.background !== 'undefined') {
+          setImage(res.background)
         }
       } catch (e) {
         console.log(e)
@@ -102,6 +107,14 @@ export default function AdSpot(props: any) {
           <View>
             <Text>{message}</Text>
           </View>
+          {image && (
+            <Image
+              resizeMode="contain"
+              source={{uri: image}}
+              width={width * 0.9}
+              height={width}
+            />
+          )}
         </Pressable>
       )}
     </View>
