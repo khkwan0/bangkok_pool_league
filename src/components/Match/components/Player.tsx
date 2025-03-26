@@ -1,13 +1,16 @@
 import Row from '@/components/Row'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useMatchContext} from '@/context/MatchContext'
-import {Link} from 'expo-router'
+import {Link, router} from 'expo-router'
 import {Platform, Pressable, View as RNView} from 'react-native'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useColorScheme} from 'react-native'
 import {useTranslation} from 'react-i18next'
 import {useState} from 'react'
+import {useLeagueContext} from '@/context/LeagueContext'
+import {criticallyDampedSpringCalculations} from 'react-native-reanimated/lib/typescript/animation/springUtils'
+import {use} from 'i18next'
 
 interface PlayerProps {
   teamId: number | string
@@ -34,8 +37,22 @@ export default function Player({
   const {home_team_id: homeTeamId, away_team_id: awayTeamId} = state.matchInfo
   const textColor = 'rgb(107, 33, 168)'
   const pressedTextColor = 'red'
-  const theme = useColorScheme()
   const [isPressed, setIsPressed] = useState(false)
+  const {state: playerState}: any = useLeagueContext()
+  const user = playerState.user
+
+  const isPlayerOnTeam = () => {
+    if (typeof user?.role_id !== 'undefined' && user.role_id === 9) {
+      return true
+    }
+    let playerList = null
+    if (side === 'home') {
+      playerList = Object.keys(state.teams[homeTeamId])
+    } else {
+      playerList = Object.keys(state.teams[awayTeamId])
+    }
+    return playerList.includes(user.id.toString())
+  }
 
   // Skeleton loading UI for player slot
   const PlayerSkeleton = () => {
@@ -50,6 +67,30 @@ export default function Player({
 
   const handlePressOut = () => {
     setIsPressed(false)
+  }
+
+  const handlePlayerSlotPress = () => {
+    if (typeof user?.id !== 'undefined') {
+      if (isPlayerOnTeam()) {
+        router.push({
+          pathname: '/Match/ChoosePlayer',
+          params: {
+            params: JSON.stringify({
+              teamId: teamId,
+              side: side,
+              frameIndex: frameIndex,
+              frameNumber: frameNumber,
+              frameType: frameType,
+              slot: 0,
+            }),
+          },
+        })
+      } else {
+        console.log('User is not on team')
+      }
+    } else {
+      console.log('User is not logged in')
+    }
   }
 
   if (refreshing) {
@@ -84,51 +125,38 @@ export default function Player({
   } else {
     return (
       <>
-        <Link
-          href={{
-            pathname: '/Match/ChoosePlayer',
-            params: {
-              params: JSON.stringify({
-                teamId: teamId,
-                side: side,
-                frameIndex: frameIndex,
-                frameNumber: frameNumber,
-                frameType: frameType,
-                slot: 0,
-              }),
-            },
-          }}
-          asChild>
-          <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut}>
-            <Row alignItems="center" justifyContent="center" style={{gap: 10}}>
-              {typeof playerIds[0] !== 'undefined' &&
-                state.teams[teamId]?.[playerIds[0]]?.nickname && (
-                  <>
-                    <Text
-                      type="subtitle"
-                      style={{color: isPressed ? pressedTextColor : textColor}}>
-                      {state?.teams?.[teamId]?.[playerIds[0]]?.nickname ?? ''}
-                    </Text>
-                  </>
-                )}
-              {(typeof playerIds[0] === 'undefined' ||
-                !state?.teams?.[teamId]?.[playerIds[0]]?.nickname) && (
+        <Pressable
+          onPress={() => handlePlayerSlotPress()}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}>
+          <Row alignItems="center" justifyContent="center" style={{gap: 10}}>
+            {typeof playerIds[0] !== 'undefined' &&
+              state.teams[teamId]?.[playerIds[0]]?.nickname && (
                 <>
-                  <MCI
-                    name="plus-circle"
-                    size={playerPlusIconSize}
-                    color={isPressed ? pressedTextColor : textColor}
-                  />
                   <Text
                     type="subtitle"
                     style={{color: isPressed ? pressedTextColor : textColor}}>
-                    {t('player')}
+                    {state?.teams?.[teamId]?.[playerIds[0]]?.nickname ?? ''}
                   </Text>
                 </>
               )}
-            </Row>
-          </Pressable>
-        </Link>
+            {(typeof playerIds[0] === 'undefined' ||
+              !state?.teams?.[teamId]?.[playerIds[0]]?.nickname) && (
+              <>
+                <MCI
+                  name="plus-circle"
+                  size={playerPlusIconSize}
+                  color={isPressed ? pressedTextColor : textColor}
+                />
+                <Text
+                  type="subtitle"
+                  style={{color: isPressed ? pressedTextColor : textColor}}>
+                  {t('player')}
+                </Text>
+              </>
+            )}
+          </Row>
+        </Pressable>
         {(frameType === '8d' || frameType === '9d') && (
           <Link
             href={{

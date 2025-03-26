@@ -1,7 +1,6 @@
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {
-  TextInput,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,6 +12,7 @@ import React from 'react'
 import Button from '@/components/Button'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import {useNavigation} from 'expo-router'
+import TextInput from '@/components/TextInput'
 
 export default function Recover() {
   const {t} = useTranslation()
@@ -102,27 +102,16 @@ export default function Recover() {
               </Text>
               <View className="relative">
                 <TextInput
-                  className="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl pl-12 text-base"
-                  style={{
-                    shadowColor: '#000',
-                    shadowOffset: {width: 0, height: 2},
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                  }}
                   value={email}
                   onChangeText={setEmail}
                   placeholder={t('email_placeholder')}
-                  placeholderTextColor="#9ca3af"
                   autoCapitalize="none"
                   autoComplete="email"
+                  leftIcon={MaterialCommunityIcons}
+                  leftIconProps={{name: 'email-outline'}}
+                  iconSize={22}
                   keyboardType="email-address"
-                  editable={!success}
-                />
-                <MaterialCommunityIcons
-                  name="email-outline"
-                  size={22}
-                  color="#6b7280"
-                  style={{position: 'absolute', left: 12, top: 14}}
+                  error={!!error && !email}
                 />
               </View>
             </View>

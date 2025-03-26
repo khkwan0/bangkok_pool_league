@@ -97,7 +97,7 @@ export default function Frame({item, index, refreshing}: FrameProps) {
               side="home"
               teamId={homeTeamId}
               ClearWinner={ClearWinner}
-              goldenBreak={item.goldenBreak}
+              goldenBreak={item.goldenBreak ?? false}
             />
           </View>
           <View
@@ -110,7 +110,7 @@ export default function Frame({item, index, refreshing}: FrameProps) {
               side="away"
               teamId={awayTeamId}
               ClearWinner={ClearWinner}
-              goldenBreak={item.goldenBreak}
+              goldenBreak={item.goldenBreak ?? false}
             />
           </View>
           <View
