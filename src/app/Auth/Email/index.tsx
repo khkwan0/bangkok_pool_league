@@ -1,10 +1,10 @@
-import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Pressable,
+  View
 } from 'react-native'
 import {useTranslation} from 'react-i18next'
 import {useAccount} from '@/hooks/useAccount'
@@ -15,6 +15,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import {useNavigation} from '@react-navigation/native'
 import TextInput from '@/components/TextInput'
 import {useLocalSearchParams} from 'expo-router'
+
 export default function Email() {
   const {t} = useTranslation()
   const [email, setEmail] = React.useState('')

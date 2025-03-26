@@ -8,6 +8,7 @@ import {useTranslation} from 'react-i18next'
 import {useLeagueContext} from '@/context/LeagueContext'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import {useTheme} from '@react-navigation/native'
 
 type TeamType = {
   id: number
@@ -66,6 +67,7 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
   const [showMineOnly, setShowMineOnly] = React.useState(
     typeof user.id !== 'undefined' ? true : false,
   )
+  const {colors} = useTheme()
   const league = useLeague()
   const {t} = useTranslation()
 
@@ -134,6 +136,9 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
   return (
     <View className="flex-1">
       <FlatList
+        contentContainerStyle={{
+          backgroundColor: colors.background,
+        }}
         ListHeaderComponent={
           typeof user.id !== 'undefined' ? (
             <View className="px-4 py-3 border-b border-slate-200">

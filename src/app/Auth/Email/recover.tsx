@@ -1,10 +1,10 @@
-import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Animated,
+  View,
 } from 'react-native'
 import {useTranslation} from 'react-i18next'
 import {useAccount} from '@/hooks'

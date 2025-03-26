@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  View,
 } from 'react-native'
-import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import CustomTextInput from '@/components/TextInput'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -131,7 +131,9 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>{t('first_name')}</Text>
+              <Text style={styles.label}>
+                {t('first_name')} ({t('optional')})
+              </Text>
               <CustomTextInput
                 value={firstName}
                 onChangeText={setFirstName}
@@ -144,7 +146,9 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>{t('last_name')}</Text>
+              <Text style={styles.label}>
+                {t('last_name')} ({t('optional')})
+              </Text>
               <CustomTextInput
                 value={lastName}
                 onChangeText={setLastName}
@@ -157,7 +161,7 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>{t('password')}</Text>
+              <Text style={styles.label}>{t('password')} *</Text>
               <CustomTextInput
                 value={password}
                 onChangeText={setPassword}
@@ -178,7 +182,7 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>{t('confirm_password')}</Text>
+              <Text style={styles.label}>{t('confirm_password')} *</Text>
               <CustomTextInput
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -236,7 +240,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -280,7 +283,6 @@ const styles = StyleSheet.create({
   },
   label: {
     marginBottom: 8,
-    color: '#9CA3AF',
     fontWeight: '600',
     fontSize: 17,
     letterSpacing: 0.3,

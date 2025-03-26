@@ -10,6 +10,7 @@ import PlayerStatistics from '@/components/PlayerStatistics'
 import {useLeague} from '@/hooks/useLeague'
 import {ActivityIndicator} from 'react-native'
 import type {PlayerInfo} from '@/types/player'
+import {useTheme} from '@react-navigation/native'
 
 export default function StatisticsHome(props: any) {
   const league = useLeague()
@@ -19,6 +20,7 @@ export default function StatisticsHome(props: any) {
   const {t} = useTranslation()
   const {state} = useLeagueContext()
   const user = state.user
+  const {colors} = useTheme()
 
   React.useEffect(() => {
     async function fetchPlayerInfo(user) {
@@ -39,7 +41,7 @@ export default function StatisticsHome(props: any) {
   }, [user])
 
   return (
-    <View className="p-4 justify-center items-center flex-1">
+    <View className="p-4 justify-center items-center flex-1" style={{backgroundColor: colors.background}}>
       {isLoading ? (
         <ActivityIndicator size="large" />
       ) : typeof user.id !== 'undefined' && user.id && playerInfo ? (

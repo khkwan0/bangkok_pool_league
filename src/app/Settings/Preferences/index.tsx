@@ -1,4 +1,3 @@
-import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTheme, useNavigation} from '@react-navigation/native'
 import {useTranslation} from 'react-i18next'
@@ -9,6 +8,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  View,
 } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import i18n from '@/i18n'
@@ -19,13 +19,13 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount} from '@/hooks/useAccount'
 import Button from '@/components/Button'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import LanguageOption from '@/components/LanguageOption'
 
 export default function Preferences() {
   const {colors} = useTheme()
   const {t} = useTranslation()
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
-  const [currentLanguage, setCurrentLanguage] = useState(i18n.language)
   const [email, setEmail] = useState('')
   const [isEditingEmail, setIsEditingEmail] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
@@ -44,6 +44,7 @@ export default function Preferences() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showSetupNewPassword, setShowSetupNewPassword] = useState(false)
   const [showSetupConfirmPassword, setShowSetupConfirmPassword] = useState(false)
+  const [currentLanguage, setCurrentLanguage] = useState<string | null>(null)
 
   useEffect(() => {
     navigation.setOptions({
@@ -51,24 +52,12 @@ export default function Preferences() {
     })
   }, [navigation, t])
 
-  useEffect(() => {
-    // Load saved language on mount
-    const lang = state.user.language
-    if (lang) {
-      setCurrentLanguage(lang)
-    } else {
-      AsyncStorage.getItem('language').then(lang => {
-        if (lang) setCurrentLanguage(lang)
-      })
-    }
-  }, [])
-
   const changeLanguage = async (lang: string) => {
     try {
       await i18n.changeLanguage(lang)
       await AsyncStorage.setItem('language', lang)
-      setCurrentLanguage(lang)
       await account.SaveLanguage(lang)
+      setCurrentLanguage(lang)
     } catch (error) {
       console.error('Failed to change language:', error)
     }
@@ -199,6 +188,14 @@ export default function Preferences() {
     }
   }
 
+  useEffect(() => {
+    const getLanguage = async () => {
+      const lang = await AsyncStorage.getItem('language')
+      setCurrentLanguage(lang)
+    }
+    getLanguage()
+  }, [])
+
   return (
     <View className="flex-1">
       <KeyboardAvoidingView
@@ -216,75 +213,10 @@ export default function Preferences() {
           keyboardDismissMode="interactive">
           <View className="p-4">
             {/* Language Section */}
-            <View className="mb-6">
-              <Text className="text-lg font-semibold mb-4">
-                {t('language')}
-              </Text>
-              <View className="bg-gray-800/20 rounded-xl p-4">
-                <View className="space-y-2">
-                  <Pressable
-                    onPress={() => changeLanguage('en')}
-                    className="p-3">
-                    <View className="flex-row items-center justify-between">
-                      <View>
-                        <Text
-                          style={{
-                            color:
-                              currentLanguage === 'en'
-                                ? colors.primary
-                                : colors.text,
-                          }}>
-                          {t('english_in_english')}
-                        </Text>
-                        <Text
-                          className="text-sm opacity-60"
-                          style={{
-                            color:
-                              currentLanguage === 'en'
-                                ? colors.primary
-                                : colors.text,
-                          }}>
-                          {t('english_in_thai')}
-                        </Text>
-                      </View>
-                      {currentLanguage === 'en' && (
-                        <MCI name="check" size={20} color={colors.primary} />
-                      )}
-                    </View>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => changeLanguage('th')}
-                    className="p-3">
-                    <View className="flex-row items-center justify-between">
-                      <View>
-                        <Text
-                          style={{
-                            color:
-                              currentLanguage === 'th'
-                                ? colors.primary
-                                : colors.text,
-                          }}>
-                          {t('thai_in_thai')}
-                        </Text>
-                        <Text
-                          className="text-sm opacity-60"
-                          style={{
-                            color:
-                              currentLanguage === 'th'
-                                ? colors.primary
-                                : colors.text,
-                          }}>
-                          {t('thai_in_english')}
-                        </Text>
-                      </View>
-                      {currentLanguage === 'th' && (
-                        <MCI name="check" size={20} color={colors.primary} />
-                      )}
-                    </View>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
+            <LanguageOption
+              handleLanguageOption={changeLanguage}
+              currentLanguage={currentLanguage}
+            />
 
             {/* Conditional rendering of Notifications and Security sections */}
             {typeof user.id !== 'undefined' && user.id && (
