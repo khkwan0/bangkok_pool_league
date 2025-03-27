@@ -51,6 +51,7 @@ const MemberSection = ({
   isAssistantOtherTeam,
   isAdmin,
   onRefresh,
+  onProfilePicturePress,
 }: {
   title: string
   players: PlayerType[]
@@ -61,6 +62,7 @@ const MemberSection = ({
   isCaptainOtherTeam: boolean
   isAssistantOtherTeam: boolean
   onRefresh: () => void
+  onProfilePicturePress: (url: string) => void
 }) => {
   const {t} = useTranslation()
   const league = useLeague()
@@ -139,10 +141,17 @@ const MemberSection = ({
                   )}
                 </Pressable>
                 {player.profile_picture && (
-                  <Image
-                    source={{uri: config.profileUrl + player.profile_picture}}
-                    className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700"
-                  />
+                  <Pressable
+                    onPress={() =>
+                      onProfilePicturePress(
+                        config.profileUrl + player.profile_picture,
+                      )
+                    }>
+                    <Image
+                      source={{uri: config.profileUrl + player.profile_picture}}
+                      className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700"
+                    />
+                  </Pressable>
                 )}
               </View>
               {state.user.id && (
@@ -219,6 +228,7 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
     assistants: [],
     players: [],
     name: '',
+    id: 0,
   })
   const [loading, setLoading] = React.useState(true)
   const [playerToRemove, setPlayerToRemove] = React.useState<{
@@ -227,6 +237,9 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
   } | null>(null)
   const [isAddingPlayer, setIsAddingPlayer] = React.useState(false)
   const [_teamId, setTeamId] = React.useState<number>(teamId)
+  const [selectedProfilePicture, setSelectedProfilePicture] = React.useState<
+    string | null
+  >(null)
   const teams = useTeams()
   const league = useLeague()
   const {t} = useTranslation()
@@ -336,6 +349,22 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
   return (
     <View className="flex-1 p-4">
       <Modal
+        visible={selectedProfilePicture !== null}
+        transparent={true}
+        onRequestClose={() => setSelectedProfilePicture(null)}>
+        <Pressable
+          className="flex-1 bg-black/50 justify-center items-center"
+          onPress={() => setSelectedProfilePicture(null)}>
+          {selectedProfilePicture && (
+            <Image
+              source={{uri: selectedProfilePicture}}
+              className="w-80 h-80 rounded-lg"
+              resizeMode="contain"
+            />
+          )}
+        </Pressable>
+      </Modal>
+      <Modal
         visible={playerToRemove !== null}
         transparent={true}
         animationType="fade"
@@ -423,6 +452,7 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
               isCaptainOtherTeam={isCaptainOtherTeam}
               isAssistantOtherTeam={isAssistantOtherTeam}
               onRefresh={refreshTeamInfo}
+              onProfilePicturePress={setSelectedProfilePicture}
             />
             <MemberSection
               title="assistants"
@@ -434,6 +464,7 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
               isCaptainOtherTeam={isCaptainOtherTeam}
               isAssistantOtherTeam={isAssistantOtherTeam}
               onRefresh={refreshTeamInfo}
+              onProfilePicturePress={setSelectedProfilePicture}
             />
             <Text type="defaultSemiBold" className="mb-2 text-lg">
               {t('players').toUpperCase()}
@@ -460,10 +491,17 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
                   )}
                 </View>
                 {item.profile_picture && (
-                  <Image
-                    source={{uri: config.profileUrl + item.profile_picture}}
-                    className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700"
-                  />
+                  <Pressable
+                    onPress={() =>
+                      setSelectedProfilePicture(
+                        config.profileUrl + item.profile_picture,
+                      )
+                    }>
+                    <Image
+                      source={{uri: config.profileUrl + item.profile_picture}}
+                      className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700"
+                    />
+                  </Pressable>
                 )}
               </View>
               {canManageRoles && (
