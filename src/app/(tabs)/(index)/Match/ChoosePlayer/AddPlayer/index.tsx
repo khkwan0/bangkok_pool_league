@@ -1,5 +1,6 @@
 import React from 'react'
-import {ThemedView as View} from '@/components/ThemedView'
+import {View} from 'react-native'
+import {ThemedView} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {FlatList, TextInput, useColorScheme} from 'react-native'
 import Button from '@/components/Button'
@@ -9,7 +10,6 @@ import {useLeague, useTeams} from '@/hooks'
 import {useTranslation} from 'react-i18next'
 import Row from '@/components/Row'
 import {useNavigation} from '@react-navigation/native'
-import {t} from 'i18next'
 import {router, useLocalSearchParams} from 'expo-router'
 import {useThemeColor} from '@/hooks/useThemeColor'
 import {useMatchContext} from '@/context/MatchContext'
@@ -19,7 +19,6 @@ const ChoosePlayer = props => {
   const [list, setList] = React.useState([])
   const {t} = useTranslation()
   const colorScheme = useColorScheme()
-
 
   const trie = React.useRef(new TrieSearch('nickname', {splitOnRegEx: false}))
 
@@ -151,43 +150,43 @@ const AddNewPlayer = ({
     return (
       <View className="px-2">
         <View className="my-4 mx-2">
-          <Text>Nickname (required)</Text>
+          <Text>nickname_required</Text>
           <TextInput
             onChangeText={text => setNickname(text)}
-            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4"
+            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4 dark:text-white"
             value={nickname}
             placeholder={t('nickname')}
-            placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
+            placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
           />
         </View>
         <View className="my-4 mx-2">
-          <Text>First Name (optional)</Text>
+          <Text>first_name_label</Text>
           <TextInput
-            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4"
+            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4 dark:text-white"
             onChangeText={text => setFirstName(text)}
             value={firstName}
-            placeholder={t('firstname')}
-            placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
+            placeholder={t('first_name')}
+            placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
           />
         </View>
         <View className="my-4 mx-2">
-          <Text>Last Name (optional)</Text>
+          <Text>last_name_label</Text>
           <TextInput
-            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4"
+            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4 dark:text-white"
             onChangeText={text => setLastName(text)}
             value={lastName}
-            placeholder={t('lastname')}
-            placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
+            placeholder={t('last_name')}
+            placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
           />
         </View>
         <View className="my-4 mx-2">
-          <Text>Email (optional)</Text>
+          <Text>email_optional</Text>
           <TextInput
-            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4"
+            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4 dark:text-white"
             onChangeText={text => setEmail(text)}
             value={email}
-            placeholder={t('email')}
-            placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
+            placeholder={t('email_placeholder')}
+            placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
           />
         </View>
         <View>
@@ -294,15 +293,14 @@ const AddPlayer = props => {
   return (
     <FlatList
       className="px-2"
-      style={{backgroundColor: bgColor}}
       ListHeaderComponent={
         !showAddNewPlayer ? (
           <>
             <View className="m-10">
               <Text type="subtitle">add_existing_player</Text>
               <TextInput
-                className="border border-gray-600 dark:border-gray-300 rounded p-5"
-                placeholderTextColor={colorScheme === 'dark' ? '#555' : '#333'}
+                className="border border-gray-600 dark:border-gray-300 rounded p-5 dark:text-white"
+                placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
                 readOnly={loading}
                 placeholder={loading ? t('loading') : t('search_name')}
                 onChangeText={text => setQuery(text)}
@@ -336,102 +334,6 @@ const AddPlayer = props => {
       }
     />
   )
-  /*
-  return (
-    <View className="px-2">
-      <View className="py-4">
-        <Text type="subtitle">add_existing_player</Text>
-      </View>
-      <ChoosePlayer allPlayers={allPlayers} handleSelect={props.handleSelect} />
-      <Row alignItems="center" space={20} my={20}>
-        <View flex={1}>
-          {!showAddNewPlayer && (
-            <View>
-              <View>
-                <Text textAlign="center" type="title">
-                  - OR -
-                </Text>
-              </View>
-              <View className="mt-5">
-                <Button onPress={() => setShowAddNewPlayer(true)}>
-                  <Text textAlign="center">add_new_player</Text>
-                </Button>
-              </View>
-            </View>
-          )}
-          {showAddNewPlayer && (
-            <View>
-              <View>
-                <Text textAlign="center" type="title">
-                  - OR -
-                </Text>
-              </View>
-              <View>
-                <Text bold>add_new_player</Text>
-              </View>
-              <View>
-                <View>
-                  <TextInput
-                    placeholder={
-                      t('nickname') + ' ' + '(' + t('required') + ')'
-                    }
-                    value={newNickName}
-                    onChangeText={text => setNewNickName(text)}
-                  />
-                </View>
-                <View>
-                  <TextInput
-                    placeholder="Email (recommended)"
-                    value={newEmail}
-                    onChangeText={text => setNewEmail(text)}
-                  />
-                </View>
-                <View>
-                  <TextInput
-                    placeholder="First Name (optional)"
-                    value={newFirstName}
-                    onChangeText={text => setNewFirstName(text)}
-                  />
-                </View>
-                <View>
-                  <TextInput
-                    placeholder="Last Name (optional)"
-                    value={newLastName}
-                    onChangeText={text => setNewLastName(text)}
-                  />
-                </View>
-              </View>
-            </View>
-          )}
-        </View>
-      </Row>
-      <View flex={1}>
-        {err && (
-          <View>
-            <Text textAlign="center" lightColor="#f00">
-              {err}
-            </Text>
-          </View>
-        )}
-        <Row style={{gap: 10}}>
-          <View flex={1}>
-            <Button onPress={() => props.cancel()}>
-              <Text>cancel</Text>
-            </Button>
-          </View>
-          <View flex={1}>
-            <Button
-              loading={loading}
-              disabled={!valid}
-              onPress={() => HandleSave()}>
-              <Text>save</Text>
-            </Button>
-          </View>
-        </Row>
-      </View>
-    </View>
-  )
-    */
 }
 
 export default AddPlayer

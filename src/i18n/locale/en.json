@@ -59,6 +59,7 @@
   "email_exists": "Email already exists",
   "email_label": "Email *",
   "email_login": "Email Login",
+  "email_optional": "Email (Optional)",
   "email_placeholder": "email@example.com",
   "email_registration_success": "Registration Successful! Welcome to Bangkok Pool League",
   "english_in_english": "English",
@@ -80,6 +81,7 @@
   "enter_venue_short_name": "Enter venue short name",
   "enter_venue_website": "Enter website URL",
   "error": "Error",
+  "error_adding_player": "Failed to add player to team",
   "failed_to_confirm_match": "Failed to confirm match",
   "failed_to_fetch_users": "Failed to fetch users",
   "failed_to_fetch_players": "Failed to fetch players",
@@ -217,6 +219,7 @@
   "search": "Search",
   "search_by_name": "Search by name",
   "search_name": "Search names",
+  "search_player": "Search player",
   "search_users": "Search Users",
   "season": "Season",
   "season_number": "Season {n}",
@@ -247,7 +250,7 @@
   "statistics_legend": "Statistics Legend",
   "statistics_legend_adjusted": "• Adjusted performance: The overall weighted performance is multiplied by (frames-1)/frames to account for small sample sizes",
   "statistics_legend_confirmed": "• All performance figures are based on confirmed matches only",
-  "statistics_legend_weighted": "• Weighted performance: Doubles frames are weighted with 50% weight",
+  "statistics_legend_weighted": "• Weighted performance: Doubles frames are weighted at 50%",
   "step": "Step",
   "success": "Success",
   "successfully_registered": "You have successfully registered your account.",
@@ -326,5 +329,8 @@
   "password_too_short": "Password must be at least 6 characters",
   "password_update_failed": "Failed to update password",
   "share": "Share",
-  "share_match": "Share Match"
+  "share_match": "Share Match",
+  "yes": "Yes",
+  "no": "No",
+  "player_has_account": "Does this player already have an account in the system?"
 }

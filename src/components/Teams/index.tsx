@@ -1,7 +1,7 @@
 import React from 'react'
-import {FlatList, Pressable} from 'react-native'
-import {ThemedView as View} from '@/components/ThemedView'
+import {FlatList, Pressable, View} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView as CardView} from '@/components/ThemedView'
 import {useLeague} from '@/hooks'
 import {router} from 'expo-router'
 import {useTranslation} from 'react-i18next'
@@ -38,7 +38,7 @@ function TeamCard({team, index, fromTabs}: TeamCardProps) {
 
   return (
     <Pressable onPress={handlePress}>
-      <View className="p-5 mx-4 my-2 rounded-xl bg-white border border-slate-200 shadow-sm">
+      <CardView className="p-5 mx-4 my-2 rounded-xl bg-white border border-slate-200 shadow-sm">
         <View className="flex-row justify-between items-center">
           <View>
             <Text className="text-base font-semibold mb-1 text-slate-800">
@@ -48,13 +48,13 @@ function TeamCard({team, index, fromTabs}: TeamCardProps) {
               {team.division_short_name}
             </Text>
           </View>
-          <View className="bg-blue-200 px-3 py-1.5 rounded-xl">
+          <CardView className="bg-blue-200 px-3 py-1.5 rounded-xl">
             <Text className="text-sm text-blue-700 font-medium">
               {team.total_players} members
             </Text>
-          </View>
+          </CardView>
         </View>
-      </View>
+      </CardView>
     </Pressable>
   )
 }

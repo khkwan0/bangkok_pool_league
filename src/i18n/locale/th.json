@@ -59,6 +59,7 @@
   "email_exists": "อีเมลถูกนำไปใช้แล้ว",
   "email_label": "อีเมล *",
   "email_login": "เข้าสู่ระบบด้วยอีเมล",
+  "email_optional": "อีเมล (ไม่จำเป็น)",
   "email_placeholder": "อีเมล@ตัวอย่าง.com",
   "email_registration_success": "ลงทะเบียนสำเร็จ! ยินดีต้อนรับสู่พูลลีกกรุงเทพ",
   "english_in_english": "English",
@@ -80,6 +81,7 @@
   "enter_venue_short_name": "ใส่ชื่อสั้นของสถานที่",
   "enter_venue_website": "ใส่เว็บไซต์",
   "error": "ข้อผิดพลาด",
+  "error_adding_player": "ไม่สามารถเพิ่มผู้เล่นเข้าทีมได้",
   "failed_to_confirm_match": "ไม่สามารถยืนยันการแข่งขันได้",
   "failed_to_fetch_users": "ไม่สามารถดึงข้อมูลผู้ใช้ได้",
   "failed_to_fetch_players": "ไม่สามารถดึงข้อมูลผู้เล่นได้",
@@ -215,6 +217,7 @@
   "search": "ค้นหา",
   "search_by_name": "ค้นหาตามชื่อ",
   "search_name": "ค้นหาชื่อ",
+  "search_player": "ค้นหาผู้เล่น",
   "search_users": "ค้นหาผู้ใช้",
   "season": "ฤดูกาล",
   "season_number": "ฤดูกาล{n}",
@@ -322,5 +325,8 @@
   "password_too_short": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
   "password_update_failed": "ไม่สามารถอัปเดตรหัสผ่านได้",
   "share": "แชร์",
-  "share_match": "แชร์การแข่งขัน"
+  "share_match": "แชร์การแข่งขัน",
+  "yes": "ใช่",
+  "no": "ไม่",
+  "player_has_account": "ผู้เล่นนี้มีบัญชีในระบบอยู่แล้วหรือไม่?"
 }

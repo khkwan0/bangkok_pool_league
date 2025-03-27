@@ -5,9 +5,10 @@ import {
   Pressable,
   Alert,
   Modal,
+  View,
   useColorScheme,
 } from 'react-native'
-import {ThemedView as View} from '@/components/ThemedView'
+import {ThemedView as CardView} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTeams, useLeague} from '@/hooks'
 import config from '@/config'
@@ -15,8 +16,8 @@ import Row from '@/components/Row'
 import {useTranslation} from 'react-i18next'
 import {useLeagueContext, LeagueContextType} from '@/context/LeagueContext'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useNavigation} from '@react-navigation/native'
-import {useRouter} from 'expo-router'
+import {useIsFocused, useNavigation} from '@react-navigation/native'
+import {useRouter, useLocalSearchParams} from 'expo-router'
 
 type PlayerType = {
   nickname: string
@@ -103,91 +104,64 @@ const MemberSection = ({
       <Text type="defaultSemiBold" className="mb-2 text-lg">
         {t(title).toUpperCase()}
       </Text>
-      {players.map(player => (
-        <View
-          key={player.id}
-          className="p-3 mb-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-          <Row className="items-center">
-            <View className="flex-1 flex-row items-center">
-              <Pressable
-                className="mr-4"
-                onPress={() =>
-                  router.push({
-                    pathname: './team/player',
-                    params: {params: JSON.stringify({playerId: player.id})},
-                  })
-                }>
-                <Text type="defaultSemiBold">
-                  {player.flag} {player.nickname}
-                </Text>
-                {(player.firstname || player.lastname) && (
-                  <Text className="text-sm text-gray-600 dark:text-gray-400">
-                    {[
-                      player.firstname,
-                      player.lastname ? player.lastname.charAt(0) + '.' : null,
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  </Text>
-                )}
-              </Pressable>
-              {player.profile_picture && (
-                <Image
-                  source={{uri: config.profileUrl + player.profile_picture}}
-                  className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700"
-                />
-              )}
-            </View>
-            {state.user.id && (
-              <View className="flex-row ml-2">
+      {players
+        .sort((a: PlayerType, b: PlayerType) =>
+          a.nickname.localeCompare(b.nickname),
+        )
+        .map(player => (
+          <View
+            key={player.id}
+            className="p-3 mb-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <Row className="items-center">
+              <View className="flex-1 flex-row items-center">
                 <Pressable
-                  className="p-1.5 bg-purple-50 dark:bg-purple-900 rounded-lg border border-purple-200 dark:border-purple-800"
+                  className="mr-4"
                   onPress={() =>
                     router.push({
-                      pathname: '/Messages/New',
-                      params: {
-                        params: JSON.stringify({
-                          nickname: player.nickname,
-                          recipientId: player.id,
-                        }),
-                      },
+                      pathname: './team/player',
+                      params: {params: JSON.stringify({playerId: player.id})},
                     })
                   }>
-                  <MCI
-                    name="message-text"
-                    size={24}
-                    color={
-                      colorScheme === 'dark'
-                        ? 'rgb(216, 180, 254)'
-                        : 'rgb(107, 33, 168)'
-                    }
-                  />
+                  <Text type="defaultSemiBold">
+                    {player.flag} {player.nickname}
+                  </Text>
+                  {(player.firstname || player.lastname) && (
+                    <Text className="text-sm text-gray-600 dark:text-gray-400">
+                      {[
+                        player.firstname,
+                        player.lastname
+                          ? player.lastname.charAt(0) + '.'
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    </Text>
+                  )}
                 </Pressable>
-              </View>
-            )}
-            {showControls && (
-              <View className="flex-row ml-2">
-                {title.toLowerCase() !== 'captains' && (
-                  <Pressable
-                    className="p-1.5 bg-purple-50 dark:bg-purple-900 rounded-lg mr-2 border border-purple-200 dark:border-purple-800"
-                    onPress={() => handlePromote(player.id)}>
-                    <MCI
-                      name="arrow-up-circle"
-                      size={24}
-                      color={
-                        colorScheme === 'dark'
-                          ? 'rgb(216, 180, 254)'
-                          : 'rgb(107, 33, 168)'
-                      }
-                    />
-                  </Pressable>
+                {player.profile_picture && (
+                  <Image
+                    source={{uri: config.profileUrl + player.profile_picture}}
+                    className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700"
+                  />
                 )}
-                {title.toLowerCase() !== 'players' && (
+              </View>
+              {state.user.id && (
+                <View className="flex-row ml-2">
                   <Pressable
                     className="p-1.5 bg-purple-50 dark:bg-purple-900 rounded-lg border border-purple-200 dark:border-purple-800"
-                    onPress={() => handleDemote(player.id)}>
+                    onPress={() =>
+                      router.push({
+                        pathname: '/Messages/New',
+                        params: {
+                          params: JSON.stringify({
+                            nickname: player.nickname,
+                            recipientId: player.id,
+                          }),
+                        },
+                      })
+                    }>
                     <MCI
-                      name="arrow-down-circle"
+                      name="message-text"
                       size={24}
                       color={
                         colorScheme === 'dark'
@@ -196,12 +170,45 @@ const MemberSection = ({
                       }
                     />
                   </Pressable>
-                )}
-              </View>
-            )}
-          </Row>
-        </View>
-      ))}
+                </View>
+              )}
+              {showControls && (
+                <View className="flex-row ml-2">
+                  {title.toLowerCase() !== 'captains' && (
+                    <Pressable
+                      className="p-1.5 bg-purple-50 dark:bg-purple-900 rounded-lg mr-2 border border-purple-200 dark:border-purple-800"
+                      onPress={() => handlePromote(player.id)}>
+                      <MCI
+                        name="arrow-up-circle"
+                        size={24}
+                        color={
+                          colorScheme === 'dark'
+                            ? 'rgb(216, 180, 254)'
+                            : 'rgb(107, 33, 168)'
+                        }
+                      />
+                    </Pressable>
+                  )}
+                  {title.toLowerCase() !== 'players' && (
+                    <Pressable
+                      className="p-1.5 bg-purple-50 dark:bg-purple-900 rounded-lg border border-purple-200 dark:border-purple-800"
+                      onPress={() => handleDemote(player.id)}>
+                      <MCI
+                        name="arrow-down-circle"
+                        size={24}
+                        color={
+                          colorScheme === 'dark'
+                            ? 'rgb(216, 180, 254)'
+                            : 'rgb(107, 33, 168)'
+                        }
+                      />
+                    </Pressable>
+                  )}
+                </View>
+              )}
+            </Row>
+          </View>
+        ))}
     </View>
   )
 }
@@ -218,17 +225,47 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
     id: number
     nickname: string
   } | null>(null)
+  const [isAddingPlayer, setIsAddingPlayer] = React.useState(false)
+  const [_teamId, setTeamId] = React.useState<number>(teamId)
   const teams = useTeams()
   const league = useLeague()
   const {t} = useTranslation()
   const {state} = useLeagueContext() as LeagueContextType
   const navigation = useNavigation()
   const colorScheme = useColorScheme()
+  const router = useRouter()
+  const isFocused = useIsFocused()
+
+  const refreshTeamInfo = React.useCallback(async () => {
+    try {
+      const response = await teams.GetTeamInfo(_teamId)
+      if (response?.status === 'ok' && response.data) {
+        setTeamData(response.data)
+      }
+    } catch (error) {
+      console.error('Error fetching team info:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [_teamId])
+
+  React.useEffect(() => {
+    if (isFocused) {
+      refreshTeamInfo()
+    }
+  }, [isFocused, refreshTeamInfo])
+
   const isCaptain = React.useMemo(() => {
     return teamData.captains.some(
       (captain: PlayerType) => captain.id === state.user?.id,
     )
   }, [teamData.captains, state.user?.id])
+
+  const isOnTeam = React.useMemo(() => {
+    return teamData.players.some(
+      (player: PlayerType) => player.id === state.user?.id,
+    )
+  }, [teamData.players, state.user?.id])
 
   const isCaptainOtherTeam = React.useMemo(() => {
     if (state.user?.role_id && state.user.role_id > 0) {
@@ -260,20 +297,6 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
     return isAdmin || isCaptain || isAssistant
   }, [isAdmin, isCaptain, isAssistant])
 
-  const refreshTeamInfo = React.useCallback(async () => {
-    try {
-      const response = await teams.GetTeamInfo(teamId)
-      if (response?.status === 'ok' && response.data) {
-        setTeamData(response.data)
-      }
-    } catch (error) {
-      console.error('Error fetching team info:', error)
-    } finally {
-      setLoading(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamId])
-
   React.useEffect(() => {
     refreshTeamInfo()
   }, [refreshTeamInfo])
@@ -288,7 +311,7 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
 
   const handleRemovePlayer = async (playerId: number) => {
     try {
-      const response = await league.RemovePlayerFromTeam(playerId, teamId)
+      const response = await league.RemovePlayerFromTeam(playerId, _teamId)
       if (response?.status === 'ok') {
         refreshTeamInfo()
       } else if (response?.error) {
@@ -346,7 +369,9 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
         </View>
       </Modal>
       <FlatList
-        data={teamData.players}
+        data={teamData.players.sort((a: PlayerType, b: PlayerType) =>
+          a.nickname.localeCompare(b.nickname),
+        )}
         ListHeaderComponent={
           <>
             <View className="items-center mb-6">
@@ -370,6 +395,24 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
               </Text>
               <Text>#{teamData.id}</Text>
             </View>
+            {isOnTeam && (
+              <Pressable
+                onPressIn={() => setIsAddingPlayer(true)}
+                onPressOut={() => setIsAddingPlayer(false)}
+                onPress={() =>
+                  router.push({
+                    pathname: './team/AddPlayer',
+                    params: {teamIdParams: JSON.stringify({teamId: _teamId})},
+                  })
+                }
+                className={`border border-gray-200 dark:border-gray-400 rounded-lg p-4 mb-2 ${
+                  isAddingPlayer ? 'bg-gray-100 dark:bg-gray-500' : ''
+                }`}>
+                <Text type="link" className="text-center">
+                  {t('add_player')}
+                </Text>
+              </Pressable>
+            )}
             <MemberSection
               title="captains"
               players={teamData.captains}

@@ -11,7 +11,14 @@ export interface League {
     level: number,
   ): Promise<{status: string}>
   RevokePrivileges(playerId: number, teamId: number): Promise<{status: string}>
-  // Add other methods as needed
+  SaveNewPlayer(
+    nickname: string,
+    firstName: string,
+    lastName: string,
+    email: string,
+  ): Promise<{status: string; data?: {playerId: number}; msg?: string}>
+  GetUniquePlayers(): Promise<{data: Player[]}>
+  AddPlayerToTeam(playerId: number, teamId: number): Promise<{status: string}>
 }
 export interface Match {
   GetMatchMetadata(matchId: number): Promise<MatchMetadata>
@@ -20,8 +27,19 @@ export interface Match {
   GetMatchDetails(matchId: number): Promise<MatchDetails>
 }
 
+export interface Teams {
+  GetTeams(): Promise<Team[]>
+  GetTeam(teamId: number): Promise<Team>
+  GetTeamPlayers(teamId: number): Promise<Player[]>
+  GetTeamMatches(teamId: number): Promise<Match[]>
+  AddExistingPlayerToTeam(
+    teamId: number,
+    playerId: number,
+  ): Promise<{status: string}>
+}
+
 export function useLeague(): League
-export function useTeams(): Team[]
+export function useTeams(): Teams
 export function usePlayers(): Player[]
 export function useMatch(): Match
 export function useLeague(): League

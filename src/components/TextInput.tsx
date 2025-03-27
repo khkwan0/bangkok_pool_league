@@ -24,6 +24,7 @@ interface CustomTextInputProps extends TextInputProps {
   containerStyle?: ViewStyle
   inputStyle?: TextStyle
   error?: boolean
+  disabled?: boolean
 }
 
 export default function CustomTextInput({
@@ -39,6 +40,7 @@ export default function CustomTextInput({
   containerStyle,
   inputStyle,
   error,
+  disabled,
   ...props
 }: CustomTextInputProps) {
   const colorScheme = useColorScheme()
@@ -104,6 +106,7 @@ export default function CustomTextInput({
         </TouchableOpacity>
       )}
       <RNTextInput
+        editable={!disabled}
         style={[defaultInputStyle, inputStyle, style]}
         placeholderTextColor={isDark ? '#9ca3af' : '#6b7280'}
         onFocus={() => setIsFocused(true)}
