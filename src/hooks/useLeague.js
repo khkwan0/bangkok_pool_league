@@ -529,6 +529,16 @@ export const useLeague = () => {
     }
   }
 
+  const GetCountries = async () => {
+    try {
+      const res = await Get('/countries')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
   return {
     AcceptMergeRequest,
     ActivateSeason,
@@ -538,6 +548,7 @@ export const useLeague = () => {
     GetActiveMergeRequestCount,
     GetAllVenues,
     GetAllPlayers,
+    GetCountries,
     GetCompletedMatchesByTeamId,
     GetDivisionsBySeason,
     GetGameTypes,

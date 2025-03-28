@@ -1,5 +1,12 @@
 import type {DivisionData} from '@/types'
 
+export interface Country {
+  id: number
+  name_en: string
+  name_th: string
+  iso_3166_1_alpha_2_code: string
+  emoji: string
+}
 export interface League {
   GetStandings(): Promise<DivisionData[]>
   GetCompletedMatchesByTeamId(
@@ -19,6 +26,7 @@ export interface League {
   ): Promise<{status: string; data?: {playerId: number}; msg?: string}>
   GetUniquePlayers(): Promise<{data: Player[]}>
   AddPlayerToTeam(playerId: number, teamId: number): Promise<{status: string}>
+  GetCountries(): Promise<{status: string; data: Country[]}>
 }
 export interface Match {
   GetMatchMetadata(matchId: number): Promise<MatchMetadata>
@@ -38,6 +46,19 @@ export interface Teams {
   ): Promise<{status: string}>
 }
 
+export interface Account {
+  GetAccount(): Promise<{status: string; data: Account}>
+  GetAccountUsername(): Promise<{status: string; data: string}>
+  UpdateAccount(account: Account): Promise<{status: string}>
+  SetFirstName(firstName: string): Promise<{status: string}>
+  SetLastName(lastName: string): Promise<{status: string}>
+  SetNickName(nickname: string): Promise<{status: string}>
+  SetNationality(nationality: number): Promise<{status: string}>
+  SetEmail(email: string): Promise<{status: string}>
+  SetPassword(password: string): Promise<{status: string}>
+  SetProfilePicture(profilePicture: string): Promise<{status: string}>
+}
+
 export function useLeague(): League
 export function useTeams(): Teams
 export function usePlayers(): Player[]
@@ -46,3 +67,4 @@ export function useLeague(): League
 export function useTeams(): Team[]
 export function usePlayers(): Player[]
 export function useMatches(): Match[]
+export function useAccount(): Account

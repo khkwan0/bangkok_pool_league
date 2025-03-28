@@ -13,7 +13,7 @@ export default function LanguageOption({
   currentLanguage,
 }: {
   handleLanguageOption: (lang: string) => void
-  currentLanguage: string | null
+  currentLanguage?: string | null
 }) {
   const {colors} = useTheme()
   const {t} = useTranslation()

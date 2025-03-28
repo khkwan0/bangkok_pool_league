@@ -7,7 +7,14 @@ interface User {
   nickname?: string
   first_name?: string
   last_name?: string
+  firstname?: string
+  lastname?: string
   language?: string
+  nationality?: {
+    name_en: string
+    name_th: string
+    iso_3166_1_alpha_2_code: string
+  }
   preferences?: {
     enabledPushNotifications?: boolean
     soundNotifications?: boolean
@@ -71,6 +78,30 @@ const LeagueReducer = (state: any, action: any) => {
       return {
         ...state,
         user: {...state.user, language: action.payload},
+      }
+    }
+    case 'SET_NATIONALITY': {
+      return {
+        ...state,
+        user: {...state.user, nationality: action.payload},
+      }
+    }
+    case 'SET_NICKNAME': {
+      return {
+        ...state,
+        user: {...state.user, nickname: action.payload},
+      }
+    }
+    case 'SET_FIRST_NAME': {
+      return {
+        ...state,
+        user: {...state.user, firstname: action.payload},
+      }
+    }
+    case 'SET_LAST_NAME': {
+      return {
+        ...state,
+        user: {...state.user, lastname: action.payload},
       }
     }
     default:

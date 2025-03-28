@@ -328,5 +328,14 @@
   "share_match": "แชร์การแข่งขัน",
   "yes": "ใช่",
   "no": "ไม่",
-  "player_has_account": "ผู้เล่นนี้มีบัญชีในระบบอยู่แล้วหรือไม่?"
+  "player_has_account": "ผู้เล่นนี้มีบัญชีในระบบอยู่แล้วหรือไม่?",
+  "general": "ทั่วไป",
+  "account": "บัญชี",
+  "language_in_english": "Language",
+  "language_in_thai": "ภาษา",
+  "notification": "การแจ้งเตือน",
+  "profile": "โปรไฟล์",
+  "change_profile_picture": "เปลี่ยนรูปโปรไฟล์",
+  "select_country": "เลือกประเทศ",
+  "search_countries": "ค้นหาประเทศ"
 }

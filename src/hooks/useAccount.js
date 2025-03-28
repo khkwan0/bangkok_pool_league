@@ -438,6 +438,15 @@ export const useAccount = () => {
     }
   }
 
+  async function SetNationality(nationality) {
+    try {
+      const res = await Post('/user/nationality', {nationality})
+      return res
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return {
     AdminLogin,
     CheckVersion,
@@ -458,6 +467,7 @@ export const useAccount = () => {
     SetFirstName,
     SetLastName,
     SetNickName,
+    SetNationality,
     SetPushNotifications,
     SetSoundNotifications,
     SetUpEmail,
