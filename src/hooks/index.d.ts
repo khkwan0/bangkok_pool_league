@@ -53,10 +53,13 @@ export interface Account {
   SetFirstName(firstName: string): Promise<{status: string}>
   SetLastName(lastName: string): Promise<{status: string}>
   SetNickName(nickname: string): Promise<{status: string}>
-  SetNationality(nationality: number): Promise<{status: string}>
+  SetNationality(nationality: number): Promise<{status: string; data: Country}>
   SetEmail(email: string): Promise<{status: string}>
   SetPassword(password: string): Promise<{status: string}>
-  SetProfilePicture(profilePicture: string): Promise<{status: string}>
+  SetProfilePicture(
+    profilePicture: string,
+  ): Promise<{status: string; data: string}>
+  SaveAvatar(profilePicture: string): Promise<{status: string; data: string}>
 }
 
 export function useLeague(): League

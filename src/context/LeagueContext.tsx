@@ -11,6 +11,7 @@ interface User {
   lastname?: string
   language?: string
   nationality?: {
+    id: number
     name_en: string
     name_th: string
     iso_3166_1_alpha_2_code: string

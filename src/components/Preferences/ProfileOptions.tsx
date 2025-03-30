@@ -18,19 +18,21 @@ import config from '@/config'
 import {useTranslation} from 'react-i18next'
 import {Ionicons} from '@expo/vector-icons'
 import {useState, useRef, useEffect, useMemo} from 'react'
-import {Picker} from '@react-native-picker/picker'
-import Animated, {FadeIn, FadeOut, SlideInDown, SlideOutDown} from 'react-native-reanimated'
+import Animated, {SlideInDown, SlideOutDown} from 'react-native-reanimated'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {useLeague, useAccount} from '@/hooks'
 import ImagePicker from 'react-native-image-crop-picker'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-interface CountryData {
-  name: string
-  emoji: string
-  [key: string]: any
-}
 
 interface Country {
+  id: number
+  name_en: string
+  name_th: string
+  iso_3166_1_alpha_2_code: string
+  emoji: string
+}
+
+interface UserNationality {
   id: number
   name_en: string
   name_th: string
@@ -64,7 +66,11 @@ export default function ProfileOptions() {
 
   useMemo(() => {
     if (searchQuery.length > 0) {
-      setCountries(countries.filter(country => country.name_en.toLowerCase().includes(searchQuery.toLowerCase())))
+      setCountries(
+        countries.filter(country =>
+          country.name_en.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
+      )
     } else {
       setCountries(countries)
     }
@@ -73,13 +79,21 @@ export default function ProfileOptions() {
   async function getCountries() {
     try {
       const res = await league.GetCountries()
-      if (typeof res.status !== 'undefined' &&res.status === 'ok' && typeof res.data !== 'undefined') {
-        setCountries(res.data.sort((a, b) => a.name_en.localeCompare(b.name_en)).map(country => ({
-          ...country,
-          emoji: getCountryFlag(country.iso_3166_1_alpha_2_code),
-        })))
+      if (
+        typeof res.status !== 'undefined' &&
+        res.status === 'ok' &&
+        typeof res.data !== 'undefined'
+      ) {
+        setCountries(
+          res.data
+            .sort((a, b) => a.name_en.localeCompare(b.name_en))
+            .map(country => ({
+              ...country,
+              emoji: getCountryFlag(country.iso_3166_1_alpha_2_code),
+            })),
+        )
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e)
       throw new Error(e)
     }
@@ -89,7 +103,7 @@ export default function ProfileOptions() {
     try {
       setIsLoading(true)
       getCountries()
-    } catch(e) {
+    } catch (e) {
       console.error(e)
     } finally {
       setIsLoading(false)
@@ -148,12 +162,12 @@ export default function ProfileOptions() {
   }
 
   async function handleSaveNickname() {
-    try { 
+    try {
       const res = await account.SetNickName(nickname)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        dispatch({type: 'SET_NICKNAME', payload: nickname}) 
+        dispatch({type: 'SET_NICKNAME', payload: nickname})
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e)
     } finally {
       setIsEditingNickname(false)
@@ -161,12 +175,12 @@ export default function ProfileOptions() {
   }
 
   async function handleSaveFirstName() {
-    try { 
+    try {
       const res = await account.SetFirstName(firstName)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        dispatch({type: 'SET_FIRST_NAME', payload: firstName}) 
+        dispatch({type: 'SET_FIRST_NAME', payload: firstName})
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e)
     } finally {
       setIsEditingFirstName(false)
@@ -174,12 +188,12 @@ export default function ProfileOptions() {
   }
 
   async function handleSaveLastName() {
-    try { 
+    try {
       const res = await account.SetLastName(lastName)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        dispatch({type: 'SET_LAST_NAME', payload: lastName}) 
+        dispatch({type: 'SET_LAST_NAME', payload: lastName})
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e)
     } finally {
       setIsEditingLastName(false)
@@ -190,9 +204,9 @@ export default function ProfileOptions() {
     try {
       const res = await account.SetNationality(selectedCountry)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        dispatch({type: 'SET_NATIONALITY', payload: res.data}) 
+        dispatch({type: 'SET_NATIONALITY', payload: res.data})
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e)
     } finally {
       setIsEditingNationality(false)
@@ -215,14 +229,13 @@ export default function ProfileOptions() {
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
         dispatch({type: 'SET_PROFILE_PICTURE', payload: res.data})
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e)
     }
   }
 
   function HandleShowPicker(type: 'gallery' | 'camera') {
     try {
-      let image = null
       if (type === 'gallery') {
         const params = {
           width: 300,
@@ -242,16 +255,16 @@ export default function ProfileOptions() {
           setNewAvatar(image)
         })
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e)
-      setImageError(e)
+      setImageError(e as Error)
     }
   }
 
   if (isEditingProfilePicture) {
     return (
       <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
-        <Animated.View 
+        <Animated.View
           entering={SlideInDown}
           exiting={SlideOutDown}
           className="flex-1">
@@ -289,13 +302,7 @@ export default function ProfileOptions() {
               </>
             )}
             {!newAvatar && !user.profile_picture && (
-              <View
-                bgColor={colors.profilePicBackground}
-                width={200}
-                height={200}
-                borderRadius={100}
-                alignItems="center"
-                justifyContent="center">
+              <View className="w-20 h-20 rounded-full items-center justify-center">
                 <MCI
                   name="plus-circle-outline"
                   color={colors.primary}
@@ -309,36 +316,40 @@ export default function ProfileOptions() {
             )}
             {newAvatar && (
               <View>
-                <Pressable className="mt-10 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full" onPress={() => setNewAvatar(null)}>
+                <Pressable
+                  className="mt-10 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full"
+                  onPress={() => setNewAvatar(null)}>
                   <Text>reset</Text>
                 </Pressable>
-                <Pressable className="mt-10 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full" onPress={() => HandleSaveNewAvatar()}>
+                <Pressable
+                  className="mt-10 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full"
+                  onPress={() => HandleSaveNewAvatar()}>
                   <Text>save</Text>
                 </Pressable>
               </View>
             )}
             {!newAvatar && (
               <View className="mt-10">
-                <Pressable className="my-2 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full" onPress={() => HandleShowPicker('gallery')}>
-                  <Text>
-                    {t('gallery')}
-                  </Text>
+                <Pressable
+                  className="my-2 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full"
+                  onPress={() => HandleShowPicker('gallery')}>
+                  <Text>{t('gallery')}</Text>
                 </Pressable>
-                <Pressable className=" my-2 bg-primary border border-gray-300 dark:border-gray-700 px-6 py-3 rounded-full" onPress={() => HandleShowPicker('camera')}>
-                <Text>
-                  {t('camera')}
-                </Text>
+                <Pressable
+                  className=" my-2 bg-primary border border-gray-300 dark:border-gray-700 px-6 py-3 rounded-full"
+                  onPress={() => HandleShowPicker('camera')}>
+                  <Text>{t('camera')}</Text>
                 </Pressable>
               </View>
             )}
           </View>
         </Animated.View>
-      </SafeAreaView> 
+      </SafeAreaView>
     )
   } else if (isEditingNationality) {
     return (
       <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
-        <Animated.View 
+        <Animated.View
           entering={SlideInDown}
           exiting={SlideOutDown}
           className="flex-1">
@@ -353,9 +364,7 @@ export default function ProfileOptions() {
                 className="dark:text-gray-300"
               />
             </Pressable>
-            <Text className="text-lg font-semibold">
-              {t('select_country')}
-            </Text>
+            <Text className="text-lg font-semibold">{t('select_country')}</Text>
             <View className="w-10" />
           </View>
           <View className="p-4 border-b border-gray-200 dark:border-gray-800">
@@ -426,7 +435,9 @@ export default function ProfileOptions() {
                 source={{uri: config.profileUrl + user?.profile_picture}}
                 className="h-32 w-32 rounded-full mb-4"
               />
-              <Pressable className="bg-primary px-6 py-3 rounded-full" onPress={() => setIsEditingProfilePicture(true)}>
+              <Pressable
+                className="bg-primary px-6 py-3 rounded-full"
+                onPress={() => setIsEditingProfilePicture(true)}>
                 <Text className="text-white font-medium">
                   {t('change_profile_picture')}
                 </Text>
@@ -440,7 +451,9 @@ export default function ProfileOptions() {
               <>
                 <ThemedView className="rounded-lg p-4 mb-4">
                   <View className="flex-row items-center justify-between mb-2">
-                    <Text className="text-lg font-semibold">{t('nationality')}</Text>
+                    <Text className="text-lg font-semibold">
+                      {t('nationality')}
+                    </Text>
                     <Pressable
                       className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
                       onPress={() => setIsEditingNationality(true)}>
@@ -456,7 +469,9 @@ export default function ProfileOptions() {
                     </Pressable>
                   </View>
                   <View className="flex-row items-center gap-2">
-                    <Text>{user?.nationality?.name_en ?? t('not_provided')}</Text>
+                    <Text>
+                      {user?.nationality?.name_en ?? t('not_provided')}
+                    </Text>
                     <Text className="text-gray-500">
                       {user?.nationality?.name_th ?? ''}
                     </Text>
@@ -468,10 +483,11 @@ export default function ProfileOptions() {
                   </View>
                 </ThemedView>
 
-
                 <ThemedView className="rounded-lg p-4 mb-4">
                   <View className="flex-row items-center justify-between mb-2">
-                    <Text className="text-lg font-semibold">{t('nickname')}</Text>
+                    <Text className="text-lg font-semibold">
+                      {t('nickname')}
+                    </Text>
                     {isEditingNickname ? (
                       <View className="flex-row gap-2">
                         <Pressable
@@ -502,7 +518,9 @@ export default function ProfileOptions() {
                             color="#fff"
                             className="mr-1"
                           />
-                          <Text className="text-white text-sm">{t('save')}</Text>
+                          <Text className="text-white text-sm">
+                            {t('save')}
+                          </Text>
                         </Pressable>
                       </View>
                     ) : (
@@ -537,7 +555,9 @@ export default function ProfileOptions() {
 
                 <ThemedView className="rounded-lg p-4 mb-4">
                   <View className="flex-row items-center justify-between mb-2">
-                    <Text className="text-lg font-semibold">{t('first_name')}</Text>
+                    <Text className="text-lg font-semibold">
+                      {t('first_name')}
+                    </Text>
                     {isEditingFirstName ? (
                       <View className="flex-row gap-2">
                         <Pressable
@@ -562,112 +582,118 @@ export default function ProfileOptions() {
                         <Pressable
                           className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
                           onPress={handleSaveFirstName}>
-                        <Ionicons
-                          name="checkmark"
-                          size={16}
-                          color="#fff"
-                          className="mr-1"
-                        />
-                        <Text className="text-white text-sm">{t('save')}</Text>
-                      </Pressable>
-                    </View>
-                  ) : (
-                    <Pressable
-                      className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                      onPress={() => setIsEditingFirstName(true)}>
-                      <Ionicons
-                        name="pencil"
-                        size={16}
-                        color="#4B5563"
-                        className="mr-1"
-                      />
-                      <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                        {t('edit')}
-                      </Text>
-                    </Pressable>
-                  )}
-                </View>
-                {isEditingFirstName ? (
-                  <View className="flex-row items-center gap-2">
-                    <CustomTextInput
-                      value={firstName}
-                      onChangeText={setFirstName}
-                      placeholder={t('first_name_placeholder')}
-                      autoFocus
-                    />
-                  </View>
-                ) : (
-                  <Text>{firstName || t('not_provided')}</Text>
-                )}
-              </ThemedView>
-
-              <ThemedView className="rounded-lg p-4">
-                <View className="flex-row items-center justify-between mb-2">
-                  <Text className="text-lg font-semibold">{t('last_name')}</Text>
-                  {isEditingLastName ? (
-                    <View className="flex-row gap-2">
+                          <Ionicons
+                            name="checkmark"
+                            size={16}
+                            color="#fff"
+                            className="mr-1"
+                          />
+                          <Text className="text-white text-sm">
+                            {t('save')}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    ) : (
                       <Pressable
                         className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                        onPress={() =>
-                          handleCancelEdit(
-                            setIsEditingLastName,
-                            setLastName,
-                            user?.lastname ?? '',
-                          )
-                        }>
+                        onPress={() => setIsEditingFirstName(true)}>
                         <Ionicons
-                          name="close"
+                          name="pencil"
                           size={16}
                           color="#4B5563"
                           className="mr-1"
                         />
                         <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                          {t('cancel')}
+                          {t('edit')}
                         </Text>
                       </Pressable>
-                      <Pressable
-                        className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
-                        onPress={handleSaveLastName}>
-                        <Ionicons
-                          name="checkmark"
-                          size={16}
-                          color="#fff"
-                          className="mr-1"
-                        />
-                        <Text className="text-white text-sm">{t('save')}</Text>
-                      </Pressable>
+                    )}
+                  </View>
+                  {isEditingFirstName ? (
+                    <View className="flex-row items-center gap-2">
+                      <CustomTextInput
+                        value={firstName}
+                        onChangeText={setFirstName}
+                        placeholder={t('first_name_placeholder')}
+                        autoFocus
+                      />
                     </View>
                   ) : (
-                    <Pressable
-                      className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                      onPress={() => setIsEditingLastName(true)}>
-                      <Ionicons
-                        name="pencil"
-                        size={16}
-                        color="#4B5563"
-                        className="mr-1"
-                      />
-                      <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                        {t('edit')}
-                      </Text>
-                    </Pressable>
+                    <Text>{firstName || t('not_provided')}</Text>
                   )}
-                </View>
-                {isEditingLastName ? (
-                  <View className="flex-row items-center gap-2">
-                    <CustomTextInput
-                      value={lastName}
-                      onChangeText={setLastName}
-                      placeholder={t('last_name_placeholder')}
-                      autoFocus
-                    />
+                </ThemedView>
+
+                <ThemedView className="rounded-lg p-4">
+                  <View className="flex-row items-center justify-between mb-2">
+                    <Text className="text-lg font-semibold">
+                      {t('last_name')}
+                    </Text>
+                    {isEditingLastName ? (
+                      <View className="flex-row gap-2">
+                        <Pressable
+                          className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
+                          onPress={() =>
+                            handleCancelEdit(
+                              setIsEditingLastName,
+                              setLastName,
+                              user?.lastname ?? '',
+                            )
+                          }>
+                          <Ionicons
+                            name="close"
+                            size={16}
+                            color="#4B5563"
+                            className="mr-1"
+                          />
+                          <Text className="text-gray-600 dark:text-gray-300 text-sm">
+                            {t('cancel')}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
+                          onPress={handleSaveLastName}>
+                          <Ionicons
+                            name="checkmark"
+                            size={16}
+                            color="#fff"
+                            className="mr-1"
+                          />
+                          <Text className="text-white text-sm">
+                            {t('save')}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <Pressable
+                        className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
+                        onPress={() => setIsEditingLastName(true)}>
+                        <Ionicons
+                          name="pencil"
+                          size={16}
+                          color="#4B5563"
+                          className="mr-1"
+                        />
+                        <Text className="text-gray-600 dark:text-gray-300 text-sm">
+                          {t('edit')}
+                        </Text>
+                      </Pressable>
+                    )}
                   </View>
-                ) : (
-                  <Text>{lastName || t('not_provided')}</Text>
-                )}
-              </ThemedView>
-            </>
-          )}
+                  {isEditingLastName ? (
+                    <View className="flex-row items-center gap-2">
+                      <CustomTextInput
+                        value={lastName}
+                        onChangeText={setLastName}
+                        placeholder={t('last_name_placeholder')}
+                        autoFocus
+                      />
+                    </View>
+                  ) : (
+                    <Text>{lastName || t('not_provided')}</Text>
+                  )}
+                </ThemedView>
+              </>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
