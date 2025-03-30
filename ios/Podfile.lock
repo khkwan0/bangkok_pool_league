@@ -1905,6 +1905,15 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNImageCropPicker (0.42.0):
+    - React-Core
+    - React-RCTImage
+    - RNImageCropPicker/QBImagePickerController (= 0.42.0)
+    - TOCropViewController (~> 2.7.4)
+  - RNImageCropPicker/QBImagePickerController (0.42.0):
+    - React-Core
+    - React-RCTImage
+    - TOCropViewController (~> 2.7.4)
   - RNLine (2.2.3):
     - LineSDKSwift (~> 5.8.1)
     - React-Core
@@ -2070,6 +2079,7 @@ PODS:
     - Yoga
   - Sentry/HybridSDK (8.41.0)
   - SocketRocket (0.7.1)
+  - TOCropViewController (2.7.4)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2171,6 +2181,7 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - "RNLine (from `../node_modules/@khkwan0/react-native-line`)"
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -2201,6 +2212,7 @@ SPEC REPOS:
     - PromisesObjC
     - Sentry
     - SocketRocket
+    - TOCropViewController
 
 EXTERNAL SOURCES:
   boost:
@@ -2388,6 +2400,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNImageCropPicker:
+    :path: "../node_modules/react-native-image-crop-picker"
   RNLine:
     :path: "../node_modules/@khkwan0/react-native-line"
   RNNotifee:
@@ -2513,6 +2527,7 @@ SPEC CHECKSUMS:
   RNFBApp: 95c485892e133f40ce74d369b785ea2c9a8033d7
   RNFBMessaging: ea17e8dfd0d1b5ff825b32dcf0ba8061c96bab51
   RNGestureHandler: 1e33ee267aaf61bbab6089d32df3b38c3024e3dd
+  RNImageCropPicker: b0afedeefd8655254a15c34103718455fde6ce59
   RNLine: 62b09d4bd5f01e621b13987eb1412cd9c2d96fae
   RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNReanimated: 23d4dd74e67d9eb5648839dcaabc00be8aba6af4
@@ -2520,6 +2535,7 @@ SPEC CHECKSUMS:
   RNSentry: 901fd20ca2725d3ebe89c5b48fa120cdf629891a
   Sentry: 54d0fe6c0df448497c8ed4cce66ccf7027e1823e
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: d213adae4f2c5518e9b19f919afa25a73848ecfb
 
 PODFILE CHECKSUM: 1bdcfb9d298a5c5d221af7e61c0ed3905b2ad010

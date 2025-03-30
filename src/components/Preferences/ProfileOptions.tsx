@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   View,
@@ -7,7 +8,6 @@ import {
   Platform,
   Keyboard,
   Dimensions,
-  Modal,
 } from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView} from '@/components/ThemedView'
@@ -22,8 +22,8 @@ import {Picker} from '@react-native-picker/picker'
 import Animated, {FadeIn, FadeOut, SlideInDown, SlideOutDown} from 'react-native-reanimated'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {useLeague, useAccount} from '@/hooks'
-import {use} from 'i18next'
-
+import ImagePicker from 'react-native-image-crop-picker'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 interface CountryData {
   name: string
   emoji: string
@@ -53,11 +53,14 @@ export default function ProfileOptions() {
   const [selectedCountry, setSelectedCountry] = useState(
     user?.nationality?.id ?? 0,
   )
+  const [newAvatar, setNewAvatar] = useState<ImagePicker.Image | null>(null)
   const [countries, setCountries] = useState<Country[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isEditingProfilePicture, setIsEditingProfilePicture] = useState(false)
   const league = useLeague()
   const account = useAccount()
+  const [imageError, setImageError] = useState<Error | null>(null)
 
   useMemo(() => {
     if (searchQuery.length > 0) {
@@ -90,6 +93,9 @@ export default function ProfileOptions() {
       console.error(e)
     } finally {
       setIsLoading(false)
+    }
+    return () => {
+      ImagePicker.clean().catch(console.error)
     }
   }, [])
 
@@ -203,7 +209,133 @@ export default function ProfileOptions() {
     Keyboard.dismiss()
   }
 
-  if (isEditingNationality) {
+  async function HandleSaveNewAvatar() {
+    try {
+      const res = await account.SaveAvatar(newAvatar?.path)
+      if (typeof res.status !== 'undefined' && res.status === 'ok') {
+        dispatch({type: 'SET_PROFILE_PICTURE', payload: res.data})
+      }
+    } catch(e) {
+      console.error(e)
+    }
+  }
+
+  function HandleShowPicker(type: 'gallery' | 'camera') {
+    try {
+      let image = null
+      if (type === 'gallery') {
+        const params = {
+          width: 300,
+          height: 300,
+          cropping: true,
+          mediaType: 'photo',
+        }
+        ImagePicker.openPicker(params).then(image => {
+          setNewAvatar(image)
+        })
+      } else {
+        ImagePicker.openCamera({
+          width: 300,
+          height: 300,
+          cropping: true,
+        }).then(image => {
+          setNewAvatar(image)
+        })
+      }
+    } catch(e) {
+      console.error(e)
+      setImageError(e)
+    }
+  }
+
+  if (isEditingProfilePicture) {
+    return (
+      <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
+        <Animated.View 
+          entering={SlideInDown}
+          exiting={SlideOutDown}
+          className="flex-1">
+          <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+            <Pressable
+              onPress={() => setIsEditingProfilePicture(false)}
+              className="p-2">
+              <Ionicons
+                name="close"
+                size={24}
+                color="#4B5563"
+                className="dark:text-gray-300"
+              />
+            </Pressable>
+          </View>
+          <View className="flex-1 items-center justify-center">
+            {newAvatar && (
+              <Image
+                source={{uri: newAvatar.path}}
+                width={200}
+                height={200}
+                resizeMode="contain"
+                style={{borderRadius: 100}}
+              />
+            )}
+            {!newAvatar && user.profile_picture && (
+              <>
+                <Image
+                  source={{uri: config.profileUrl + user.profile_picture}}
+                  width={200}
+                  height={200}
+                  resizeMode="contain"
+                  style={{borderRadius: 100}}
+                />
+              </>
+            )}
+            {!newAvatar && !user.profile_picture && (
+              <View
+                bgColor={colors.profilePicBackground}
+                width={200}
+                height={200}
+                borderRadius={100}
+                alignItems="center"
+                justifyContent="center">
+                <MCI
+                  name="plus-circle-outline"
+                  color={colors.primary}
+                  size={40}
+                />
+                <Text>upload</Text>
+              </View>
+            )}
+            {imageError && (
+              <Text className="text-red-500">{imageError.message}</Text>
+            )}
+            {newAvatar && (
+              <View>
+                <Pressable className="mt-10 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full" onPress={() => setNewAvatar(null)}>
+                  <Text>reset</Text>
+                </Pressable>
+                <Pressable className="mt-10 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full" onPress={() => HandleSaveNewAvatar()}>
+                  <Text>save</Text>
+                </Pressable>
+              </View>
+            )}
+            {!newAvatar && (
+              <View className="mt-10">
+                <Pressable className="my-2 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full" onPress={() => HandleShowPicker('gallery')}>
+                  <Text>
+                    {t('gallery')}
+                  </Text>
+                </Pressable>
+                <Pressable className=" my-2 bg-primary border border-gray-300 dark:border-gray-700 px-6 py-3 rounded-full" onPress={() => HandleShowPicker('camera')}>
+                <Text>
+                  {t('camera')}
+                </Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
+        </Animated.View>
+      </SafeAreaView> 
+    )
+  } else if (isEditingNationality) {
     return (
       <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
         <Animated.View 
@@ -277,261 +409,268 @@ export default function ProfileOptions() {
       </SafeAreaView>
     )
   } else {
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1"
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
-      <ScrollView
-        ref={scrollViewRef}
+    return (
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
-        contentContainerStyle={{paddingBottom: 100}}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}>
-        <View className="p-4">
-          <View className="items-center justify-center mb-8">
-            <Image
-              source={{uri: config.profileUrl + user?.profile_picture}}
-              className="h-32 w-32 rounded-full mb-4"
-            />
-            <Pressable className="bg-primary px-6 py-3 rounded-full">
-              <Text className="text-white font-medium">
-                {t('change_profile_picture')}
-              </Text>
-            </Pressable>
-          </View>
-
-          <ThemedView className="rounded-lg p-4 mb-4">
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-lg font-semibold">{t('nationality')}</Text>
-              <Pressable
-                className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                onPress={() => setIsEditingNationality(true)}>
-                <Ionicons
-                  name="pencil"
-                  size={16}
-                  color="#4B5563"
-                  className="mr-1"
-                />
-                <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                  {t('edit')}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
+        <ScrollView
+          ref={scrollViewRef}
+          className="flex-1"
+          contentContainerStyle={{paddingBottom: 100}}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <View className="p-4">
+            <View className="items-center justify-center mb-8">
+              <Image
+                source={{uri: config.profileUrl + user?.profile_picture}}
+                className="h-32 w-32 rounded-full mb-4"
+              />
+              <Pressable className="bg-primary px-6 py-3 rounded-full" onPress={() => setIsEditingProfilePicture(true)}>
+                <Text className="text-white font-medium">
+                  {t('change_profile_picture')}
                 </Text>
               </Pressable>
             </View>
-            <View className="flex-row items-center gap-2">
-              <Text>{user?.nationality?.name_en ?? t('not_provided')}</Text>
-              <Text className="text-gray-500">
-                {user?.nationality?.name_th ?? ''}
-              </Text>
-              <Text className="text-2xl">
-                {getCountryFlag(
-                  user?.nationality?.iso_3166_1_alpha_2_code ?? '',
+            {isLoading ? (
+              <View className="flex-1 items-center justify-center">
+                <ActivityIndicator size="large" color="#0000ff" />
+              </View>
+            ) : (
+              <>
+                <ThemedView className="rounded-lg p-4 mb-4">
+                  <View className="flex-row items-center justify-between mb-2">
+                    <Text className="text-lg font-semibold">{t('nationality')}</Text>
+                    <Pressable
+                      className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
+                      onPress={() => setIsEditingNationality(true)}>
+                      <Ionicons
+                        name="pencil"
+                        size={16}
+                        color="#4B5563"
+                        className="mr-1"
+                      />
+                      <Text className="text-gray-600 dark:text-gray-300 text-sm">
+                        {t('edit')}
+                      </Text>
+                    </Pressable>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    <Text>{user?.nationality?.name_en ?? t('not_provided')}</Text>
+                    <Text className="text-gray-500">
+                      {user?.nationality?.name_th ?? ''}
+                    </Text>
+                    <Text className="text-2xl">
+                      {getCountryFlag(
+                        user?.nationality?.iso_3166_1_alpha_2_code ?? '',
+                      )}
+                    </Text>
+                  </View>
+                </ThemedView>
+
+
+                <ThemedView className="rounded-lg p-4 mb-4">
+                  <View className="flex-row items-center justify-between mb-2">
+                    <Text className="text-lg font-semibold">{t('nickname')}</Text>
+                    {isEditingNickname ? (
+                      <View className="flex-row gap-2">
+                        <Pressable
+                          className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
+                          onPress={() =>
+                            handleCancelEdit(
+                              setIsEditingNickname,
+                              setNickname,
+                              user?.nickname ?? '',
+                            )
+                          }>
+                          <Ionicons
+                            name="close"
+                            size={16}
+                            color="#4B5563"
+                            className="mr-1"
+                          />
+                          <Text className="text-gray-600 dark:text-gray-300 text-sm">
+                            {t('cancel')}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
+                          onPress={handleSaveNickname}>
+                          <Ionicons
+                            name="checkmark"
+                            size={16}
+                            color="#fff"
+                            className="mr-1"
+                          />
+                          <Text className="text-white text-sm">{t('save')}</Text>
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <Pressable
+                        className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
+                        onPress={() => setIsEditingNickname(true)}>
+                        <Ionicons
+                          name="pencil"
+                          size={16}
+                          color="#4B5563"
+                          className="mr-1"
+                        />
+                        <Text className="text-gray-600 dark:text-gray-300 text-sm">
+                          {t('edit')}
+                        </Text>
+                      </Pressable>
+                    )}
+                  </View>
+                  {isEditingNickname ? (
+                    <View className="flex-row items-center gap-2">
+                      <CustomTextInput
+                        value={nickname}
+                        onChangeText={setNickname}
+                        placeholder={t('nickname_placeholder')}
+                        autoFocus
+                      />
+                    </View>
+                  ) : (
+                    <Text>{nickname || t('not_provided')}</Text>
+                  )}
+                </ThemedView>
+
+                <ThemedView className="rounded-lg p-4 mb-4">
+                  <View className="flex-row items-center justify-between mb-2">
+                    <Text className="text-lg font-semibold">{t('first_name')}</Text>
+                    {isEditingFirstName ? (
+                      <View className="flex-row gap-2">
+                        <Pressable
+                          className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
+                          onPress={() =>
+                            handleCancelEdit(
+                              setIsEditingFirstName,
+                              setFirstName,
+                              user?.firstname ?? '',
+                            )
+                          }>
+                          <Ionicons
+                            name="close"
+                            size={16}
+                            color="#4B5563"
+                            className="mr-1"
+                          />
+                          <Text className="text-gray-600 dark:text-gray-300 text-sm">
+                            {t('cancel')}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
+                          onPress={handleSaveFirstName}>
+                        <Ionicons
+                          name="checkmark"
+                          size={16}
+                          color="#fff"
+                          className="mr-1"
+                        />
+                        <Text className="text-white text-sm">{t('save')}</Text>
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <Pressable
+                      className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
+                      onPress={() => setIsEditingFirstName(true)}>
+                      <Ionicons
+                        name="pencil"
+                        size={16}
+                        color="#4B5563"
+                        className="mr-1"
+                      />
+                      <Text className="text-gray-600 dark:text-gray-300 text-sm">
+                        {t('edit')}
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+                {isEditingFirstName ? (
+                  <View className="flex-row items-center gap-2">
+                    <CustomTextInput
+                      value={firstName}
+                      onChangeText={setFirstName}
+                      placeholder={t('first_name_placeholder')}
+                      autoFocus
+                    />
+                  </View>
+                ) : (
+                  <Text>{firstName || t('not_provided')}</Text>
                 )}
-              </Text>
-            </View>
-          </ThemedView>
+              </ThemedView>
 
-
-          <ThemedView className="rounded-lg p-4 mb-4">
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-lg font-semibold">{t('nickname')}</Text>
-              {isEditingNickname ? (
-                <View className="flex-row gap-2">
-                  <Pressable
-                    className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                    onPress={() =>
-                      handleCancelEdit(
-                        setIsEditingNickname,
-                        setNickname,
-                        user?.nickname ?? '',
-                      )
-                    }>
-                    <Ionicons
-                      name="close"
-                      size={16}
-                      color="#4B5563"
-                      className="mr-1"
-                    />
-                    <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                      {t('cancel')}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
-                    onPress={handleSaveNickname}>
-                    <Ionicons
-                      name="checkmark"
-                      size={16}
-                      color="#fff"
-                      className="mr-1"
-                    />
-                    <Text className="text-white text-sm">{t('save')}</Text>
-                  </Pressable>
+              <ThemedView className="rounded-lg p-4">
+                <View className="flex-row items-center justify-between mb-2">
+                  <Text className="text-lg font-semibold">{t('last_name')}</Text>
+                  {isEditingLastName ? (
+                    <View className="flex-row gap-2">
+                      <Pressable
+                        className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
+                        onPress={() =>
+                          handleCancelEdit(
+                            setIsEditingLastName,
+                            setLastName,
+                            user?.lastname ?? '',
+                          )
+                        }>
+                        <Ionicons
+                          name="close"
+                          size={16}
+                          color="#4B5563"
+                          className="mr-1"
+                        />
+                        <Text className="text-gray-600 dark:text-gray-300 text-sm">
+                          {t('cancel')}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
+                        onPress={handleSaveLastName}>
+                        <Ionicons
+                          name="checkmark"
+                          size={16}
+                          color="#fff"
+                          className="mr-1"
+                        />
+                        <Text className="text-white text-sm">{t('save')}</Text>
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <Pressable
+                      className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
+                      onPress={() => setIsEditingLastName(true)}>
+                      <Ionicons
+                        name="pencil"
+                        size={16}
+                        color="#4B5563"
+                        className="mr-1"
+                      />
+                      <Text className="text-gray-600 dark:text-gray-300 text-sm">
+                        {t('edit')}
+                      </Text>
+                    </Pressable>
+                  )}
                 </View>
-              ) : (
-                <Pressable
-                  className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                  onPress={() => setIsEditingNickname(true)}>
-                  <Ionicons
-                    name="pencil"
-                    size={16}
-                    color="#4B5563"
-                    className="mr-1"
-                  />
-                  <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                    {t('edit')}
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-            {isEditingNickname ? (
-              <View className="flex-row items-center gap-2">
-                <CustomTextInput
-                  value={nickname}
-                  onChangeText={setNickname}
-                  placeholder={t('nickname_placeholder')}
-                  autoFocus
-                />
-              </View>
-            ) : (
-              <Text>{nickname || t('not_provided')}</Text>
-            )}
-          </ThemedView>
-
-          <ThemedView className="rounded-lg p-4 mb-4">
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-lg font-semibold">{t('first_name')}</Text>
-              {isEditingFirstName ? (
-                <View className="flex-row gap-2">
-                  <Pressable
-                    className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                    onPress={() =>
-                      handleCancelEdit(
-                        setIsEditingFirstName,
-                        setFirstName,
-                        user?.firstname ?? '',
-                      )
-                    }>
-                    <Ionicons
-                      name="close"
-                      size={16}
-                      color="#4B5563"
-                      className="mr-1"
+                {isEditingLastName ? (
+                  <View className="flex-row items-center gap-2">
+                    <CustomTextInput
+                      value={lastName}
+                      onChangeText={setLastName}
+                      placeholder={t('last_name_placeholder')}
+                      autoFocus
                     />
-                    <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                      {t('cancel')}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
-                    onPress={handleSaveFirstName}>
-                    <Ionicons
-                      name="checkmark"
-                      size={16}
-                      color="#fff"
-                      className="mr-1"
-                    />
-                    <Text className="text-white text-sm">{t('save')}</Text>
-                  </Pressable>
-                </View>
-              ) : (
-                <Pressable
-                  className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                  onPress={() => setIsEditingFirstName(true)}>
-                  <Ionicons
-                    name="pencil"
-                    size={16}
-                    color="#4B5563"
-                    className="mr-1"
-                  />
-                  <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                    {t('edit')}
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-            {isEditingFirstName ? (
-              <View className="flex-row items-center gap-2">
-                <CustomTextInput
-                  value={firstName}
-                  onChangeText={setFirstName}
-                  placeholder={t('first_name_placeholder')}
-                  autoFocus
-                />
-              </View>
-            ) : (
-              <Text>{firstName || t('not_provided')}</Text>
-            )}
-          </ThemedView>
-
-          <ThemedView className="rounded-lg p-4">
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-lg font-semibold">{t('last_name')}</Text>
-              {isEditingLastName ? (
-                <View className="flex-row gap-2">
-                  <Pressable
-                    className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                    onPress={() =>
-                      handleCancelEdit(
-                        setIsEditingLastName,
-                        setLastName,
-                        user?.lastname ?? '',
-                      )
-                    }>
-                    <Ionicons
-                      name="close"
-                      size={16}
-                      color="#4B5563"
-                      className="mr-1"
-                    />
-                    <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                      {t('cancel')}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
-                    onPress={handleSaveLastName}>
-                    <Ionicons
-                      name="checkmark"
-                      size={16}
-                      color="#fff"
-                      className="mr-1"
-                    />
-                    <Text className="text-white text-sm">{t('save')}</Text>
-                  </Pressable>
-                </View>
-              ) : (
-                <Pressable
-                  className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                  onPress={() => setIsEditingLastName(true)}>
-                  <Ionicons
-                    name="pencil"
-                    size={16}
-                    color="#4B5563"
-                    className="mr-1"
-                  />
-                  <Text className="text-gray-600 dark:text-gray-300 text-sm">
-                    {t('edit')}
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-            {isEditingLastName ? (
-              <View className="flex-row items-center gap-2">
-                <CustomTextInput
-                  value={lastName}
-                  onChangeText={setLastName}
-                  placeholder={t('last_name_placeholder')}
-                  autoFocus
-                />
-              </View>
-            ) : (
-              <Text>{lastName || t('not_provided')}</Text>
-            )}
-          </ThemedView>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  )
+                  </View>
+                ) : (
+                  <Text>{lastName || t('not_provided')}</Text>
+                )}
+              </ThemedView>
+            </>
+          )}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    )
   }
 }
