@@ -247,7 +247,7 @@ export default function ProfileOptions() {
         if (result.assets && result.assets.length > 0) {
           setNewAvatar(result.assets[0])
         }
-      } else {c
+      } else {
         const res = await getCameraPermissions()
         const result = await ImagePicker.launchCameraAsync({
           mediaTypes: ['images'],
