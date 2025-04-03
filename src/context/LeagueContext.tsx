@@ -105,6 +105,12 @@ const LeagueReducer = (state: any, action: any) => {
         user: {...state.user, lastname: action.payload},
       }
     }
+    case 'SET_PROFILE_PICTURE': {
+      return {
+        ...state,
+        user: {...state.user, profile_picture: action.payload},
+      }
+    }
     default:
       return state
   }

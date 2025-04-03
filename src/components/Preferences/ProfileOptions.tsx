@@ -17,13 +17,14 @@ import flags from '@/countries.emoji.json'
 import config from '@/config'
 import {useTranslation} from 'react-i18next'
 import {Ionicons} from '@expo/vector-icons'
-import {useState, useRef, useEffect, useMemo} from 'react'
+import React, {useState, useRef, useEffect, useMemo} from 'react'
 import Animated, {SlideInDown, SlideOutDown} from 'react-native-reanimated'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {useLeague, useAccount} from '@/hooks'
 //import ImagePicker from 'react-native-image-crop-picker'
 import * as ImagePicker from 'expo-image-picker'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {router} from 'expo-router'
 
 interface Country {
   id: number
@@ -64,6 +65,7 @@ export default function ProfileOptions() {
   const league = useLeague()
   const account = useAccount()
   const [imageError, setImageError] = useState<Error | null>(null)
+  const cameraPerms = ImagePicker.useCameraPermissions()
 
   useMemo(() => {
     if (searchQuery.length > 0) {
@@ -108,9 +110,6 @@ export default function ProfileOptions() {
       console.error(e)
     } finally {
       setIsLoading(false)
-    }
-    return () => {
-      ImagePicker.clean().catch(console.error)
     }
   }, [])
 
@@ -226,9 +225,10 @@ export default function ProfileOptions() {
 
   async function HandleSaveNewAvatar() {
     try {
-      const res = await account.SaveAvatar(newAvatar?.path)
+      const res = await account.SaveAvatar(newAvatar?.uri)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
         dispatch({type: 'SET_PROFILE_PICTURE', payload: res.data})
+        router.back()
       }
     } catch (e) {
       console.error(e)
@@ -242,11 +242,13 @@ export default function ProfileOptions() {
           mediaTypes: ['images'],
           allowsEditing: true,
         }
+        const res = await getGalleryPermissions()
         const result = await ImagePicker.launchImageLibraryAsync(params)
         if (result.assets && result.assets.length > 0) {
           setNewAvatar(result.assets[0])
         }
-      } else {
+      } else {c
+        const res = await getCameraPermissions()
         const result = await ImagePicker.launchCameraAsync({
           mediaTypes: ['images'],
           allowsEditing: true,
@@ -259,6 +261,16 @@ export default function ProfileOptions() {
       console.error(e)
       setImageError(e as Error)
     }
+  }
+
+  async function getCameraPermissions() {
+    const res = await ImagePicker.requestCameraPermissionsAsync()
+    console.log(res)
+  }
+
+  async function getGalleryPermissions() {
+    const res = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    console.log(res)
   }
 
   if (isEditingProfilePicture) {
@@ -283,7 +295,7 @@ export default function ProfileOptions() {
           <View className="flex-1 items-center justify-center">
             {newAvatar && (
               <Image
-                source={{uri: newAvatar.path}}
+                source={{uri: newAvatar.uri}}
                 width={200}
                 height={200}
                 resizeMode="contain"
@@ -418,6 +430,7 @@ export default function ProfileOptions() {
       </SafeAreaView>
     )
   } else {
+    console.log(config.profileUrl + user?.profile_picture)
     return (
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
