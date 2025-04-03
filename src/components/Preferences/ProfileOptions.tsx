@@ -21,7 +21,8 @@ import {useState, useRef, useEffect, useMemo} from 'react'
 import Animated, {SlideInDown, SlideOutDown} from 'react-native-reanimated'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {useLeague, useAccount} from '@/hooks'
-import ImagePicker from 'react-native-image-crop-picker'
+//import ImagePicker from 'react-native-image-crop-picker'
+import * as ImagePicker from 'expo-image-picker'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 
 interface Country {
@@ -234,26 +235,25 @@ export default function ProfileOptions() {
     }
   }
 
-  function HandleShowPicker(type: 'gallery' | 'camera') {
+  async function HandleShowPicker(type: 'gallery' | 'camera') {
     try {
       if (type === 'gallery') {
         const params = {
-          width: 300,
-          height: 300,
-          cropping: true,
-          mediaType: 'photo',
+          mediaTypes: ['images'],
+          allowsEditing: true,
         }
-        ImagePicker.openPicker(params).then(image => {
-          setNewAvatar(image)
-        })
+        const result = await ImagePicker.launchImageLibraryAsync(params)
+        if (result.assets && result.assets.length > 0) {
+          setNewAvatar(result.assets[0])
+        }
       } else {
-        ImagePicker.openCamera({
-          width: 300,
-          height: 300,
-          cropping: true,
-        }).then(image => {
-          setNewAvatar(image)
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
         })
+        if (result.assets && result.assets.length > 0) {
+          setNewAvatar(result.assets[0])
+        }
       }
     } catch (e) {
       console.error(e)
