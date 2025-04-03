@@ -426,7 +426,7 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
                 className="flex-row items-center"
                 onPress={() => {
                   router.push({
-                    pathname: '/TeamStats',
+                    pathname: './team/TeamStats',
                     params: {
                       teamIdParams: JSON.stringify({
                         teamId: _teamId,

@@ -54,13 +54,13 @@ const TeamStanding = ({data, idx}) => {
                 ? match.home_frames > match.away_frames
                   ? 'W'
                   : match.home_frames < match.away_frames
-                  ? 'L'
-                  : 'T'
+                    ? 'L'
+                    : 'T'
                 : match.home_frames < match.away_frames
-                ? 'W'
-                : match.home_frames > match.away_frames
-                ? 'L'
-                : 'T'
+                  ? 'W'
+                  : match.home_frames > match.away_frames
+                    ? 'L'
+                    : 'T'
             const vsTeam =
               match.home_team === data.name ? match.away_team : match.home_team
             const homeAway = match.home_team === data.name ? 'Home' : 'Away'
@@ -101,7 +101,7 @@ const TeamStanding = ({data, idx}) => {
   )
 }
 
-const TeamStatisticsHeader = props => {
+const TeamStatisticsHeader = () => {
   return (
     <Row alignItems="center">
       <View style={{flex: 1}}>

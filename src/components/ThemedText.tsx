@@ -1,7 +1,5 @@
 import {Text, type TextProps, StyleSheet} from 'react-native'
 import {useTranslation} from 'react-i18next'
-import {useThemeColor} from '@/hooks/useThemeColor'
-import {useColorScheme} from 'nativewind'
 
 export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link'
@@ -16,8 +14,8 @@ export function ThemedText({
   ...rest
 }: ThemedTextProps) {
   const {t} = useTranslation()
+  const defaultStyles = `${type === 'link' ? 'dark:text-blue-300 text-blue-700' : 'text-slate-700 dark:text-slate-200'}`
 
-  const defaultStyles = 'text-slate-700 dark:text-slate-200'
   let textSize = 'text-md'
   switch (type) {
     case 'default':

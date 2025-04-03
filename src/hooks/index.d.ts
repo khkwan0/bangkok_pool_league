@@ -7,6 +7,16 @@ export interface Country {
   iso_3166_1_alpha_2_code: string
   emoji: string
 }
+
+export interface TeamStats {
+  id: number
+  name: string
+  points: number
+  wins: number
+  losses: number
+  eightBall: []
+  nineBall: []
+}
 export interface League {
   GetStandings(): Promise<DivisionData[]>
   GetCompletedMatchesByTeamId(
@@ -27,6 +37,7 @@ export interface League {
   GetUniquePlayers(): Promise<{data: Player[]}>
   AddPlayerToTeam(playerId: number, teamId: number): Promise<{status: string}>
   GetCountries(): Promise<{status: string; data: Country[]}>
+  GetTeamStats(): Promise<TeamStats>
 }
 export interface Match {
   GetMatchMetadata(matchId: number): Promise<MatchMetadata>

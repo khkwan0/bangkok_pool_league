@@ -1,27 +1,30 @@
 import React from 'react'
-import {useLeague} from '@/hooks'
-import {useNavigation} from '@react-navigation/native'
+import {TeamStats, useLeague} from '@/hooks'
 import Button from '@/components/Button'
-import {ActivityIndicator, Pressable, ScrollView} from 'react-native'
+import {ActivityIndicator, Pressable, ScrollView, View} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {ThemedView as View} from '@/components/ThemedView'
+import {ThemedView as Card} from '@/components/ThemedView'
 import {useTranslation} from 'react-i18next'
 import Row from '@/components/Row'
 import {t} from 'i18next'
+import {useRouter, useNavigation} from 'expo-router'
 
 const TeamStanding = ({data, idx}) => {
   const [showMore, setShowMore] = React.useState(false)
-  const navigation = useNavigation()
   const {t} = useTranslation()
+  const router = useRouter()
 
-  function HandleMatchPress(matchId) {
-    navigation.navigate('Statistics Match Screen', {matchId: matchId})
+  function HandleMatchPress(matchId: number) {
+    router.push({
+      pathname: '/statistics/MatchScreen',
+      params: {matchId: matchId},
+    })
   }
 
   return (
     <>
       <Pressable onPress={() => setShowMore(s => !s)} className="py-2">
-        <Row alignItems="center">
+        <Card className="flex-row p-4 rounded-lg">
           <View style={{flex: 1}}>
             <Text>{idx + 1}</Text>
           </View>
@@ -31,17 +34,17 @@ const TeamStanding = ({data, idx}) => {
             </View>
           </View>
           <View style={{flex: 1}}>
-            <Text>{data.points}</Text>
+            <Text className="text-center">{data.points}</Text>
           </View>
           <View style={{flex: 1}}>
-            <Text>
+            <Text className="text-center">
               {data.won}:{data.lost}
             </Text>
           </View>
           <View style={{flex: 1}}>
-            <Text>{data.frames}</Text>
+            <Text className="text-center">{data.frames}</Text>
           </View>
-        </Row>
+        </Card>
       </Pressable>
       <View>
         {showMore &&
@@ -51,13 +54,13 @@ const TeamStanding = ({data, idx}) => {
                 ? match.home_frames > match.away_frames
                   ? 'W'
                   : match.home_frames < match.away_frames
-                  ? 'L'
-                  : 'T'
+                    ? 'L'
+                    : 'T'
                 : match.home_frames < match.away_frames
-                ? 'W'
-                : match.home_frames > match.away_frames
-                ? 'L'
-                : 'T'
+                  ? 'W'
+                  : match.home_frames > match.away_frames
+                    ? 'L'
+                    : 'T'
             const vsTeam =
               match.home_team === data.name ? match.away_team : match.home_team
             const homeAway = match.home_team === data.name ? 'Home' : 'Away'
@@ -67,7 +70,9 @@ const TeamStanding = ({data, idx}) => {
                 onPress={() => HandleMatchPress(match.match_id)}>
                 <Row className="px-4 py-2">
                   <View style={{flex: 2}}>
-                    <Text>{`vs ${vsTeam} (${homeAway})`}</Text>
+                    <Text
+                      type="link"
+                      className="text-lg">{`vs ${vsTeam} (${homeAway})`}</Text>
                   </View>
                   <View style={{flex: 1}}>
                     <Text>{result}</Text>
@@ -76,47 +81,51 @@ const TeamStanding = ({data, idx}) => {
               </Pressable>
             )
           })}
-        {showMore && (
+        
+        {/*showMore && (
           <Button
             className="py-2"
             onPress={() =>
-              navigation.navigate('Team Internal', {
-                teamId: data.teamId,
-                teamName: data.name,
+              router.push({
+                pathname: '/Statistics/TeamInternal',
+                params: {
+                  teamId: data.teamId,
+                  teamName: data.name,
+                },
               })
             }>
             {t('internal_stats')}
           </Button>
-        )}
+        )*/}
       </View>
     </>
   )
 }
 
-const TeamStatisticsHeader = props => {
+const TeamStatisticsHeader = () => {
   return (
-    <Row alignItems="center">
+    <View className="flex-row px-4">
       <View style={{flex: 1}}>
-        <Text bold>Rank</Text>
+        <Text className="text-left">Rank</Text>
       </View>
       <View style={{flex: 3}}>
-        <Text bold>Team</Text>
+        <Text className="text-left">Team</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text bold>Pts</Text>
+        <Text className="text-center">Pts</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text bold>W/L</Text>
+        <Text className="text-center">W/L</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text bold>Frames</Text>
+        <Text className="text-center">Frames</Text>
       </View>
-    </Row>
+    </View>
   )
 }
 const TeamStatistics = () => {
   const league = useLeague()
-  const [stats, setStats] = React.useState({})
+  const [stats, setStats] = React.useState<TeamStats>({})
   const [isLoading, setIsLoading] = React.useState(false)
   const navigation = useNavigation()
 
