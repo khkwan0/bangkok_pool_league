@@ -338,5 +338,8 @@
   "profile": "Profile",
   "change_profile_picture": "Change Profile Picture",
   "select_country": "Select Country",
-  "search_countries": "Search countries"
+  "search_countries": "Search countries",
+  "wins": "Wins",
+  "losses": "Losses",
+  "ties": "Ties"
 }

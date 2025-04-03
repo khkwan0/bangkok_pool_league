@@ -44,6 +44,7 @@ export interface Teams {
     teamId: number,
     playerId: number,
   ): Promise<{status: string}>
+  GetTeamStats(teamId: number): Promise<TeamStats>
 }
 
 export interface Account {

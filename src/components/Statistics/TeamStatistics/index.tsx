@@ -1,6 +1,6 @@
 import React from 'react'
 import {useLeague} from '@/hooks'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation, useRouter} from 'expo-router'
 import Button from '@/components/Button'
 import {ActivityIndicator, Pressable, ScrollView} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
@@ -11,11 +11,14 @@ import {t} from 'i18next'
 
 const TeamStanding = ({data, idx}) => {
   const [showMore, setShowMore] = React.useState(false)
-  const navigation = useNavigation()
+  const router = useRouter()
   const {t} = useTranslation()
 
   function HandleMatchPress(matchId) {
-    navigation.navigate('Statistics Match Screen', {matchId: matchId})
+    router.push({
+      pathname: '/Statistics/MatchScreen',
+      params: {matchId: matchId},
+    })
   }
 
   return (
@@ -80,9 +83,14 @@ const TeamStanding = ({data, idx}) => {
           <Button
             className="py-2"
             onPress={() =>
-              navigation.navigate('Team Internal', {
-                teamId: data.teamId,
-                teamName: data.name,
+              router.push({
+                pathname: '/TeamStats',
+                params: {
+                  teamIdParams: JSON.stringify({
+                    teamId: data.teamId,
+                    teamName: data.name,
+                  }),
+                },
               })
             }>
             {t('internal_stats')}
@@ -97,24 +105,25 @@ const TeamStatisticsHeader = props => {
   return (
     <Row alignItems="center">
       <View style={{flex: 1}}>
-        <Text bold>Rank</Text>
+        <Text type="subtitle">Rank</Text>
       </View>
       <View style={{flex: 3}}>
-        <Text bold>Team</Text>
+        <Text type="subtitle">Team</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text bold>Pts</Text>
+        <Text type="subtitle">Pts</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text bold>W/L</Text>
+        <Text type="subtitle">W/L</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text bold>Frames</Text>
+        <Text type="subtitle">Frames</Text>
       </View>
     </Row>
   )
 }
-const TeamStatistics = () => {
+
+export default function TeamStatistics() {
   const league = useLeague()
   const [stats, setStats] = React.useState({})
   const [isLoading, setIsLoading] = React.useState(false)
@@ -181,5 +190,3 @@ const TeamStatistics = () => {
     )
   }
 }
-
-export default TeamStatistics

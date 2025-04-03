@@ -11,7 +11,7 @@ import {
 import React from 'react'
 import {useMatchContext} from '@/context/MatchContext'
 import {useMatch} from '@/hooks/useMatch'
-import {useLocalSearchParams} from 'expo-router'
+import {router, useLocalSearchParams} from 'expo-router'
 import Divider from '@/components/Divider'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useNavigation} from '@react-navigation/native'
@@ -33,7 +33,11 @@ export default function ScoreSheet() {
   const [refreshing, setRefreshing] = React.useState(false)
 
   React.useEffect(() => {
-    navigation.setOptions({title: '#' + matchInfo.match_id})
+    if (typeof matchInfo.match_id !== 'undefined') {
+      navigation.setOptions({title: '#' + matchInfo.match_id})
+    } else {
+      router.back()
+    }
   }, [])
 
   React.useEffect(() => {
@@ -43,7 +47,6 @@ export default function ScoreSheet() {
         appState.current.match(/inactive|background/) &&
         nextAppState === 'active'
       ) {
-        console.log('App has come to the foreground from background state')
         // Refresh match data when app comes back to foreground
         GetFrames()
         GetFirstBreak()
@@ -148,7 +151,7 @@ export default function ScoreSheet() {
 
       setIsMounted(true)
     } catch (e) {
-      console.log(e)
+      console.error(e)
     } finally {
       setRefreshing(false)
     }

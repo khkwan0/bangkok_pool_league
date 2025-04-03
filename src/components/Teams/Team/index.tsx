@@ -422,7 +422,29 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
               <Text type="subtitle" className="text-xl">
                 {teamData.name}
               </Text>
-              <Text>#{teamData.id}</Text>
+              <Pressable
+                className="flex-row items-center"
+                onPress={() => {
+                  router.push({
+                    pathname: '/TeamStats',
+                    params: {
+                      teamIdParams: JSON.stringify({
+                        teamId: _teamId,
+                        teamName: teamData.name,
+                      }),
+                    },
+                  })
+                }}>
+                <Text className="text-gray-600 dark:text-gray-400 text-lg">
+                  #{teamData.id}
+                </Text>
+                <MCI
+                  className="ml-2"
+                  name="chart-bar"
+                  size={30}
+                  color={colorScheme === 'dark' ? 'white' : 'black'}
+                />
+              </Pressable>
             </View>
             {isOnTeam && (
               <Pressable
