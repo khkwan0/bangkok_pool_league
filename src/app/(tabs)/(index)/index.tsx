@@ -296,6 +296,24 @@ export default function UpcomingMatches(props: any) {
     }
   }, [])
 
+  const renderItem = React.useCallback(
+    ({item, index}: {item: any; index: number}) => {
+      if (typeof item.ad_spot !== 'undefined' && item.ad_spot) {
+        return <AdSpot item={item} />
+      } else {
+        return (
+          <MatchCard
+            matchInfo={item}
+            idx={index}
+            handlePress={HandlePress}
+            showMineOnly={showMineOnly}
+          />
+        )
+      }
+    },
+    [showMineOnly],
+  )
+
   if (isMounted) {
     return (
       <View className="flex-1">
@@ -412,6 +430,7 @@ export default function UpcomingMatches(props: any) {
               }
             }}
             data={fixtures}
+            /*
             renderItem={({item, index}) => {
               if (typeof item.ad_spot !== 'undefined' && item.ad_spot) {
                 return <AdSpot item={item} />
@@ -426,6 +445,8 @@ export default function UpcomingMatches(props: any) {
                 )
               }
             }}
+            */
+            renderItem={renderItem}
           />
         )}
         {needsUpdate && (

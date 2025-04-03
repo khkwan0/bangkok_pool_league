@@ -107,7 +107,7 @@ export default function AdSpot(props: any) {
           <View>
             <Text>{message}</Text>
           </View>
-          {image && (
+          {image && showFull && (
             <Image
               resizeMode="contain"
               source={{uri: image}}
