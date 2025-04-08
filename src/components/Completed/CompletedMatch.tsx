@@ -63,7 +63,7 @@ export default function CompletedMatch({item}: CompletedMatchProps) {
           <View className="flex-1 items-center">
             <Text
               type="subtitle"
-              className={`mb-1`}
+              className={`mb-1 text-center`}
               style={isHomeWinner ? {color: isDark ? '#0f0' : '00f'} : {}}>
               {item.home_team_name}
             </Text>
@@ -79,7 +79,7 @@ export default function CompletedMatch({item}: CompletedMatchProps) {
           <View className="flex-1 items-center">
             <Text
               type="subtitle"
-              className={`mb-1`}
+              className={`mb-1 text-center`}
               style={!isHomeWinner ? {color: isDark ? '#0f0' : '#00f'} : {}}>
               {item.away_team_name}
             </Text>

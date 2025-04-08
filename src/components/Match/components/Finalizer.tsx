@@ -24,13 +24,17 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
     try {
       setLoading(true)
       if (
-        (state.user.teams?.includes(matchInfo.home_team_id) ||
+        (state.user.teams?.some(
+          (team: {id: number}) => team.id === matchInfo.home_team_id,
+        ) ||
           state.user.role_id === 9) &&
         side === 'home'
       ) {
         FinalizeMatch(side, matchInfo.home_team_id)
       } else if (
-        (state.user.teams?.includes(matchInfo.away_team_id) ||
+        (state.user.teams?.some(
+          (team: {id: number}) => team.id === matchInfo.away_team_id,
+        ) ||
           state.user.role_id === 9) &&
         side === 'away'
       ) {
