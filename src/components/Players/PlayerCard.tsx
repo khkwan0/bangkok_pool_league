@@ -11,7 +11,7 @@ export default function PlayerCard({player}: {player: Player}) {
 
   function HandlePlayerPress() {
     router.push({
-      pathname: `/Settings/Players/Player`,
+      pathname: `/Settings/Players/player`,
       params: {params: JSON.stringify({playerId: player.player_id})},
     })
   }

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react'
+import {useState, useEffect, useRef} from 'react'
 import {
   View,
   TextInput,
@@ -69,6 +69,7 @@ export default function LoginAsOtherUser() {
       const response = await league.GetAllPlayers()
       if (response && Array.isArray(response.data)) {
         const userData = response.data as UserType[]
+        console.log(userData)
         setUsers(userData)
         trie.current.addAll(userData)
       }
