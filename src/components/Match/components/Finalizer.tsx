@@ -20,25 +20,33 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
   const homeStyle = `bg-red-400 dark:bg-red-600 mx-4 p-4 item-center rounded-lg`
   const awayStyle = `bg-blue-400 dark:bg-blue-600 mx-4 p-4 item-center rounded-lg`
 
+  async function CanFinalize(side: string) {
+    if (state.user.role_id === 9) {
+      return true
+    }
+    console.log(matchState)
+  }
   async function HandleFinalize(side: string) {
     try {
-      setLoading(true)
-      if (
-        (state.user.teams?.some(
-          (team: {id: number}) => team.id === matchInfo.home_team_id,
-        ) ||
-          state.user.role_id === 9) &&
-        side === 'home'
-      ) {
-        FinalizeMatch(side, matchInfo.home_team_id)
-      } else if (
-        (state.user.teams?.some(
-          (team: {id: number}) => team.id === matchInfo.away_team_id,
-        ) ||
-          state.user.role_id === 9) &&
-        side === 'away'
-      ) {
-        FinalizeMatch(side, matchInfo.away_team_id)
+      if (await CanFinalize(side)) {
+        setLoading(true)
+        if (
+          (state.user.teams?.some(
+            (team: {id: number}) => team.id === matchInfo.home_team_id,
+          ) ||
+            state.user.role_id === 9) &&
+          side === 'home'
+        ) {
+          FinalizeMatch(side, matchInfo.home_team_id)
+        } else if (
+          (state.user.teams?.some(
+            (team: {id: number}) => team.id === matchInfo.away_team_id,
+          ) ||
+            state.user.role_id === 9) &&
+          side === 'away'
+        ) {
+          FinalizeMatch(side, matchInfo.away_team_id)
+        }
       }
     } catch (e) {
       console.log(e)
@@ -51,13 +59,17 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
     try {
       setLoading(true)
       if (
-        (state.user.teams?.includes(matchInfo.home_team_id) ||
+        (state.user.teams?.some(
+          (team: {id: number}) => team.id === matchInfo.home_team_id,
+        ) ||
           state.user.role_id === 9) &&
         side === 'home'
       ) {
         UnfinalizeMatch(side, matchInfo.home_team_id)
       } else if (
-        (state.user.teams?.includes(matchInfo.away_team_id) ||
+        (state.user.teams?.some(
+          (team: {id: number}) => team.id === matchInfo.away_team_id,
+        ) ||
           state.user.role_id === 9) &&
         side === 'away'
       ) {
