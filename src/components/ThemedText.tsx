@@ -1,4 +1,4 @@
-import {Text, type TextProps, StyleSheet} from 'react-native'
+import {Text, type TextProps, StyleSheet, Platform} from 'react-native'
 import {useTranslation} from 'react-i18next'
 
 export type ThemedTextProps = TextProps & {
@@ -28,7 +28,7 @@ export function ThemedText({
       textSize = `text-lg font-semibold`
       break
     case 'subtitle':
-      textSize = `text-lg font-bold`
+      textSize = Platform.OS === 'ios' ? `text-2xl font-bold` : `text-lg font-bold`
       break
     case 'link':
       textSize = `text-lg`
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: Platform.OS === 'ios' ? 28 : 20,
     fontWeight: 'bold',
   },
   link: {
