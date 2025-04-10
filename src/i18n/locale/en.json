@@ -342,5 +342,6 @@
   "search_countries": "Search countries",
   "wins": "Wins",
   "losses": "Losses",
-  "ties": "Ties"
+  "ties": "Ties",
+  "match_not_finalizable": "Match not finalizable.  Check the frame details"
 }

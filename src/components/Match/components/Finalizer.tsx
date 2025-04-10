@@ -25,34 +25,37 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
       // return true
     }
     let validCount = 0
+    let frameCount = 0
     matchState.frameData.forEach((frame: any) => {
-      console.log(frame)
-      // singles
-      if (
-        typeof frame.type === 'string' &&
-        frame.type[frame.type.length - 1] === 's'
-      ) {
+      if (frame.frameNumber !== -1) {
+        frameCount++
+        // singles
         if (
-          frame.awayPlayerIds.length === 1 &&
-          frame.homePlayerIds.length === 1 &&
-          frame.winner > 0
+          typeof frame.type === 'string' &&
+          frame.type[frame.type.length - 1] === 's'
         ) {
-          validCount++
-        }
-      } else if (
-        typeof frame.type === 'string' &&
-        frame.type[frame.type.length - 1] === 'd'
-      ) {
-        if (
-          frame.awayPlayerIds.length === 2 &&
-          frame.homePlayerIds.length === 2 &&
-          frame.winner > 0
+          if (
+            frame.awayPlayerIds.length === 1 &&
+            frame.homePlayerIds.length === 1 &&
+            frame.winner > 0
+          ) {
+            validCount++
+          }
+        } else if (
+          typeof frame.type === 'string' &&
+          frame.type[frame.type.length - 1] === 'd'
         ) {
-          validCount++
+          if (
+            frame.awayPlayerIds.length === 2 &&
+            frame.homePlayerIds.length === 2 &&
+            frame.winner > 0
+          ) {
+            validCount++
+          }
         }
       }
     })
-    return validCount === matchState.frameData.length
+    return validCount === frameCount
   }
   async function HandleFinalize(side: string) {
     try {

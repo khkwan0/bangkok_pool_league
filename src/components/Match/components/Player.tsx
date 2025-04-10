@@ -38,6 +38,7 @@ export default function Player({
   const textColor = 'rgb(107, 33, 168)'
   const pressedTextColor = 'red'
   const [isPressed, setIsPressed] = useState(false)
+  const [isDoublePressed, setIsDoublePressed] = useState(false)
   const {state: playerState}: any = useLeagueContext()
   const user = playerState.user
 
@@ -69,6 +70,14 @@ export default function Player({
     setIsPressed(false)
   }
 
+  const handleDoublePressIn = () => {
+    setIsDoublePressed(true)
+  }
+
+  const handleDoublePressOut = () => {
+    setIsDoublePressed(false)
+  }
+
   const handlePlayerSlotPress = () => {
     if (typeof user?.id !== 'undefined') {
       if (isPlayerOnTeam()) {
@@ -82,6 +91,7 @@ export default function Player({
               frameNumber: frameNumber,
               frameType: frameType,
               slot: 0,
+              mfpp: state.matchInfo.initialFrames[frameIndex].mfpp,
             }),
           },
         })
@@ -175,8 +185,8 @@ export default function Player({
             asChild>
             <Pressable
               className="pt-6"
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}>
+              onPressIn={handleDoublePressIn}
+              onPressOut={handleDoublePressOut}>
               <Row
                 alignItems="center"
                 justifyContent="center"
@@ -187,7 +197,7 @@ export default function Player({
                       <Text
                         type="subtitle"
                         style={{
-                          color: isPressed ? pressedTextColor : textColor,
+                          color: isDoublePressed ? pressedTextColor : textColor,
                         }}>
                         {state?.teams?.[teamId]?.[playerIds[1]]?.nickname ?? ''}
                       </Text>
@@ -199,11 +209,13 @@ export default function Player({
                     <MCI
                       name="plus-circle"
                       size={playerPlusIconSize}
-                      color={isPressed ? pressedTextColor : textColor}
+                      color={isDoublePressed ? pressedTextColor : textColor}
                     />
                     <Text
                       type="subtitle"
-                      style={{color: isPressed ? pressedTextColor : textColor}}>
+                      style={{
+                        color: isDoublePressed ? pressedTextColor : textColor,
+                      }}>
                       {t('player')}
                     </Text>
                   </>

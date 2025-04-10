@@ -39,6 +39,7 @@ export type FrameType = {
   awayScore: number
   type?: string
   frameIdx?: number
+  frameIndex?: number
   goldenBreak?: boolean
 }
 

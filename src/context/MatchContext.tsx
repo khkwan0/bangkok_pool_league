@@ -357,6 +357,7 @@ export const MatchProvider = (props: any) => {
       playerIdx: slot,
       newPlayer: newPlayer,
       frameType: frameType,
+      mfpp: state.matchInfo.initialFrames[frameIdx].mfpp,
     }
     SocketSend('players', data)
   }
@@ -374,14 +375,13 @@ export const MatchProvider = (props: any) => {
     winnerTeamId: string,
     goldenBreak: boolean,
   ) {
-    console.log('UpdateFrameWin', side, frameIdx, winnerTeamId, goldenBreak)
     const mfpp = state.matchInfo.initialFrames[frameIdx].mfpp
     const frame = state.frameData[frameIdx]
     const awayPlayerCount = frame.awayPlayerIds.length
     const homePlayerCount = frame.homePlayerIds.length
     const playerIds =
       side === 'home' ? frame.homePlayerIds : frame.awayPlayerIds
-//    if (awayPlayerCount === mfpp && homePlayerCount === mfpp) {
+    if (awayPlayerCount === mfpp && homePlayerCount === mfpp) {
       const data = {
         side: side,
         matchId: parseInt(state.matchInfo.match_id),
@@ -392,7 +392,7 @@ export const MatchProvider = (props: any) => {
         goldenBreak: goldenBreak,
       }
       SocketSend('win', data)
- //   }
+    }
   }
 
   function ClearFrameWinner(frameIdx: number) {

@@ -28,7 +28,11 @@ export default function WinButton({
   const [showConfirmUndo, setShowConfirmUndo] = React.useState(false)
   const {t} = useTranslation()
   const colorScheme = useColorScheme()
+  const [isPressed, setIsPressed] = React.useState(false)
 
+  React.useEffect(() => {
+    setIsPressed(false)
+  }, [winner])
   return (
     <>
       {showConfirm && (
@@ -76,8 +80,10 @@ export default function WinButton({
       )}
       {winner !== teamId && !winner && (
         <Pressable
-          className="p-2 border rounded-xl"
+          className={`p-2 border rounded-xl ${isPressed ? 'bg-blue-500' : ''}`}
           style={{borderColor: borderColor}}
+          onPressIn={() => setIsPressed(true)}
+          onPressOut={() => setIsPressed(false)}
           onLongPress={() => HandleWin(side, true)}
           onPress={() => HandleWin(side)}>
           <Text type="subtitle">{t('win').toUpperCase()}</Text>

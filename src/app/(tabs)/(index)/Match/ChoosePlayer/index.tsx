@@ -9,12 +9,13 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {Link, router} from 'expo-router'
 import {useThemeColor} from '@/hooks/useThemeColor'
+import {userInteractionIntegration} from '@sentry/react-native'
 
 export default function ChoosePlayer(props: any) {
   const {params} = useLocalSearchParams()
   const {state}: any = useMatchContext()
   const navigation = useNavigation()
-  const {teamId, side, frameIndex, frameNumber, frameType, slot} = JSON.parse(
+  const {teamId, side, frameIndex, frameNumber, frameType, slot, mfpp} = JSON.parse(
     params as string,
   )
 
@@ -83,7 +84,11 @@ export default function ChoosePlayer(props: any) {
           }
         })
         const mfpp = state.matchInfo.initialFrames[frameIndex].mfpp
-        if (count >= mfpp) {
+        if (
+          count >= mfpp ||
+          state.frameData[frameIndex].homePlayerIds.includes(item.playerId) ||
+          state.frameData[frameIndex].awayPlayerIds.includes(item.playerId)
+        ) {
           disabled = true
         }
         return (
@@ -95,6 +100,7 @@ export default function ChoosePlayer(props: any) {
             frameType={frameType as string}
             slot={slot}
             disabled={disabled}
+            mfpp={mfpp}
           />
         )
       }}

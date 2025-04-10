@@ -1,13 +1,11 @@
 import {ThemedText as Text} from './ThemedText'
 import Row from './Row'
 import {useMatchContext} from '@/context/MatchContext'
-import {useColorScheme, Image, View} from 'react-native'
+import {useColorScheme, Image, View, Pressable} from 'react-native'
 import {router} from 'expo-router'
-import Button from './Button'
 import config from '@/config'
 import {useTeams} from '@/hooks'
 import React from 'react'
-import {setGestureState} from 'react-native-reanimated'
 
 type PlayerCardPropsType = {
   frameIndex: number
@@ -20,6 +18,7 @@ type PlayerCardPropsType = {
   abbrevFirst?: boolean
   abbrevLast?: boolean
   isExisting?: boolean
+  mfpp: number
 }
 export default function PlayerCard({
   frameIndex,
@@ -32,6 +31,7 @@ export default function PlayerCard({
   abbrevFirst = true,
   abbrevLast = true,
   isExisting = false,
+  mfpp,
 }: PlayerCardPropsType) {
   const {UpdateFramePlayers, UpdateTeams}: any = useMatchContext()
   const [stats, setStats] = React.useState({
@@ -42,6 +42,7 @@ export default function PlayerCard({
     d_played: 0,
     d_wins: 0,
   })
+  const [isPressed, setIsPressed] = React.useState(false)
   const teams = useTeams()
   const {state}: any = useMatchContext()
 
@@ -66,6 +67,7 @@ export default function PlayerCard({
         newPlayer,
         frameType,
         frameNumber,
+        mfpp,
       )
       /*
     dispatch({
@@ -172,9 +174,14 @@ export default function PlayerCard({
             )}
         </View>
         <View style={{flex: 1, alignItems: 'flex-end'}}>
-          <Button onPress={HandlePress} disabled={disabled}>
-            select
-          </Button>
+          <Pressable
+            onPressIn={() => setIsPressed(true)}
+            onPressOut={() => setIsPressed(false)}
+            onPress={HandlePress}
+            disabled={disabled}
+            className={`p-4 rounded-md ${isPressed ? 'bg-red-500' : disabled ? 'bg-blue-400' : 'bg-blue-800'}`}>
+            <Text>select</Text>
+          </Pressable>
         </View>
       </Row>
       <View>

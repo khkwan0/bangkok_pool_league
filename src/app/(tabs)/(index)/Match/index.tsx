@@ -139,8 +139,8 @@ export default function ScoreSheet() {
       if (typeof res?.data?.frames !== 'undefined') {
         const _frames = res.data.frames
         _frames.forEach((frame: FrameType) => {
-          if (typeof frame.frameIdx === 'number') {
-            __frames[frame.frameIdx] = frame
+          if (typeof frame.frameIndex === 'number') {
+            __frames[frame.frameIndex] = frame
           }
         })
       }
