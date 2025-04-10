@@ -1,5 +1,5 @@
 import React from 'react'
-import {Modal, Pressable} from 'react-native'
+import {Modal, Pressable, Platform} from 'react-native'
 import {ThemedView as View} from './ThemedView'
 import {ThemedText as Text} from './ThemedText'
 import Button from './Button'
@@ -28,8 +28,21 @@ export default function ConfirmDialog({
       transparent={true}
       visible={isVisible}
       onRequestClose={onCancel}>
-      <View className="flex-1 justify-center items-center bg-black/50">
-        <View className="m-5 p-5 rounded-lg bg-white dark:bg-gray-800 w-4/5">
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          ...(Platform.OS === 'android' && {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }),
+        }}>
+        <View className="p-5 rounded-lg bg-white dark:bg-gray-800 w-4/5">
           <Text type="defaultSemiBold" className="text-lg mb-2">
             {title}
           </Text>
