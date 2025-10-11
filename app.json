@@ -1,0 +1,76 @@
+{
+  "expo": {
+    "name": "bangkok_pool_league",
+    "slug": "bangkok_pool_league",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/images/icon.png",
+    "scheme": "bangkokpoolleague",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "entitlements": {
+        "aps-environment": "production"
+      },
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bangkok-pool-league",
+      "googleServicesFile": "./GoogleService-Info.plist"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.bangkok_pool_league",
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io",
+          "organization": "bangkok-pool-league",
+          "project": "bangkok-pool-league"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./src/assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
+          }
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "forceStaticLinking": ["RNFBApp", "RNFBMessaging"]
+          }
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      "@xmartlabs/react-native-line"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
