@@ -1,9 +1,8 @@
 import Expo
-import FirebaseCore
 // @generated begin import - expo prebuild (DO NOT MODIFY) sync-1d1499fda4cd7fa3e3032ec9068f7c016102cf83
 import react_native_line
 // @generated end import
-import Firebase
+import FirebaseCore
 import React
 import ReactAppDependencyProvider
 
