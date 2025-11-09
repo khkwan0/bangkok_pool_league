@@ -1,13 +1,13 @@
 import Row from '@/components/Row'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {useMatchContext} from '@/context/MatchContext'
-import {router} from 'expo-router'
-import {Alert, Pressable, View as RNView} from 'react-native'
-import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useTranslation} from 'react-i18next'
-import {useState} from 'react'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {useMatchContext} from '@/context/MatchContext'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import * as Haptics from 'expo-haptics'
+import {router} from 'expo-router'
+import {useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import {Alert, Pressable, View as RNView} from 'react-native'
 
 interface PlayerProps {
   teamId: number | string
@@ -58,7 +58,7 @@ export default function Player({
       const playerList = []
       playerList.push(...Object.keys(state.teams[awayTeamId]))
       playerList.push(...Object.keys(state.teams[homeTeamId]))
-      const isOnATeam = playerList.includes(user.id.toString())
+      const isOnATeam = playerList.includes(user.id.toString()) || user.role_id === 9
       return isOnATeam
     } catch (e) {
       console.error(e)

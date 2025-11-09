@@ -1,5 +1,5 @@
-import {createContext, useContext, useReducer, useEffect} from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import {createContext, useContext, useEffect, useReducer} from 'react'
 interface User {
   id?: number
   role_id?: number
@@ -11,6 +11,7 @@ interface User {
   firstname?: string
   lastname?: string
   language?: string
+  email?: string
   nationality?: {
     id: number
     name_en: string

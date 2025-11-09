@@ -1,23 +1,22 @@
+import Row from '@/components/Row'
+import {ThemedText as Text} from '@/components/ThemedText'
+import config from '@/config'
+import {LeagueContextType, useLeagueContext} from '@/context/LeagueContext'
+import {useLeague, useTeams} from '@/hooks'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {useIsFocused, useNavigation} from '@react-navigation/native'
+import {useRouter} from 'expo-router'
 import React from 'react'
+import {useTranslation} from 'react-i18next'
 import {
+  Alert,
   FlatList,
   Image,
-  Pressable,
-  Alert,
   Modal,
+  Pressable,
   View,
   useColorScheme,
 } from 'react-native'
-import {ThemedView as CardView} from '@/components/ThemedView'
-import {ThemedText as Text} from '@/components/ThemedText'
-import {useTeams, useLeague} from '@/hooks'
-import config from '@/config'
-import Row from '@/components/Row'
-import {useTranslation} from 'react-i18next'
-import {useLeagueContext, LeagueContextType} from '@/context/LeagueContext'
-import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useIsFocused, useNavigation} from '@react-navigation/native'
-import {useRouter, useLocalSearchParams} from 'expo-router'
 
 type PlayerType = {
   nickname: string
@@ -460,7 +459,7 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
                 </View>
               </Pressable>
             </View>
-            {isOnTeam && (
+            {(isOnTeam || isAdmin) && (
               <Pressable
                 onPressIn={() => setIsAddingPlayer(true)}
                 onPressOut={() => setIsAddingPlayer(false)}

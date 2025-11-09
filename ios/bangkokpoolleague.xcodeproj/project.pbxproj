@@ -20,7 +20,7 @@
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* bangkokpoolleague.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = bangkokpoolleague.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = bangkokpoolleague/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = bangkokpoolleague/Info.plist; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* 	.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "\t.plist"; path = "bangkokpoolleague/\t.plist"; sourceTree = "<group>"; };
 		228351629C15C5977CBFF033 /* Pods-bangkokpoolleague.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-bangkokpoolleague.release.xcconfig"; path = "Target Support Files/Pods-bangkokpoolleague/Pods-bangkokpoolleague.release.xcconfig"; sourceTree = "<group>"; };
 		4822AE1212988A4F516978C5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = bangkokpoolleague/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		53D260A298CC14E646CAF9CB /* Pods_bangkokpoolleague.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_bangkokpoolleague.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -53,7 +53,7 @@
 				F11748442D0722820044C1D9 /* bangkokpoolleague-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
-				13B07FB61A68108700A75B9A /* Info.plist */,
+				13B07FB61A68108700A75B9A /* 	.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
 				621E1F00E55848DC81703746 /* GoogleService-Info.plist */,
 				4822AE1212988A4F516978C5 /* PrivacyInfo.xcprivacy */,
@@ -420,7 +420,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bangkok-pool-league";
-				PRODUCT_NAME = "bangkokpoolleague";
+				PRODUCT_NAME = bangkokpoolleague;
 				SWIFT_OBJC_BRIDGING_HEADER = "bangkokpoolleague/bangkokpoolleague-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -453,7 +453,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bangkok-pool-league";
-				PRODUCT_NAME = "bangkokpoolleague";
+				PRODUCT_NAME = bangkokpoolleague;
 				SWIFT_OBJC_BRIDGING_HEADER = "bangkokpoolleague/bangkokpoolleague-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

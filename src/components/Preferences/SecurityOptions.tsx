@@ -1,12 +1,12 @@
-import {View} from 'react-native'
-import {ThemedText as Text} from '@/components/ThemedText'  
-import {useTheme} from '@react-navigation/native'
-import {useTranslation} from 'react-i18next'
-import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useAccount} from '@/hooks'
-import {useState} from 'react'
-import {Pressable, TextInput} from 'react-native'
 import Button from '@/components/Button'
+import {ThemedText as Text} from '@/components/ThemedText'
+import {useLeagueContext} from '@/context/LeagueContext'
+import {useAccount} from '@/hooks'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {useTheme} from '@react-navigation/native'
+import {useEffect, useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import {Pressable, TextInput, View} from 'react-native'
 
 export default function SecurityOptions() {
   const {colors} = useTheme()
@@ -28,6 +28,14 @@ export default function SecurityOptions() {
   const [showSetupNewPassword, setShowSetupNewPassword] = useState(false)
   const [showSetupConfirmPassword, setShowSetupConfirmPassword] =
     useState(false)
+  const {state} = useLeagueContext()
+  const user = state.user
+
+  useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email)
+    }
+  }, [])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

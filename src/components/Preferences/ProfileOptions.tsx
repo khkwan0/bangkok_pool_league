@@ -1,29 +1,29 @@
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  View,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  Dimensions,
-} from 'react-native'
+import CustomTextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView} from '@/components/ThemedView'
-import CustomTextInput from '@/components/TextInput'
+import config from '@/config'
 import {useLeagueContext} from '@/context/LeagueContext'
 import flags from '@/countries.emoji.json'
-import config from '@/config'
-import {useTranslation} from 'react-i18next'
+import {useAccount, useLeague} from '@/hooks'
 import {Ionicons} from '@expo/vector-icons'
-import React, {useState, useRef, useEffect, useMemo} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  View,
+} from 'react-native'
 import Animated, {SlideInDown, SlideOutDown} from 'react-native-reanimated'
 import {SafeAreaView} from 'react-native-safe-area-context'
-import {useLeague, useAccount} from '@/hooks'
 //import ImagePicker from 'react-native-image-crop-picker'
-import * as ImagePicker from 'expo-image-picker'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import * as ImagePicker from 'expo-image-picker'
 import {router} from 'expo-router'
 
 interface Country {
@@ -449,7 +449,7 @@ export default function ProfileOptions() {
             <View className="items-center justify-center mb-8">
               {typeof user.profile_picture === 'string' ? (
                 <Image
-                  source={{uri: config.profileUrl + user?.profile_picture}}
+                  source={{uri: config.profileUrl + (user?.profile_picture ? user.profile_picture : 'default_male.png')}}
                   className="h-32 w-32 rounded-full mb-4"
                 />
               ) : (
