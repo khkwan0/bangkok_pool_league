@@ -1,8 +1,9 @@
-import React from 'react'
-import {View} from 'react-native'
 import NavDest from '@/components/NavDest'
+import * as Sentry from '@sentry/react-native'
 import {useNavigation} from 'expo-router'
+import React from 'react'
 import {useTranslation} from 'react-i18next'
+import {Button, View} from 'react-native'
 
 export default function Admin() {
   const navigation = useNavigation()
@@ -21,6 +22,7 @@ export default function Admin() {
         text="Login As Other User"
         url="/Settings/Admin/LoginAsOtherUser"
       />
+      <Button title="Test Sentry" onPress={() => Sentry.captureException(new Error('Test Sentry'))} />
     </View>
   )
 }

@@ -29,6 +29,11 @@ function RootLayout() {
 
   Sentry.init({
     dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
+    sendDefaultPii: true,
+    enableLogs: true,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
     tracesSampleRate: 1.0,
     _experiments: {
       profilesSampleRate: 1.0,

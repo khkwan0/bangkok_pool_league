@@ -52,3 +52,6 @@ src/config.js
 .yarn
 xxx*
 *xxx
+
+.env.local
+ios/sentry.properties
