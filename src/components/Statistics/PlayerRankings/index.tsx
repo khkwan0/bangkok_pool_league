@@ -170,7 +170,6 @@ export default function PlayerRankings({
           queryParams.length > 0 ? '?' + queryParams.join('&') : ''
         const endpoint = `/league/0/division/players/stats${queryString}`
 
-        console.log('Fetching player rankings from:', endpoint)
         const res = await Get(endpoint)
         // console.log('Player rankings API response:', JSON.stringify(res, null, 2))
 
