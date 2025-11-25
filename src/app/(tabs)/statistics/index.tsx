@@ -64,6 +64,13 @@ export default function StatisticsHome(props: any) {
             {t('player_statistics')}
           </Button>
         </View>
+        <View className="my-4">
+          <Button
+            onPress={() => router.push('/statistics/PlayerRankings')}
+            icon={<Ionicons name="list" size={18} color="#9C27B0" />}>
+            {t('player_rankings')}
+          </Button>
+        </View>
       </View>
     )
   }
@@ -88,6 +95,12 @@ export default function StatisticsHome(props: any) {
           icon={<Ionicons name="person" size={18} color="#2196F3" />}
           onPress={() => router.push('/statistics/PlayerStatistics')}>
           {t('player_statistics_short')}
+        </Button>
+        <Button
+          small
+          icon={<Ionicons name="podium" size={18} color="#9C27B0" />}
+          onPress={() => router.push('/statistics/PlayerRankings')}>
+          {t('player_rankings_short')}
         </Button>
       </View>
 
