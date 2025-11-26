@@ -11,8 +11,11 @@ import {
   Animated,
   FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  Pressable,
   View as RNView,
+  ScrollView,
   TouchableOpacity,
   useColorScheme,
 } from 'react-native'
@@ -43,12 +46,66 @@ export default function CueChat() {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const {state: leagueState}: any = useLeagueContext()
-  const {Get} = useNetwork()
+  const {Get, Post} = useNetwork()
   const flatListRef = React.useRef<FlatList>(null)
+  
+  // Persona state
+  const [personas, setPersonas] = React.useState<Array<{id?: number; persona_id?: number; title?: string; name?: string}>>([])
+  const [selectedPersonaId, setSelectedPersonaId] = React.useState<string>('default')
+  const [currentPersonaId, setCurrentPersonaId] = React.useState<number | null>(null)
+  const [showPersonaModal, setShowPersonaModal] = React.useState(false)
   const roomId = React.useRef('cuechat')
   const socket = React.useRef(
     io('https://' + config.domain, {autoConnect: false}),
   )
+
+  // Fetch personas and current persona on mount
+  React.useEffect(() => {
+    async function fetchPersonas() {
+      const playerId = leagueState.user?.id
+      if (!playerId) {
+        return // Don't fetch if user is not authenticated
+      }
+
+      try {
+        // Fetch all personas first
+        const personasResponse = await Get('/personas')
+        let personasList: Array<{id?: number; persona_id?: number; title?: string; name?: string}> = []
+        if (personasResponse && personasResponse.status === 'ok' && personasResponse.data) {
+          personasList = personasResponse.data
+          setPersonas(personasList)
+        }
+
+        // Fetch current persona after personas are loaded
+        const personaResponse = await Get('/persona')
+        if (personaResponse && personaResponse.status === 'ok' && personaResponse.data) {
+          const personaId = personaResponse.data.preferred_ai_persona_id
+          if (personaId) {
+            setCurrentPersonaId(personaId)
+            // Check if this persona exists in the personas list
+            const personaExists = personasList.some((p: any) => {
+              const pId = p.id || p.persona_id
+              return pId === personaId
+            })
+            if (personaExists) {
+              setSelectedPersonaId(personaId.toString())
+            } else {
+              setSelectedPersonaId('default')
+            }
+          } else {
+            setSelectedPersonaId('default')
+          }
+        } else {
+          setSelectedPersonaId('default')
+        }
+      } catch (e) {
+        console.error('Error fetching personas:', e)
+        setSelectedPersonaId('default')
+      }
+    }
+
+    fetchPersonas()
+  }, [leagueState.user?.id])
 
   // Fetch chat history on mount
   React.useEffect(() => {
@@ -107,6 +164,61 @@ export default function CueChat() {
 
     fetchChatHistory()
   }, [leagueState.user?.id])
+
+  // Handle persona selection change
+  const handlePersonaChange = async (personaId: string) => {
+    if (personaId === selectedPersonaId) {
+      setShowPersonaModal(false)
+      return // No change
+    }
+
+    setShowPersonaModal(false)
+
+    // If "default" is selected, POST with 0
+    if (personaId === 'default') {
+      try {
+        const response = await Post('/persona', {personaId: 0})
+        if (response && response.status === 'ok') {
+          setSelectedPersonaId('default')
+          setCurrentPersonaId(0)
+        } else {
+          // Don't update if response is not ok
+          console.error('Error updating persona: response not ok', response)
+        }
+      } catch (e) {
+        console.error('Error updating persona:', e)
+        // Don't update on error
+      }
+      return
+    }
+
+    // POST the new personaId
+    try {
+      const response = await Post('/persona', {personaId: parseInt(personaId)})
+      if (response && response.status === 'ok') {
+        setSelectedPersonaId(personaId)
+        setCurrentPersonaId(parseInt(personaId))
+      } else {
+        // Don't update if response is not ok
+        console.error('Error updating persona: response not ok', response)
+      }
+    } catch (e) {
+      console.error('Error updating persona:', e)
+      // Don't update on error
+    }
+  }
+
+  // Get display name for selected persona
+  const getSelectedPersonaName = () => {
+    if (selectedPersonaId === 'default') {
+      return 'Default'
+    }
+    const persona = personas.find((p: any) => {
+      const pId = (p.id || p.persona_id).toString()
+      return pId === selectedPersonaId
+    })
+    return persona ? (persona.title || persona.name) : 'Default'
+  }
 
   React.useEffect(() => {
     // Socket event listeners
@@ -403,6 +515,180 @@ export default function CueChat() {
             {isConnected ? 'Connected' : 'Disconnected'}
           </Text>
         </View>
+
+        {/* Persona Selection - Only show if authenticated */}
+        {leagueState.user?.id && (
+          <>
+            <View
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                backgroundColor: isDark ? '#1f2937' : '#f3f4f6',
+                borderBottomWidth: 1,
+                borderBottomColor: isDark ? '#374151' : '#e5e7eb',
+              }}>
+              <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+                <Text
+                  style={{
+                    color: isDark ? '#d1d5db' : '#374151',
+                    fontSize: 14,
+                    fontWeight: '600',
+                  }}>
+                  Persona:
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowPersonaModal(true)}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: 'transparent',
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                  }}>
+                  <Text
+                    style={{
+                      color: isDark ? '#f3f4f6' : '#1f2937',
+                      fontSize: 14,
+                    }}>
+                    {getSelectedPersonaName()}
+                  </Text>
+                  <Ionicons
+                    name="chevron-down"
+                    size={20}
+                    color={isDark ? '#d1d5db' : '#374151'}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Persona Selection Modal */}
+            <Modal
+          visible={showPersonaModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowPersonaModal(false)}>
+          <Pressable
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              justifyContent: 'flex-end',
+            }}
+            onPress={() => setShowPersonaModal(false)}>
+            <Pressable
+              style={{
+                backgroundColor: isDark ? '#1f2937' : '#ffffff',
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+                maxHeight: '70%',
+              }}
+              onPress={(e) => e.stopPropagation()}>
+              <View
+                style={{
+                  padding: 16,
+                  borderBottomWidth: 1,
+                  borderBottomColor: isDark ? '#374151' : '#e5e7eb',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Text
+                  style={{
+                    color: isDark ? '#f3f4f6' : '#1f2937',
+                    fontSize: 18,
+                    fontWeight: '600',
+                  }}>
+                  Select Persona
+                </Text>
+                <TouchableOpacity onPress={() => setShowPersonaModal(false)}>
+                  <Ionicons
+                    name="close"
+                    size={24}
+                    color={isDark ? '#d1d5db' : '#374151'}
+                  />
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={{maxHeight: 400}}>
+                {/* Default Option */}
+                <TouchableOpacity
+                  onPress={() => handlePersonaChange('default')}
+                  style={{
+                    padding: 16,
+                    borderBottomWidth: 1,
+                    borderBottomColor: isDark ? '#374151' : '#e5e7eb',
+                    backgroundColor:
+                      selectedPersonaId === 'default'
+                        ? isDark
+                          ? '#374151'
+                          : '#f3f4f6'
+                        : 'transparent',
+                  }}>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    <Text
+                      style={{
+                        backgroundColor: selectedPersonaId === 'default' ? isDark ? '#374151' : '#f3f4f6' : isDark ? '#1f2937' : '#ffffff',
+                        color: isDark ? '#f3f4f6' : '#1f2937',
+                        fontSize: 16,
+                        flex: 1,
+                      }}>
+                      Default
+                    </Text>
+                    {selectedPersonaId === 'default' && (
+                      <Ionicons
+                        name="checkmark"
+                        size={20}
+                        color={isDark ? '#60a5fa' : '#3b82f6'}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+
+                {/* Persona Options */}
+                {personas.map((persona: any) => {
+                  const personaId = (persona.id || persona.persona_id).toString()
+                  const isSelected = selectedPersonaId === personaId
+                  return (
+                    <TouchableOpacity
+                      key={persona.id || persona.persona_id}
+                      onPress={() => handlePersonaChange(personaId)}
+                      style={{
+                        padding: 16,
+                        borderBottomWidth: 1,
+                        borderBottomColor: isDark ? '#374151' : '#e5e7eb',
+                        backgroundColor: isSelected
+                          ? isDark
+                            ? '#374151'
+                            : '#f3f4f6'
+                          : 'transparent',
+                      }}>
+                      <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                        <Text
+                          style={{
+                            backgroundColor: isSelected ? isDark ? '#374151' : '#f3f4f6' : isDark ? '#1f2937' : '#ffffff',
+                            color: isDark ? '#f3f4f6' : '#1f2937',
+                            fontSize: 16,
+                            flex: 1,
+                          }}>
+                          {persona.title || persona.name}
+                        </Text>
+                        {isSelected && (
+                          <Ionicons
+                            name="checkmark"
+                            size={20}
+                            color={isDark ? '#60a5fa' : '#3b82f6'}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  )
+                })}
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </Modal>
+          </>
+        )}
 
         {/* Messages List */}
         <FlatList
