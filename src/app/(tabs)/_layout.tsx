@@ -105,6 +105,20 @@ export default function TabLayout() {
             ),
           }}
         />
+        <Tabs.Screen
+          name="cuechat"
+          options={{
+            title: 'CueChat',
+            headerShown: false,
+            tabBarIcon: ({color, focused}) => (
+              <TabBarIcon
+                name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
+                color={color}
+              />
+            ),
+            tabBarLabel: 'CueChat',
+          }}
+        />
       </Tabs>
     )
   }
