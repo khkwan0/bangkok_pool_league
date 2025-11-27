@@ -46,6 +46,7 @@ export default function CustomTextInput({
   inputStyle,
   error,
   disabled,
+  multiline,
   ...props
 }: CustomTextInputProps) {
   const colorScheme = useColorScheme()
@@ -72,7 +73,8 @@ export default function CustomTextInput({
 
   const defaultInputStyle: TextStyle = {
     flex: 1,
-    height: 48,
+    height: multiline ? undefined : 48,
+    minHeight: multiline ? 48 : undefined,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingLeft: LeftIcon ? 44 : 16,

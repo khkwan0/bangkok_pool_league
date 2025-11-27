@@ -48,6 +48,7 @@ export default function CueChat() {
   const {state: leagueState}: any = useLeagueContext()
   const {Get, Post} = useNetwork()
   const flatListRef = React.useRef<FlatList>(null)
+  const streamingMessageIdRef = React.useRef<string | null>(null)
   
   // Persona state
   const [personas, setPersonas] = React.useState<Array<{id?: number; persona_id?: number; title?: string; name?: string}>>([])
@@ -231,6 +232,55 @@ export default function CueChat() {
       setIsConnected(false)
     })
 
+    socket.current.on('chat_message_chunk', (data: any) => {
+      const chunkType = data.type
+      const chunk = data.chunk || ''
+      
+      if (chunkType === 'content') {
+        // If this is the first chunk, create a new message
+        if (!streamingMessageIdRef.current) {
+          const newMessageId = `stream_${Date.now()}_${Math.random()}`
+          streamingMessageIdRef.current = newMessageId
+          
+          const newMessage: ChatMessage = {
+            id: newMessageId,
+            message: chunk,
+            nickname: data.nickname || data.user?.nickname || data.sender?.nickname || 'Response',
+            playerId: data.playerId || data.userId || data.sender?.id || 0,
+            timestamp: data.timestamp || Date.now(),
+            rawData: data,
+            isUserMessage: false,
+          }
+          
+          setMessages(prev => [...prev, newMessage])
+          setIsTyping(false) // Hide typing indicator when first chunk arrives
+          
+          // Scroll to bottom
+          setTimeout(() => {
+            flatListRef.current?.scrollToEnd({animated: true})
+          }, 100)
+        } else {
+          // Append chunk to existing streaming message
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === streamingMessageIdRef.current
+                ? {...msg, message: msg.message + chunk}
+                : msg
+            )
+          )
+          
+          // Scroll to bottom as content streams in
+          setTimeout(() => {
+            flatListRef.current?.scrollToEnd({animated: false})
+          }, 50)
+        }
+      } else if (chunkType === 'done') {
+        // Finalize the message
+        streamingMessageIdRef.current = null
+        setIsTyping(false)
+      }
+    })
+
     socket.current.on('chat_message', (data: any) => {
       setIsTyping(false) // Stop typing indicator when response arrives
       
@@ -271,6 +321,7 @@ export default function CueChat() {
       socket.current.off('connect')
       socket.current.off('disconnect')
       socket.current.off('chat_message')
+      socket.current.off('chat_message_chunk')
     }
   }, [])
 
@@ -302,6 +353,7 @@ export default function CueChat() {
     setMessages(prev => [...prev, userMessage])
     setInputText('')
     setIsTyping(true) // Show typing indicator
+    streamingMessageIdRef.current = null // Reset streaming message ref for new message
 
     // Scroll to bottom
     setTimeout(() => {
@@ -344,10 +396,9 @@ export default function CueChat() {
   const renderMessage = ({item}: {item: ChatMessage}) => {
     const isUserMessage = item.isUserMessage || item.playerId === leagueState.user.id
     const date = new Date(item.timestamp)
-    const timeString = date.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
+    const timeString = `${hours}:${minutes.toString().padStart(2, '0')}`
 
     return (
       <View
@@ -719,7 +770,7 @@ export default function CueChat() {
             backgroundColor: 'transparent',
           }}>
           <View className="flex-row items-center px-4 py-2 gap-2">
-            <View style={{flex: 1}}>
+            <View style={{flex: 1, justifyContent: 'center'}}>
               <TextInput
                 placeholder="Type a message..."
                 value={inputText}
@@ -727,6 +778,13 @@ export default function CueChat() {
                 onSubmitEditing={SendMessage}
                 multiline
                 maxLength={500}
+                textAlignVertical="center"
+                inputStyle={{
+                  height: undefined,
+                  minHeight: 48,
+                  paddingTop: 12,
+                  paddingBottom: 12,
+                }}
               />
             </View>
             <TouchableOpacity
