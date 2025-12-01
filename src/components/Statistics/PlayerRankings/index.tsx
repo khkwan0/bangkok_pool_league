@@ -11,7 +11,7 @@ import {ActivityIndicator, FlatList, Pressable} from 'react-native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 type PlayerRanking = {
-  player_id: number
+  playerId: number
   nickname: string
   profile_picture?: string
   played: number
@@ -41,7 +41,7 @@ function PlayerRow({
     router.push({
       pathname: (currentPath + '/Player') as any,
       params: {
-        params: JSON.stringify({playerId}),
+        params: JSON.stringify({playerId})
       },
     })
   }
@@ -55,9 +55,9 @@ function PlayerRow({
 
   return (
     <Pressable
-      onPress={() => handlePress(player.player_id)}
+      onPress={() => handlePress(player.playerId)}
       className="flex-row items-center py-3 px-4 border-b border-gray-200 dark:border-gray-700">
-      <View style={{flex: 0.5}}>
+      <View style={{flex: 1}}>
         <Text className="font-medium">#{index + 1}</Text>
       </View>
       <View style={{flex: 4}}>

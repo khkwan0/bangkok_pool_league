@@ -1,7 +1,7 @@
 import PlayerStatistics from '@/components/PlayerStatistics'
+import {useLeague} from '@/hooks/useLeague'
 import {useLocalSearchParams, useNavigation} from 'expo-router'
 import React from 'react'
-import {useLeague} from '@/hooks/useLeague'
 import {ActivityIndicator, View} from 'react-native'
 interface PlayerInfo {
   player_id: number

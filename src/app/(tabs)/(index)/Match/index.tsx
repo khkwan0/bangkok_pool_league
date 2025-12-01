@@ -1,5 +1,5 @@
-import {ThemedView as View} from '@/components/ThemedView'
-import {FlatList, AppState} from 'react-native'
+import CompletedMatchDetails from '@/components/Completed/CompletedMatchDetails'
+import Divider from '@/components/Divider'
 import {
   Finalizer,
   FirstBreak,
@@ -8,15 +8,15 @@ import {
   Score,
   VSHeader,
 } from '@/components/Match/components'
-import React from 'react'
+import {FrameType} from '@/components/Match/types'
+import {ThemedView as View} from '@/components/ThemedView'
 import {useMatchContext} from '@/context/MatchContext'
 import {useMatch} from '@/hooks/useMatch'
-import {router, useLocalSearchParams} from 'expo-router'
-import Divider from '@/components/Divider'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useNavigation} from '@react-navigation/native'
-import {FrameType} from '@/components/Match/types'
-import CompletedMatchDetails from '@/components/Completed/CompletedMatchDetails'
+import {router, useLocalSearchParams} from 'expo-router'
+import React from 'react'
+import {AppState, FlatList} from 'react-native'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 export default function ScoreSheet() {
   const {state, dispatch, SocketConnect, SocketDisconnect, UpdateTeams}: any =
@@ -67,6 +67,7 @@ export default function ScoreSheet() {
   }, [])
 
   React.useEffect(() => {
+    console.log('matchInfo', matchInfo)
     const format = JSON.parse(matchInfo.format as string)
     const subsections = format[0].subsections
     let frameNumber = 1
