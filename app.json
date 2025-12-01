@@ -60,13 +60,17 @@
         {
           "ios": {
             "useFrameworks": "static",
-            "forceStaticLinking": ["RNFBApp", "RNFBMessaging"]
+            "forceStaticLinking": [
+              "RNFBApp",
+              "RNFBMessaging"
+            ]
           }
         }
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
-      "@xmartlabs/react-native-line"
+      "@xmartlabs/react-native-line",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
