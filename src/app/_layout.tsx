@@ -9,7 +9,7 @@ import {
   requestPermission,
 } from '@react-native-firebase/messaging'
 import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native'
-import * as Sentry from '@sentry/react-native'
+// import * as Sentry from '@sentry/react-native'
 import {useFonts} from 'expo-font'
 import {Stack} from 'expo-router'
 import {useEffect} from 'react'
@@ -37,6 +37,7 @@ function RootLayout() {
     "SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead.",
   ])
 
+  /*
   Sentry.init({
     dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
     sendDefaultPii: true,
@@ -48,6 +49,7 @@ function RootLayout() {
       Sentry.feedbackIntegration(),
     ],
   })
+    */
 
   async function RequestUserPermission() {
     if (Platform.OS === 'ios') {
@@ -118,4 +120,5 @@ function RootLayout() {
   )
 }
 
-export default Sentry.wrap(RootLayout)
+export default RootLayout
+// export default Sentry.wrap(RootLayout)
