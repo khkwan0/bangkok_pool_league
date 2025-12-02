@@ -55,3 +55,5 @@ xxx*
 
 .env.local
 ios/sentry.properties
+
+.env.local

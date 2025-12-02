@@ -38,7 +38,7 @@
       [
         "@sentry/react-native/expo",
         {
-          "url": "https://sentry.io",
+          "url": "https://sentry.io/",
           "organization": "nitrox-studios",
           "project": "bangkok-pool-league"
         }
@@ -60,10 +60,7 @@
         {
           "ios": {
             "useFrameworks": "static",
-            "forceStaticLinking": [
-              "RNFBApp",
-              "RNFBMessaging"
-            ]
+            "forceStaticLinking": ["RNFBApp", "RNFBMessaging"]
           }
         }
       ],
