@@ -35,7 +35,6 @@
     },
     "plugins": [
       "expo-router",
-      /*
       [
         "@sentry/react-native/expo",
         {
@@ -44,7 +43,6 @@
           "project": "bangkok-pool-league"
         }
       ],
-      */
       [
         "expo-splash-screen",
         {
