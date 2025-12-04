@@ -395,10 +395,13 @@ export default function CueChat() {
 
   const renderMessage = ({item}: {item: ChatMessage}) => {
     const isUserMessage = item.isUserMessage || item.playerId === leagueState.user.id
-    const date = new Date(item.timestamp)
+    // Handle timestamp - convert to milliseconds if needed
+    const timestamp = item.timestamp < 10000000000 ? item.timestamp * 1000 : item.timestamp
+    const date = new Date(timestamp)
+    
+    // Format as 24-hour time (HH:MM) without AM/PM, ensuring colon is properly displayed
     const hours = date.getHours()
     const minutes = date.getMinutes()
-    const timeString = `${hours}:${minutes.toString().padStart(2, '0')}`
 
     return (
       <View
@@ -433,14 +436,38 @@ export default function CueChat() {
             }}>
             {item.message}
           </Text>
-          <Text
+          <View 
             style={{
-              color: isUserMessage ? '#bfdbfe' : (isDark ? '#9ca3af' : '#4b5563'),
-              fontSize: 12,
+              flexDirection: 'row', 
+              alignItems: 'center', 
               marginTop: 6,
+              backgroundColor: isUserMessage ? userBgColor : apiBgColor,
             }}>
-            {timeString}
-          </Text>
+            <Text
+              style={{
+                color: isUserMessage ? '#bfdbfe' : (isDark ? '#9ca3af' : '#4b5563'),
+                fontSize: 12,
+                backgroundColor: isUserMessage ? userBgColor : apiBgColor,
+              }}>
+              {String(hours).padStart(2, '0')}
+            </Text>
+            <Text
+              style={{
+                color: isUserMessage ? '#bfdbfe' : (isDark ? '#9ca3af' : '#4b5563'),
+                fontSize: 12,
+                backgroundColor: isUserMessage ? userBgColor : apiBgColor,
+              }}>
+              :
+            </Text>
+            <Text
+              style={{
+                color: isUserMessage ? '#bfdbfe' : (isDark ? '#9ca3af' : '#4b5563'),
+                fontSize: 12,
+                backgroundColor: isUserMessage ? userBgColor : apiBgColor,
+              }}>
+              {String(minutes).padStart(2, '0')}
+            </Text>
+          </View>
         </View>
       </View>
     )
@@ -660,7 +687,11 @@ export default function CueChat() {
                   />
                 </TouchableOpacity>
               </View>
-              <ScrollView style={{maxHeight: 400}}>
+              <ScrollView 
+                style={{maxHeight: 400}}
+                contentContainerStyle={{
+                  paddingBottom: insets.bottom,
+                }}>
                 {/* Default Option */}
                 <TouchableOpacity
                   onPress={() => handlePersonaChange('default')}
@@ -673,12 +704,19 @@ export default function CueChat() {
                         ? isDark
                           ? '#374151'
                           : '#f3f4f6'
-                        : 'transparent',
+                        : (isDark ? '#1f2937' : '#ffffff'),
                   }}>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <View 
+                    style={{
+                      flexDirection: 'row', 
+                      alignItems: 'center',
+                      backgroundColor: selectedPersonaId === 'default'
+                        ? (isDark ? '#374151' : '#f3f4f6')
+                        : (isDark ? '#1f2937' : '#ffffff'),
+                    }}>
                     <Text
                       style={{
-                        backgroundColor: selectedPersonaId === 'default' ? isDark ? '#374151' : '#f3f4f6' : isDark ? '#1f2937' : '#ffffff',
+                        backgroundColor: 'transparent',
                         color: isDark ? '#f3f4f6' : '#1f2937',
                         fontSize: 16,
                         flex: 1,
@@ -711,12 +749,19 @@ export default function CueChat() {
                           ? isDark
                             ? '#374151'
                             : '#f3f4f6'
-                          : 'transparent',
+                          : (isDark ? '#1f2937' : '#ffffff'),
                       }}>
-                      <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                      <View 
+                        style={{
+                          flexDirection: 'row', 
+                          alignItems: 'center',
+                          backgroundColor: isSelected
+                            ? (isDark ? '#374151' : '#f3f4f6')
+                            : (isDark ? '#1f2937' : '#ffffff'),
+                        }}>
                         <Text
                           style={{
-                            backgroundColor: isSelected ? isDark ? '#374151' : '#f3f4f6' : isDark ? '#1f2937' : '#ffffff',
+                            backgroundColor: 'transparent',
                             color: isDark ? '#f3f4f6' : '#1f2937',
                             fontSize: 16,
                             flex: 1,
