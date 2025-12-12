@@ -1,27 +1,26 @@
-import React from 'react'
-import {
-  Image,
-  Pressable,
-  Share,
-  Dimensions,
-  View,
-  Platform,
-  ScrollView,
-  useColorScheme,
-} from 'react-native'
-import {ThemedText as Text} from '@/components/ThemedText'
-import {DateTime} from 'luxon'
-import {showLocation} from 'react-native-map-link'
-import {useTranslation} from 'react-i18next'
-import {Link} from 'expo-router'
-import {MatchInfoDataType} from '@/components/Match/types'
 import Button from '@/components/Button'
+import {MatchInfoDataType} from '@/components/Match/types'
+import {ThemedText as Text} from '@/components/ThemedText'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatch} from '@/hooks/useMatch'
-import {useRouter} from 'expo-router'
 import {Ionicons, MaterialIcons} from '@expo/vector-icons'
-import {LinearGradient} from 'expo-linear-gradient'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {LinearGradient} from 'expo-linear-gradient'
+import {Link, useRouter} from 'expo-router'
+import {DateTime} from 'luxon'
+import React from 'react'
+import {useTranslation} from 'react-i18next'
+import {
+  Dimensions,
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  useColorScheme,
+  View,
+} from 'react-native'
+import {showLocation} from 'react-native-map-link'
 
 const colorPairs = [
   ['#1e3a8a', '#dc2626'] as const, // Blue & Red

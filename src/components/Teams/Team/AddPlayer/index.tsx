@@ -4,16 +4,20 @@ import {ThemedView} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useNavigation} from '@react-navigation/native'
 import {useTranslation} from 'react-i18next'
-import {router, useLocalSearchParams} from 'expo-router'
+import {router, useLocalSearchParams, usePathname} from 'expo-router'
 
 export default function AddPlayer() {
   const navigation = useNavigation()
   const {t} = useTranslation()
   const [yesIsPressed, setYesIsPressed] = React.useState(false)
   const [noIsPressed, setNoIsPressed] = React.useState(false)
+  const pathname = usePathname()
 
   const {teamIdParams} = useLocalSearchParams()
   const teamId = JSON.parse(teamIdParams as string).teamId
+
+  // Construct return path to Team screen (one level up from AddPlayer)
+  const returnPath = pathname.replace('/AddPlayer', '')
 
   React.useEffect(() => {
     navigation.setOptions({title: t('add_player')})
@@ -32,7 +36,10 @@ export default function AddPlayer() {
             onPress={() =>
               router.push({
                 pathname: './AddPlayer/AddExistingPlayer',
-                params: {teamIdParams: JSON.stringify({teamId})},
+                params: {
+                  teamIdParams: JSON.stringify({teamId}),
+                  returnPath: returnPath,
+                },
               })
             }
             className={`bg-blue-500 p-4 rounded-lg items-center my-4 ${
@@ -48,7 +55,10 @@ export default function AddPlayer() {
             onPress={() =>
               router.push({
                 pathname: './AddPlayer/AddNewPlayer',
-                params: {teamIdParams: JSON.stringify({teamId})},
+                params: {
+                  teamIdParams: JSON.stringify({teamId}),
+                  returnPath: returnPath,
+                },
               })
             }
             className={`bg-blue-500 p-4 rounded-lg items-center my-4 ${

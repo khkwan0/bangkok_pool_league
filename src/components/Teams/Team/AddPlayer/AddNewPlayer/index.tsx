@@ -22,7 +22,7 @@ export default function AddNewPlayer() {
   const navigation = useNavigation()
   const league = useLeague()
   const router = useRouter()
-  const {teamIdParams} = useLocalSearchParams()
+  const {teamIdParams, returnPath} = useLocalSearchParams()
   const teamId = JSON.parse(teamIdParams as string).teamId
 
   function HandleClear() {
@@ -52,10 +52,16 @@ export default function AddNewPlayer() {
           ) {
             const res2 = await league.AddPlayerToTeam(res.data.playerId, teamId)
             if (res2.status === 'ok') {
-              router.dismissTo({
-                pathname: '../../team',
-                params: {params: JSON.stringify({teamId})},
-              })
+              // If returnPath is provided, use it; otherwise go back to previous screen
+              if (returnPath) {
+                router.dismissTo({
+                  pathname: returnPath as string,
+                  params: {params: JSON.stringify({teamId})},
+                })
+              } else {
+                // Go back to previous screen (typically AddPlayer screen)
+                router.back()
+              }
             } else {
               setErr(t('error_saving_player'))
             }

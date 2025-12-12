@@ -17,7 +17,7 @@ export default function AddExistingPlayer() {
   const league = useLeague()
   const [loading, setLoading] = React.useState(false)
   const [err, setErr] = React.useState('')
-  const {teamIdParams} = useLocalSearchParams()
+  const {teamIdParams, returnPath} = useLocalSearchParams()
   const teamId = JSON.parse(teamIdParams as string).teamId
 
   const trie = React.useRef(new TrieSearch('nickname', {splitOnRegEx: false}))
@@ -39,11 +39,16 @@ export default function AddExistingPlayer() {
       setErr('')
       const res = await league.AddPlayerToTeam(playerId, teamId)
       if (res.status === 'ok') {
-        // Use router.dismissTo to navigate, as navigation.navigate is not compatible with this stack
-        router.dismissTo({
-          pathname: '../../Team',
-          params: { params: JSON.stringify({ teamId }) },
-        })
+        // If returnPath is provided, use it; otherwise go back to previous screen
+        if (returnPath) {
+          router.dismissTo({
+            pathname: returnPath as string,
+            params: { params: JSON.stringify({ teamId }) },
+          })
+        } else {
+          // Go back to previous screen (typically AddPlayer screen)
+          router.back()
+        }
       }
     } catch (error) {
       console.error(error)
