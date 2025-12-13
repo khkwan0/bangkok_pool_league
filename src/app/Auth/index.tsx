@@ -90,6 +90,10 @@ export default function AuthHome() {
 
   async function HandleAppleSignIn() {
     try {
+      setErr('')
+      setDisabledLoginButton(true)
+      setLoading(true)
+
       // performs login request
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: appleAuth.Operation.LOGIN,
@@ -117,8 +121,24 @@ export default function AuthHome() {
           }
         }
       }
-    } catch (e) {
-      console.log(e)
+    } catch (e: any) {
+      console.log('Apple Sign In Error:', e)
+      // Handle user cancellation - error code 1001 is ASAuthorizationErrorCanceled
+      if (e?.code === 1001 || e?.message?.includes('canceled') || e?.message?.includes('cancel')) {
+        // User canceled, no error message needed
+        return
+      }
+      // Handle error 1000 - ASAuthorizationErrorUnknown (configuration issue)
+      if (e?.code === 1000 || e?.message?.includes('1000')) {
+        setErr(
+          'Apple Sign In is not properly configured. Please ensure the app is configured in Apple Developer Console with Sign in with Apple capability enabled, and rebuild the app.',
+        )
+      } else {
+        setErr('Unable to sign in with Apple. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+      setDisabledLoginButton(false)
     }
   }
 
