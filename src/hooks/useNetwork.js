@@ -1,17 +1,19 @@
 import config from '@/config'
+import { useLeagueContext } from '@/context/LeagueContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 // import {socket} from '~/socket'
 
 export const useNetwork = () => {
+  const {domain} = useLeagueContext()
   const Get = async function (endpoint) {
     try {
       const _endpoint =
         typeof endpoint !== 'undefined' && endpoint[0] === '/'
           ? endpoint.substring(1)
           : endpoint
-      const domain = config.domain ?? 'localhost'
+      const apiDomain = domain ?? config.domain ?? 'localhost'
       const token = await AsyncStorage.getItem('jwt')
-      const res = await fetch('https://' + domain + '/' + _endpoint, {
+      const res = await fetch('https://' + apiDomain + '/' + _endpoint, {
         headers: {
           Authorization: 'Bearer ' + token,
         },
@@ -34,9 +36,9 @@ export const useNetwork = () => {
         typeof endpoint !== 'undefined' && endpoint[0] === '/'
           ? endpoint.substring(1)
           : endpoint
-      const domain = config.domain ?? 'localhost'
+      const apiDomain = domain ?? config.domain ?? 'localhost'
       const token = await AsyncStorage.getItem('jwt')
-      const res = await fetch('https://' + domain + '/' + _endpoint, {
+      const res = await fetch('https://' + apiDomain + '/' + _endpoint, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: {

@@ -1,17 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {useSeason} from '@/hooks/useSeason'
-import {useState} from 'react'
-import React from 'react'
-import {ThemedView as View} from '@/components/ThemedView'
-import {ThemedText as Text} from '@/components/ThemedText'
-import Row from '@/components/Row'
-import {Image, ScrollView, RefreshControl} from 'react-native'
-import config from '@/config'
-import StatsHeader from '@/components/PlayerStatistics/StatsHeader'
-import Stats from '@/components/Stats'
 import StatsDoubles from '@/components/PlayerStatistics/StatsDoubles'
+import StatsHeader from '@/components/PlayerStatistics/StatsHeader'
 import StatsMatchPerformance from '@/components/PlayerStatistics/StatsMatchPerformance'
-import {useTranslation} from 'react-i18next'
+import Row from '@/components/Row'
+import Stats from '@/components/Stats'
+import { ThemedText as Text } from '@/components/ThemedText'
+import { ThemedView as View } from '@/components/ThemedView'
+import config from '@/config'
+import { useSeason } from '@/hooks/useSeason'
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Image, RefreshControl, ScrollView } from 'react-native'
 
 interface PlayerInfo {
   player_id: number

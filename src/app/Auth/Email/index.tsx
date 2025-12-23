@@ -1,20 +1,19 @@
+import Button from '@/components/Button'
+import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
+import {useAccount} from '@/hooks/useAccount'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import {useNavigation} from '@react-navigation/native'
+import {router, useLocalSearchParams} from 'expo-router'
+import React from 'react'
+import {useTranslation} from 'react-i18next'
 import {
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   Pressable,
+  ScrollView,
   View
 } from 'react-native'
-import {useTranslation} from 'react-i18next'
-import {useAccount} from '@/hooks/useAccount'
-import {router} from 'expo-router'
-import React from 'react'
-import Button from '@/components/Button'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import {useNavigation} from '@react-navigation/native'
-import TextInput from '@/components/TextInput'
-import {useLocalSearchParams} from 'expo-router'
 
 export default function Email() {
   const {t} = useTranslation()
@@ -110,6 +109,7 @@ export default function Email() {
                 placeholder={t('email_placeholder')}
                 autoCapitalize="none"
                 autoComplete="email"
+                textContentType={Platform.OS === 'ios' ? 'username' : 'emailAddress'}
                 keyboardType="email-address"
                 leftIcon={MaterialCommunityIcons}
                 leftIconProps={{name: 'email-outline'}}
@@ -136,6 +136,7 @@ export default function Email() {
                 onChangeText={setPassword}
                 placeholder={t('password_placeholder')}
                 secureTextEntry={!showPassword}
+                textContentType="password"
                 autoCapitalize="none"
                 autoComplete="password"
                 leftIcon={MaterialCommunityIcons}

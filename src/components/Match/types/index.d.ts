@@ -36,6 +36,7 @@ export type MatchInfoDataType = {
     timestamp: string
     userId: number
   } | null
+  initialFrames?: FrameType[]
 }
 
 export interface MatchInfoType {

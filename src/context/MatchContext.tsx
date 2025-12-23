@@ -1,11 +1,9 @@
-import React, {createContext, useContext, useReducer} from 'react'
-import {useMatch, useTeams} from '@/hooks'
-import {io} from 'socket.io-client'
-import config from '@/config'
+import { FrameType, MatchInfoDataType } from '@/components/Match/types'
+import { useMatch, useTeams } from '@/hooks'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {useLeagueContext} from './LeagueContext'
-import StatsHeader from '@/components/PlayerStatistics/StatsHeader'
-import {FrameType, MatchInfoDataType} from '@/components/Match/types'
+import React, { createContext, useContext, useReducer } from 'react'
+import { io } from 'socket.io-client'
+import { useLeagueContext } from './LeagueContext'
 
 type JoinStatusType = {
   status: string
@@ -164,13 +162,11 @@ const MatchReducer = (state: StateType, action: any) => {
 
 export const MatchProvider = (props: any) => {
   const [state, dispatch] = useReducer(MatchReducer, initialState)
-  const {state: leagueState}: any = useLeagueContext()
+  const {state: leagueState, domain, webSocketDomain}: any = useLeagueContext()
   const matchHooks = useMatch()
   const teams = useTeams()
   const roomId = React.useRef('')
-  const socket = React.useRef(
-    io('https://' + config.domain, {autoConnect: false}),
-  )
+  const socket = React.useRef<ReturnType<typeof io> | null>(null)
 
   const matchInfoRef = React.useRef({})
 
@@ -179,76 +175,30 @@ export const MatchProvider = (props: any) => {
     UpdateTeams()
   }, [state.matchInfo])
 
+  // Recreate socket when domain changes and set up event listeners
   React.useEffect(() => {
-    if (
-      typeof state.matchInfo !== 'undefined' &&
-      state.matchInfo &&
-      typeof state.frameData !== 'undefined' &&
-      Object.keys(state.frameData).length > 0
-    ) {
-      const stats: StatsType = {}
-      state.frameData.forEach((frame: FrameType, index: number) => {
-        if (typeof frame.winner !== 'undefined' && frame.winner) {
-          if (frame.winner === state.matchInfo.home_team_id) {
-            frame.homePlayerIds.forEach((playerId: number) => {
-              const key = `p${playerId}`
-              if (typeof stats[key] === 'undefined') {
-                stats[key] = {}
-              }
-              stats[key][`frame${index}`] = {
-                win: true,
-                type: state.matchInfo.initialFrames[index].type,
-              }
-            })
-            frame.awayPlayerIds.forEach((playerId: number) => {
-              const key = `p${playerId}`
-              if (typeof stats[key] === 'undefined') {
-                stats[key] = {}
-              }
-              stats[key][`frame${index}`] = {
-                win: false,
-                type: state.matchInfo.initialFrames[index].type,
-              }
-            })
-          } else {
-            frame.homePlayerIds.forEach((playerId: number) => {
-              const key = `p${playerId}`
-              if (typeof stats[key] === 'undefined') {
-                stats[key] = {}
-              }
-              stats[key][`frame${index}`] = {
-                win: false,
-                type: state.matchInfo.initialFrames[index].type,
-              }
-            })
-            frame.awayPlayerIds.forEach((playerId: number) => {
-              const key = `p${playerId}`
-              if (typeof stats[key] === 'undefined') {
-                stats[key] = {}
-              }
-              stats[key][`frame${index}`] = {
-                win: true,
-                type: state.matchInfo.initialFrames[index].type,
-              }
-            })
-          }
-        }
-      })
-      dispatch({type: 'SET_STATS', payload: stats})
+    // Disconnect old socket if it exists
+    if (socket.current) {
+      socket.current.removeAllListeners()
+      socket.current.disconnect()
     }
-  }, [state.frameData])
 
-  React.useEffect(() => {
-    socket.current.on('connect', () => {
-      console.log('connected: ', socket.current.connected)
+    // Create new socket with updated domain
+    socket.current = io('https://' + webSocketDomain, {autoConnect: false})
+
+    const currentSocket = socket.current
+
+    // Set up event listeners
+    const handleConnect = () => {
+      console.log('connected: ', currentSocket.connected)
       JoinRoom()
-    })
+    }
 
-    socket.current.on('disconnect', () => {
+    const handleDisconnect = () => {
       console.log('disconnect')
-    })
+    }
 
-    socket.current.on('match_update', data => {
+    const handleMatchUpdate = (data: any) => {
       if (typeof data.type !== 'undefined') {
         if (data.type === 'firstbreak') {
           dispatch({
@@ -281,8 +231,9 @@ export const MatchProvider = (props: any) => {
           }
         }
       }
-    })
-    socket.current.on('frame_update', data => {
+    }
+
+    const handleFrameUpdate = (data: any) => {
       if (typeof data.type !== 'undefined') {
         if (data.type === 'win') {
           dispatch({
@@ -319,11 +270,94 @@ export const MatchProvider = (props: any) => {
           })
         }
       }
-    })
-    socket.current.on('historyupdate2', data => {
+    }
+
+    const handleHistoryUpdate = (data: any) => {
       dispatch({type: 'SET_HISTORY', payload: data})
-    })
-  }, [])
+    }
+
+    currentSocket.on('connect', handleConnect)
+    currentSocket.on('disconnect', handleDisconnect)
+    currentSocket.on('match_update', handleMatchUpdate)
+    currentSocket.on('frame_update', handleFrameUpdate)
+    currentSocket.on('historyupdate2', handleHistoryUpdate)
+
+    // Reconnect if we were previously connected to a room
+    if (roomId.current) {
+      currentSocket.connect()
+    }
+
+    // Cleanup on unmount or domain change
+    return () => {
+      currentSocket.off('connect', handleConnect)
+      currentSocket.off('disconnect', handleDisconnect)
+      currentSocket.off('match_update', handleMatchUpdate)
+      currentSocket.off('frame_update', handleFrameUpdate)
+      currentSocket.off('historyupdate2', handleHistoryUpdate)
+      currentSocket.removeAllListeners()
+      currentSocket.disconnect()
+    }
+  }, [domain])
+
+  React.useEffect(() => {
+    if (
+      typeof state.matchInfo !== 'undefined' &&
+      state.matchInfo &&
+      typeof state.frameData !== 'undefined' &&
+      Object.keys(state.frameData).length > 0 &&
+      state.matchInfo.initialFrames
+    ) {
+      const stats: StatsType = {}
+      state.frameData.forEach((frame: FrameType, index: number) => {
+        if (typeof frame.winner !== 'undefined' && frame.winner) {
+          if (frame.winner === state.matchInfo.home_team_id) {
+            frame.homePlayerIds.forEach((playerId: number) => {
+              const key = `p${playerId}`
+              if (typeof stats[key] === 'undefined') {
+                stats[key] = {}
+              }
+              stats[key][`frame${index}`] = {
+                win: true,
+                type: state.matchInfo.initialFrames![index]?.type || '',
+              }
+            })
+            frame.awayPlayerIds.forEach((playerId: number) => {
+              const key = `p${playerId}`
+              if (typeof stats[key] === 'undefined') {
+                stats[key] = {}
+              }
+              stats[key][`frame${index}`] = {
+                win: false,
+                type: state.matchInfo.initialFrames![index]?.type || '',
+              }
+            })
+          } else {
+            frame.homePlayerIds.forEach((playerId: number) => {
+              const key = `p${playerId}`
+              if (typeof stats[key] === 'undefined') {
+                stats[key] = {}
+              }
+              stats[key][`frame${index}`] = {
+                win: false,
+                type: state.matchInfo.initialFrames![index]?.type || '',
+              }
+            })
+            frame.awayPlayerIds.forEach((playerId: number) => {
+              const key = `p${playerId}`
+              if (typeof stats[key] === 'undefined') {
+                stats[key] = {}
+              }
+              stats[key][`frame${index}`] = {
+                win: true,
+                type: state.matchInfo.initialFrames![index]?.type || '',
+              }
+            })
+          }
+        }
+      })
+      dispatch({type: 'SET_STATS', payload: stats})
+    }
+  }, [state.frameData])
 
   function UpdateFramePlayers(
     frameIdx: number,
@@ -357,7 +391,7 @@ export const MatchProvider = (props: any) => {
       playerIdx: slot,
       newPlayer: newPlayer,
       frameType: frameType,
-      mfpp: state.matchInfo.initialFrames[frameIdx].mfpp,
+      mfpp: state.matchInfo.initialFrames?.[frameIdx]?.mfpp || 0,
     }
     SocketSend('players', data)
   }
@@ -375,8 +409,8 @@ export const MatchProvider = (props: any) => {
     winnerTeamId: string,
     goldenBreak: boolean,
   ) {
-    const mfpp = state.matchInfo.initialFrames[frameIdx].mfpp
-    const frame = state.frameData[frameIdx]
+    const mfpp = state.matchInfo.initialFrames?.[parseInt(frameIdx)]?.mfpp || 0
+    const frame = state.frameData[parseInt(frameIdx)]
     const awayPlayerCount = frame.awayPlayerIds.length
     const homePlayerCount = frame.homePlayerIds.length
     const playerIds =
@@ -384,10 +418,10 @@ export const MatchProvider = (props: any) => {
     if (awayPlayerCount === mfpp && homePlayerCount === mfpp) {
       const data = {
         side: side,
-        matchId: parseInt(state.matchInfo.match_id),
+        matchId: state.matchInfo.match_id,
         frameIdx: parseInt(frameIdx),
-        frameNumber: parseInt(frame.frameNumber),
-        winnerTeamId: parseInt(winnerTeamId),
+        frameNumber: frame.frameNumber,
+        winnerTeamId: winnerTeamId,
         playerIds: playerIds,
         goldenBreak: goldenBreak,
       }
@@ -398,7 +432,7 @@ export const MatchProvider = (props: any) => {
   function ClearFrameWinner(frameIdx: number) {
     const data = {
       frameIdx: frameIdx,
-      matchId: parseInt(state.matchInfo.match_id),
+      matchId: state.matchInfo.match_id,
     }
     SocketSend('clearwin', data)
   }
@@ -407,7 +441,7 @@ export const MatchProvider = (props: any) => {
     const data = {
       teamId: teamId,
       side: side,
-      matchId: parseInt(state.matchInfo.match_id),
+      matchId: state.matchInfo.match_id,
     }
     SocketSend('finalize', data)
   }
@@ -416,7 +450,7 @@ export const MatchProvider = (props: any) => {
     const data = {
       teamId: teamId,
       side: side,
-      matchId: parseInt(state.matchInfo.match_id),
+      matchId: state.matchInfo.match_id
     }
     SocketSend('unfinalize', data)
   }
@@ -452,19 +486,23 @@ export const MatchProvider = (props: any) => {
 
   function SocketConnect(_room: string) {
     roomId.current = _room
-    if (!socket.current.connected) {
+    if (socket.current && !socket.current.connected) {
       socket.current.connect()
     }
   }
 
   function SocketDisconnect() {
-    socket.current.disconnect()
+    if (socket.current) {
+      socket.current.disconnect()
+    }
   }
 
   function JoinRoom() {
-    socket.current.emit('join', roomId.current, (status: JoinStatusType) => {
-      console.log(status)
-    })
+    if (socket.current) {
+      socket.current.emit('join', roomId.current, (status: JoinStatusType) => {
+        console.log(status)
+      })
+    }
   }
 
   async function SocketSend(
@@ -477,7 +515,7 @@ export const MatchProvider = (props: any) => {
     const token = await AsyncStorage.getItem('jwt')
     const toSend = {
       type: type,
-      matchId: parseInt(state.matchInfo.match_id),
+      matchId: state.matchInfo.match_id,
       timestamp: Date.now(),
       playerId: leagueState.user.id ?? 0,
       jwt: token ?? 'notoken',
@@ -485,13 +523,17 @@ export const MatchProvider = (props: any) => {
       dest: dest,
       data: {...data},
     }
-    if (socket.current.connected) {
-      socket.current.emit('matchupdate', toSend)
-    } else {
-      socket.current.connect()
-      socket.current.once('connect', () => {
+    if (socket.current) {
+      if (socket.current.connected) {
         socket.current.emit('matchupdate', toSend)
-      })
+      } else {
+        socket.current.connect()
+        socket.current.once('connect', () => {
+          if (socket.current) {
+            socket.current.emit('matchupdate', toSend)
+          }
+        })
+      }
     }
   }
   /*

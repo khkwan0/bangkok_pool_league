@@ -1,4 +1,4 @@
-import type {DivisionData} from '@/types'
+import type { DivisionData } from '@/types'
 
 export interface Country {
   id: number
@@ -62,12 +62,14 @@ export interface Teams {
   GetTeam(teamId: number): Promise<Team>
   GetTeamPlayers(teamId: number): Promise<Player[]>
   GetTeamMatches(teamId: number): Promise<Match[]>
+  GetPlayers(teamid?: number, activeOnly?: boolean): Promise<{data: any[]}>
   AddExistingPlayerToTeam(
     teamId: number,
     playerId: number,
   ): Promise<{status: string}>
   GetTeamStats(teamId: number): Promise<TeamStats>
   GetTeamInternalStats(teamId: number): Promise<TeamStats>
+  GetTeamInfo(teamId: number): Promise<{status: string; data?: any}>
 }
 
 export interface Account {

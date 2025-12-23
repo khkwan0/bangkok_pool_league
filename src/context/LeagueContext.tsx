@@ -1,5 +1,6 @@
+import { domain as defaultDomain, webSocketDomain as defaultWebSocketDomain } from '@/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {createContext, useContext, useEffect, useReducer} from 'react'
+import { createContext, useContext, useEffect, useReducer, useState } from 'react'
 interface User {
   id?: number
   role_id?: number
@@ -39,6 +40,12 @@ export interface LeagueContextType {
   LogoutUser: () => void
   RefreshUpcoming: () => void
   StopRefreshUpcoming: () => void
+  domain: string
+  setDomain: (domain: string) => Promise<void>
+  resetDomain: () => Promise<void>
+  webSocketDomain: string
+  setWebSocketDomain: (domain: string) => Promise<void>
+  resetWebSocketDomain: () => Promise<void>
 }
 
 const LeagueContext = createContext<LeagueContextType>({} as LeagueContextType)
@@ -147,6 +154,36 @@ const LeagueReducer = (state: any, action: any) => {
 
 export const LeagueProvider = ({children}: any) => {
   const [state, dispatch] = useReducer(LeagueReducer, initialState)
+  const [domain, setDomainState] = useState<string>(defaultDomain)
+  const [webSocketDomain, setWebSocketDomainState] = useState<string>(defaultWebSocketDomain)
+
+  useEffect(() => {
+    const loadDomain = async () => {
+      try {
+        const savedDomain = await AsyncStorage.getItem('api_domain')
+        if (savedDomain) {
+          setDomainState(savedDomain)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    loadDomain()
+  }, [])
+
+  useEffect(() => {
+    const loadWebSocketDomain = async () => {
+      try {
+        const savedWebSocketDomain = await AsyncStorage.getItem('web_socket_domain')
+        if (savedWebSocketDomain) {
+          setWebSocketDomainState(savedWebSocketDomain)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    loadWebSocketDomain()
+  }, [])
 
   useEffect(() => {
     const getMatchCardDesign = async () => {
@@ -196,8 +233,43 @@ export const LeagueProvider = ({children}: any) => {
     dispatch({type: 'SET_REFRESH_UPCOMING', payload: false})
   }
 
+  async function setDomain(newDomain: string) {
+    try {
+      setDomainState(newDomain)
+      await AsyncStorage.setItem('api_domain', newDomain)
+    } catch (e) {
+      console.error('Failed to save domain:', e)
+    }
+  }
+
+  async function resetDomain() {
+    try {
+      setDomainState(defaultDomain)
+      await AsyncStorage.removeItem('api_domain')
+    } catch (e) {
+      console.error('Failed to reset domain:', e)
+    }
+  }
+
+  async function setWebSocketDomain(newWebSocketDomain: string) {
+    try {
+      setWebSocketDomainState(newWebSocketDomain)
+      await AsyncStorage.setItem('web_socket_domain', newWebSocketDomain)
+    } catch (e) {
+      console.error('Failed to save web socket domain:', e)
+    }
+  }
+
+  async function resetWebSocketDomain() {
+    try {
+      setWebSocketDomainState(defaultWebSocketDomain)
+      await AsyncStorage.removeItem('web_socket_domain')
+    } catch (e) {
+      console.error('Failed to reset web socket domain:', e)
+    }
+  }
   return (
-    <LeagueContext.Provider value={{state, dispatch, LogoutUser, RefreshUpcoming, StopRefreshUpcoming}}>
+    <LeagueContext.Provider value={{state, dispatch, LogoutUser, RefreshUpcoming, StopRefreshUpcoming, domain, setDomain, resetDomain, webSocketDomain, setWebSocketDomain, resetWebSocketDomain}}>
       {children}
     </LeagueContext.Provider>
   )

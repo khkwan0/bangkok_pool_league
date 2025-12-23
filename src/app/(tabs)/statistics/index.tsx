@@ -1,16 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {ThemedView as View} from '@/components/ThemedView'
-import {router} from 'expo-router'
-import {Ionicons} from '@expo/vector-icons'
 import Button from '@/components/Button'
-import {useTranslation} from 'react-i18next'
-import React from 'react'
-import {useLeagueContext} from '@/context/LeagueContext'
 import PlayerStatistics from '@/components/PlayerStatistics'
-import {useLeague} from '@/hooks/useLeague'
-import {ActivityIndicator} from 'react-native'
-import type {PlayerInfo} from '@/types/player'
-import {useTheme} from '@react-navigation/native'
+import { ThemedView as View } from '@/components/ThemedView'
+import { useLeagueContext } from '@/context/LeagueContext'
+import { useLeague } from '@/hooks/useLeague'
+import type { PlayerInfo } from '@/types/player'
+import { Ionicons } from '@expo/vector-icons'
+import { useTheme } from '@react-navigation/native'
+import { router } from 'expo-router'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { ActivityIndicator } from 'react-native'
 
 export default function StatisticsHome(props: any) {
   const league = useLeague()
@@ -27,6 +27,7 @@ export default function StatisticsHome(props: any) {
       try {
         setIsLoading(true)
         const info = await league.GetPlayerStatsInfo(user.id)
+        console.log(JSON.stringify(info, null, 2))
         setPlayerInfo(info)
       } catch (e) {
         setError(t('failed_to_load_player_info'))

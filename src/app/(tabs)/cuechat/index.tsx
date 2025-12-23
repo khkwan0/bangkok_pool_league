@@ -1,10 +1,10 @@
 import TextInput from '@/components/TextInput'
-import {ThemedText as Text} from '@/components/ThemedText'
-import {ThemedView as View} from '@/components/ThemedView'
+import { ThemedText as Text } from '@/components/ThemedText'
+import { ThemedView as View } from '@/components/ThemedView'
 import config from '@/config'
-import {useLeagueContext} from '@/context/LeagueContext'
-import {useNetwork} from '@/hooks/useNetwork'
-import {Ionicons} from '@expo/vector-icons'
+import { useLeagueContext } from '@/context/LeagueContext'
+import { useNetwork } from '@/hooks/useNetwork'
+import { Ionicons } from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import React from 'react'
 import {
@@ -19,8 +19,8 @@ import {
   TouchableOpacity,
   useColorScheme,
 } from 'react-native'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import {io} from 'socket.io-client'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { io } from 'socket.io-client'
 
 type ChatMessage = {
   id: string
@@ -71,6 +71,7 @@ export default function CueChat() {
       try {
         // Fetch all personas first
         const personasResponse = await Get('/personas')
+        console.log(JSON.stringify(personasResponse, null, 2))
         let personasList: Array<{id?: number; persona_id?: number; title?: string; name?: string}> = []
         if (personasResponse && personasResponse.status === 'ok' && personasResponse.data) {
           personasList = personasResponse.data

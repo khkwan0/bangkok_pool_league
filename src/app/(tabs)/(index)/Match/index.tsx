@@ -8,15 +8,15 @@ import {
   Score,
   VSHeader,
 } from '@/components/Match/components'
-import {FrameType} from '@/components/Match/types'
-import {ThemedView as View} from '@/components/ThemedView'
-import {useMatchContext} from '@/context/MatchContext'
-import {useMatch} from '@/hooks/useMatch'
-import {useNavigation} from '@react-navigation/native'
-import {router, useLocalSearchParams} from 'expo-router'
+import { FrameType } from '@/components/Match/types'
+import { ThemedView as View } from '@/components/ThemedView'
+import { useMatchContext } from '@/context/MatchContext'
+import { useMatch } from '@/hooks/useMatch'
+import { useNavigation } from '@react-navigation/native'
+import { router, useLocalSearchParams } from 'expo-router'
 import React from 'react'
-import {AppState, FlatList} from 'react-native'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import { AppState, FlatList } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function ScoreSheet() {
   const {state, dispatch, SocketConnect, SocketDisconnect, UpdateTeams}: any =
@@ -67,7 +67,6 @@ export default function ScoreSheet() {
   }, [])
 
   React.useEffect(() => {
-    console.log('matchInfo', matchInfo)
     const format = JSON.parse(matchInfo.format as string)
     const subsections = format[0].subsections
     let frameNumber = 1

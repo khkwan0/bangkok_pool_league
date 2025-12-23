@@ -22,6 +22,11 @@ export default function Admin() {
         text="Login As Other User"
         url="/Settings/Admin/LoginAsOtherUser"
       />
+      <NavDest
+        icon="server"
+        text="Domain Settings"
+        url="/Settings/Admin/DomainSettings"
+      />
       <Button title="Test Sentry" onPress={() => Sentry.captureException(new Error('Test Sentry'))} />
     </View>
   )
