@@ -1,10 +1,10 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import {useNetwork} from '@/hooks/useNetwork'
-import {getMessaging, getToken} from '@react-native-firebase/messaging'
 import config from '@/config'
-import notifee, {AndroidImportance} from '@notifee/react-native'
-import {Platform} from 'react-native'
-import {useLeagueContext} from '@/context/LeagueContext'
+import { useLeagueContext } from '@/context/LeagueContext'
+import { useNetwork } from '@/hooks/useNetwork'
+import notifee, { AndroidImportance } from '@notifee/react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getMessaging, getToken } from '@react-native-firebase/messaging'
+import { Platform } from 'react-native'
 
 export const useAccount = () => {
   const {state, dispatch} = useLeagueContext()
@@ -226,8 +226,8 @@ export const useAccount = () => {
       const token = await AsyncStorage.getItem('jwt')
       const data = new FormData()
       data.append('photo', {uri: path, name: 'oho', type: 'image/jpg'})
-      const res = await fetch('https://' + config.domain + '/avatar', {
-        method: 'post',
+      const res = await fetch(config.apiUrl + '/avatar', {
+        method: 'POST',
         body: data,
         headers: {
           Authorization: 'Bearer ' + token,

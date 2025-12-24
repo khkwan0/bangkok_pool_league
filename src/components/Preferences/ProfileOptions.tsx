@@ -1,13 +1,13 @@
 import CustomTextInput from '@/components/TextInput'
-import {ThemedText as Text} from '@/components/ThemedText'
-import {ThemedView} from '@/components/ThemedView'
+import { ThemedText as Text } from '@/components/ThemedText'
+import { ThemedView } from '@/components/ThemedView'
 import config from '@/config'
-import {useLeagueContext} from '@/context/LeagueContext'
+import { useLeagueContext } from '@/context/LeagueContext'
 import flags from '@/countries.emoji.json'
-import {useAccount, useLeague} from '@/hooks'
-import {Ionicons} from '@expo/vector-icons'
-import {useEffect, useMemo, useRef, useState} from 'react'
-import {useTranslation} from 'react-i18next'
+import { useAccount, useLeague } from '@/hooks'
+import { Ionicons } from '@expo/vector-icons'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   ActivityIndicator,
   Dimensions,
@@ -19,12 +19,12 @@ import {
   ScrollView,
   View,
 } from 'react-native'
-import Animated, {SlideInDown, SlideOutDown} from 'react-native-reanimated'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 //import ImagePicker from 'react-native-image-crop-picker'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import * as ImagePicker from 'expo-image-picker'
-import {router} from 'expo-router'
+import { router } from 'expo-router'
 
 interface Country {
   id: number
@@ -66,6 +66,8 @@ export default function ProfileOptions() {
   const account = useAccount()
   const insets = useSafeAreaInsets()
   const [imageError, setImageError] = useState<Error | null>(null)
+  const [nationalityEN, setNationalityEN] = useState(user?.nationality?.name_en ?? '')
+  const [nationalityTH, setNationalityTH] = useState(user?.nationality?.name_th ?? '')
   const cameraPerms = ImagePicker.useCameraPermissions()
 
   useMemo(() => {
@@ -158,7 +160,7 @@ export default function ProfileOptions() {
   }, [isEditingNickname, isEditingFirstName, isEditingLastName])
 
   function getCountryFlag(country: string) {
-    const flag = (flags as {[key: string]: {emoji: string}})[country]
+    const flag = (flags as {[key: string]: {emoji: string}})[country.trim()]
     return flag?.emoji || ''
   }
 

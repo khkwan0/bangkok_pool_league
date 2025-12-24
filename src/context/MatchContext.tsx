@@ -162,7 +162,7 @@ const MatchReducer = (state: StateType, action: any) => {
 
 export const MatchProvider = (props: any) => {
   const [state, dispatch] = useReducer(MatchReducer, initialState)
-  const {state: leagueState, domain, webSocketDomain}: any = useLeagueContext()
+  const {state: leagueState, webSocketUrl}: any = useLeagueContext()
   const matchHooks = useMatch()
   const teams = useTeams()
   const roomId = React.useRef('')
@@ -184,7 +184,7 @@ export const MatchProvider = (props: any) => {
     }
 
     // Create new socket with updated domain
-    socket.current = io('https://' + webSocketDomain, {autoConnect: false})
+    socket.current = io(webSocketUrl, {autoConnect: false})
 
     const currentSocket = socket.current
 
@@ -297,7 +297,7 @@ export const MatchProvider = (props: any) => {
       currentSocket.removeAllListeners()
       currentSocket.disconnect()
     }
-  }, [domain])
+  }, [webSocketUrl])
 
   React.useEffect(() => {
     if (

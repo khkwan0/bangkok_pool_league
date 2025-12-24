@@ -1,22 +1,22 @@
-import React, {useState} from 'react'
+import Button from '@/components/Button'
+import { ThemedText as Text } from '@/components/ThemedText'
+import config from '@/config'
+import { useLeagueContext } from '@/context/LeagueContext'
+import { useNavigation } from 'expo-router'
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  View,
-  TextInput,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  TextInput,
+  View,
 } from 'react-native'
-import {useNavigation} from 'expo-router'
-import {ThemedText as Text} from '@/components/ThemedText'
-import {useLeagueContext} from '@/context/LeagueContext'
-import Button from '@/components/Button'
-import {useTranslation} from 'react-i18next'
-import {domain as defaultDomain} from '@/config'
 
 export default function DomainSettings() {
   const navigation = useNavigation()
   const {t} = useTranslation()
-  const {domain, setDomain, resetDomain} = useLeagueContext()
+  const {apiUrl, setApiUrl, resetApiUrl} = useLeagueContext()
   const [customDomain, setCustomDomain] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -29,7 +29,7 @@ export default function DomainSettings() {
   const handleReset = async () => {
     setIsSubmitting(true)
     try {
-      await resetDomain()
+      await resetApiUrl()
     } catch (error) {
       console.error('Failed to reset domain:', error)
     } finally {
@@ -41,8 +41,8 @@ export default function DomainSettings() {
     setIsSubmitting(true)
     try {
       // Remove https:// if present, we'll add it in useNetwork
-      const cleanDomain = 'bkkleague.com/api'
-      await setDomain(cleanDomain)
+      const cleanDomain = 'https://api.bkkleague.com'
+      await setApiUrl(cleanDomain)
     } catch (error) {
       console.error('Failed to set preset domain:', error)
     } finally {
@@ -64,7 +64,7 @@ export default function DomainSettings() {
       if (cleanDomain.startsWith('http://')) {
         cleanDomain = cleanDomain.replace('http://', '')
       }
-      await setDomain(cleanDomain)
+      await setApiUrl(cleanDomain)
       setCustomDomain('')
     } catch (error) {
       console.error('Failed to set custom domain:', error)
@@ -81,10 +81,10 @@ export default function DomainSettings() {
         <View className="mb-6">
           <Text className="text-lg font-bold mb-2">Current Domain</Text>
           <View className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mb-4">
-            <Text className="text-base font-mono">{domain}</Text>
+            <Text className="text-base font-mono">{apiUrl}</Text>
           </View>
           <Text className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            API endpoints will use: https://{domain}/
+            API endpoints will use: {apiUrl}
           </Text>
         </View>
 
@@ -94,10 +94,10 @@ export default function DomainSettings() {
           <View className="mb-3">
             <Button
               onPress={handleReset}
-              disabled={isSubmitting || domain === defaultDomain}
+              disabled={isSubmitting || apiUrl === config.apiUrl}
               className="bg-gray-600 active:bg-gray-700 py-3 px-4 rounded-lg items-center mb-2">
               <Text className="text-white">
-                Reset to Default ({defaultDomain})
+                Reset to Default ({config.apiUrl})
               </Text>
             </Button>
           </View>
@@ -105,10 +105,10 @@ export default function DomainSettings() {
           <View className="mb-3">
             <Button
               onPress={handleSetPreset}
-              disabled={isSubmitting || domain === 'bkkleague.com/api'}
+              disabled={isSubmitting || apiUrl === 'https://api.bkkleague.com'}
               className="bg-blue-600 active:bg-blue-700 py-3 px-4 rounded-lg items-center mb-2">
               <Text className="text-white">
-                Set to bkkleague.com/api
+                Set to api.bkkleague.com
               </Text>
             </Button>
           </View>
