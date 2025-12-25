@@ -1,13 +1,13 @@
+import { ThemedText as Text } from '@/components/ThemedText'
+import { ThemedView as View } from '@/components/ThemedView'
+import { useMatchContext } from '@/context/MatchContext'
+import { useMatch } from '@/hooks'
+import { useNavigation } from '@react-navigation/native'
+import { useLocalSearchParams } from 'expo-router'
+import { DateTime } from 'luxon'
 import React from 'react'
-import {useNavigation} from '@react-navigation/native'
-import {useLocalSearchParams} from 'expo-router'
-import {useMatch} from '@/hooks'
-import {FlatList} from 'react-native'
-import {ThemedText as Text} from '@/components/ThemedText'
-import {DateTime} from 'luxon'
-import {ThemedView as View} from '@/components/ThemedView'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import {useMatchContext} from '@/context/MatchContext'
+import { FlatList } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type HistoryItem = {
   timestamp: number
