@@ -1,12 +1,12 @@
 import Button from '@/components/Button'
 import TextInput from '@/components/TextInput'
-import {ThemedText as Text} from '@/components/ThemedText'
-import {useAccount} from '@/hooks/useAccount'
+import { ThemedText as Text } from '@/components/ThemedText'
+import { useAccount } from '@/hooks/useAccount'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import {useNavigation} from '@react-navigation/native'
-import {router, useLocalSearchParams} from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
+import { router, useLocalSearchParams } from 'expo-router'
 import React from 'react'
-import {useTranslation} from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import {
   KeyboardAvoidingView,
   Platform,
@@ -108,7 +108,7 @@ export default function Email() {
                 onChangeText={setEmail}
                 placeholder={t('email_placeholder')}
                 autoCapitalize="none"
-                autoComplete="email"
+                autoComplete="username"
                 textContentType={Platform.OS === 'ios' ? 'username' : 'emailAddress'}
                 keyboardType="email-address"
                 leftIcon={MaterialCommunityIcons}
