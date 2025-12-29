@@ -4,6 +4,7 @@ export interface Message {
   message: string
   created_at: string
   read_at: string
+  sender_nickname: string
 }
 
 export interface MessageCardProps {

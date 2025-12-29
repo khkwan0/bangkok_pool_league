@@ -107,6 +107,8 @@ export default function Email() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder={t('email_placeholder')}
+                importantForAutofill="yes"
+                returnKeyType="next"
                 autoCapitalize="none"
                 autoComplete="username"
                 textContentType={Platform.OS === 'ios' ? 'username' : 'emailAddress'}
@@ -138,7 +140,9 @@ export default function Email() {
                 secureTextEntry={!showPassword}
                 textContentType="password"
                 autoCapitalize="none"
-                autoComplete="password"
+                autoComplete="current-password"
+                importantForAutofill="yes"
+                returnKeyType="done"
                 leftIcon={MaterialCommunityIcons}
                 leftIconProps={{name: 'lock-outline'}}
                 rightIcon={MaterialCommunityIcons}

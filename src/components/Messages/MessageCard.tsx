@@ -1,14 +1,14 @@
-import {ThemedText as Text} from '@/components/ThemedText'
-import {ThemedView as View} from '@/components/ThemedView'
-import React from 'react'
-import {StyleSheet, TouchableOpacity, Alert, Platform} from 'react-native'
-import {DateTime} from 'luxon'
-import {useAccount} from '@/hooks/useAccount'
+import { ThemedText as Text } from '@/components/ThemedText'
+import { ThemedView as View } from '@/components/ThemedView'
+import { useLeagueContext } from '@/context/LeagueContext'
+import { useAccount } from '@/hooks/useAccount'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import {useTranslation} from 'react-i18next'
-import {useLeagueContext} from '@/context/LeagueContext'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
-import {MessageCardProps} from './types'
+import { DateTime } from 'luxon'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { Alert, Platform, StyleSheet, TouchableOpacity } from 'react-native'
+import { MessageCardProps } from './types'
 
 export default function MessageCard({message, showAll}: MessageCardProps) {
   const date = DateTime.fromISO(message.created_at)
@@ -82,8 +82,9 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
       <View className="rounded-xl mx-4 my-2" style={[styles.card]}>
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-1 pr-4">
+            <Text>{message.sender_nickname ? `From: ${message.sender_nickname}` : ''}</Text>
             <Text type="subtitle" style={styles.title}>
-              {message.title}
+              {message.title || "No title"}
             </Text>
           </View>
           <View className="flex-row items-center gap-2">
