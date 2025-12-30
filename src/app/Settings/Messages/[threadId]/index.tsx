@@ -463,7 +463,6 @@ export default function MessagesThread() {
     }
   }, [messages])
 
-  console.log('num message', messages.length)
   const content = (
     <View style={[styles.contentContainer, Platform.OS === 'android' && keyboardHeight > 0 && {paddingBottom: keyboardHeight}]}>
       <FlatList
