@@ -2,6 +2,7 @@ import { Message } from '@/components/Messages/types'
 import TextInput from '@/components/TextInput'
 import { ThemedText as Text } from '@/components/ThemedText'
 import { ThemedView } from '@/components/ThemedView'
+import { domain } from '@/config'
 import { useLeagueContext } from '@/context/LeagueContext'
 import { useAccount } from '@/hooks/useAccount'
 import { useColorScheme } from '@/hooks/useColorScheme'
@@ -13,6 +14,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { io } from 'socket.io-client'
 
 function ResponseInput({
   keyboardHeight,
@@ -153,19 +155,8 @@ function MessageLine({
 
   return (
     <View style={[styles.messageWrapper, isUserMessage ? styles.userMessageWrapper : styles.otherMessageWrapper]}>
-      <View style={styles.bubbleContainer}>
-        <View style={messageStyle}>
-          <Text style={textStyle}>{message.message}</Text>
-        </View>
-        <View
-          style={[
-            styles.tail,
-            isUserMessage ? styles.tailRight : styles.tailLeft,
-            isUserMessage
-              ? {borderLeftColor: bubbleColor}
-              : {borderRightColor: bubbleColor},
-          ]}
-        />
+      <View style={messageStyle}>
+        <Text style={textStyle}>{message.message}</Text>
       </View>
       {formattedTimestamp && (
         <Text style={timestampStyle}>{formattedTimestamp}</Text>
@@ -180,6 +171,7 @@ export default function MessagesThread() {
   const { t } = useTranslation()
   const navigation = useNavigation()
   const [messages, setMessages] = useState<Message[]>([])
+  const [roomName, setRoomName] = useState<string | null>(null)
   const account = useAccount()
 
   useEffect(() => {
@@ -187,6 +179,7 @@ export default function MessagesThread() {
       title: from ? `${from}` : t('messages'),
     })
   }, [navigation, t])
+
 
   const {state} = useLeagueContext()
   const userId = state.user.id
@@ -228,6 +221,131 @@ export default function MessagesThread() {
   useEffect(() => {
     fetchMessages()
   }, [threadId])
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      const fromId = messages[0].from_player_id
+      const toId = messages[0].to_player_id
+      const roomName = fromId < toId ? `pm:${fromId}:${toId}` : `pm:${toId}:${fromId}`
+      setRoomName(roomName)
+    }
+  }, [messages])
+
+  const socketRef = useRef<ReturnType<typeof io> | null>(null)
+
+  useEffect(() => {
+    if (!roomName) return
+
+    // Create socket if it doesn't exist
+    if (!socketRef.current) {
+      socketRef.current = io('https://' + domain, {autoConnect: false})
+    }
+
+    const socket = socketRef.current
+
+    const handleConnect = () => {
+      // console.log('Socket connected, joining room:', roomName)
+      JoinRoom()
+    }
+
+    const handleDisconnect = () => {
+      // console.log('Socket disconnected')
+    }
+
+    function JoinRoom() {
+      if (socket && socket.connected && roomName) {
+        socket.emit('join', roomName, (joinStatus: {status: string}) => {
+          if (joinStatus.status === 'ok') {
+            // console.log('Joined room:', roomName)
+          }
+        })
+      }
+    }
+
+    const handleMessage = (data: any) => {
+      // console.log('Received message event:', data)
+      
+      // Convert socket data to Message format
+      const newMessage: Message = {
+        id: data.id || data.message_id || Date.now(),
+        title: data.title || '',
+        message: data.message || data.text || '',
+        created_at: data.created_at || data.timestamp || new Date().toISOString(),
+        read_at: data.read_at || '',
+        sender_nickname: data.sender_nickname || data.nickname || data.sender?.nickname || '',
+        from_player_id: data.from_player_id || data.from_id || data.sender?.id || 0,
+        to_player_id: data.to_player_id || data.to_id || data.recipient?.id || 0,
+        root_id: data.root_id || data.rootId || 0,
+        reply_to: data.reply_to || data.replyTo || 0,
+      }
+
+      // Check if message already exists (avoid duplicates from optimistic updates)
+      setMessages((prev) => {
+        const messageExists = prev.some(
+          (msg) =>
+            msg.id === newMessage.id ||
+            (msg.message === newMessage.message &&
+              msg.from_player_id === newMessage.from_player_id &&
+              Math.abs(
+                DateTime.fromISO(msg.created_at).diff(
+                  DateTime.fromISO(newMessage.created_at),
+                  'seconds',
+                ).seconds,
+              ) < 5), // Within 5 seconds
+        )
+
+        if (messageExists) {
+          // Replace optimistic message with real one if it exists
+          return prev.map((msg) =>
+            msg.id < 0 && // Optimistic message
+            msg.message === newMessage.message &&
+            msg.from_player_id === newMessage.from_player_id &&
+            Math.abs(
+              DateTime.fromISO(msg.created_at).diff(
+                DateTime.fromISO(newMessage.created_at),
+                'seconds',
+              ).seconds,
+            ) < 5
+              ? newMessage
+              : msg,
+          )
+        }
+
+        // Add new message at the beginning (list is inverted)
+        return [newMessage, ...prev]
+      })
+    }
+
+    // Set up event listeners
+    socket.on('connect', handleConnect)
+    socket.on('disconnect', handleDisconnect)
+    socket.on('message', handleMessage)
+
+    // Connect to socket
+    if (!socket.connected) {
+      socket.connect()
+    } else {
+      // If already connected, join room immediately
+      JoinRoom()
+    }
+
+    // Cleanup on unmount or roomName change
+    return () => {
+      socket.off('connect', handleConnect)
+      socket.off('disconnect', handleDisconnect)
+      socket.off('message', handleMessage)
+    }
+  }, [roomName])
+
+  // Cleanup socket on component unmount
+  useEffect(() => {
+    return () => {
+      if (socketRef.current && socketRef.current.connected) {
+        socketRef.current.disconnect()
+        socketRef.current = null
+      }
+    }
+  }, [])
 
   const handleSendMessage = async (messageText: string) => {
     if (!messageText.trim() || sending || !userId) return
@@ -279,7 +397,38 @@ export default function MessagesThread() {
           root_id: rootId,
           reply_to: 0,
         }
-        setMessages((prev) => [optimisticMessage, ...prev])
+        setMessages((prev) => {
+          const updated = [optimisticMessage, ...prev]
+          
+          // Scroll to bottom after adding message (for inverted list, index 0 is the newest)
+          setTimeout(() => {
+            if (flatListRef.current) {
+              try {
+                flatListRef.current.scrollToIndex({index: 0, animated: true})
+              } catch (error) {
+                // Fallback if scrollToIndex fails
+                flatListRef.current.scrollToEnd({animated: true})
+              }
+            }
+          }, 150)
+          
+          return updated
+        })
+
+        // Emit 'message' event to the socket room with the same body sent to backend
+        if (socketRef.current && socketRef.current.connected && roomName) {
+          const messageBody = {
+            room: roomName,
+            to_player_id: recipientId,
+            from_player_id: userId,
+            senderId: userId,
+            recipientId: recipientId,
+            title: '', // No title for replies
+            message: messageText.trim(),
+            root_id: rootId,
+          }
+          socketRef.current.emit('message', messageBody)
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error)
@@ -306,9 +455,11 @@ export default function MessagesThread() {
   }, [inputContainerHeight])
 
   useEffect(() => {
-    if (messages.length > 0) {
-      console.log('scroll to end')
-      flatListRef.current?.scrollToEnd({animated: true})
+    if (messages.length > 0 && flatListRef.current) {
+      // For inverted FlatList, scroll to index 0 to show the newest message (bottom)
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({index: 0, animated: true})
+      }, 100)
     }
   }, [messages])
 
@@ -329,6 +480,12 @@ export default function MessagesThread() {
         maintainVisibleContentPosition={{
           minIndexForVisible: 0,
           autoscrollToTopThreshold: 100,
+        }}
+        onScrollToIndexFailed={(info) => {
+          // Fallback to scrollToEnd if scrollToIndex fails
+          setTimeout(() => {
+            flatListRef.current?.scrollToEnd({animated: true})
+          }, 100)
         }}
         style={[styles.list, {backgroundColor}]}
         contentContainerStyle={[
@@ -424,9 +581,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     alignItems: 'flex-start',
   },
-  bubbleContainer: {
-    position: 'relative',
-  },
   messageContainer: {
     padding: 12,
   },
@@ -441,30 +595,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 18,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 18,
-  },
-  tail: {
-    width: 0,
-    height: 0,
-    position: 'absolute',
-    bottom: 0,
-  },
-  tailRight: {
-    right: -7,
-    borderTopWidth: 0,
-    borderBottomWidth: 7,
-    borderRightWidth: 0,
-    borderLeftWidth: 7,
-    borderTopColor: 'transparent',
-    borderRightColor: 'transparent',
-  },
-  tailLeft: {
-    left: -7,
-    borderTopWidth: 0,
-    borderBottomWidth: 7,
-    borderRightWidth: 7,
-    borderLeftWidth: 0,
-    borderTopColor: 'transparent',
-    borderLeftColor: 'transparent',
   },
   userMessageText: {
     color: '#FFFFFF',
