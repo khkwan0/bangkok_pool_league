@@ -4,6 +4,7 @@ import { useLeagueContext } from '@/context/LeagueContext'
 import { useAccount } from '@/hooks/useAccount'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
+import { router } from 'expo-router'
 import { DateTime } from 'luxon'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -31,6 +32,10 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
           }
         }
       }
+      router.push({
+        pathname: `/Settings/Messages/${message.root_id || message.id}` as any,
+        params: {from: message.sender_nickname}
+      })
     } catch (e) {
       console.log(e)
     }
@@ -102,6 +107,7 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
           {message.message}
         </Text>
         <Text style={styles.date}>{date.toFormat('LLL d, yyyy')}</Text>
+        <Text style={styles.time}>{date.toFormat('HH mm a')}</Text>
       </View>
     </TouchableOpacity>
   )
@@ -141,6 +147,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   date: {
+    fontSize: 13,
+    opacity: 0.5,
+    textAlign: 'right',
+  },
+  time: {
     fontSize: 13,
     opacity: 0.5,
     textAlign: 'right',

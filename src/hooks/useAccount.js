@@ -288,6 +288,16 @@ export const useAccount = () => {
     }
   }
 
+  async function GetMessageHistory(threadId) {
+    try {
+      const res = await Get('/message/history/' + threadId)
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   async function MarkMessageAsRead(messageId) {
     try {
       const res = await Post('/message/read', {messageId})
@@ -337,13 +347,14 @@ export const useAccount = () => {
     }
   }
 
-  async function SendMessage(senderId, recipientId, title, message) {
+  async function SendMessage(senderId, recipientId, title, message, root_id = null) {
     try {
       const res = await Post('/message/send', {
         senderId,
         recipientId,
         title,
         message,
+        root_id,
       })
       return res
     } catch (e) {
@@ -446,6 +457,7 @@ export const useAccount = () => {
     DeleteMessage,
     FetchUser,
     GetMessages,
+    GetMessageHistory,
     GetUnreadMessageCount,
     GetUserEmailLogin,
     LoadUser,
