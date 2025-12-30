@@ -209,7 +209,7 @@ function MessageLine({
 
 export default function MessagesThread() {
   
-  const { threadId, from } = useLocalSearchParams()
+  const { from, playerId} = useLocalSearchParams()
   const { t } = useTranslation()
   const navigation = useNavigation()
   const [messages, setMessages] = useState<Message[]>([])
@@ -235,7 +235,7 @@ export default function MessagesThread() {
   const flatListRef = useRef<FlatList>(null)
 
   const fetchMessages = async (preserveOptimistic?: Message) => {
-    const res = await account.GetMessageHistory(threadId)
+    const res = await account.GetMessageConversation(playerId)
     if (res.status === 'ok') {
       if (preserveOptimistic) {
         // Check if the optimistic message is already in the server response
@@ -257,13 +257,13 @@ export default function MessagesThread() {
           return
         }
       }
-      setMessages(res.data)
+      setMessages(res.data.reverse())
     }
   }
 
   useEffect(() => {
     fetchMessages()
-  }, [threadId])
+  }, [playerId])
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -615,18 +615,45 @@ export default function MessagesThread() {
         ref={flatListRef}
         data={messages}
         renderItem={({item, index}) => {
+          const currentDate = DateTime.fromISO(item.created_at).setZone('local').startOf('day')
+          // In inverted list: index 0 = newest (bottom), last index = oldest (top)
+          // The previous message in the array is newer, next message is older
+          const prevMessage = index > 0 ? messages[index - 1] : null
+          const prevDate = prevMessage 
+            ? DateTime.fromISO(prevMessage.created_at).setZone('local').startOf('day')
+            : null
+          const nextMessage = messages[index]
+          const nextDate = nextMessage 
+            ? DateTime.fromISO(nextMessage.created_at).setZone('local').startOf('day')
+            : null
           const isOldestMessage = index === messages.length - 1 // Last in array = oldest (first chronologically)
+          // Date changes when moving from previous (newer) message to current message with different date
+          const dateChangedFromPrev = nextDate && prevDate && !prevDate?.hasSame(nextDate, 'day')
+          // Date changes when moving to the next (older) message with different date
+          const dateChangedToNext = nextDate && !currentDate.hasSame(nextDate, 'day')
+          
+          // Show date separator before message if it's the first message of that day
+          // This happens when: 
+          // 1. It's the first message (newest message) - always show
+          const shouldShowDateBefore = isOldestMessage
+          
+          // Show date separator after message when date changes to next (older) message
+          // This shows the date of the next message when transitioning to a new day
+          // But don't show if we already showed it before the current message (to avoid duplicates)
+          const shouldShowDateAfter = dateChangedFromPrev
           
           return (
             <View key={item.id}>
-              {/* Show date only before the very first message (oldest, first chronologically) */}
-              {isOldestMessage && (
+              {shouldShowDateBefore && (
                 <DateSeparator date={item.created_at} />
               )}
               <MessageLine
                 message={item}
                 nextMessage={messages[index + 1]}
               />
+              {shouldShowDateAfter && prevMessage && (
+                <DateSeparator date={prevMessage!.created_at} />
+              )}
             </View>
           )
         }}

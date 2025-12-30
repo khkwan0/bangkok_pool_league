@@ -33,7 +33,7 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
         }
       }
       router.push({
-        pathname: `/Settings/Messages/${message.root_id || message.id}` as any,
+        pathname: `/Settings/Messages/${message.from_player_id}` as any,
         params: {from: message.sender_nickname}
       })
     } catch (e) {

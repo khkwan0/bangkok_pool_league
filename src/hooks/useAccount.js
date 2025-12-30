@@ -278,6 +278,16 @@ export const useAccount = () => {
     }
   }
 
+  async function GetMessageConversation(userId) {
+    try {
+      const res = await Get('/message/conversation/' + userId)
+      return res
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   async function GetMessages(userId) {
     try {
       const res = await Get('/messages/' + userId)
@@ -456,6 +466,7 @@ export const useAccount = () => {
     DeleteAccount,
     DeleteMessage,
     FetchUser,
+    GetMessageConversation,
     GetMessages,
     GetMessageHistory,
     GetUnreadMessageCount,
