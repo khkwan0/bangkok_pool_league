@@ -110,8 +110,8 @@ function RootLayout() {
         // console.log('Notification opened app (background/foreground):', JSON.stringify(remoteMessage, null, 2))
         
         // Check for threadId first - if it exists, navigate to message thread
-        const threadId = remoteMessage?.data?.threadId || remoteMessage?.data?.rootId
-        if (threadId) {
+        const senderId = remoteMessage?.data?.senderId || null
+        if (senderId) {
           //console.log('Found threadId, navigating to message thread')
           // Add small delay to ensure router is ready
           setTimeout(() => {
@@ -138,8 +138,8 @@ function RootLayout() {
           // console.log('Initial notification (quit state):', JSON.stringify(remoteMessage, null, 2))
           if (remoteMessage) {
             // Check for threadId first - if it exists, navigate to message thread
-            const threadId = remoteMessage?.data?.threadId || remoteMessage?.data?.rootId
-            if (threadId) {
+            const senderId = remoteMessage?.data?.senderId || null
+            if (senderId) {
               // console.log('Found threadId in initial notification, navigating to message thread')
               // Add delay to ensure router and app are fully initialized
               setTimeout(() => {
@@ -177,15 +177,16 @@ function RootLayout() {
         }
 
         try {
-          
+         /* 
           // Extract thread ID from notification data - check camelCase fields first (from your payload)
           const threadId = remoteMessage?.data?.threadId || 
                           remoteMessage?.data?.rootId || ''
+                          */
           
           // Extract sender name from notification
           const fromPlayerId = parseInt(remoteMessage?.data?.senderId || '0', 10)
 
-          if (threadId) {
+          if (fromPlayerId) {
             const path = `/Settings/Messages/${fromPlayerId}`
             
             // Navigate to the message thread using push to add to stack (provides back button)

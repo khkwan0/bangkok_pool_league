@@ -218,12 +218,14 @@ export default function MessagesThread() {
   const [senderProfilePicture, setSenderProfilePicture] = useState<string | null>(null)
   const account = useAccount()
   const league = useLeague()
+  const [senderName, setSenderName] = useState<string | null>(null)
+  const [senderId, setSenderId] = useState<number | null>(null)
 
   useEffect(() => {
     navigation.setOptions({
-      title: from ? `${from}` : t('messages'),
+      title: senderName ? `${senderName}` : from ? `${from}` : t('messages'),
     })
-  }, [navigation, t])
+  }, [navigation, t, senderName])
 
 
   const {state, dispatch} = useLeagueContext()
@@ -538,8 +540,6 @@ export default function MessagesThread() {
     }
   }, [messages])
 
-  const [senderName, setSenderName] = useState<string | null>(null)
-  const [senderId, setSenderId] = useState<number | null>(null)
   useEffect(() => {
     const fetchSenderName = async () => {
       if (from) {
