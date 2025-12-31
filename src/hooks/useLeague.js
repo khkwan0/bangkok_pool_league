@@ -1,4 +1,4 @@
-import {useNetwork} from '@/hooks/useNetwork'
+import { useNetwork } from '@/hooks/useNetwork'
 
 export const useLeague = () => {
   const {Get, Post} = useNetwork()
@@ -82,6 +82,16 @@ export const useLeague = () => {
       }
       const stats = await Get('/stats/players/' + seasonId + '?' + query)
       return stats
+    } catch (e) {
+      console.log(e)
+      return []
+    }
+  }
+
+  const GetPlayerName = async (playerId = 0) => {
+    try {
+      const playerName = await Get('/player/name/' + playerId)
+      return playerName
     } catch (e) {
       console.log(e)
       return []
@@ -558,6 +568,7 @@ export const useLeague = () => {
     GetMatchesBySeason,
     GetMergeRequests,
     GetMyMergeRequests,
+    GetPlayerName,
     GetPlayerInfo,
     GetPlayerStats,
     GetPlayerStatsByDivision,

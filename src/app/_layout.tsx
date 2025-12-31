@@ -173,39 +173,25 @@ function RootLayout() {
     AsyncStorage.getItem('jwt')
       .then(jwt => {
         if (!jwt) {
-          console.log('User not logged in, skipping navigation')
           return
         }
 
         try {
-          console.log('Handling notification navigation, full remoteMessage:', JSON.stringify(remoteMessage, null, 2))
           
           // Extract thread ID from notification data - check camelCase fields first (from your payload)
           const threadId = remoteMessage?.data?.threadId || 
-                          remoteMessage?.data?.rootId ||
-                          remoteMessage?.data?.thread_id || 
-                          remoteMessage?.data?.root_id || 
-                          remoteMessage?.data?.message_id ||
-                          remoteMessage?.data?.id ||
-                          remoteMessage?.messageId
+                          remoteMessage?.data?.rootId || ''
           
           // Extract sender name from notification
-          const from = remoteMessage?.data?.from || 
-                       remoteMessage?.data?.sender_nickname || 
-                       remoteMessage?.data?.sender_name ||
-                       remoteMessage?.notification?.title ||
-                       ''
-
-          console.log('Extracted threadId:', threadId, 'from:', from)
+          const fromPlayerId = parseInt(remoteMessage?.data?.senderId || '0', 10)
 
           if (threadId) {
-            const path = `/Settings/Messages/${threadId}`
-            console.log('Navigating to:', path, 'with params:', {from})
+            const path = `/Settings/Messages/${fromPlayerId}`
             
             // Navigate to the message thread using push to add to stack (provides back button)
             router.push({
               pathname: path as any,
-              params: {from: from || ''}
+              params: {from: fromPlayerId}
             })
           } else {
             console.warn('No threadId found in notification data. Available data:', remoteMessage?.data)
@@ -230,12 +216,6 @@ function RootLayout() {
                 name="(tabs)"
                 options={{
                   headerTitle: t('bangkok_pool_league'),
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="Settings"
-                options={{
                   headerShown: false,
                 }}
               />

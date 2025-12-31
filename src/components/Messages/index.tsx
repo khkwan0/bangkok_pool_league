@@ -1,30 +1,44 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {ThemedText as Text} from '@/components/ThemedText'
-import {useAccount} from '@/hooks/useAccount'
-import {useLeagueContext} from '@/context/LeagueContext'
-import React from 'react'
-import {FlatList, ActivityIndicator, View} from 'react-native'
-import MessageCard from './MessageCard'
-import Button from '@/components/Button'
-import {useTranslation} from 'react-i18next'
-import {useNavigation} from '@react-navigation/native'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import PushNotificationIOS from '@react-native-community/push-notification-ios'
-import {Platform} from 'react-native'
-import {Message} from './types'
-import {DateTime} from 'luxon'
+import { ThemedText as Text } from '@/components/ThemedText'
+import { ThemedView as View } from '@/components/ThemedView'
+import config from '@/config'
+import { useLeagueContext } from '@/context/LeagueContext'
+import { useAccount } from '@/hooks/useAccount'
 import Ionicons from '@expo/vector-icons/Ionicons'
+import { useNavigation } from '@react-navigation/native'
+import { router } from 'expo-router'
+import { DateTime } from 'luxon'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { ActivityIndicator, FlatList, Image, TouchableOpacity } from 'react-native'
+
+interface Thread {
+  id?: number
+  thread_id?: number
+  root_id?: number
+  title?: string
+  last_message?: string
+  last_message_preview?: string
+  last_message_at?: string
+  created_at?: string
+  unread_count?: number
+  participant_name?: string
+  participant_nickname?: string
+  from?: string
+  sender_nickname?: string
+  other_player_id?: number
+  other_player_nickname?: string
+  other_player_firstname?: string
+  other_player_lastname?: string
+  other_player_profile_picture?: string
+}
 
 export default function Messages() {
   const account = useAccount()
   const {state, dispatch} = useLeagueContext()
-  const userId = state.user.id
-  const [messages, setMessages] = React.useState<Message[]>([])
+  const [threads, setThreads] = React.useState<Thread[]>([])
   const [loading, setLoading] = React.useState(true)
-  const [showAll, setShowAll] = React.useState(false)
-  const [unreadCount, setUnreadCount] = React.useState(0)
   const {t} = useTranslation()
-  const insets = useSafeAreaInsets()
   const navigation = useNavigation()
 
   React.useEffect(() => {
@@ -34,37 +48,103 @@ export default function Messages() {
   }, [navigation, t])
 
   React.useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchThreads = async () => {
       try {
-        if (userId) {
-          setLoading(true)
-          const res = await account.GetMessages(userId)
-          if (res.status === 'ok') {
-            setMessages(res.data)
-          }
+        setLoading(true)
+        const res = await account.GetMessageThreads()
+        if (res.status === 'ok' && Array.isArray(res.data)) {
+          setThreads(res.data)
         }
       } catch (e) {
-        console.error('fetcMessages', e)
+        console.error('fetchThreads', e)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchMessages()
-  }, [userId])
+    fetchThreads()
+  }, [])
 
-  React.useEffect(() => {
-    if (typeof messages !== 'undefined' && Array.isArray(messages)) {
-      const _unreadCount = messages.filter(
-        (message: Message) => message.read_at === null,
-      ).length
-      setUnreadCount(_unreadCount)
-      if (Platform.OS === 'ios') {
-        PushNotificationIOS.setApplicationIconBadgeNumber(_unreadCount)
-      }
-      dispatch({type: 'SET_MESSAGE_COUNT', payload: _unreadCount})
+  const handleThreadPress = (thread: Thread) => {
+    const threadId = thread.other_player_id
+    const from = thread.participant_name || thread.participant_nickname || thread.from || thread.sender_nickname || ''
+    
+    if (threadId) {
+      router.push({
+        pathname: `/Settings/Messages/${threadId}` as any,
+        params: {from}
+      })
     }
-  }, [messages])
+  }
+
+  const renderThreadItem = ({item}: {item: Thread}) => {
+    const threadId = item.id || item.thread_id || item.root_id
+    const displayName = item.other_player_nickname || t('unknown')
+    const profilePicture = item.other_player_profile_picture
+    const lastMessagePreview = item.last_message_preview || item.last_message || item.title || ''
+    const lastMessageDate = item.last_message_at || item.created_at
+    const unreadCount = item.unread_count || 0
+    
+    let dateText = ''
+    if (lastMessageDate) {
+      // Parse as UTC and convert to local timezone
+      const date = DateTime.fromISO(lastMessageDate, {zone: 'utc'}).toLocal()
+      const now = DateTime.now()
+      if (date.hasSame(now, 'day')) {
+        dateText = date.toFormat('h:mm a')
+      } else if (date.hasSame(now.minus({days: 1}), 'day')) {
+        dateText = t('yesterday')
+      } else {
+        dateText = date.toFormat('LLL d')
+      }
+    }
+
+    return (
+      <TouchableOpacity
+        onPress={() => handleThreadPress(item)}
+        className="px-4 py-3 border-b border-white/10"
+        activeOpacity={0.7}>
+        <View className="relative">
+          <View className="flex-row justify-between items-center">
+            <View className="flex-row items-center flex-1 mr-2">
+              {profilePicture ? (
+                <Image
+                  source={{uri: config.profileUrl + profilePicture}}
+                  className="w-10 h-10 rounded-full mr-3"
+                />
+              ) : (
+                <View className="w-10 h-10 rounded-full mr-3 bg-white/10 justify-center items-center">
+                  <Ionicons name="person" size={20} color="#8E8E93" />
+                </View>
+              )}
+              <View className="flex-1">
+                <View className="flex-row items-center">
+                  <Text className="text-base font-bold" numberOfLines={1}>
+                    {displayName}
+                  </Text>
+                  {unreadCount > 0 && (
+                    <View 
+                      className="ml-2 rounded-full min-w-[20px] h-5 px-1.5 justify-center items-center"
+                      style={{backgroundColor: '#ef4444'}}>
+                      <Text className="text-white text-xs font-semibold">{String(unreadCount)}</Text>
+                    </View>
+                  )}
+                </View>
+                {lastMessagePreview ? (
+                  <Text className="text-sm opacity-70 mt-0.5" numberOfLines={1}>
+                    {lastMessagePreview}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+            {dateText ? (
+              <Text className="text-sm opacity-60 ml-2">{dateText}</Text>
+            ) : null}
+          </View>
+        </View>
+      </TouchableOpacity>
+    )
+  }
 
   if (loading) {
     return (
@@ -74,68 +154,21 @@ export default function Messages() {
     )
   }
 
-  async function HandleMarkAllRead() {
-    try {
-      const res = await account.MarkAllMessagesAsRead()
-      if (res.status === 'ok') {
-        setMessages(res.data)
-        if (Platform.OS === 'ios') {
-          PushNotificationIOS.setApplicationIconBadgeNumber(0)
-        }
-        dispatch({type: 'SET_MESSAGE_COUNT', payload: 0})
-        const _messages = messages.map((message: Message) => {
-          if (message.read_at === null) {
-            message.read_at = DateTime.now().toFormat('LLL d, yyyy')
-          }
-          return message
-        })
-        setMessages(_messages)
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  function HandleToggleShowAll() {
-    setShowAll(!showAll)
-  }
-
   return (
-    <View style={{flexGrow: 1}}>
-      <View style={{flex: 10}}>
-        <FlatList
-          data={messages}
-          renderItem={({item}) => (
-            <MessageCard message={item} showAll={showAll} />
-          )}
-          stickyHeaderIndices={[0]}
-          ListHeaderComponent={
-            <View className="flex-row items-center justify-end px-4 py-3">
-              <Button onPress={HandleToggleShowAll} style={{padding: 8}}>
-                <Ionicons
-                  name={showAll ? 'eye-off-outline' : 'eye-outline'}
-                  size={24}
-                  color={'#ecedee'}
-                />
-              </Button>
-            </View>
-          }
-          ListEmptyComponent={
-            <View className="py-8 justify-center items-center">
-              <Text className="opacity-60">{t('no_messages')}</Text>
-            </View>
-          }
-        />
-      </View>
-      {unreadCount > 0 && !showAll && (
-        <View
-          style={{flex: 1, paddingBottom: insets.bottom}}
-          className="items-center justify-center">
-          <Button onPress={() => HandleMarkAllRead()}>
-            {t('mark_all_read')}
-          </Button>
-        </View>
-      )}
+    <View className="flex-1">
+      <FlatList
+        data={threads}
+        renderItem={renderThreadItem}
+        keyExtractor={(item, index) => {
+          const threadId = item.id || item.thread_id || item.root_id
+          return threadId ? String(threadId) : `thread-${index}`
+        }}
+        ListEmptyComponent={
+          <View className="py-8 justify-center items-center">
+            <Text className="opacity-60">{t('no_messages')}</Text>
+          </View>
+        }
+      />
     </View>
   )
 }

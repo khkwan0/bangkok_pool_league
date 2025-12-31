@@ -8,6 +8,7 @@ import { useAccount } from '@/hooks/useAccount'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { useLeague } from '@/hooks/useLeague'
 import Ionicons from '@expo/vector-icons/Ionicons'
+import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import { useNavigation } from '@react-navigation/native'
 import { useLocalSearchParams } from 'expo-router'
 import { DateTime } from 'luxon'
@@ -214,6 +215,7 @@ export default function MessagesThread() {
   const navigation = useNavigation()
   const [messages, setMessages] = useState<Message[]>([])
   const [roomName, setRoomName] = useState<string | null>(null)
+  const [senderProfilePicture, setSenderProfilePicture] = useState<string | null>(null)
   const account = useAccount()
   const league = useLeague()
 
@@ -224,7 +226,7 @@ export default function MessagesThread() {
   }, [navigation, t])
 
 
-  const {state} = useLeagueContext()
+  const {state, dispatch} = useLeagueContext()
   const userId = state.user.id
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
@@ -234,36 +236,59 @@ export default function MessagesThread() {
   const [sending, setSending] = useState(false)
   const flatListRef = useRef<FlatList>(null)
 
-  const fetchMessages = async (preserveOptimistic?: Message) => {
+  const fetchMessages = async () => {
     const res = await account.GetMessageConversation(playerId)
     if (res.status === 'ok') {
-      if (preserveOptimistic) {
-        // Check if the optimistic message is already in the server response
-        const optimisticInResponse = res.data.some(
-          (msg: Message) =>
-            msg.message === preserveOptimistic.message &&
-            msg.from_player_id === preserveOptimistic.from_player_id &&
-            Math.abs(
-              DateTime.fromISO(msg.created_at).diff(
-                DateTime.fromISO(preserveOptimistic.created_at),
-                'seconds',
-              ).seconds,
-            ) < 5, // Within 5 seconds
-        )
-        
-        if (!optimisticInResponse) {
-          // Keep the optimistic message if it's not in the server response yet
-          setMessages([...res.data, preserveOptimistic])
-          return
-        }
-      }
-      setMessages(res.data.reverse())
+      setMessages(res.data)
     }
   }
 
   useEffect(() => {
     fetchMessages()
   }, [playerId])
+
+  // Mark all unread messages as read when screen opens
+  useEffect(() => {
+    if (messages.length === 0 || !userId) return
+
+    const markUnreadMessagesAsRead = async () => {
+      // Find all unread messages sent TO the current user
+      const unreadMessages = messages.filter(
+        (msg) => !msg.read_at && msg.to_player_id === userId
+      )
+
+      if (unreadMessages.length === 0) return
+
+      // Mark each unread message as read
+      const markPromises = unreadMessages.map((msg) =>
+        account.MarkMessageAsRead(msg.id)
+      )
+
+      try {
+        await Promise.all(markPromises)
+
+        // Update unread message count
+        const count = await account.GetUnreadMessageCount()
+        dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
+        if (Platform.OS === 'ios') {
+          PushNotificationIOS.setApplicationIconBadgeNumber(count)
+        }
+
+        // Update messages state to reflect read status
+        setMessages((prev) =>
+          prev.map((msg) =>
+            unreadMessages.some((unread) => unread.id === msg.id)
+              ? {...msg, read_at: DateTime.now().toISO()}
+              : msg
+          )
+        )
+      } catch (error) {
+        console.error('Error marking messages as read:', error)
+      }
+    }
+
+    markUnreadMessagesAsRead()
+  }, [messages, userId, account, dispatch])
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -316,14 +341,16 @@ export default function MessagesThread() {
         created_at: data.created_at || data.timestamp || new Date().toISOString(),
         read_at: data.read_at || '',
         sender_nickname: data.sender_nickname || data.nickname || data.sender?.nickname || '',
-        from_player_id: data.from_player_id || data.from_id || data.sender?.id || 0,
-        to_player_id: data.to_player_id || data.to_id || data.recipient?.id || 0,
+        receiver_nickname: data.receiver_nickname || data.receiver?.nickname || '',
+        from_player_id: data.from_player_id || 0,
+        to_player_id: data.to_player_id || 0,
         root_id: data.root_id || data.rootId || 0,
         reply_to: data.reply_to || data.replyTo || 0,
       }
 
-      // Check if message already exists (avoid duplicates from optimistic updates)
       setMessages((prev) => {
+      // Check if message already exists (avoid duplicates from optimistic updates)
+      /* this should never happen, because the server should not send the same message twice
         const messageExists = prev.some(
           (msg) =>
             msg.id === newMessage.id ||
@@ -353,6 +380,7 @@ export default function MessagesThread() {
               : msg,
           )
         }
+          */
 
         // Add new message at the beginning (list is inverted)
         return [newMessage, ...prev]
@@ -406,13 +434,6 @@ export default function MessagesThread() {
     let rootId = 0
     if (messages.length > 0) {
       rootId = messages[0].root_id || messages[0].id
-    } else {
-      const threadIdNum = Array.isArray(threadId) 
-        ? parseInt(threadId[0] || '0', 10)
-        : typeof threadId === 'string'
-        ? parseInt(threadId, 10)
-        : threadId || 0
-      rootId = isNaN(threadIdNum) ? 0 : threadIdNum
     }
 
     try {
@@ -428,13 +449,22 @@ export default function MessagesThread() {
       Keyboard.dismiss()
 
       if (res.status === 'ok') {
+        // Get recipient nickname from existing messages or senderName state
+        const recipientNickname = messages.length > 0
+          ? messages[0].from_player_id === userId
+            ? messages[0].recipient_nickname
+            : messages[0].sender_nickname
+          : senderName || ''
+
+          /*
         const optimisticMessage: Message = {
-          id: -Date.now(), // Temporary negative ID
+          id: res.data,  // sendMessage returns the id of the message
           title: '',
           message: messageText.trim(),
           created_at: new Date().toISOString(),
           read_at: '',
           sender_nickname: state.user.nickname || '',
+          recipient_nickname: recipientNickname,
           from_player_id: userId,
           to_player_id: recipientId,
           root_id: rootId,
@@ -457,10 +487,12 @@ export default function MessagesThread() {
           
           return updated
         })
+          */
 
         // Emit 'message' event to the socket room with the same body sent to backend
         if (socketRef.current && socketRef.current.connected && roomName) {
           const messageBody = {
+            id: res.data,
             room: roomName,
             to_player_id: recipientId,
             from_player_id: userId,
@@ -506,11 +538,58 @@ export default function MessagesThread() {
     }
   }, [messages])
 
+  const [senderName, setSenderName] = useState<string | null>(null)
+  const [senderId, setSenderId] = useState<number | null>(null)
+  useEffect(() => {
+    const fetchSenderName = async () => {
+      if (from) {
+        if (!isNaN(Number(from)) && Number(from) > 0) {
+          const res = await league.GetPlayerName(Number(from))
+          setSenderName(res.data.nickname)
+          setSenderId(Number(from))
+        } else if (messages.length > 0) {
+          const firstMessage = messages[0]
+          const senderNickName = firstMessage.from_player_id === userId
+            ? firstMessage.sender_nickname
+            : firstMessage.recipient_nickname
+          setSenderName(senderNickName)
+          setSenderId(firstMessage.from_player_id === userId
+            ? firstMessage.to_player_id
+            : firstMessage.from_player_id)
+        }
+      } else if (!isNaN(Number(playerId)) && Number(playerId) > 0) {
+        const res = await league.GetPlayerName(Number(playerId))
+        setSenderName(res.data.nickname)
+        setSenderId(Number(playerId))
+      } else if (messages.length > 0) {
+        const firstMessage = messages[0]
+        const senderNickName = firstMessage.from_player_id === userId
+          ? firstMessage.sender_nickname
+          : firstMessage.recipient_nickname
+        setSenderName(senderNickName)
+        setSenderId(firstMessage.from_player_id === userId
+          ? firstMessage.to_player_id
+          : firstMessage.from_player_id)
+      }
+    }
+    fetchSenderName()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [from, playerId, messages.length, userId])
+  /*
   // Get sender name and ID from messages or from param
-  const { senderName, senderId } = (() => {
+  const { senderName, senderId } = (async () => {
+    console.log('params from:', from, typeof from)
     if (from) {
+      // if the from is a number, this indicates it's player id, so we need to get the name from the API
+      if (!isNaN(Number(from)) && Number(from) > 0) {
+        console.log('Getting player name from API for player id:', from)
+        const res = await league.GetPlayerName(Number(from))
+        console.log('name:', res.data.nickname)
+        return { senderName: res.data.nickname, senderId: Number(from) }
+      }
       // If we have the name from params, try to find the sender ID from messages
       if (messages.length > 0) {
+        console.log('Getting sender name from messages for player id:', from)
         const firstMessage = messages[0]
         const senderId = firstMessage.from_player_id === userId
           ? firstMessage.to_player_id
@@ -536,9 +615,9 @@ export default function MessagesThread() {
     }
     return { senderName: '', senderId: null }
   })()
+  */
 
   // Get sender profile picture
-  const [senderProfilePicture, setSenderProfilePicture] = useState<string | null>(null)
 
   useEffect(() => {
     if (!senderId) return
@@ -552,9 +631,9 @@ export default function MessagesThread() {
     // Fetch sender's profile picture from API
     const fetchSenderProfile = async () => {
       try {
-        const playerInfo = await league.GetPlayerStatsInfo(senderId)
-        if (playerInfo && (playerInfo.profile_picture || playerInfo.pic)) {
-          setSenderProfilePicture(playerInfo.profile_picture || playerInfo.pic)
+        const res = await league.GetPlayerName(senderId)
+        if (res.status === 'ok' && res.data.profile_picture) {
+          setSenderProfilePicture(res.data.profile_picture)
         } else {
           setSenderProfilePicture(null)
         }
@@ -565,7 +644,7 @@ export default function MessagesThread() {
     }
 
     fetchSenderProfile()
-  }, [senderId, userId, state.user.profile_picture, league])
+  }, [senderId])
 
   const ListHeaderComponent = () => {
     if (!senderName) return null
@@ -614,6 +693,11 @@ export default function MessagesThread() {
       <FlatList
         ref={flatListRef}
         data={messages}
+        keyExtractor={(item, index) => {
+          // Use a combination of id and index to ensure uniqueness
+          // This handles cases where duplicate IDs might exist (optimistic updates)
+          return `msg-${item.id}-${index}`
+        }}
         renderItem={({item, index}) => {
           const currentDate = DateTime.fromISO(item.created_at).setZone('local').startOf('day')
           // In inverted list: index 0 = newest (bottom), last index = oldest (top)
@@ -643,7 +727,7 @@ export default function MessagesThread() {
           const shouldShowDateAfter = dateChangedFromPrev
           
           return (
-            <View key={item.id}>
+            <View>
               {shouldShowDateBefore && (
                 <DateSeparator date={item.created_at} />
               )}
