@@ -153,14 +153,6 @@ export default function Settings() {
             url={'/Settings/Admin'}
           />
         )}
-        {user.id && (
-          <NavDest
-            icon="email"
-            text={t('messages')}
-            url={'/Settings/Messages'}
-            messageCount={messageCount}
-          />
-        )}
         <NavDest
           icon="account-group"
           text={t('teams')}
@@ -206,6 +198,11 @@ export default function Settings() {
           icon="account-outline"
           text={t('players')}
           url={'/Settings/Players'}
+        />
+        <NavDest
+          icon="billiards"
+          text="CueChat"
+          url={'/Settings/CueChat'}
         />
 
         {/* App Settings */}

@@ -104,6 +104,8 @@ function RootLayout() {
   useEffect(() => {
     if (Platform.OS !== 'web') {
       const messagingInstance = messaging()
+
+      // Note: onMessage handler is handled in (tabs)/_layout.tsx to have access to context
       
       // Handle notification taps when app is in background/foreground
       const unsubscribe = onNotificationOpenedApp(messagingInstance, remoteMessage => {
@@ -177,23 +179,23 @@ function RootLayout() {
         }
 
         try {
-         /* 
-          // Extract thread ID from notification data - check camelCase fields first (from your payload)
-          const threadId = remoteMessage?.data?.threadId || 
-                          remoteMessage?.data?.rootId || ''
-                          */
-          
           // Extract sender name from notification
           const fromPlayerId = parseInt(remoteMessage?.data?.senderId || '0', 10)
+          const senderName = remoteMessage?.data?.senderName || remoteMessage?.notification?.title || ''
 
           if (fromPlayerId) {
-            const path = `/Settings/Messages/${fromPlayerId}`
+            // First navigate to messages tab to ensure it's in the stack
+            // This ensures the messages list screen is in the navigation stack
+            router.push('/messages' as any)
             
-            // Navigate to the message thread using push to add to stack (provides back button)
-            router.push({
-              pathname: path as any,
-              params: {from: fromPlayerId}
-            })
+            // Then navigate to the specific thread after a short delay
+            // This ensures the messages tab is mounted and the stack is properly set up
+            setTimeout(() => {
+              router.push({
+                pathname: `/messages/${fromPlayerId}` as any,
+                params: {from: senderName || fromPlayerId.toString()}
+              })
+            }, 200)
           } else {
             console.warn('No threadId found in notification data. Available data:', remoteMessage?.data)
             console.warn('Full notification object:', remoteMessage)

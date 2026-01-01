@@ -3,6 +3,7 @@ import { ThemedView as View } from '@/components/ThemedView'
 import { useLeagueContext } from '@/context/LeagueContext'
 import { useAccount } from '@/hooks/useAccount'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import notifee from '@notifee/react-native'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import { router } from 'expo-router'
 import { DateTime } from 'luxon'
@@ -29,11 +30,15 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
           dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
           if (Platform.OS === 'ios') {
             PushNotificationIOS.setApplicationIconBadgeNumber(count)
+          } else if (Platform.OS === 'android') {
+            notifee.setBadgeCount(count).catch((e) => {
+              console.error('Error setting Android badge count:', e)
+            })
           }
         }
       }
       router.push({
-        pathname: `/Settings/Messages/${message.from_player_id}` as any,
+        pathname: `/messages/${message.from_player_id}` as any,
         params: {from: message.sender_nickname}
       })
     } catch (e) {
@@ -59,6 +64,10 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
               dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
               if (Platform.OS === 'ios') {
                 PushNotificationIOS.setApplicationIconBadgeNumber(count)
+              } else if (Platform.OS === 'android') {
+                notifee.setBadgeCount(count).catch((e) => {
+                  console.error('Error setting Android badge count:', e)
+                })
               }
             }
           } catch (e) {

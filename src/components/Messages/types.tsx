@@ -16,3 +16,30 @@ export interface MessageCardProps {
   message: Message
   showAll: boolean
 }
+
+export interface Thread {
+  id?: number
+  thread_id?: number
+  root_id?: number
+  title?: string
+  last_message?: string
+  last_message_preview?: string
+  last_message_at?: string
+  created_at?: string
+  unread_count?: number
+  participant_name?: string
+  participant_nickname?: string
+  from?: string
+  sender_nickname?: string
+  other_player_id?: number
+  other_player_nickname?: string
+  other_player_firstname?: string
+  other_player_lastname?: string
+  other_player_profile_picture?: string
+}
+
+export interface MessagesProps {
+  threads: Thread[]
+  loading: boolean
+  onThreadPress: (thread: Thread) => void
+}

@@ -26,10 +26,13 @@ interface User {
   }
 }
 
+import { Thread } from '@/components/Messages/types'
+
 interface LeagueState {
   user: User
   season: number
   messageCount: number
+  messageThreads: Thread[]
   isNewMatchCard: boolean
   showLiveScores: boolean
   refreshUpcoming: boolean
@@ -54,6 +57,7 @@ const LeagueContext = createContext<LeagueContextType>({} as LeagueContextType)
 const initialState: LeagueState = {
   user: {},
   messageCount: 0,
+  messageThreads: [],
   season: 0,
   isNewMatchCard: false,
   showLiveScores: true,
@@ -83,6 +87,66 @@ const LeagueReducer = (state: any, action: any) => {
       return {
         ...state,
         messageCount: action.payload,
+      }
+    }
+    case 'SET_MESSAGE_THREADS': {
+      // Calculate total unread count from threads
+      const totalUnread = action.payload.reduce((sum: number, thread: Thread) => {
+        return sum + (thread.unread_count || 0)
+      }, 0)
+      
+      return {
+        ...state,
+        messageThreads: action.payload,
+        messageCount: totalUnread,
+      }
+    }
+    case 'UPDATE_THREAD_UNREAD_COUNT': {
+      const { playerId, unreadCount } = action.payload
+      const updatedThreads = state.messageThreads.map((thread: Thread) => {
+        if (thread.other_player_id === playerId) {
+          return {
+            ...thread,
+            unread_count: unreadCount,
+          }
+        }
+        return thread
+      })
+      
+      // Calculate new total unread count
+      const totalUnread = updatedThreads.reduce((sum: number, thread: Thread) => {
+        return sum + (thread.unread_count || 0)
+      }, 0)
+      
+      return {
+        ...state,
+        messageThreads: updatedThreads,
+        messageCount: totalUnread,
+      }
+    }
+    case 'DECREMENT_THREAD_UNREAD_COUNT': {
+      const { playerId, decrementBy } = action.payload
+      const updatedThreads = state.messageThreads.map((thread: Thread) => {
+        if (thread.other_player_id === playerId) {
+          const currentUnread = thread.unread_count || 0
+          const newUnread = Math.max(0, currentUnread - decrementBy)
+          return {
+            ...thread,
+            unread_count: newUnread,
+          }
+        }
+        return thread
+      })
+      
+      // Calculate new total unread count
+      const totalUnread = updatedThreads.reduce((sum: number, thread: Thread) => {
+        return sum + (thread.unread_count || 0)
+      }, 0)
+      
+      return {
+        ...state,
+        messageThreads: updatedThreads,
+        messageCount: totalUnread,
       }
     }
     case 'SET_PREFERENCES': {

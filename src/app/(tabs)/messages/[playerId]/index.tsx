@@ -9,6 +9,7 @@ import { useColorScheme } from '@/hooks/useColorScheme'
 import { useLeague } from '@/hooks/useLeague'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
+import notifee from '@notifee/react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useLocalSearchParams } from 'expo-router'
 import { DateTime } from 'luxon'
@@ -269,11 +270,36 @@ export default function MessagesThread() {
       try {
         await Promise.all(markPromises)
 
-        // Update unread message count
-        const count = await account.GetUnreadMessageCount()
-        dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
-        if (Platform.OS === 'ios') {
-          PushNotificationIOS.setApplicationIconBadgeNumber(count)
+        // Calculate expected new count before dispatch
+        const currentThread = state.messageThreads.find(
+          (t: any) => t.other_player_id === parseInt(playerId as string)
+        )
+        const currentUnread = currentThread?.unread_count || 0
+        const newUnread = Math.max(0, currentUnread - unreadMessages.length)
+        const expectedTotalUnread = state.messageThreads.reduce((sum: number, thread: any) => {
+          if (thread.other_player_id === parseInt(playerId as string)) {
+            return sum + newUnread
+          }
+          return sum + (thread.unread_count || 0)
+        }, 0)
+
+        // Update threads cache - decrement unread count for this thread
+        // The reducer will calculate the new total and update messageCount
+        dispatch({
+          type: 'DECREMENT_THREAD_UNREAD_COUNT',
+          payload: {
+            playerId: parseInt(playerId as string),
+            decrementBy: unreadMessages.length,
+          },
+        })
+
+        // Update badge immediately with expected count (useEffect will also update when state changes)
+        if (Platform.OS === 'android') {
+          notifee.setBadgeCount(expectedTotalUnread).then(() => {
+            console.log('Android badge count updated immediately to:', expectedTotalUnread)
+          }).catch((e) => {
+            console.error('Error setting Android badge count:', e)
+          })
         }
 
         // Update messages state to reflect read status
@@ -291,6 +317,19 @@ export default function MessagesThread() {
 
     markUnreadMessagesAsRead()
   }, [messages, userId, account, dispatch])
+
+  // Update badge whenever messageCount changes (ensures badge stays in sync after marking messages as read)
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      PushNotificationIOS.setApplicationIconBadgeNumber(state.messageCount)
+    } else if (Platform.OS === 'android') {
+      notifee.setBadgeCount(state.messageCount).then(() => {
+        console.log('Android badge count updated to:', state.messageCount)
+      }).catch((e) => {
+        console.error('Error setting Android badge count:', e)
+      })
+    }
+  }, [state.messageCount])
 
   useEffect(() => {
     if (messages.length > 0) {

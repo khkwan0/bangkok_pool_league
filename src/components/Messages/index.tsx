@@ -1,81 +1,14 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { ThemedText as Text } from '@/components/ThemedText'
 import { ThemedView as View } from '@/components/ThemedView'
 import config from '@/config'
-import { useLeagueContext } from '@/context/LeagueContext'
-import { useAccount } from '@/hooks/useAccount'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { useNavigation } from '@react-navigation/native'
-import { router } from 'expo-router'
 import { DateTime } from 'luxon'
-import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, FlatList, Image, TouchableOpacity } from 'react-native'
+import { MessagesProps, Thread } from './types'
 
-interface Thread {
-  id?: number
-  thread_id?: number
-  root_id?: number
-  title?: string
-  last_message?: string
-  last_message_preview?: string
-  last_message_at?: string
-  created_at?: string
-  unread_count?: number
-  participant_name?: string
-  participant_nickname?: string
-  from?: string
-  sender_nickname?: string
-  other_player_id?: number
-  other_player_nickname?: string
-  other_player_firstname?: string
-  other_player_lastname?: string
-  other_player_profile_picture?: string
-}
-
-export default function Messages() {
-  const account = useAccount()
-  const {state, dispatch} = useLeagueContext()
-  const [threads, setThreads] = React.useState<Thread[]>([])
-  const [loading, setLoading] = React.useState(true)
-  const {t} = useTranslation()
-  const navigation = useNavigation()
-
-  React.useEffect(() => {
-    navigation.setOptions({
-      title: t('messages'),
-    })
-  }, [navigation, t])
-
-  React.useEffect(() => {
-    const fetchThreads = async () => {
-      try {
-        setLoading(true)
-        const res = await account.GetMessageThreads()
-        if (res.status === 'ok' && Array.isArray(res.data)) {
-          setThreads(res.data)
-        }
-      } catch (e) {
-        console.error('fetchThreads', e)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchThreads()
-  }, [])
-
-  const handleThreadPress = (thread: Thread) => {
-    const threadId = thread.other_player_id
-    const from = thread.participant_name || thread.participant_nickname || thread.from || thread.sender_nickname || ''
-    
-    if (threadId) {
-      router.push({
-        pathname: `/Settings/Messages/${threadId}` as any,
-        params: {from}
-      })
-    }
-  }
+export default function Messages({ threads, loading, onThreadPress }: MessagesProps) {
+  const { t } = useTranslation()
 
   const renderThreadItem = ({item}: {item: Thread}) => {
     const threadId = item.id || item.thread_id || item.root_id
@@ -101,7 +34,7 @@ export default function Messages() {
 
     return (
       <TouchableOpacity
-        onPress={() => handleThreadPress(item)}
+        onPress={() => onThreadPress(item)}
         className="px-4 py-3 border-b border-white/10"
         activeOpacity={0.7}>
         <View className="relative">

@@ -9,6 +9,7 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount, useAd, useLeague, useSeason} from '@/hooks'
 import {MaterialIcons} from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import notifee from '@notifee/react-native'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import {
   getMessaging,
@@ -282,14 +283,20 @@ export default function UpcomingMatches(props: any) {
     if (Platform.OS !== 'web') {
       const messaging = getMessaging()
       const unsubscribe = onMessage(messaging, async remoteMessage => {
-        if (Platform.OS === 'ios') {
-          try {
-            const count = await account.GetUnreadMessageCount()
-            PushNotificationIOS.setApplicationIconBadgeNumber(count)
+        try {
+          // Force badge update by fetching unread count from API
+          const count = await account.GetUnreadMessageCount()
+          if (typeof count === 'number') {
+            if (Platform.OS === 'ios') {
+              PushNotificationIOS.setApplicationIconBadgeNumber(count)
+            } else if (Platform.OS === 'android') {
+              await notifee.setBadgeCount(count)
+              console.log('Android badge updated from API (onMessage) to:', count)
+            }
             dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
-          } catch (e) {
-            console.error(e)
           }
+        } catch (e) {
+          console.error('Error updating badge on notification:', e)
         }
       })
       return unsubscribe
@@ -300,14 +307,17 @@ export default function UpcomingMatches(props: any) {
     if (Platform.OS !== 'web') {
       const messaging = getMessaging()
       setBackgroundMessageHandler(messaging, async remoteMessage => {
-        if (Platform.OS === 'ios') {
-          try {
-            const count = await account.GetUnreadMessageCount()
+        try {
+          const count = await account.GetUnreadMessageCount()
+          if (Platform.OS === 'ios') {
             PushNotificationIOS.setApplicationIconBadgeNumber(count)
-            dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
-          } catch (e) {
-            console.error(e)
+          } else if (Platform.OS === 'android') {
+            await notifee.setBadgeCount(count)
+            console.log('Android badge updated in background to:', count)
           }
+          dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
+        } catch (e) {
+          console.error('Error updating badge in background:', e)
         }
       })
     }
