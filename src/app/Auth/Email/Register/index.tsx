@@ -1,19 +1,19 @@
-import React, {useState} from 'react'
+import CustomTextInput from '@/components/TextInput'
+import { ThemedText as Text } from '@/components/ThemedText'
+import { useAccount } from '@/hooks/useAccount'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import { useRouter } from 'expo-router'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
-  Image,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from 'react-native'
-import {ThemedText as Text} from '@/components/ThemedText'
-import CustomTextInput from '@/components/TextInput'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import {useTranslation} from 'react-i18next'
-import {useRouter} from 'expo-router'
-import {useAccount} from '@/hooks/useAccount'
 
 export default function RegisterScreen() {
   const {t} = useTranslation()
@@ -65,7 +65,7 @@ export default function RegisterScreen() {
         lastName,
       )
       if (response?.status === 'ok') {
-        router.replace('../RegisterSuccess')
+        router.replace('/Auth/Email/RegisterSuccess')
       } else {
         setError(t(response?.error || 'server_error'))
       }

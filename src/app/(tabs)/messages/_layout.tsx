@@ -14,11 +14,11 @@ export default function MessagesLayout() {
         options={{headerShown: true, title: t('messages')}}
       />
       <Stack.Screen
-        name="[playerId]"
+        name="[playerId]/index"
         options={{headerShown: true, title: t('messages')}}
       />
       <Stack.Screen
-        name="threadId"
+        name="threadId/index"
         options={{headerShown: true, title: t('messages')}}
       />
     </Stack>
