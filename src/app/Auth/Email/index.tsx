@@ -1,18 +1,18 @@
 import Button from '@/components/Button'
 import TextInput from '@/components/TextInput'
-import { ThemedText as Text } from '@/components/ThemedText'
-import { useAccount } from '@/hooks/useAccount'
+import {ThemedText as Text} from '@/components/ThemedText'
+import {useAccount} from '@/hooks/useAccount'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { useNavigation } from '@react-navigation/native'
-import { router, useLocalSearchParams } from 'expo-router'
+import {useNavigation} from '@react-navigation/native'
+import {router, useLocalSearchParams} from 'expo-router'
 import React from 'react'
-import { useTranslation } from 'react-i18next'
+import {useTranslation} from 'react-i18next'
 import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
-  View
+  View,
 } from 'react-native'
 
 export default function Email() {
@@ -111,7 +111,9 @@ export default function Email() {
                 returnKeyType="next"
                 autoCapitalize="none"
                 autoComplete="username"
-                textContentType={Platform.OS === 'ios' ? 'username' : 'emailAddress'}
+                textContentType={
+                  Platform.OS === 'ios' ? 'username' : 'emailAddress'
+                }
                 keyboardType="email-address"
                 leftIcon={MaterialCommunityIcons}
                 leftIconProps={{name: 'email-outline'}}
@@ -190,7 +192,7 @@ export default function Email() {
               }
               className="items-center py-4">
               <Text className="text-blue-600 dark:text-blue-400">
-                {t('dont_have_account')} {' '}
+                {t('dont_have_account')}{' '}
                 <Text className="font-semibold">{t('register')}</Text>
               </Text>
             </Pressable>
