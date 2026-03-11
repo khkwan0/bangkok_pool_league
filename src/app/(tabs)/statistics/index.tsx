@@ -27,7 +27,6 @@ export default function StatisticsHome(props: any) {
       try {
         setIsLoading(true)
         const info = await league.GetPlayerStatsInfo(user.id)
-        console.log(JSON.stringify(info, null, 2))
         setPlayerInfo(info)
       } catch (e) {
         setError(t('failed_to_load_player_info'))

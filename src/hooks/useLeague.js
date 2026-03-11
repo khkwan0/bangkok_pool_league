@@ -1,4 +1,4 @@
-import { useNetwork } from '@/hooks/useNetwork'
+import {useNetwork} from '@/hooks/useNetwork'
 
 export const useLeague = () => {
   const {Get, Post} = useNetwork()

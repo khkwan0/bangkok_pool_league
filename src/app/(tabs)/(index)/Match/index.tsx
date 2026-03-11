@@ -33,7 +33,8 @@ export default function ScoreSheet() {
     [params],
   )
     */
-  const matchInfo = typeof params !== 'undefined' ? JSON.parse(params as string) : {}
+  const matchInfo =
+    typeof params !== 'undefined' ? JSON.parse(params as string) : {}
   const frames = React.useRef<FrameType[]>([])
   const appState = React.useRef(AppState.currentState)
   const [refreshing, setRefreshing] = React.useState(false)

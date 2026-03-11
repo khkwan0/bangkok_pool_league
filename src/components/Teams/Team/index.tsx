@@ -442,18 +442,41 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
                   })
                 }}>
                 <View>
-                  <Text type="subtitle" className="text-xl" style={{color: isPressing ? 'red' : colorScheme === 'dark' ? 'white' : 'black'}}>
+                  <Text
+                    type="subtitle"
+                    className="text-xl"
+                    style={{
+                      color: isPressing
+                        ? 'red'
+                        : colorScheme === 'dark'
+                          ? 'white'
+                          : 'black',
+                    }}>
                     {teamData.name}
                   </Text>
                   <View className="flex-row items-center justify-center">
-                    <Text className="text-gray-600 dark:text-gray-400 text-lg" style={{color: isPressing ? 'red' : colorScheme === 'dark' ? 'white' : 'black'}}>
+                    <Text
+                      className="text-gray-600 dark:text-gray-400 text-lg"
+                      style={{
+                        color: isPressing
+                          ? 'red'
+                          : colorScheme === 'dark'
+                            ? 'white'
+                            : 'black',
+                      }}>
                       #{teamData.id}
                     </Text>
                     <MCI
                       className="ml-2"
                       name="chart-bar"
                       size={30}
-                      color={isPressing ? 'red' : colorScheme === 'dark' ? 'white' : 'black'}
+                      color={
+                        isPressing
+                          ? 'red'
+                          : colorScheme === 'dark'
+                            ? 'white'
+                            : 'black'
+                      }
                     />
                   </View>
                 </View>

@@ -1,12 +1,12 @@
-import React, {useCallback} from 'react'
-import {FlatList, View} from 'react-native'
+import Button from '@/components/Button'
+import CompletedMatch from '@/components/Completed/CompletedMatch'
+import CompletedMatchesOther from '@/components/Completed/CompletedMatchesOther'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useLeague} from '@/hooks/useLeague'
-import CompletedMatch from '@/components/Completed/CompletedMatch'
+import {usePathname, useRouter} from 'expo-router'
+import React, {useCallback} from 'react'
 import {useTranslation} from 'react-i18next'
-import {useRouter, usePathname} from 'expo-router'
-import Button from '@/components/Button'
-import CompletedMatchesOther from '@/components/Completed/CompletedMatchesOther'
+import {FlatList, View} from 'react-native'
 
 type CompletedMatchType = {
   match_id: number

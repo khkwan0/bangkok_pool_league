@@ -1,14 +1,12 @@
-import {ThemedView as View} from '@/components/ThemedView'
-import {useLocalSearchParams} from 'expo-router'
-import {useMatch} from '@/hooks'
-import React from 'react'
-import {useTranslation} from 'react-i18next'
-import {useSeason} from '@/hooks'
-import {FlatList} from 'react-native'
-import Divider from '@/components/Divider'
-import MatchHeader from '@/components/Completed/MatchHeader'
 import FrameDetail from '@/components/Completed/FrameDetail'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import MatchHeader from '@/components/Completed/MatchHeader'
+import { ThemedView as View } from '@/components/ThemedView'
+import { useMatch, useSeason } from '@/hooks'
+import { useLocalSearchParams } from 'expo-router'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { FlatList } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 export default function Match() {
   const {params} = useLocalSearchParams()
   const {GetMatchDetails} = useMatch()

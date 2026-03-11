@@ -1,12 +1,11 @@
-import React from 'react'
-import {useNavigation, useRouter, usePathname} from 'expo-router'
-import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView as View} from '@/components/ThemedView'
 import {useMatch} from '@/hooks'
-import {FlatList, Pressable} from 'react-native'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {useNavigation, usePathname, useRouter} from 'expo-router'
 import {DateTime} from 'luxon'
-import {useColorScheme} from 'react-native'
+import React from 'react'
+import {FlatList, Pressable, useColorScheme} from 'react-native'
 
 type Frame = {
   frameId: number
@@ -238,21 +237,24 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
             <Text
               type="subtitle"
               className={`mb-1`}
-              style={{color: homePressed ? 'red' : isHomeWinner ? 'green' : isDark ? '#eee' : '#000'}}
-              >
+              style={{
+                color: homePressed
+                  ? 'red'
+                  : isHomeWinner
+                    ? 'green'
+                    : isDark
+                      ? '#eee'
+                      : '#000',
+              }}>
               {matchMetadata?.home_team_name}
             </Text>
-            <Text
-              type="subtitle"
-              className={`mb-1`}>
+            <Text type="subtitle" className={`mb-1`}>
               {matchMetadata?.home_frames
                 ? matchMetadata?.home_frames.toString()
                 : '0'}
             </Text>
             {matchMetadata?.first_break_home_team === 1 && (
-              <Text className={`mb-1`}>
-                first_break 
-              </Text>
+              <Text className={`mb-1`}>first_break</Text>
             )}
           </Pressable>
           <View className="w-16 items-center">
@@ -277,22 +279,24 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
             <Text
               type="subtitle"
               className={`mb-1 text-right`}
-              style={{color: awayPressed ? 'red' : isAwayWinner ? 'green' : isDark ? '#eee' : '#000'}}
-              >
+              style={{
+                color: awayPressed
+                  ? 'red'
+                  : isAwayWinner
+                    ? 'green'
+                    : isDark
+                      ? '#eee'
+                      : '#000',
+              }}>
               {matchMetadata?.away_team_name}
             </Text>
-            <Text
-              type="subtitle"
-              className={`mb-1`}
-              >
+            <Text type="subtitle" className={`mb-1`}>
               {matchMetadata?.away_frames
                 ? matchMetadata?.away_frames.toString()
                 : '0'}
             </Text>
             {matchMetadata?.first_break_home_team === 0 && (
-              <Text className={`mb-1`}>
-                first_break 
-              </Text>
+              <Text className={`mb-1`}>first_break</Text>
             )}
           </Pressable>
         </View>

@@ -41,7 +41,7 @@ export default function DomainSettings() {
     setIsSubmitting(true)
     try {
       // Remove https:// if present, we'll add it in useNetwork
-      const cleanDomain = 'https://api.bkkleague.com'
+      const cleanDomain = 'https://stage.bkkleague.com/api'
       await setApiUrl(cleanDomain)
     } catch (error) {
       console.error('Failed to set preset domain:', error)
@@ -90,7 +90,7 @@ export default function DomainSettings() {
 
         <View className="mb-6">
           <Text className="text-lg font-bold mb-4">Quick Actions</Text>
-          
+
           <View className="mb-3">
             <Button
               onPress={handleReset}
@@ -105,11 +105,11 @@ export default function DomainSettings() {
           <View className="mb-3">
             <Button
               onPress={handleSetPreset}
-              disabled={isSubmitting || apiUrl === 'https://api.bkkleague.com'}
+              disabled={
+                isSubmitting || apiUrl === 'https://stage.bkkleague.com/api'
+              }
               className="bg-blue-600 active:bg-blue-700 py-3 px-4 rounded-lg items-center mb-2">
-              <Text className="text-white">
-                Set to api.bkkleague.com
-              </Text>
+              <Text className="text-white">Set to stage.bkkleague.com</Text>
             </Button>
           </View>
         </View>
@@ -139,4 +139,3 @@ export default function DomainSettings() {
     </KeyboardAvoidingView>
   )
 }
-
