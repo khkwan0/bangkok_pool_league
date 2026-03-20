@@ -1,23 +1,61 @@
-import { ThemedText as Text } from '@/components/ThemedText'
-import { ThemedView as View } from '@/components/ThemedView'
+import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView as View} from '@/components/ThemedView'
 import config from '@/config'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { DateTime } from 'luxon'
-import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, FlatList, Image, TouchableOpacity } from 'react-native'
-import { MessagesProps, Thread } from './types'
+import {DateTime} from 'luxon'
+import {useTranslation} from 'react-i18next'
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  TouchableOpacity,
+} from 'react-native'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {MessagesProps, Thread} from './types'
 
-export default function Messages({ threads, loading, onThreadPress }: MessagesProps) {
-  const { t } = useTranslation()
+export default function Messages({
+  threads,
+  loading,
+  onThreadPress,
+  onThreadDelete,
+  onThreadMarkAllRead,
+  onMarkAllThreadsRead,
+  onDeleteAllThreads,
+  footerBusy,
+}: MessagesProps) {
+  const {t} = useTranslation()
+  const insets = useSafeAreaInsets()
+
+  const showThreadOptions = (item: Thread) => {
+    const buttons: {text: string; onPress?: () => void; style?: 'cancel' | 'destructive'}[] = []
+    if (onThreadDelete) {
+      buttons.push({
+        text: t('delete'),
+        style: 'destructive',
+        onPress: () => onThreadDelete(item),
+      })
+    }
+    if (onThreadMarkAllRead) {
+      buttons.push({
+        text: t('mark_all_read'),
+        onPress: () => onThreadMarkAllRead(item),
+      })
+    }
+    if (buttons.length === 0) return
+    buttons.push({text: t('cancel'), style: 'cancel'})
+    Alert.alert(t('options'), '', buttons)
+  }
 
   const renderThreadItem = ({item}: {item: Thread}) => {
     const threadId = item.id || item.thread_id || item.root_id
     const displayName = item.other_player_nickname || t('unknown')
     const profilePicture = item.other_player_profile_picture
-    const lastMessagePreview = item.last_message_preview || item.last_message || item.title || ''
+    const lastMessagePreview =
+      item.last_message_preview || item.last_message || item.title || ''
     const lastMessageDate = item.last_message_at || item.created_at
     const unreadCount = item.unread_count || 0
-    
+
     let dateText = ''
     if (lastMessageDate) {
       // Parse as UTC and convert to local timezone
@@ -35,6 +73,7 @@ export default function Messages({ threads, loading, onThreadPress }: MessagesPr
     return (
       <TouchableOpacity
         onPress={() => onThreadPress(item)}
+        onLongPress={() => showThreadOptions(item)}
         className="px-4 py-3 border-b border-white/10"
         activeOpacity={0.7}>
         <View className="relative">
@@ -56,10 +95,12 @@ export default function Messages({ threads, loading, onThreadPress }: MessagesPr
                     {displayName}
                   </Text>
                   {unreadCount > 0 && (
-                    <View 
+                    <View
                       className="ml-2 rounded-full min-w-[20px] h-5 px-1.5 justify-center items-center"
                       style={{backgroundColor: '#ef4444'}}>
-                      <Text className="text-white text-xs font-semibold">{String(unreadCount)}</Text>
+                      <Text className="text-white text-xs font-semibold">
+                        {String(unreadCount)}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -87,6 +128,47 @@ export default function Messages({ threads, loading, onThreadPress }: MessagesPr
     )
   }
 
+  const showFooter =
+    threads.length > 0 && (onMarkAllThreadsRead || onDeleteAllThreads)
+  const hasUnreadThreads = threads.some(t => (t.unread_count || 0) > 0)
+
+  const listFooter = showFooter ? (
+    <View
+      className="border-t border-white/10 bg-black/20"
+      style={{paddingBottom: Math.max(insets.bottom, 12)}}>
+      <View className="flex-row flex-wrap justify-center gap-x-6 gap-y-2 px-4 py-3">
+        {onMarkAllThreadsRead ? (
+          <TouchableOpacity
+            onPress={() => onMarkAllThreadsRead()}
+            disabled={footerBusy || !hasUnreadThreads}
+            activeOpacity={0.7}
+            className="py-2">
+            <Text
+              className="text-base font-semibold text-blue-400"
+              style={{
+                opacity: footerBusy || !hasUnreadThreads ? 0.45 : 1,
+              }}>
+              {t('mark_all_conversations_read')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        {onDeleteAllThreads ? (
+          <TouchableOpacity
+            onPress={() => onDeleteAllThreads()}
+            disabled={footerBusy}
+            activeOpacity={0.7}
+            className="py-2">
+            <Text
+              className="text-base font-semibold text-red-400"
+              style={{opacity: footerBusy ? 0.5 : 1}}>
+              {t('delete_all_threads')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+    </View>
+  ) : null
+
   return (
     <View className="flex-1">
       <FlatList
@@ -101,6 +183,7 @@ export default function Messages({ threads, loading, onThreadPress }: MessagesPr
             <Text className="opacity-60">{t('no_messages')}</Text>
           </View>
         }
+        ListFooterComponent={listFooter}
       />
     </View>
   )

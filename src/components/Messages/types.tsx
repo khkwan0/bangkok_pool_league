@@ -42,4 +42,11 @@ export interface MessagesProps {
   threads: Thread[]
   loading: boolean
   onThreadPress: (thread: Thread) => void
+  onThreadDelete?: (thread: Thread) => void
+  onThreadMarkAllRead?: (thread: Thread) => void
+  /** Bulk: mark every thread’s messages as read */
+  onMarkAllThreadsRead?: () => void | Promise<void>
+  /** Bulk: delete every conversation (confirm in parent) */
+  onDeleteAllThreads?: () => void | Promise<void>
+  footerBusy?: boolean
 }

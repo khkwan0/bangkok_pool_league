@@ -1,10 +1,10 @@
 import config from '@/config'
-import { useLeagueContext } from '@/context/LeagueContext'
-import { useNetwork } from '@/hooks/useNetwork'
-import notifee, { AndroidImportance } from '@notifee/react-native'
+import {useLeagueContext} from '@/context/LeagueContext'
+import {useNetwork} from '@/hooks/useNetwork'
+import notifee, {AndroidImportance} from '@notifee/react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { getMessaging, getToken } from '@react-native-firebase/messaging'
-import { Platform } from 'react-native'
+import {getMessaging, getToken} from '@react-native-firebase/messaging'
+import {Platform} from 'react-native'
 
 export const useAccount = () => {
   const {state, dispatch} = useLeagueContext()
@@ -336,6 +336,15 @@ export const useAccount = () => {
     }
   }
 
+  async function DeleteThread(otherPlayerId) {
+    try {
+      const res = await Post('/message/thread/delete', {otherPlayerId})
+      return res
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async function GetUnreadMessageCount() {
     try {
       const res = await Get('/message/unread/count')
@@ -367,7 +376,13 @@ export const useAccount = () => {
     }
   }
 
-  async function SendMessage(senderId, recipientId, title, message, root_id = null) {
+  async function SendMessage(
+    senderId,
+    recipientId,
+    title,
+    message,
+    root_id = null,
+  ) {
     try {
       const res = await Post('/message/send', {
         senderId,
@@ -475,6 +490,7 @@ export const useAccount = () => {
     CheckVersion,
     DeleteAccount,
     DeleteMessage,
+    DeleteThread,
     FetchUser,
     GetMessageConversation,
     GetMessageThreads,
