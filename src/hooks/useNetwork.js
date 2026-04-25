@@ -1,5 +1,5 @@
 import config from '@/config'
-import { useLeagueContext } from '@/context/LeagueContext'
+import {useLeagueContext} from '@/context/LeagueContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 // import {socket} from '~/socket'
 

@@ -280,24 +280,29 @@ export default function MatchCard({
                     {t('postponed_to')} {matchInfo?.postponed_proposal?.newDate}
                   </Text>
                 )}
-                {typeof matchInfo.postponed_proposal !== 'undefined' && typeof matchInfo?.postponed_proposal?.newDate !== 'undefined' &&  matchInfo.postponed_proposal.newDate === null && (
-                  <Text
-                    style={{
-                      fontSize: width * 0.07,
-                      textAlign: 'center',
-                      color: 'red',
-                      fontWeight: '800',
-                      textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                      textShadowOffset: {width: 2, height: 2},
-                      textShadowRadius: 4,
-                      letterSpacing: 1,
-                      textTransform: 'uppercase',
-                      fontFamily:
-                        Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif',
-                  }}>
-                    {t('postponed_indefinitely')}
-                  </Text>
-                )}
+                {typeof matchInfo.postponed_proposal !== 'undefined' &&
+                  typeof matchInfo?.postponed_proposal?.newDate !==
+                    'undefined' &&
+                  matchInfo.postponed_proposal.newDate === null && (
+                    <Text
+                      style={{
+                        fontSize: width * 0.07,
+                        textAlign: 'center',
+                        color: 'red',
+                        fontWeight: '800',
+                        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+                        textShadowOffset: {width: 2, height: 2},
+                        textShadowRadius: 4,
+                        letterSpacing: 1,
+                        textTransform: 'uppercase',
+                        fontFamily:
+                          Platform.OS === 'ios'
+                            ? 'Helvetica Neue'
+                            : 'sans-serif',
+                      }}>
+                      {t('postponed_indefinitely')}
+                    </Text>
+                  )}
               </View>
 
               {/* Teams Section */}
