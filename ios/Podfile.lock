@@ -1915,7 +1915,7 @@ PODS:
     - React-utils (= 0.81.5)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.81.5)
-  - RNAppleAuthentication (2.5.0):
+  - RNAppleAuthentication (2.4.1):
     - React-Core
   - RNCAsyncStorage (2.2.0):
     - hermes-engine
@@ -2237,9 +2237,9 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - SDWebImage (5.21.5):
-    - SDWebImage/Core (= 5.21.5)
-  - SDWebImage/Core (5.21.5)
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
   - SDWebImageAVIFCoder (0.11.1):
     - libavif/core (>= 0.11.0)
     - SDWebImage (~> 5.10)
@@ -2688,7 +2688,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 9a5f0d4c80fe9bb1ff29309a76392825aabe68c7
   ReactCommon: 08810150b1206cc44aecf5f6ae19af32f29151a8
   ReactNativeDependencies: 71ce9c28beb282aa720ea7b46980fff9669f428a
-  RNAppleAuthentication: 9027af8aa92b4719ef1b6030a8e954d37079473a
+  RNAppleAuthentication: c3dddf5918126c9aae85dc2e2ce9fb87835e9e04
   RNCAsyncStorage: c8407cc394627a3a4cf56b457d594bfa822b6ab8
   RNCPicker: e77543f719cf823e13dcf8080336d633101b098e
   RNCPushNotificationIOS: 6c4ca3388c7434e4a662b92e4dfeeee858e6f440
@@ -2701,7 +2701,7 @@ SPEC CHECKSUMS:
   RNScreens: 33bbd1d0f86ed957557620dc94054b71db0a94ee
   RNSentry: 39d5b57c2c6d7f6694d832a9fdccb32d7277ec1f
   RNWorklets: 76fce72926e28e304afb44f0da23b2d24f2c1fa0
-  SDWebImage: e9c98383c7572d713c1a0d7dd2783b10599b9838
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
