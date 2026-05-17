@@ -1,21 +1,21 @@
-import { ThemedText as Text } from '@/components/ThemedText'
-import { useAccount } from '@/hooks/useAccount'
+import {ThemedText as Text} from '@/components/ThemedText'
+import {useAccount} from '@/hooks/useAccount'
 import {
   AppleButton,
   appleAuth,
 } from '@invertase/react-native-apple-authentication'
-import { useNavigation } from '@react-navigation/native'
+import {useNavigation} from '@react-navigation/native'
 import Line from '@xmartlabs/react-native-line'
-import { router } from 'expo-router'
-import React, { useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Dimensions, Image, Pressable, ScrollView, View } from 'react-native'
+import {router} from 'expo-router'
+import React, {useEffect} from 'react'
+import {useTranslation} from 'react-i18next'
+import {Dimensions, Image, Pressable, ScrollView, View} from 'react-native'
 // import {AccessToken, LoginManager} from 'react-native-fbsdk-next'
 
 import config from '@/config'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { useLocalSearchParams } from 'expo-router'
-import { Platform, useColorScheme } from 'react-native'
+import {useLocalSearchParams} from 'expo-router'
+import {Platform, useColorScheme} from 'react-native'
 interface StatusType {
   status: string
   error?: string

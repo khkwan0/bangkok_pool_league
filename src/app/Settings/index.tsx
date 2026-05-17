@@ -144,6 +144,12 @@ export default function Settings() {
           </View>
         )}
 
+        <NavDest
+          icon="robot-outline"
+          text={t('ai_assistant')}
+          url={'/Settings/CueChat'}
+        />
+
         {/* League Management */}
         <SectionHeader title={t('league_management')} />
         {user.role_id === 9 && (
@@ -198,11 +204,6 @@ export default function Settings() {
           icon="account-outline"
           text={t('players')}
           url={'/Settings/Players'}
-        />
-        <NavDest
-          icon="billiards"
-          text="CueChat"
-          url={'/Settings/CueChat'}
         />
 
         {/* App Settings */}

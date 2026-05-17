@@ -36,7 +36,7 @@ export const useNetwork = () => {
         typeof endpoint !== 'undefined' && endpoint[0] === '/'
           ? endpoint.substring(1)
           : endpoint
-      const apiDomain = apiUrl ?? config.domain ?? 'localhost'
+      const apiDomain = apiUrl ?? config.apiUrl ?? 'localhost'
       const token = await AsyncStorage.getItem('jwt')
       const res = await fetch(apiDomain + '/' + _endpoint, {
         method: 'POST',
