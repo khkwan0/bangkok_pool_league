@@ -1,13 +1,13 @@
 import CustomTextInput from '@/components/TextInput'
-import { ThemedText as Text } from '@/components/ThemedText'
-import { ThemedView } from '@/components/ThemedView'
+import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView} from '@/components/ThemedView'
 import config from '@/config'
-import { useLeagueContext } from '@/context/LeagueContext'
+import {useLeagueContext} from '@/context/LeagueContext'
 import flags from '@/countries.emoji.json'
-import { useAccount, useLeague } from '@/hooks'
-import { Ionicons } from '@expo/vector-icons'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import {useAccount, useLeague} from '@/hooks'
+import {Ionicons} from '@expo/vector-icons'
+import {useEffect, useMemo, useRef, useState} from 'react'
+import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
   Dimensions,
@@ -19,12 +19,12 @@ import {
   ScrollView,
   View,
 } from 'react-native'
-import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Animated, {SlideInDown, SlideOutDown} from 'react-native-reanimated'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 //import ImagePicker from 'react-native-image-crop-picker'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import * as ImagePicker from 'expo-image-picker'
-import { router } from 'expo-router'
+import {router} from 'expo-router'
 
 interface Country {
   id: number
@@ -66,21 +66,22 @@ export default function ProfileOptions() {
   const account = useAccount()
   const insets = useSafeAreaInsets()
   const [imageError, setImageError] = useState<Error | null>(null)
-  const [nationalityEN, setNationalityEN] = useState(user?.nationality?.name_en ?? '')
-  const [nationalityTH, setNationalityTH] = useState(user?.nationality?.name_th ?? '')
+  const [nationalityEN, setNationalityEN] = useState(
+    user?.nationality?.name_en ?? '',
+  )
+  const [nationalityTH, setNationalityTH] = useState(
+    user?.nationality?.name_th ?? '',
+  )
   const cameraPerms = ImagePicker.useCameraPermissions()
 
-  useMemo(() => {
-    if (searchQuery.length > 0) {
-      setCountries(
-        countries.filter(country =>
-          country.name_en.toLowerCase().includes(searchQuery.toLowerCase()),
-        ),
-      )
-    } else {
-      setCountries(countries)
-    }
-  }, [searchQuery])
+  const filteredCountries = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+    if (!query) return countries
+
+    return countries.filter(country =>
+      country.name_en.toLowerCase().includes(query),
+    )
+  }, [countries, searchQuery])
 
   async function getCountries() {
     try {
@@ -206,8 +207,10 @@ export default function ProfileOptions() {
   async function handleSaveNationality() {
     try {
       const res = await account.SetNationality(selectedCountry)
+      const country = countries.find(country => country.id === selectedCountry)
+      console.log(country)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        dispatch({type: 'SET_NATIONALITY', payload: res.data})
+        dispatch({type: 'SET_NATIONALITY', payload: country})
       }
     } catch (e) {
       console.error(e)
@@ -280,18 +283,15 @@ export default function ProfileOptions() {
     return (
       <View
         className="flex-1 bg-white dark:bg-gray-900"
-        style={{paddingTop: insets.top, paddingBottom: insets.bottom}}
-      >
+        style={{paddingTop: insets.top, paddingBottom: insets.bottom}}>
         <Animated.View
           entering={SlideInDown}
           exiting={SlideOutDown}
-          className="flex-1"
-        >
+          className="flex-1">
           <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
             <Pressable
               onPress={() => setIsEditingProfilePicture(false)}
-              className="p-2"
-            >
+              className="p-2">
               <Ionicons
                 name="close"
                 size={24}
@@ -342,14 +342,12 @@ export default function ProfileOptions() {
               <View>
                 <Pressable
                   className="mt-10 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full"
-                  onPress={() => setNewAvatar(null)}
-                >
+                  onPress={() => setNewAvatar(null)}>
                   <Text>reset</Text>
                 </Pressable>
                 <Pressable
                   className="mt-10 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full"
-                  onPress={() => HandleSaveNewAvatar()}
-                >
+                  onPress={() => HandleSaveNewAvatar()}>
                   <Text>save</Text>
                 </Pressable>
               </View>
@@ -358,14 +356,12 @@ export default function ProfileOptions() {
               <View className="mt-10">
                 <Pressable
                   className="my-2 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-6 py-3 rounded-full"
-                  onPress={() => HandleShowPicker('gallery')}
-                >
+                  onPress={() => HandleShowPicker('gallery')}>
                   <Text>{t('gallery')}</Text>
                 </Pressable>
                 <Pressable
                   className=" my-2 bg-primary border border-gray-300 dark:border-gray-700 px-6 py-3 rounded-full"
-                  onPress={() => HandleShowPicker('camera')}
-                >
+                  onPress={() => HandleShowPicker('camera')}>
                   <Text>{t('camera')}</Text>
                 </Pressable>
               </View>
@@ -378,18 +374,15 @@ export default function ProfileOptions() {
     return (
       <View
         className="flex-1 bg-white dark:bg-gray-900"
-        style={{paddingTop: insets.top, paddingBottom: insets.bottom}}
-      >
+        style={{paddingTop: insets.top, paddingBottom: insets.bottom}}>
         <Animated.View
           entering={SlideInDown}
           exiting={SlideOutDown}
-          className="flex-1"
-        >
+          className="flex-1">
           <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
             <Pressable
               onPress={() => setIsEditingNationality(false)}
-              className="p-2"
-            >
+              className="p-2">
               <Ionicons
                 name="close"
                 size={24}
@@ -417,7 +410,7 @@ export default function ProfileOptions() {
             </View>
           </View>
           <ScrollView className="flex-1">
-            {countries.map(country => (
+            {filteredCountries.map(country => (
               <Pressable
                 key={country.id}
                 className={`flex-row items-center p-4 border-b border-gray-100 dark:border-gray-800 ${
@@ -425,8 +418,7 @@ export default function ProfileOptions() {
                     ? 'bg-gray-50 dark:bg-gray-800'
                     : ''
                 }`}
-                onPress={() => setSelectedCountry(country.id)}
-              >
+                onPress={() => setSelectedCountry(country.id)}>
                 <Text className="text-2xl mr-3">{country.emoji}</Text>
                 <Text className="text-base">{country.name_en}</Text>
                 <Text className="text-base">/{country.name_th}</Text>
@@ -444,8 +436,7 @@ export default function ProfileOptions() {
           <View className="p-4 border-t border-gray-200 dark:border-gray-800">
             <Pressable
               className="bg-primary py-3 rounded-lg items-center"
-              onPress={handleSaveNationality}
-            >
+              onPress={handleSaveNationality}>
               <Text className="text-white font-medium">{t('save')}</Text>
             </Pressable>
           </View>
@@ -457,15 +448,13 @@ export default function ProfileOptions() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
         <ScrollView
           ref={scrollViewRef}
           className="flex-1"
           contentContainerStyle={{paddingBottom: 100}}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
+          showsVerticalScrollIndicator={false}>
           <View className="p-4">
             <View className="items-center justify-center mb-8">
               {typeof user.profile_picture === 'string' ? (
@@ -484,8 +473,7 @@ export default function ProfileOptions() {
               )}
               <Pressable
                 className="bg-primary px-6 py-3 rounded-full"
-                onPress={() => setIsEditingProfilePicture(true)}
-              >
+                onPress={() => setIsEditingProfilePicture(true)}>
                 <Text type="link" className="text-white">
                   {t('change_profile_picture')}
                 </Text>
@@ -504,8 +492,7 @@ export default function ProfileOptions() {
                     </Text>
                     <Pressable
                       className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                      onPress={() => setIsEditingNationality(true)}
-                    >
+                      onPress={() => setIsEditingNationality(true)}>
                       <Ionicons
                         name="pencil"
                         size={16}
@@ -547,8 +534,7 @@ export default function ProfileOptions() {
                               setNickname,
                               user?.nickname ?? '',
                             )
-                          }
-                        >
+                          }>
                           <Ionicons
                             name="close"
                             size={16}
@@ -561,8 +547,7 @@ export default function ProfileOptions() {
                         </Pressable>
                         <Pressable
                           className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
-                          onPress={handleSaveNickname}
-                        >
+                          onPress={handleSaveNickname}>
                           <Ionicons
                             name="checkmark"
                             size={16}
@@ -577,8 +562,7 @@ export default function ProfileOptions() {
                     ) : (
                       <Pressable
                         className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                        onPress={() => setIsEditingNickname(true)}
-                      >
+                        onPress={() => setIsEditingNickname(true)}>
                         <Ionicons
                           name="pencil"
                           size={16}
@@ -620,8 +604,7 @@ export default function ProfileOptions() {
                               setFirstName,
                               user?.firstname ?? '',
                             )
-                          }
-                        >
+                          }>
                           <Ionicons
                             name="close"
                             size={16}
@@ -634,8 +617,7 @@ export default function ProfileOptions() {
                         </Pressable>
                         <Pressable
                           className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
-                          onPress={handleSaveFirstName}
-                        >
+                          onPress={handleSaveFirstName}>
                           <Ionicons
                             name="checkmark"
                             size={16}
@@ -650,8 +632,7 @@ export default function ProfileOptions() {
                     ) : (
                       <Pressable
                         className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                        onPress={() => setIsEditingFirstName(true)}
-                      >
+                        onPress={() => setIsEditingFirstName(true)}>
                         <Ionicons
                           name="pencil"
                           size={16}
@@ -693,8 +674,7 @@ export default function ProfileOptions() {
                               setLastName,
                               user?.lastname ?? '',
                             )
-                          }
-                        >
+                          }>
                           <Ionicons
                             name="close"
                             size={16}
@@ -707,8 +687,7 @@ export default function ProfileOptions() {
                         </Pressable>
                         <Pressable
                           className="flex-row items-center bg-primary px-3 py-1.5 rounded-full"
-                          onPress={handleSaveLastName}
-                        >
+                          onPress={handleSaveLastName}>
                           <Ionicons
                             name="checkmark"
                             size={16}
@@ -723,8 +702,7 @@ export default function ProfileOptions() {
                     ) : (
                       <Pressable
                         className="flex-row items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
-                        onPress={() => setIsEditingLastName(true)}
-                      >
+                        onPress={() => setIsEditingLastName(true)}>
                         <Ionicons
                           name="pencil"
                           size={16}

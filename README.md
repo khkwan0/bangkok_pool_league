@@ -25,6 +25,47 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Android wireless debugging (Wi-Fi)
+
+Use this when you want to run the app on a physical Android device without a USB cable after initial pairing.
+
+1. Connect your Android device and computer to the same Wi-Fi network.
+2. Enable developer options and turn on **USB debugging** on your Android device.
+3. Enable wireless debugging
+4. Connect the device once with USB and verify ADB can see it:
+
+   ```bash
+   adb devices
+   ```
+
+5. Pair the device if not paired.
+
+Push the button that allows you to pair with a PIN.
+then when the pop up shows...use the ip address and port and type
+
+```bash
+adb pair <ip address>:<port>
+```
+
+6. Find your phone's local IP address (Wi-Fi details on the device), then connect:
+
+   ```bash
+   adb connect <DEVICE_IP>:5555
+   ```
+
+7. Unplug USB, confirm the device is still connected, then run Expo:
+
+   ```bash
+   adb devices
+   npx expo start
+   ```
+
+To disconnect later:
+
+```bash
+adb disconnect <DEVICE_IP>:5555
+```
+
 ## Get a fresh project
 
 When you're ready, run:
