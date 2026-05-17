@@ -1,6 +1,5 @@
 import {ChatMarkdown, markdownContainsTable} from '@/components/ChatMarkdown'
 import TextInput from '@/components/TextInput'
-import {SettingsButton} from '@/components/navigation/SettingsButton'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import config from '@/config'
@@ -669,12 +668,7 @@ export default function CueChat() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: t('ai_assistant'),
-          headerRight: () => <SettingsButton />,
-        }}
-      />
+      <Stack.Screen options={{title: t('ai_assistant')}} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
