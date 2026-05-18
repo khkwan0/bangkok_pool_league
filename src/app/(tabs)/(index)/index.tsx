@@ -41,6 +41,11 @@ interface ItemType {
   key?: string
 }
 
+/** DEBUG: only live-scores bar — no FlatList, filters, or match fetch. */
+const DEBUG_MINIMAL_MATCHES_SCREEN = false
+/** DEBUG: hide match list (ignored when DEBUG_MINIMAL_MATCHES_SCREEN is true). */
+const DEBUG_HIDE_MATCH_FLATLIST = false
+
 export default function UpcomingMatches(props: any) {
   const {colors} = useTheme()
   const {state, dispatch, StopRefreshUpcoming}: any = useLeagueContext()
@@ -97,20 +102,6 @@ export default function UpcomingMatches(props: any) {
 
   function HandlePress(idx: number) {
     router.push({pathname: '/Match', params: fixtures[idx]})
-  }
-
-  async function HandleScorePress(matchId: number) {
-    try {
-      const res = await league.GetMatchById(matchId)
-      if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        router.push({
-          pathname: '/Match',
-          params: {params: JSON.stringify(res.data)},
-        })
-      }
-    } catch (e) {
-      console.log(e)
-    }
   }
 
   async function GetMatches(filtered = false, postponed = false) {
@@ -174,14 +165,24 @@ export default function UpcomingMatches(props: any) {
   }
 
   React.useEffect(() => {
+    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
+      setIsMounted(true)
+      return
+    }
     GetSeason()
   }, [])
 
   React.useEffect(() => {
+    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
+      return
+    }
     FetchUser()
   }, [])
 
   React.useEffect(() => {
+    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
+      return
+    }
     CheckVersion()
   }, [])
 
@@ -210,6 +211,9 @@ export default function UpcomingMatches(props: any) {
   }
 
   React.useEffect(() => {
+    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
+      return
+    }
     if (isMounted) {
       RefreshMatches()
     }
@@ -276,10 +280,16 @@ export default function UpcomingMatches(props: any) {
   }
 
   React.useEffect(() => {
+    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
+      return
+    }
     HandleGetPostponedOption()
   }, [])
 
   React.useEffect(() => {
+    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
+      return
+    }
     if (Platform.OS !== 'web') {
       const messaging = getMessaging()
       const unsubscribe = onMessage(messaging, async remoteMessage => {
@@ -307,6 +317,9 @@ export default function UpcomingMatches(props: any) {
   }, [])
 
   React.useEffect(() => {
+    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
+      return
+    }
     if (Platform.OS !== 'web') {
       const messaging = getMessaging()
       setBackgroundMessageHandler(messaging, async remoteMessage => {
@@ -372,6 +385,31 @@ export default function UpcomingMatches(props: any) {
     }
   }
 
+  if (isMounted && DEBUG_MINIMAL_MATCHES_SCREEN) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5',
+        }}>
+        <View
+          style={{
+            height: 92,
+            overflow: 'hidden',
+            backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5',
+          }}
+          collapsable={false}>
+          <LiveScores />
+        </View>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text style={{textAlign: 'center', opacity: 0.5}}>
+            DEBUG_MINIMAL_MATCHES_SCREEN — only ticker visible
+          </Text>
+        </View>
+      </View>
+    )
+  }
+
   if (isMounted) {
     return (
       <View
@@ -402,7 +440,16 @@ export default function UpcomingMatches(props: any) {
               )}
               {(typeof state.showLiveScores === 'undefined' ||
                 state.showLiveScores) && (
-                <LiveScores handlePress={HandleScorePress} />
+                <View
+                  style={{
+                    height: 92,
+                    overflow: 'hidden',
+                    backgroundColor:
+                      colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5',
+                  }}
+                  collapsable={false}>
+                  <LiveScores />
+                </View>
               )}
               {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
                 user.id && (
@@ -490,42 +537,54 @@ export default function UpcomingMatches(props: any) {
             </View>
             <View
               style={{height: '100%', overflow: 'hidden', marginHorizontal: 0}}>
-              <FlatList
-                contentContainerStyle={{
-                  backgroundColor: colors.background,
-                  paddingHorizontal: 0,
-                }}
-                style={{height: '100%'}}
-                horizontal={state.isNewMatchCard ? true : false}
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-                pagingEnabled={true}
-                snapToInterval={width}
-                decelerationRate="fast"
-                snapToAlignment="center"
-                scrollEnabled={true}
-                directionalLockEnabled={true}
-                alwaysBounceVertical={false}
-                onScrollBeginDrag={closeFilters}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={() => RefreshMatches()}
-                  />
-                }
-                bounces={true}
-                keyExtractor={(item: ItemType, index) => {
-                  if (typeof item.ad_spot !== 'undefined' && item.ad_spot) {
-                    return item.key
-                  } else {
-                    return (
-                      item.home_team_id + item.away_team_id + item.date + index
-                    )
+              {DEBUG_HIDE_MATCH_FLATLIST ? (
+                <View className="flex-1 items-center justify-center px-4">
+                  <Text style={{textAlign: 'center', opacity: 0.6}}>
+                    Match list hidden (DEBUG_HIDE_MATCH_FLATLIST) — testing live
+                    scores scroll
+                  </Text>
+                </View>
+              ) : (
+                <FlatList
+                  contentContainerStyle={{
+                    backgroundColor: colors.background,
+                    paddingHorizontal: 0,
+                  }}
+                  style={{height: '100%'}}
+                  horizontal={state.isNewMatchCard ? true : false}
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+                  pagingEnabled={true}
+                  snapToInterval={width}
+                  decelerationRate="fast"
+                  snapToAlignment="center"
+                  scrollEnabled={true}
+                  directionalLockEnabled={true}
+                  alwaysBounceVertical={false}
+                  onScrollBeginDrag={closeFilters}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={() => RefreshMatches()}
+                    />
                   }
-                }}
-                data={fixtures}
-                renderItem={renderItem}
-              />
+                  bounces={true}
+                  keyExtractor={(item: ItemType, index) => {
+                    if (typeof item.ad_spot !== 'undefined' && item.ad_spot) {
+                      return item.key
+                    } else {
+                      return (
+                        item.home_team_id +
+                        item.away_team_id +
+                        item.date +
+                        index
+                      )
+                    }
+                  }}
+                  data={fixtures}
+                  renderItem={renderItem}
+                />
+              )}
             </View>
           </View>
         )}

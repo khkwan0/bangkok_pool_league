@@ -1,9 +1,19 @@
-import {ThemedText as Text} from '@/components/ThemedText'
-import {Marquee} from '@animatereactnative/marquee'
 import {useLeague} from '@/hooks'
 import {useTheme} from '@react-navigation/native'
+import {router} from 'expo-router'
 import React from 'react'
-import {AppState, Pressable, StyleSheet, View} from 'react-native'
+import {
+  Animated,
+  AppState,
+  Easing,
+  Platform,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from 'react-native'
+import {Gesture, GestureDetector} from 'react-native-gesture-handler'
+import {runOnJS} from 'react-native-reanimated'
 
 type LiveScore = {
   id: number
@@ -14,76 +24,251 @@ type LiveScore = {
 }
 
 const REFRESH_INTERVAL_MS = 30000
-// ~40px/s at 60fps (library advances `speed` px per frame when frameRate is unset)
-const MARQUEE_SPEED = 0.67
+const SCROLL_SPEED_PX_PER_SEC = 40
+const STRIP_GAP = 12
+const MIN_LOOP_WIDTH_PX = 140 + 72 + 16 + 140 + 32
 
 const scoresKey = (items: LiveScore[]) =>
   items.map(s => `${s.id}:${s.homeScore}-${s.awayScore}`).join('|')
 
-type ScoreItemProps = {
-  item: LiveScore
-  borderColor: string
-  onPress: (matchId: number) => void
+function matchInfoFromResponse(res: unknown): Record<string, unknown> | null {
+  if (!res || typeof res !== 'object') {
+    return null
+  }
+  const payload = res as {status?: string; data?: unknown; match_id?: unknown}
+  if (payload.status === 'ok' && payload.data && typeof payload.data === 'object') {
+    return payload.data as Record<string, unknown>
+  }
+  if (typeof payload.match_id !== 'undefined') {
+    return payload as Record<string, unknown>
+  }
+  return null
+}
+
+function useMarqueeAnimation(loopWidth: number, active: boolean) {
+  const translateX = React.useRef(new Animated.Value(0)).current
+  const animationRef = React.useRef<Animated.CompositeAnimation | null>(null)
+
+  const start = React.useCallback(() => {
+    if (loopWidth < MIN_LOOP_WIDTH_PX) {
+      return
+    }
+    animationRef.current?.stop()
+    translateX.setValue(0)
+    animationRef.current = Animated.loop(
+      Animated.timing(translateX, {
+        toValue: -loopWidth,
+        duration: (loopWidth / SCROLL_SPEED_PX_PER_SEC) * 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+        isInteraction: false,
+      }),
+    )
+    animationRef.current.start()
+  }, [loopWidth, translateX])
+
+  React.useEffect(() => {
+    if (active) {
+      start()
+    } else {
+      animationRef.current?.stop()
+    }
+    return () => {
+      animationRef.current?.stop()
+    }
+  }, [active, start])
+
+  return {translateX, restart: start}
 }
 
 const ScoreItem = React.memo(function ScoreItem({
   item,
   borderColor,
+  textColor,
   onPress,
-}: ScoreItemProps) {
+  disabled,
+}: {
+  item: LiveScore
+  borderColor: string
+  textColor: string
+  onPress: (matchId: number) => void
+  disabled?: boolean
+}) {
+  const matchId = Number(item.id)
+  const [pressed, setPressed] = React.useState(false)
+
+  const handlePress = React.useCallback(() => {
+    onPress(matchId)
+  }, [matchId, onPress])
+
+  const tap = React.useMemo(
+    () =>
+      Gesture.Tap()
+        .enabled(!disabled)
+        .onBegin(() => {
+          runOnJS(setPressed)(true)
+        })
+        .onFinalize(() => {
+          runOnJS(setPressed)(false)
+        })
+        .onEnd((_event, success) => {
+          if (success) {
+            runOnJS(handlePress)()
+          }
+        }),
+    [disabled, handlePress],
+  )
+
   return (
-    <Pressable
-      onPress={() => onPress(item.id)}
-      accessibilityRole="button"
-      accessibilityLabel={`${item.home_name} ${item.homeScore} vs ${item.awayScore} ${item.away_name}`}>
-      <View style={[styles.scoreCard, {borderColor}]}>
-        <View style={styles.scoreRow}>
-          <Text type="subtitle" style={styles.homeName} numberOfLines={1}>
-            {item.home_name}
-          </Text>
-          <Text type="subtitle" style={styles.scoreText}>
-            {item.homeScore} vs {item.awayScore}
-          </Text>
-          <Text type="subtitle" style={styles.awayName} numberOfLines={1}>
-            {item.away_name}
-          </Text>
+    <GestureDetector gesture={tap}>
+      <View
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={`${item.home_name} ${item.homeScore} vs ${item.awayScore} ${item.away_name}`}
+        accessibilityHint="Opens match scoresheet"
+        style={[
+          disabled && styles.scoreCardDisabled,
+          pressed && !disabled && styles.scoreCardPressed,
+        ]}>
+        <View style={[styles.scoreCard, {borderColor}]}>
+          <View style={styles.scoreRow}>
+            <Text
+              style={[styles.homeName, styles.label, {color: textColor}]}
+              numberOfLines={1}>
+              {item.home_name}
+            </Text>
+            <Text style={[styles.scoreText, styles.label, {color: textColor}]}>
+              {item.homeScore} vs {item.awayScore}
+            </Text>
+            <Text
+              style={[styles.awayName, styles.label, {color: textColor}]}
+              numberOfLines={1}>
+              {item.away_name}
+            </Text>
+          </View>
         </View>
       </View>
-    </Pressable>
+    </GestureDetector>
   )
 })
 
-const ScoreRow = React.memo(function ScoreRow({
+function ScoreStrip({
   scores,
   borderColor,
+  textColor,
   onPress,
+  navigatingMatchId,
+  keyPrefix,
+  onStripLayout,
 }: {
   scores: LiveScore[]
   borderColor: string
+  textColor: string
   onPress: (matchId: number) => void
+  navigatingMatchId: number | null
+  keyPrefix: string
+  onStripLayout?: (width: number) => void
 }) {
   return (
-    <View style={styles.row}>
-      {scores.map(item => (
-        <ScoreItem
-          key={item.id}
-          item={item}
-          borderColor={borderColor}
-          onPress={onPress}
-        />
+    <View
+      style={styles.strip}
+      onLayout={
+        onStripLayout
+          ? e => onStripLayout(Math.round(e.nativeEvent.layout.width))
+          : undefined
+      }>
+      {scores.map((item, index) => (
+        <View
+          key={`${keyPrefix}-${item.id}`}
+          style={index < scores.length - 1 ? styles.cardWrap : undefined}>
+          <ScoreItem
+            item={item}
+            borderColor={borderColor}
+            textColor={textColor}
+            onPress={onPress}
+            disabled={navigatingMatchId != null}
+          />
+        </View>
       ))}
     </View>
   )
+}
+
+const ScoreMarquee = React.memo(function ScoreMarquee({
+    scores,
+    borderColor,
+    textColor,
+    onPress,
+    navigatingMatchId,
+  }: {
+    scores: LiveScore[]
+    borderColor: string
+    textColor: string
+    onPress: (matchId: number) => void
+    navigatingMatchId: number | null
+  }) {
+    const [loopWidth, setLoopWidth] = React.useState(0)
+    const measuredOnceRef = React.useRef(false)
+    const {translateX, restart} = useMarqueeAnimation(loopWidth, loopWidth > 0)
+
+    React.useEffect(() => {
+      const sub = AppState.addEventListener('change', state => {
+        if (state === 'active' && loopWidth >= MIN_LOOP_WIDTH_PX) {
+          restart()
+        }
+      })
+      return () => sub.remove()
+    }, [loopWidth, restart])
+
+    const onMeasured = React.useCallback((width: number) => {
+      if (measuredOnceRef.current || width < MIN_LOOP_WIDTH_PX) {
+        return
+      }
+      measuredOnceRef.current = true
+      setLoopWidth(width)
+    }, [])
+
+    return (
+      <View style={styles.clip} collapsable={false}>
+        <Animated.View
+          style={[styles.row, {transform: [{translateX}]}]}
+          collapsable={false}>
+          <ScoreStrip
+            scores={scores}
+            borderColor={borderColor}
+            textColor={textColor}
+            onPress={onPress}
+            navigatingMatchId={navigatingMatchId}
+            keyPrefix="a"
+            onStripLayout={onMeasured}
+          />
+          <ScoreStrip
+            scores={scores}
+            borderColor={borderColor}
+            textColor={textColor}
+            onPress={onPress}
+            navigatingMatchId={navigatingMatchId}
+            keyPrefix="b"
+          />
+        </Animated.View>
+      </View>
+    )
 })
 
-function LiveScoresInner({handlePress}: {handlePress: (matchId: number) => void}) {
+function LiveScoresWithData() {
   const {colors} = useTheme()
+  const colorScheme = useColorScheme()
   const league = useLeague()
   const [scores, setScores] = React.useState<LiveScore[]>([])
   const [tickerKey, setTickerKey] = React.useState(0)
+  const [navigatingMatchId, setNavigatingMatchId] = React.useState<number | null>(
+    null,
+  )
   const refreshTimer = React.useRef<ReturnType<typeof setInterval> | null>(null)
   const scoresKeyRef = React.useRef('')
   const scoresCountRef = React.useRef(0)
+
+  const textColor = colorScheme === 'dark' ? '#e2e8f0' : '#334155'
 
   const getLiveScores = React.useCallback(async () => {
     try {
@@ -106,8 +291,8 @@ function LiveScoresInner({handlePress}: {handlePress: (matchId: number) => void}
           return
         }
 
-        setScores(next)
         if (countChanged) {
+          setScores(next)
           setTickerKey(k => k + 1)
         }
       }
@@ -153,67 +338,91 @@ function LiveScoresInner({handlePress}: {handlePress: (matchId: number) => void}
     return () => subscription.remove()
   }, [])
 
-  const handlePressRef = React.useRef(handlePress)
-  handlePressRef.current = handlePress
-  const stableHandlePress = React.useCallback((matchId: number) => {
-    handlePressRef.current(matchId)
-  }, [])
+  const navigatingRef = React.useRef(false)
+  const openMatchScoresheet = React.useCallback(
+    async (matchId: number) => {
+      if (navigatingRef.current || !matchId) {
+        return
+      }
+      navigatingRef.current = true
+      setNavigatingMatchId(matchId)
+      try {
+        // @ts-expect-error useLeague exposes GetMatchById at runtime
+        const res = await league.GetMatchById(matchId)
+        const matchInfo = matchInfoFromResponse(res)
+        if (matchInfo) {
+          router.push({
+            pathname: '/Match',
+            params: {params: JSON.stringify(matchInfo)},
+          })
+          return
+        }
+        console.warn('LiveScores: could not load match', matchId, res)
+      } catch (e) {
+        console.log(e)
+      } finally {
+        navigatingRef.current = false
+        setNavigatingMatchId(null)
+      }
+    },
+    [league],
+  )
 
   if (scores.length === 0) {
     return null
   }
 
   return (
-    <View style={styles.clip}>
-      <Marquee
-        key={tickerKey}
-        speed={MARQUEE_SPEED}
-        spacing={0}
-        withGesture={false}
-        style={styles.marquee}>
-        <ScoreRow
-          scores={scores}
-          borderColor={colors.border}
-          onPress={stableHandlePress}
-        />
-      </Marquee>
-    </View>
+    <ScoreMarquee
+      key={tickerKey}
+      scores={scores}
+      borderColor={colors.border}
+      textColor={textColor}
+      onPress={openMatchScoresheet}
+      navigatingMatchId={navigatingMatchId}
+    />
   )
 }
 
-const LiveScores = React.memo(function LiveScores(props: {
-  handlePress: (matchId: number) => void
-}) {
-  const handlePressRef = React.useRef(props.handlePress)
-  handlePressRef.current = props.handlePress
-  const stableHandlePress = React.useCallback((matchId: number) => {
-    handlePressRef.current(matchId)
-  }, [])
-
-  return <LiveScoresInner handlePress={stableHandlePress} />
-})
+const LiveScores = React.memo(LiveScoresWithData)
 
 const styles = StyleSheet.create({
   clip: {
+    flex: 1,
     overflow: 'hidden',
-  },
-  marquee: {
-    overflow: 'hidden',
-    width: '100%',
   },
   row: {
     flexDirection: 'row',
+    alignSelf: 'flex-start',
+  },
+  strip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  cardWrap: {
+    marginRight: STRIP_GAP,
   },
   scoreCard: {
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderWidth: 1,
-    marginRight: 12,
+  },
+  scoreCardPressed: {
+    opacity: 0.75,
+  },
+  scoreCardDisabled: {
+    opacity: 0.5,
   },
   scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  label: {
+    fontWeight: '700',
+    fontSize: Platform.OS === 'ios' ? 22 : 18,
   },
   homeName: {
     textAlign: 'right',

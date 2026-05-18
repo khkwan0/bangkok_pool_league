@@ -35,16 +35,20 @@ function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   })
 
+  const sentryIntegrations: Parameters<typeof Sentry.init>[0]['integrations'] = [
+    Sentry.feedbackIntegration(),
+  ]
+  if (!__DEV__) {
+    sentryIntegrations.unshift(Sentry.mobileReplayIntegration())
+  }
+
   Sentry.init({
     dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
     sendDefaultPii: true,
     enableLogs: true,
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
-    integrations: [
-      Sentry.mobileReplayIntegration(),
-      Sentry.feedbackIntegration(),
-    ],
+    replaysSessionSampleRate: __DEV__ ? 0 : 0.1,
+    replaysOnErrorSampleRate: __DEV__ ? 0 : 1.0,
+    integrations: sentryIntegrations,
   })
 
   async function RequestUserPermission() {
