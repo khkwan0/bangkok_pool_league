@@ -11,6 +11,7 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@animatereactnative/marquee": "^0.5.2",
     "@expo/vector-icons": "^15.0.2",
     "@invertase/react-native-apple-authentication": "^2.5.0",
     "@notifee/react-native": "^9.1.8",
@@ -50,7 +51,7 @@
     "jshint": "^2.13.6",
     "lightningcss": "^1.30.2",
     "luxon": "^3.7.2",
-    "nativewind": "4.2.1",
+    "nativewind": "^4.2.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-i18next": "^16.0.0",

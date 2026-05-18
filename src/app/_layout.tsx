@@ -20,12 +20,12 @@ import {
   Appearance,
   ColorSchemeName,
   Linking,
-  LogBox,
   PermissionsAndroid,
   Platform,
   useColorScheme
 } from 'react-native'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
+import {GestureHandlerRootView} from 'react-native-gesture-handler'
+import {SafeAreaProvider} from 'react-native-safe-area-context'
 import '../../global.css'
 
 function RootLayout() {
@@ -34,11 +34,6 @@ function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   })
-
-  // Suppress SafeAreaView deprecation warning from third-party dependencies
-  LogBox.ignoreLogs([
-    "SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead.",
-  ])
 
   Sentry.init({
     dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
@@ -210,23 +205,25 @@ function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <LeagueProvider>
-          <MatchProvider>
-            <Stack>
-              <Stack.Screen
-                name="(tabs)"
-                options={{
-                  headerTitle: t('bangkok_pool_league'),
-                  headerShown: false,
-                }}
-              />
-            </Stack>
-          </MatchProvider>
-        </LeagueProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <SafeAreaProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <LeagueProvider>
+            <MatchProvider>
+              <Stack>
+                <Stack.Screen
+                  name="(tabs)"
+                  options={{
+                    headerTitle: t('bangkok_pool_league'),
+                    headerShown: false,
+                  }}
+                />
+              </Stack>
+            </MatchProvider>
+          </LeagueProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }
 
