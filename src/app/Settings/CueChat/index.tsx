@@ -4,6 +4,11 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useNetwork} from '@/hooks/useNetwork'
+import {
+  getCueChatSession,
+  setCueChatSession,
+  type CueChatSessionMessage,
+} from '@/lib/cueChatSession'
 import {createSocketClient, loadSocketAuth} from '@/lib/socketAuth'
 import {Ionicons} from '@expo/vector-icons'
 import {useFocusEffect} from '@react-navigation/native'
@@ -103,6 +108,10 @@ export default function CueChat() {
   const responseFlushRafRef = React.useRef<number | null>(null)
   const reasoningFlushRafRef = React.useRef<number | null>(null)
   const activeRequestIdRef = React.useRef<string | null>(null)
+  const isStreamingRef = React.useRef(false)
+  isStreamingRef.current = isStreaming
+  const messagesRef = React.useRef(messages)
+  messagesRef.current = messages
 
   const isConnected = connectionPhase === 'connected'
   const isConnecting =
@@ -351,12 +360,27 @@ export default function CueChat() {
     }
   }, [])
 
-  // Fetch chat history on mount
+  React.useEffect(() => {
+    const playerId = leagueState.user?.id
+    if (!playerId || messages.length === 0) return
+    setCueChatSession(playerId, messages as CueChatSessionMessage[])
+  }, [messages, leagueState.user?.id])
+
+  // Load session cache or fetch server history on mount
   React.useEffect(() => {
     async function fetchChatHistory() {
       const playerId = leagueState.user?.id
       if (!playerId) {
         return // Don't fetch if user is not authenticated
+      }
+
+      const cachedSession = getCueChatSession(playerId)
+      if (cachedSession.length > 0) {
+        setMessages(cachedSession as ChatMessage[])
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({animated: false})
+        }, 100)
+        return
       }
 
       try {
@@ -405,6 +429,7 @@ export default function CueChat() {
           historyMessages.sort((a, b) => a.timestamp - b.timestamp)
 
           setMessages(historyMessages)
+          setCueChatSession(playerId, historyMessages)
 
           // Scroll to bottom after loading history
           setTimeout(() => {
@@ -421,14 +446,31 @@ export default function CueChat() {
     fetchChatHistory()
   }, [leagueState.user?.id])
 
+  function persistCueChatSession() {
+    const playerId = leagueState.user?.id
+    if (!playerId) return
+    setCueChatSession(playerId, messagesRef.current as CueChatSessionMessage[])
+  }
+
   React.useEffect(() => {
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({animated: true})
     }, 50)
   }, [reasoningText, responseText, isStreaming, messages.length])
 
+  // webSocketUrl is captured once per visit; not in deps so AsyncStorage URL load
+  // does not tear down the socket mid-chat.
   useFocusEffect(
     React.useCallback(() => {
+      const socketUrl = webSocketUrl
+      const playerId = leagueState.user?.id
+      if (playerId) {
+        const cachedSession = getCueChatSession(playerId)
+        if (cachedSession.length > 0) {
+          setMessages(cachedSession as ChatMessage[])
+        }
+      }
+
       let cancelled = false
       let activeSocket: ReturnType<typeof createSocketClient> | null = null
 
@@ -441,7 +483,7 @@ export default function CueChat() {
         const authOptions = await loadSocketAuth()
         if (cancelled) return
 
-        activeSocket = createSocketClient(webSocketUrl, authOptions)
+        activeSocket = createSocketClient(socketUrl, authOptions)
         if (cancelled) {
           activeSocket.removeAllListeners()
           activeSocket.disconnect()
@@ -453,14 +495,55 @@ export default function CueChat() {
         setSocketError(null)
       })
 
-      activeSocket.on('disconnect', () => {
+      activeSocket.on('disconnect', (reason: string) => {
+        if (__DEV__) {
+          console.log('CueChat socket disconnected:', reason)
+        }
+
+        const isIntentionalDisconnect =
+          reason === 'io client disconnect' || reason === 'io server disconnect'
+
+        if (
+          reason === 'ping timeout' &&
+          isStreamingRef.current &&
+          activeRequestIdRef.current &&
+          !cancelled &&
+          socketRef.current
+        ) {
+          setSocketError(null)
+          setConnectionPhase('connecting')
+          socketRef.current.connect()
+          return
+        }
+
         setConnectionPhase('disconnected')
+
+        if (isIntentionalDisconnect) {
+          return
+        }
+
+        if (
+          reason === 'ping timeout' ||
+          reason === 'transport close' ||
+          reason === 'transport error'
+        ) {
+          setSocketError(
+            reason === 'ping timeout'
+              ? 'Connection timed out — try sending again'
+              : 'Connection lost',
+          )
+        }
       })
 
       activeSocket.on('connect_error', (error: Error) => {
         console.error('CueChat socket connection error:', error.message)
         setConnectionPhase('disconnected')
-        setSocketError(error.message || 'Socket connection failed')
+        const message = error.message || 'Socket connection failed'
+        setSocketError(
+          /timeout/i.test(message)
+            ? 'Could not reach the server — check your connection'
+            : message,
+        )
         setIsStreaming(false)
         clearAgentActivity()
       })
@@ -574,9 +657,10 @@ export default function CueChat() {
 
       return () => {
         cancelled = true
+        persistCueChatSession()
         teardownSocket(activeSocket)
       }
-    }, [webSocketUrl, leagueState.user?.id]),
+    }, [leagueState.user?.id]),
   )
 
   async function emitAgentRequest(

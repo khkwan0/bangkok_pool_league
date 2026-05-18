@@ -232,7 +232,6 @@ export const LeagueProvider = ({children}: any) => {
   const [webSocketUrl, setWebSocketUrlState] = useState<string>(
     config.webSocketUrl,
   )
-
   useEffect(() => {
     const loadApiUrl = async () => {
       try {
