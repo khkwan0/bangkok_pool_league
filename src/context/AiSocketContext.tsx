@@ -177,7 +177,9 @@ export function AiSocketProvider({children}: {children: React.ReactNode}) {
   )
 
   return (
-    <AiSocketContext.Provider value={value}>{children}</AiSocketContext.Provider>
+    <AiSocketContext.Provider value={value}>
+      {children}
+    </AiSocketContext.Provider>
   )
 }
 

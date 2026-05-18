@@ -8,18 +8,18 @@ import {useNetwork} from '@/hooks/useNetwork'
 import {Ionicons} from '@expo/vector-icons'
 import {Stack} from 'expo-router'
 import React from 'react'
+import {useTranslation} from 'react-i18next'
 import {
   Animated,
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   View as RNView,
+  ScrollView,
   TouchableOpacity,
   useColorScheme,
 } from 'react-native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import {useTranslation} from 'react-i18next'
 
 type ChatMessage = {
   id: string
@@ -71,9 +71,8 @@ export default function CueChat() {
   const {t} = useTranslation()
   const [messages, setMessages] = React.useState<ChatMessage[]>([])
   const [inputText, setInputText] = React.useState('')
-  const [agentActivity, setAgentActivity] = React.useState<AgentActivity | null>(
-    null,
-  )
+  const [agentActivity, setAgentActivity] =
+    React.useState<AgentActivity | null>(null)
   const [isStreaming, setIsStreaming] = React.useState(false)
   const [responseText, setResponseText] = React.useState('')
   const [reasoningText, setReasoningText] = React.useState('')
@@ -182,7 +181,9 @@ export default function CueChat() {
     return `${prefix} ${tool}…`
   }
 
-  function getAgentActivityLabel(activity: AgentActivity | null): string | null {
+  function getAgentActivityLabel(
+    activity: AgentActivity | null,
+  ): string | null {
     if (!activity) return null
     switch (activity.phase) {
       case 'reconnecting':
@@ -350,90 +351,90 @@ export default function CueChat() {
     }
 
     const handleAgentReasoningToken = (payload: {
-        requestId?: string
-        token?: string
-      }) => {
-        if (!isCurrentRequest(payload?.requestId)) return
-        const tokenValue = typeof payload?.token === 'string' ? payload.token : ''
-        if (!tokenValue) return
-        clearAgentActivity()
-        appendReasoningToken(tokenValue)
+      requestId?: string
+      token?: string
+    }) => {
+      if (!isCurrentRequest(payload?.requestId)) return
+      const tokenValue = typeof payload?.token === 'string' ? payload.token : ''
+      if (!tokenValue) return
+      clearAgentActivity()
+      appendReasoningToken(tokenValue)
+    }
+
+    const handleAgentToken = (payload: {
+      requestId?: string
+      token?: string
+    }) => {
+      if (!isCurrentRequest(payload?.requestId)) return
+      const tokenValue = typeof payload?.token === 'string' ? payload.token : ''
+      if (!tokenValue) return
+      clearAgentActivity()
+      appendResponseToken(tokenValue)
+    }
+
+    const handleAgentToolCall = (payload: ToolCallPayload) => {
+      if (!isCurrentRequest(payload?.requestId)) return
+      setAgentActivity({phase: 'tool', toolName: resolveToolCallName(payload)})
+    }
+
+    const handleAgentDone = (payload: {
+      requestId?: string
+      response?: {content?: string}
+    }) => {
+      if (!isCurrentRequest(payload?.requestId)) return
+
+      flushAllPendingStreamTokens()
+
+      let assistantReply = responseBufferRef.current.trim()
+      if (!assistantReply) {
+        const responseContent = payload?.response?.content
+        assistantReply =
+          typeof responseContent === 'string' ? responseContent.trim() : ''
       }
 
-      const handleAgentToken = (payload: {
-        requestId?: string
-        token?: string
-      }) => {
-        if (!isCurrentRequest(payload?.requestId)) return
-        const tokenValue = typeof payload?.token === 'string' ? payload.token : ''
-        if (!tokenValue) return
-        clearAgentActivity()
-        appendResponseToken(tokenValue)
+      if (assistantReply) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `assistant_${Date.now()}_${Math.random()}`,
+            message: assistantReply,
+            nickname: 'Response',
+            playerId: 0,
+            timestamp: Date.now(),
+            isUserMessage: false,
+          },
+        ])
       }
 
-      const handleAgentToolCall = (payload: ToolCallPayload) => {
-        if (!isCurrentRequest(payload?.requestId)) return
-        setAgentActivity({phase: 'tool', toolName: resolveToolCallName(payload)})
-      }
+      responseBufferRef.current = ''
+      activeRequestIdRef.current = null
+      setResponseText('')
+      setReasoningText('')
+      setIsStreaming(false)
+      clearAgentActivity()
+      setAgentError(null)
+    }
 
-      const handleAgentDone = (payload: {
-        requestId?: string
-        response?: {content?: string}
-      }) => {
-        if (!isCurrentRequest(payload?.requestId)) return
-
-        flushAllPendingStreamTokens()
-
-        let assistantReply = responseBufferRef.current.trim()
-        if (!assistantReply) {
-          const responseContent = payload?.response?.content
-          assistantReply =
-            typeof responseContent === 'string' ? responseContent.trim() : ''
-        }
-
-        if (assistantReply) {
-          setMessages(prev => [
-            ...prev,
-            {
-              id: `assistant_${Date.now()}_${Math.random()}`,
-              message: assistantReply,
-              nickname: 'Response',
-              playerId: 0,
-              timestamp: Date.now(),
-              isUserMessage: false,
-            },
-          ])
-        }
-
-        responseBufferRef.current = ''
-        activeRequestIdRef.current = null
-        setResponseText('')
-        setReasoningText('')
-        setIsStreaming(false)
-        clearAgentActivity()
-        setAgentError(null)
-      }
-
-      const handleAgentError = (payload: {
-        requestId?: string
-        error?: string
-        message?: string
-      }) => {
-        if (!isCurrentRequest(payload?.requestId)) return
-        flushAllPendingStreamTokens()
-        responseBufferRef.current = ''
-        pendingResponseTokensRef.current = ''
-        pendingReasoningTokensRef.current = ''
-        activeRequestIdRef.current = null
-        setResponseText('')
-        setReasoningText('')
-        setIsStreaming(false)
-        clearAgentActivity()
-        const message =
-          payload?.error || payload?.message || 'Agent request failed'
-        setAgentError(message)
-        console.error('CueChat agent error:', message)
-      }
+    const handleAgentError = (payload: {
+      requestId?: string
+      error?: string
+      message?: string
+    }) => {
+      if (!isCurrentRequest(payload?.requestId)) return
+      flushAllPendingStreamTokens()
+      responseBufferRef.current = ''
+      pendingResponseTokensRef.current = ''
+      pendingReasoningTokensRef.current = ''
+      activeRequestIdRef.current = null
+      setResponseText('')
+      setReasoningText('')
+      setIsStreaming(false)
+      clearAgentActivity()
+      const message =
+        payload?.error || payload?.message || 'Agent request failed'
+      setAgentError(message)
+      console.error('CueChat agent error:', message)
+    }
 
     socket.on('connect_error', handleConnectError)
     socket.on('agent:reasoning_token', handleAgentReasoningToken)
@@ -454,7 +455,10 @@ export default function CueChat() {
 
   async function emitAgentRequest(
     requestId: string,
-    agentMessages: Array<{role: 'system' | 'user' | 'assistant'; content: string}>,
+    agentMessages: Array<{
+      role: 'system' | 'user' | 'assistant'
+      content: string
+    }>,
   ) {
     if (!socket) return
 
@@ -625,7 +629,9 @@ export default function CueChat() {
     return (
       <View
         className={`mx-4 my-2 ${isUserMessage ? 'items-end' : hasTable ? '' : 'items-start'}`}
-        style={!isUserMessage && hasTable ? {alignItems: 'stretch'} : undefined}>
+        style={
+          !isUserMessage && hasTable ? {alignItems: 'stretch'} : undefined
+        }>
         <View
           style={{
             backgroundColor: isUserMessage ? userBgColor : apiBgColor,
@@ -909,11 +915,7 @@ export default function CueChat() {
   }
 
   const renderTypingIndicator = () => {
-    if (
-      !isStreaming ||
-      reasoningText.trim() ||
-      responseText.trim()
-    ) {
+    if (!isStreaming || reasoningText.trim() || responseText.trim()) {
       return null
     }
 
@@ -1023,7 +1025,8 @@ export default function CueChat() {
                 maxWidth: '100%',
                 opacity: isInputEnabled ? 1 : 0.5,
               }}>
-              <Text style={{color: chipTextColor, fontSize: 14, lineHeight: 20}}>
+              <Text
+                style={{color: chipTextColor, fontSize: 14, lineHeight: 20}}>
                 {label}
               </Text>
             </TouchableOpacity>
@@ -1040,21 +1043,27 @@ export default function CueChat() {
     if (isLoadingHistory) {
       return (
         <View className="flex-1 justify-center items-center py-8">
-          <Text className="opacity-60">{t('ai_assistant_input_connecting')}</Text>
+          <Text className="opacity-60">
+            {t('ai_assistant_input_connecting')}
+          </Text>
         </View>
       )
     }
     if (isConnecting) {
       return (
         <View className="flex-1 justify-center items-center py-8">
-          <Text className="opacity-60">{t('ai_assistant_input_connecting')}</Text>
+          <Text className="opacity-60">
+            {t('ai_assistant_input_connecting')}
+          </Text>
         </View>
       )
     }
     if (!isConnected) {
       return (
         <View className="flex-1 justify-center items-center py-8">
-          <Text className="opacity-60">{t('ai_assistant_input_disconnected')}</Text>
+          <Text className="opacity-60">
+            {t('ai_assistant_input_disconnected')}
+          </Text>
         </View>
       )
     }
@@ -1072,110 +1081,112 @@ export default function CueChat() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
-      <View className="flex-1">
-        {/* Connection Status Bar */}
-        <View
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: getStatusBarColor(),
-          }}>
-          <StatusBarIcon
-            name={getStatusBarIcon()}
-            spin={shouldSpinStatusIcon}
-          />
-          <Text style={{color: '#ffffff', fontSize: 12}}>
-            {getStatusBarLabel()}
-          </Text>
-        </View>
-
-        {displayError ? (
+        <View className="flex-1">
+          {/* Connection Status Bar */}
           <View
             style={{
-              marginHorizontal: 16,
-              marginTop: 8,
-              padding: 12,
-              borderRadius: 8,
-              backgroundColor: isDark ? '#7f1d1d' : '#fef2f2',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: getStatusBarColor(),
             }}>
-            <Text
-              style={{
-                color: isDark ? '#fecaca' : '#b91c1c',
-                fontSize: 13,
-              }}>
-              {displayError}
+            <StatusBarIcon
+              name={getStatusBarIcon()}
+              spin={shouldSpinStatusIcon}
+            />
+            <Text style={{color: '#ffffff', fontSize: 12}}>
+              {getStatusBarLabel()}
             </Text>
           </View>
-        ) : null}
 
-        {/* Messages List */}
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={item => item.id}
-          ListFooterComponent={renderListFooter}
-          contentContainerStyle={{
-            paddingVertical: 16,
-            paddingBottom: insets.bottom + 80,
-          }}
-          ListEmptyComponent={renderListEmpty()}
-          onContentSizeChange={() => {
-            flatListRef.current?.scrollToEnd({animated: true})
-          }}
-        />
-
-        {/* Input Area */}
-        <View
-          className="border-t border-gray-300 dark:border-gray-700"
-          style={{
-            paddingBottom: insets.bottom,
-            backgroundColor: 'transparent',
-          }}>
-          <View className="flex-row items-center px-4 py-2 gap-2">
-            <View style={{flex: 1, justifyContent: 'center'}}>
-              <TextInput
-                placeholder={inputPlaceholder}
-                value={inputText}
-                onChangeText={setInputText}
-                onSubmitEditing={() => SendMessage()}
-                disabled={!isInputEnabled}
-                multiline
-                maxLength={500}
-                textAlignVertical="center"
-                containerStyle={{
-                  opacity: isInputEnabled ? 1 : 0.5,
-                }}
-                inputStyle={{
-                  height: undefined,
-                  minHeight: 48,
-                  paddingTop: 12,
-                  paddingBottom: 12,
-                }}
-              />
-            </View>
-            <TouchableOpacity
-              onPress={() => SendMessage()}
-              disabled={!canSend}
-              className={`rounded-full p-3 ${
-                canSend ? 'bg-blue-500 dark:bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
-              }`}
+          {displayError ? (
+            <View
               style={{
-                opacity: canSend ? 1 : 0.5,
+                marginHorizontal: 16,
+                marginTop: 8,
+                padding: 12,
+                borderRadius: 8,
+                backgroundColor: isDark ? '#7f1d1d' : '#fef2f2',
               }}>
-              <Ionicons
-                name="send"
-                size={20}
-                color={canSend ? 'white' : 'gray'}
-              />
-            </TouchableOpacity>
+              <Text
+                style={{
+                  color: isDark ? '#fecaca' : '#b91c1c',
+                  fontSize: 13,
+                }}>
+                {displayError}
+              </Text>
+            </View>
+          ) : null}
+
+          {/* Messages List */}
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={item => item.id}
+            ListFooterComponent={renderListFooter}
+            contentContainerStyle={{
+              paddingVertical: 16,
+              paddingBottom: insets.bottom + 80,
+            }}
+            ListEmptyComponent={renderListEmpty()}
+            onContentSizeChange={() => {
+              flatListRef.current?.scrollToEnd({animated: true})
+            }}
+          />
+
+          {/* Input Area */}
+          <View
+            className="border-t border-gray-300 dark:border-gray-700"
+            style={{
+              paddingBottom: insets.bottom,
+              backgroundColor: 'transparent',
+            }}>
+            <View className="flex-row items-center px-4 py-2 gap-2">
+              <View style={{flex: 1, justifyContent: 'center'}}>
+                <TextInput
+                  placeholder={inputPlaceholder}
+                  value={inputText}
+                  onChangeText={setInputText}
+                  onSubmitEditing={() => SendMessage()}
+                  disabled={!isInputEnabled}
+                  multiline
+                  maxLength={500}
+                  textAlignVertical="center"
+                  containerStyle={{
+                    opacity: isInputEnabled ? 1 : 0.5,
+                  }}
+                  inputStyle={{
+                    height: undefined,
+                    minHeight: 48,
+                    paddingTop: 12,
+                    paddingBottom: 12,
+                  }}
+                />
+              </View>
+              <TouchableOpacity
+                onPress={() => SendMessage()}
+                disabled={!canSend}
+                className={`rounded-full p-3 ${
+                  canSend
+                    ? 'bg-blue-500 dark:bg-blue-600'
+                    : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+                style={{
+                  opacity: canSend ? 1 : 0.5,
+                }}>
+                <Ionicons
+                  name="send"
+                  size={20}
+                  color={canSend ? 'white' : 'gray'}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
     </>
   )
 }

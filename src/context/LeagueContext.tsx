@@ -1,6 +1,6 @@
 import config from '@/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { createContext, useContext, useEffect, useReducer, useState } from 'react'
+import {createContext, useContext, useEffect, useReducer, useState} from 'react'
 interface User {
   id?: number
   role_id?: number
@@ -26,7 +26,7 @@ interface User {
   }
 }
 
-import { Thread } from '@/components/Messages/types'
+import {Thread} from '@/components/Messages/types'
 
 interface LeagueState {
   user: User
@@ -91,10 +91,13 @@ const LeagueReducer = (state: any, action: any) => {
     }
     case 'SET_MESSAGE_THREADS': {
       // Calculate total unread count from threads
-      const totalUnread = action.payload.reduce((sum: number, thread: Thread) => {
-        return sum + (thread.unread_count || 0)
-      }, 0)
-      
+      const totalUnread = action.payload.reduce(
+        (sum: number, thread: Thread) => {
+          return sum + (thread.unread_count || 0)
+        },
+        0,
+      )
+
       return {
         ...state,
         messageThreads: action.payload,
@@ -102,7 +105,7 @@ const LeagueReducer = (state: any, action: any) => {
       }
     }
     case 'UPDATE_THREAD_UNREAD_COUNT': {
-      const { playerId, unreadCount } = action.payload
+      const {playerId, unreadCount} = action.payload
       const updatedThreads = state.messageThreads.map((thread: Thread) => {
         if (thread.other_player_id === playerId) {
           return {
@@ -112,12 +115,15 @@ const LeagueReducer = (state: any, action: any) => {
         }
         return thread
       })
-      
+
       // Calculate new total unread count
-      const totalUnread = updatedThreads.reduce((sum: number, thread: Thread) => {
-        return sum + (thread.unread_count || 0)
-      }, 0)
-      
+      const totalUnread = updatedThreads.reduce(
+        (sum: number, thread: Thread) => {
+          return sum + (thread.unread_count || 0)
+        },
+        0,
+      )
+
       return {
         ...state,
         messageThreads: updatedThreads,
@@ -125,7 +131,7 @@ const LeagueReducer = (state: any, action: any) => {
       }
     }
     case 'DECREMENT_THREAD_UNREAD_COUNT': {
-      const { playerId, decrementBy } = action.payload
+      const {playerId, decrementBy} = action.payload
       const updatedThreads = state.messageThreads.map((thread: Thread) => {
         if (thread.other_player_id === playerId) {
           const currentUnread = thread.unread_count || 0
@@ -137,12 +143,15 @@ const LeagueReducer = (state: any, action: any) => {
         }
         return thread
       })
-      
+
       // Calculate new total unread count
-      const totalUnread = updatedThreads.reduce((sum: number, thread: Thread) => {
-        return sum + (thread.unread_count || 0)
-      }, 0)
-      
+      const totalUnread = updatedThreads.reduce(
+        (sum: number, thread: Thread) => {
+          return sum + (thread.unread_count || 0)
+        },
+        0,
+      )
+
       return {
         ...state,
         messageThreads: updatedThreads,
@@ -220,7 +229,9 @@ const LeagueReducer = (state: any, action: any) => {
 export const LeagueProvider = ({children}: any) => {
   const [state, dispatch] = useReducer(LeagueReducer, initialState)
   const [apiUrl, setApiUrlState] = useState<string>(config.apiUrl)
-  const [webSocketUrl, setWebSocketUrlState] = useState<string>(config.webSocketUrl)
+  const [webSocketUrl, setWebSocketUrlState] = useState<string>(
+    config.webSocketUrl,
+  )
 
   useEffect(() => {
     const loadApiUrl = async () => {
@@ -334,7 +345,20 @@ export const LeagueProvider = ({children}: any) => {
     }
   }
   return (
-    <LeagueContext.Provider value={{state, dispatch, LogoutUser, RefreshUpcoming, StopRefreshUpcoming, apiUrl, setApiUrl, resetApiUrl, webSocketUrl, setWebSocketUrl, resetWebSocketUrl}}>
+    <LeagueContext.Provider
+      value={{
+        state,
+        dispatch,
+        LogoutUser,
+        RefreshUpcoming,
+        StopRefreshUpcoming,
+        apiUrl,
+        setApiUrl,
+        resetApiUrl,
+        webSocketUrl,
+        setWebSocketUrl,
+        resetWebSocketUrl,
+      }}>
       {children}
     </LeagueContext.Provider>
   )
