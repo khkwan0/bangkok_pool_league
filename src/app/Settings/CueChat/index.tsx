@@ -2,11 +2,10 @@ import {ChatMarkdown, markdownContainsTable} from '@/components/ChatMarkdown'
 import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
-import config from '@/config'
+import {useAiSocketContext} from '@/context/AiSocketContext'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useNetwork} from '@/hooks/useNetwork'
 import {Ionicons} from '@expo/vector-icons'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import {Stack} from 'expo-router'
 import React from 'react'
 import {
@@ -21,7 +20,6 @@ import {
 } from 'react-native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useTranslation} from 'react-i18next'
-import {io} from 'socket.io-client'
 
 type ChatMessage = {
   id: string
@@ -33,24 +31,236 @@ type ChatMessage = {
   isUserMessage?: boolean
 }
 
+type AgentActivity =
+  | {phase: 'reconnecting'}
+  | {phase: 'sending'}
+  | {phase: 'preparing'}
+  | {phase: 'tool'; toolName: string}
+
+type ToolCallPayload = {
+  requestId?: string
+  toolCall?: {
+    name?: string
+    function?: {name?: string}
+  }
+}
+
+function resolveToolCallName(payload: ToolCallPayload): string {
+  const toolCall = payload?.toolCall
+  if (!toolCall) return 'tool'
+  if (typeof toolCall.name === 'string' && toolCall.name.trim()) {
+    return toolCall.name.trim()
+  }
+  const functionName = toolCall.function?.name
+  if (typeof functionName === 'string' && functionName.trim()) {
+    return functionName.trim()
+  }
+  return 'tool'
+}
+
+function formatToolDisplayName(rawName: string): string {
+  const cleaned = rawName
+    .replace(/^bkk_?league_?/i, '')
+    .replace(/_/g, ' ')
+    .trim()
+  if (!cleaned) return rawName
+  return cleaned.replace(/\b\w/g, char => char.toUpperCase())
+}
+
 export default function CueChat() {
   const {t} = useTranslation()
   const [messages, setMessages] = React.useState<ChatMessage[]>([])
   const [inputText, setInputText] = React.useState('')
-  const [isConnected, setIsConnected] = React.useState(false)
+  const [agentActivity, setAgentActivity] = React.useState<AgentActivity | null>(
+    null,
+  )
   const [isStreaming, setIsStreaming] = React.useState(false)
   const [responseText, setResponseText] = React.useState('')
   const [reasoningText, setReasoningText] = React.useState('')
   const [isLoadingHistory, setIsLoadingHistory] = React.useState(false)
+  const [agentError, setAgentError] = React.useState<string | null>(null)
   const insets = useSafeAreaInsets()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
-  const {state: leagueState, webSocketUrl}: any = useLeagueContext()
+  const {state: leagueState}: any = useLeagueContext()
+  const {
+    socket,
+    connectionPhase,
+    socketError,
+    isConnected,
+    isConnecting,
+    ensureConnected,
+  } = useAiSocketContext()
   const {Get} = useNetwork()
   const flatListRef = React.useRef<FlatList>(null)
   const responseBufferRef = React.useRef('')
+  const pendingResponseTokensRef = React.useRef('')
+  const pendingReasoningTokensRef = React.useRef('')
+  const responseFlushRafRef = React.useRef<number | null>(null)
+  const reasoningFlushRafRef = React.useRef<number | null>(null)
   const activeRequestIdRef = React.useRef<string | null>(null)
-  const socket = React.useRef<ReturnType<typeof io> | null>(null)
+
+  const displayError = agentError ?? socketError
+
+  function clearAgentActivity() {
+    setAgentActivity(null)
+  }
+
+  function flushPendingResponseTokens() {
+    responseFlushRafRef.current = null
+    const chunk = pendingResponseTokensRef.current
+    if (!chunk) return
+    pendingResponseTokensRef.current = ''
+    responseBufferRef.current += chunk
+    setResponseText(prev => prev + chunk)
+  }
+
+  function flushPendingReasoningTokens() {
+    reasoningFlushRafRef.current = null
+    const chunk = pendingReasoningTokensRef.current
+    if (!chunk) return
+    pendingReasoningTokensRef.current = ''
+    setReasoningText(prev => prev + chunk)
+  }
+
+  function scheduleResponseTokenFlush() {
+    if (responseFlushRafRef.current != null) return
+    responseFlushRafRef.current = requestAnimationFrame(
+      flushPendingResponseTokens,
+    )
+  }
+
+  function scheduleReasoningTokenFlush() {
+    if (reasoningFlushRafRef.current != null) return
+    reasoningFlushRafRef.current = requestAnimationFrame(
+      flushPendingReasoningTokens,
+    )
+  }
+
+  function appendResponseToken(token: string) {
+    pendingResponseTokensRef.current += token
+    scheduleResponseTokenFlush()
+  }
+
+  function appendReasoningToken(token: string) {
+    pendingReasoningTokensRef.current += token
+    scheduleReasoningTokenFlush()
+  }
+
+  function flushAllPendingStreamTokens() {
+    if (responseFlushRafRef.current != null) {
+      cancelAnimationFrame(responseFlushRafRef.current)
+      responseFlushRafRef.current = null
+    }
+    if (reasoningFlushRafRef.current != null) {
+      cancelAnimationFrame(reasoningFlushRafRef.current)
+      reasoningFlushRafRef.current = null
+    }
+    const responseChunk = pendingResponseTokensRef.current
+    const reasoningChunk = pendingReasoningTokensRef.current
+    pendingResponseTokensRef.current = ''
+    pendingReasoningTokensRef.current = ''
+    if (responseChunk) {
+      responseBufferRef.current += responseChunk
+      setResponseText(prev => prev + responseChunk)
+    }
+    if (reasoningChunk) {
+      setReasoningText(prev => prev + reasoningChunk)
+    }
+  }
+
+  function formatToolStatusLabel(rawToolName: string): string {
+    const tool = formatToolDisplayName(rawToolName)
+    let prefix = t('ai_assistant_status_tool_prefix', {
+      defaultValue: 'Looking up',
+    })
+    const braceIndex = prefix.indexOf('{')
+    if (braceIndex >= 0) {
+      prefix = prefix.slice(0, braceIndex).trim()
+    }
+    if (!prefix) prefix = 'Looking up'
+    return `${prefix} ${tool}…`
+  }
+
+  function getAgentActivityLabel(activity: AgentActivity | null): string | null {
+    if (!activity) return null
+    switch (activity.phase) {
+      case 'reconnecting':
+        return t('ai_assistant_status_reconnecting')
+      case 'sending':
+        return t('ai_assistant_status_sending')
+      case 'preparing':
+        return t('ai_assistant_status_preparing')
+      case 'tool':
+        return formatToolStatusLabel(activity.toolName)
+      default:
+        return null
+    }
+  }
+
+  function getStatusBarLabel(): string {
+    if (isLoadingHistory && !isConnected) {
+      return t('ai_assistant_status_connecting')
+    }
+    if (isStreaming && agentActivity) {
+      const activityLabel = getAgentActivityLabel(agentActivity)
+      if (activityLabel) return activityLabel
+    }
+    switch (connectionPhase) {
+      case 'initializing':
+        return t('ai_assistant_status_initializing')
+      case 'connecting':
+        return t('ai_assistant_status_connecting')
+      case 'connected':
+        return t('connected')
+      case 'disconnected':
+        return t('disconnected')
+      default:
+        return t('disconnected')
+    }
+  }
+
+  function getStatusBarColor(): string {
+    if (isStreaming && agentActivity) return '#2563eb'
+    switch (connectionPhase) {
+      case 'initializing':
+      case 'connecting':
+        return '#ca8a04'
+      case 'connected':
+        return '#16a34a'
+      case 'disconnected':
+        return '#dc2626'
+      default:
+        return '#dc2626'
+    }
+  }
+
+  function getStatusBarIcon(): keyof typeof Ionicons.glyphMap {
+    if (agentActivity?.phase === 'reconnecting') return 'sync-outline'
+    if (isStreaming && agentActivity) return 'hourglass-outline'
+    switch (connectionPhase) {
+      case 'initializing':
+      case 'connecting':
+        return 'sync-outline'
+      case 'connected':
+        return 'checkmark-circle'
+      case 'disconnected':
+        return 'close-circle'
+      default:
+        return 'close-circle'
+    }
+  }
+
+  React.useEffect(() => {
+    return () => {
+      if (responseFlushRafRef.current != null) {
+        cancelAnimationFrame(responseFlushRafRef.current)
+      }
+      if (reasoningFlushRafRef.current != null) {
+        cancelAnimationFrame(reasoningFlushRafRef.current)
+      }
+    }
+  }, [])
 
   // Fetch chat history on mount
   React.useEffect(() => {
@@ -129,50 +339,25 @@ export default function CueChat() {
   }, [reasoningText, responseText, isStreaming, messages.length])
 
   React.useEffect(() => {
-    let cancelled = false
-    let currentSocket: ReturnType<typeof io> | null = null
+    if (!socket) return
 
-    async function setupSocket() {
-      if (socket.current) {
-        socket.current.removeAllListeners()
-        socket.current.disconnect()
-      }
+    const isCurrentRequest = (requestId?: string) =>
+      !requestId || requestId === activeRequestIdRef.current
 
-      const token = await AsyncStorage.getItem('jwt')
-      if (cancelled) return
+    const handleConnectError = () => {
+      setIsStreaming(false)
+      clearAgentActivity()
+    }
 
-      currentSocket = io(webSocketUrl ?? config.webSocketUrl, {
-        autoConnect: false,
-        transports: ['websocket', 'polling'],
-        ...(token ? {extraHeaders: {Authorization: `Bearer ${token}`}} : {}),
-      })
-      socket.current = currentSocket
-
-      const isCurrentRequest = (requestId?: string) =>
-        !requestId || requestId === activeRequestIdRef.current
-
-      const handleConnect = () => {
-        setIsConnected(true)
-      }
-
-      const handleDisconnect = () => {
-        setIsConnected(false)
-      }
-
-      const handleConnectError = (error: Error) => {
-        console.error('CueChat socket connection error:', error.message)
-        setIsConnected(false)
-        setIsStreaming(false)
-      }
-
-      const handleAgentReasoningToken = (payload: {
+    const handleAgentReasoningToken = (payload: {
         requestId?: string
         token?: string
       }) => {
         if (!isCurrentRequest(payload?.requestId)) return
-        const token = typeof payload?.token === 'string' ? payload.token : ''
-        if (!token) return
-        setReasoningText(prev => prev + token)
+        const tokenValue = typeof payload?.token === 'string' ? payload.token : ''
+        if (!tokenValue) return
+        clearAgentActivity()
+        appendReasoningToken(tokenValue)
       }
 
       const handleAgentToken = (payload: {
@@ -180,10 +365,15 @@ export default function CueChat() {
         token?: string
       }) => {
         if (!isCurrentRequest(payload?.requestId)) return
-        const token = typeof payload?.token === 'string' ? payload.token : ''
-        if (!token) return
-        responseBufferRef.current += token
-        setResponseText(prev => prev + token)
+        const tokenValue = typeof payload?.token === 'string' ? payload.token : ''
+        if (!tokenValue) return
+        clearAgentActivity()
+        appendResponseToken(tokenValue)
+      }
+
+      const handleAgentToolCall = (payload: ToolCallPayload) => {
+        if (!isCurrentRequest(payload?.requestId)) return
+        setAgentActivity({phase: 'tool', toolName: resolveToolCallName(payload)})
       }
 
       const handleAgentDone = (payload: {
@@ -191,6 +381,8 @@ export default function CueChat() {
         response?: {content?: string}
       }) => {
         if (!isCurrentRequest(payload?.requestId)) return
+
+        flushAllPendingStreamTokens()
 
         let assistantReply = responseBufferRef.current.trim()
         if (!assistantReply) {
@@ -218,6 +410,8 @@ export default function CueChat() {
         setResponseText('')
         setReasoningText('')
         setIsStreaming(false)
+        clearAgentActivity()
+        setAgentError(null)
       }
 
       const handleAgentError = (payload: {
@@ -226,46 +420,43 @@ export default function CueChat() {
         message?: string
       }) => {
         if (!isCurrentRequest(payload?.requestId)) return
+        flushAllPendingStreamTokens()
         responseBufferRef.current = ''
+        pendingResponseTokensRef.current = ''
+        pendingReasoningTokensRef.current = ''
         activeRequestIdRef.current = null
         setResponseText('')
         setReasoningText('')
         setIsStreaming(false)
-        console.error(
-          'CueChat agent error:',
-          payload?.error || payload?.message || 'Agent request failed',
-        )
+        clearAgentActivity()
+        const message =
+          payload?.error || payload?.message || 'Agent request failed'
+        setAgentError(message)
+        console.error('CueChat agent error:', message)
       }
 
-      currentSocket.on('connect', handleConnect)
-      currentSocket.on('disconnect', handleDisconnect)
-      currentSocket.on('connect_error', handleConnectError)
-      currentSocket.on('agent:reasoning_token', handleAgentReasoningToken)
-      currentSocket.on('agent:token', handleAgentToken)
-      currentSocket.on('agent:done', handleAgentDone)
-      currentSocket.on('agent:error', handleAgentError)
-
-      currentSocket.connect()
-    }
-
-    setupSocket()
+    socket.on('connect_error', handleConnectError)
+    socket.on('agent:reasoning_token', handleAgentReasoningToken)
+    socket.on('agent:token', handleAgentToken)
+    socket.on('agent:tool_call', handleAgentToolCall)
+    socket.on('agent:done', handleAgentDone)
+    socket.on('agent:error', handleAgentError)
 
     return () => {
-      cancelled = true
-      if (currentSocket) {
-        currentSocket.removeAllListeners()
-        currentSocket.disconnect()
-      }
-      socket.current = null
+      socket.off('connect_error', handleConnectError)
+      socket.off('agent:reasoning_token', handleAgentReasoningToken)
+      socket.off('agent:token', handleAgentToken)
+      socket.off('agent:tool_call', handleAgentToolCall)
+      socket.off('agent:done', handleAgentDone)
+      socket.off('agent:error', handleAgentError)
     }
-  }, [webSocketUrl])
+  }, [socket])
 
-  function emitAgentRequest(
+  async function emitAgentRequest(
     requestId: string,
     agentMessages: Array<{role: 'system' | 'user' | 'assistant'; content: string}>,
   ) {
-    const currentSocket = socket.current
-    if (!currentSocket) return
+    if (!socket) return
 
     const payload = {requestId, messages: agentMessages}
 
@@ -276,34 +467,68 @@ export default function CueChat() {
         setResponseText('')
         setReasoningText('')
         setIsStreaming(false)
-        console.error('CueChat agent ack error:', ack.error || 'Failed to start agent request')
+        clearAgentActivity()
+        setAgentError(ack.error || 'Failed to start agent request')
+        console.error(
+          'CueChat agent ack error:',
+          ack.error || 'Failed to start agent request',
+        )
       }
     }
 
-    if (currentSocket.connected) {
-      currentSocket.emit('agent', payload, onAck)
-    } else {
-      currentSocket.connect()
-      currentSocket.once('connect', () => {
-        currentSocket.emit('agent', payload, onAck)
-      })
+    const emitPayload = () => {
+      setAgentActivity({phase: 'preparing'})
+      socket.emit('agent', payload, onAck)
+    }
+
+    try {
+      if (socket.connected) {
+        setAgentActivity({phase: 'sending'})
+        emitPayload()
+      } else {
+        setAgentActivity({phase: 'reconnecting'})
+        await ensureConnected()
+        setAgentActivity({phase: 'sending'})
+        emitPayload()
+      }
+    } catch (error) {
+      setIsStreaming(false)
+      clearAgentActivity()
+      const message =
+        error instanceof Error ? error.message : 'Socket connection failed'
+      setAgentError(message)
     }
   }
 
-  const isInputEnabled = isConnected && !isStreaming
+  const isInputEnabled = isConnected && !isStreaming && !isConnecting
   const canSend = isInputEnabled && Boolean(inputText.trim())
-  const inputPlaceholder = !isConnected
-    ? t('ai_assistant_input_disconnected')
-    : isStreaming
-      ? t('ai_assistant_input_responding')
-      : t('ai_assistant_message_placeholder')
+  const inputPlaceholder = isConnecting
+    ? t('ai_assistant_input_connecting')
+    : !isConnected
+      ? t('ai_assistant_input_disconnected')
+      : isStreaming
+        ? t('ai_assistant_input_responding')
+        : t('ai_assistant_message_placeholder')
 
-  async function SendMessage() {
-    if (!canSend) {
-      return
-    }
+  const suggestionKeys = [
+    'ai_assistant_suggestion_1',
+    'ai_assistant_suggestion_2',
+    'ai_assistant_suggestion_3',
+    'ai_assistant_suggestion_4',
+  ] as const
 
-    const messageText = inputText.trim()
+  const showReadyPrompt =
+    isConnected &&
+    !isConnecting &&
+    !isStreaming &&
+    !isLoadingHistory &&
+    messages.length === 0
+
+  async function SendMessage(overrideText?: string) {
+    const messageText = (overrideText ?? inputText).trim()
+    if (!messageText) return
+    if (!overrideText && !canSend) return
+    if (overrideText && !isInputEnabled) return
     const currentUserId = leagueState.user.id ?? 0
     const currentNickname = leagueState.user.nickname ?? 'You'
 
@@ -329,9 +554,21 @@ export default function CueChat() {
 
     const requestId = `ai-${Date.now()}`
     activeRequestIdRef.current = requestId
+    if (responseFlushRafRef.current != null) {
+      cancelAnimationFrame(responseFlushRafRef.current)
+      responseFlushRafRef.current = null
+    }
+    if (reasoningFlushRafRef.current != null) {
+      cancelAnimationFrame(reasoningFlushRafRef.current)
+      reasoningFlushRafRef.current = null
+    }
     responseBufferRef.current = ''
+    pendingResponseTokensRef.current = ''
+    pendingReasoningTokensRef.current = ''
     setResponseText('')
     setReasoningText('')
+    setAgentError(null)
+    setAgentActivity({phase: 'sending'})
     setIsStreaming(true)
 
     // Add user message to chat immediately (right side)
@@ -345,7 +582,9 @@ export default function CueChat() {
     }
 
     setMessages(prev => [...prev, userMessage])
-    setInputText('')
+    if (!overrideText) {
+      setInputText('')
+    }
 
     // Scroll to bottom
     setTimeout(() => {
@@ -361,6 +600,7 @@ export default function CueChat() {
       setResponseText('')
       setReasoningText('')
       setIsStreaming(false)
+      clearAgentActivity()
     }
   }
 
@@ -464,6 +704,48 @@ export default function CueChat() {
           </View>
         </View>
       </View>
+    )
+  }
+
+  const shouldSpinStatusIcon =
+    isConnecting || agentActivity?.phase === 'reconnecting'
+
+  const StatusBarIcon = ({
+    name,
+    spin,
+  }: {
+    name: keyof typeof Ionicons.glyphMap
+    spin: boolean
+  }) => {
+    const rotation = React.useRef(new Animated.Value(0)).current
+
+    React.useEffect(() => {
+      if (!spin) {
+        rotation.stopAnimation()
+        rotation.setValue(0)
+        return
+      }
+
+      const animation = Animated.loop(
+        Animated.timing(rotation, {
+          toValue: 1,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+      )
+      animation.start()
+      return () => animation.stop()
+    }, [spin, rotation])
+
+    const rotate = rotation.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '360deg'],
+    })
+
+    return (
+      <Animated.View style={{marginRight: 8, transform: [{rotate}]}}>
+        <Ionicons name={name} size={16} color="white" />
+      </Animated.View>
     )
   }
 
@@ -593,8 +875,6 @@ export default function CueChat() {
   const renderStreamingResponse = () => {
     if (!isStreaming || !responseText.trim()) return null
 
-    const hasTable = markdownContainsTable(responseText)
-
     return (
       <RNView
         style={{
@@ -606,11 +886,10 @@ export default function CueChat() {
           style={{
             backgroundColor: apiBgColor,
             borderRadius: 16,
-            paddingHorizontal: hasTable ? 8 : 16,
+            paddingHorizontal: 16,
             paddingVertical: 12,
-            maxWidth: hasTable ? '96%' : '80%',
-            alignSelf: hasTable ? 'stretch' : 'flex-start',
-            overflow: 'visible',
+            maxWidth: '80%',
+            alignSelf: 'flex-start',
           }}>
           <Text
             style={{
@@ -621,7 +900,9 @@ export default function CueChat() {
             }}>
             Response
           </Text>
-          <ChatMarkdown content={responseText} textColor={apiTextColor} />
+          <Text style={{color: apiTextColor, fontSize: 16, lineHeight: 22}}>
+            {responseText}
+          </Text>
         </RNView>
       </RNView>
     )
@@ -635,6 +916,8 @@ export default function CueChat() {
     ) {
       return null
     }
+
+    const activityLabel = getAgentActivityLabel(agentActivity)
 
     return (
       <RNView
@@ -652,6 +935,17 @@ export default function CueChat() {
             minHeight: 36,
             justifyContent: 'center',
           }}>
+          {activityLabel ? (
+            <Text
+              style={{
+                color: apiTextColor,
+                fontSize: 14,
+                marginBottom: 8,
+                opacity: 0.9,
+              }}>
+              {activityLabel}
+            </Text>
+          ) : null}
           <BouncingDots />
         </RNView>
       </RNView>
@@ -665,6 +959,111 @@ export default function CueChat() {
       {renderTypingIndicator()}
     </>
   )
+
+  const chipBorderColor = isDark ? '#4b5563' : '#d1d5db'
+  const chipBgColor = isDark ? '#1f2937' : '#ffffff'
+  const chipTextColor = isDark ? '#e5e7eb' : '#374151'
+
+  const renderReadyPrompt = () => (
+    <RNView
+      style={{
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        alignItems: 'flex-start',
+        width: '100%',
+      }}>
+      <RNView
+        style={{
+          backgroundColor: apiBgColor,
+          borderRadius: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          maxWidth: '90%',
+          marginBottom: 12,
+        }}>
+        <Text
+          style={{
+            color: isDark ? '#d1d5db' : '#374151',
+            fontSize: 12,
+            marginBottom: 6,
+            fontWeight: '600',
+          }}>
+          {t('ai_assistant')}
+        </Text>
+        <Text style={{color: apiTextColor, fontSize: 16, lineHeight: 22}}>
+          {t('ai_assistant_ready_message')}
+        </Text>
+      </RNView>
+      <Text
+        style={{
+          color: reasoningLabelColor,
+          fontSize: 12,
+          fontWeight: '600',
+          marginBottom: 8,
+          marginLeft: 4,
+        }}>
+        {t('ai_assistant_suggestions_label')}
+      </Text>
+      <RNView style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8}}>
+        {suggestionKeys.map(key => {
+          const label = t(key)
+          return (
+            <TouchableOpacity
+              key={key}
+              onPress={() => SendMessage(label)}
+              disabled={!isInputEnabled}
+              activeOpacity={0.7}
+              style={{
+                borderWidth: 1,
+                borderColor: chipBorderColor,
+                backgroundColor: chipBgColor,
+                borderRadius: 20,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                maxWidth: '100%',
+                opacity: isInputEnabled ? 1 : 0.5,
+              }}>
+              <Text style={{color: chipTextColor, fontSize: 14, lineHeight: 20}}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          )
+        })}
+      </RNView>
+    </RNView>
+  )
+
+  const renderListEmpty = () => {
+    if (showReadyPrompt) {
+      return renderReadyPrompt()
+    }
+    if (isLoadingHistory) {
+      return (
+        <View className="flex-1 justify-center items-center py-8">
+          <Text className="opacity-60">{t('ai_assistant_input_connecting')}</Text>
+        </View>
+      )
+    }
+    if (isConnecting) {
+      return (
+        <View className="flex-1 justify-center items-center py-8">
+          <Text className="opacity-60">{t('ai_assistant_input_connecting')}</Text>
+        </View>
+      )
+    }
+    if (!isConnected) {
+      return (
+        <View className="flex-1 justify-center items-center py-8">
+          <Text className="opacity-60">{t('ai_assistant_input_disconnected')}</Text>
+        </View>
+      )
+    }
+    return (
+      <View className="flex-1 justify-center items-center py-8">
+        <Text className="opacity-60">{t('ai_assistant_empty')}</Text>
+      </View>
+    )
+  }
 
   return (
     <>
@@ -682,18 +1081,35 @@ export default function CueChat() {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: isConnected ? '#16a34a' : '#dc2626',
+            backgroundColor: getStatusBarColor(),
           }}>
-          <Ionicons
-            name={isConnected ? 'checkmark-circle' : 'close-circle'}
-            size={16}
-            color="white"
-            style={{marginRight: 8}}
+          <StatusBarIcon
+            name={getStatusBarIcon()}
+            spin={shouldSpinStatusIcon}
           />
           <Text style={{color: '#ffffff', fontSize: 12}}>
-            {isConnected ? t('connected') : t('disconnected')}
+            {getStatusBarLabel()}
           </Text>
         </View>
+
+        {displayError ? (
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginTop: 8,
+              padding: 12,
+              borderRadius: 8,
+              backgroundColor: isDark ? '#7f1d1d' : '#fef2f2',
+            }}>
+            <Text
+              style={{
+                color: isDark ? '#fecaca' : '#b91c1c',
+                fontSize: 13,
+              }}>
+              {displayError}
+            </Text>
+          </View>
+        ) : null}
 
         {/* Messages List */}
         <FlatList
@@ -706,11 +1122,7 @@ export default function CueChat() {
             paddingVertical: 16,
             paddingBottom: insets.bottom + 80,
           }}
-          ListEmptyComponent={
-            <View className="flex-1 justify-center items-center py-8">
-              <Text className="opacity-60">{t('ai_assistant_empty')}</Text>
-            </View>
-          }
+          ListEmptyComponent={renderListEmpty()}
           onContentSizeChange={() => {
             flatListRef.current?.scrollToEnd({animated: true})
           }}
@@ -729,7 +1141,7 @@ export default function CueChat() {
                 placeholder={inputPlaceholder}
                 value={inputText}
                 onChangeText={setInputText}
-                onSubmitEditing={SendMessage}
+                onSubmitEditing={() => SendMessage()}
                 disabled={!isInputEnabled}
                 multiline
                 maxLength={500}
@@ -746,7 +1158,7 @@ export default function CueChat() {
               />
             </View>
             <TouchableOpacity
-              onPress={SendMessage}
+              onPress={() => SendMessage()}
               disabled={!canSend}
               className={`rounded-full p-3 ${
                 canSend ? 'bg-blue-500 dark:bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
