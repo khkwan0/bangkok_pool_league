@@ -1,4 +1,3 @@
-import { AiSocketProvider } from '@/context/AiSocketContext'
 import { LeagueProvider } from '@/context/LeagueContext'
 import { MatchProvider } from '@/context/MatchContext'
 import '@/i18n'
@@ -214,8 +213,7 @@ function RootLayout() {
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <LeagueProvider>
-          <AiSocketProvider>
-            <MatchProvider>
+          <MatchProvider>
             <Stack>
               <Stack.Screen
                 name="(tabs)"
@@ -225,8 +223,7 @@ function RootLayout() {
                 }}
               />
             </Stack>
-            </MatchProvider>
-          </AiSocketProvider>
+          </MatchProvider>
         </LeagueProvider>
       </ThemeProvider>
     </SafeAreaProvider>

@@ -2,10 +2,11 @@ import {ChatMarkdown, markdownContainsTable} from '@/components/ChatMarkdown'
 import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
-import {useAiSocketContext} from '@/context/AiSocketContext'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useNetwork} from '@/hooks/useNetwork'
+import {createSocketClient, loadSocketAuth} from '@/lib/socketAuth'
 import {Ionicons} from '@expo/vector-icons'
+import {useFocusEffect} from '@react-navigation/native'
 import {Stack} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
@@ -30,6 +31,12 @@ type ChatMessage = {
   rawData?: any
   isUserMessage?: boolean
 }
+
+type ConnectionPhase =
+  | 'initializing'
+  | 'connecting'
+  | 'connected'
+  | 'disconnected'
 
 type AgentActivity =
   | {phase: 'reconnecting'}
@@ -81,17 +88,15 @@ export default function CueChat() {
   const insets = useSafeAreaInsets()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
-  const {state: leagueState}: any = useLeagueContext()
-  const {
-    socket,
-    connectionPhase,
-    socketError,
-    isConnected,
-    isConnecting,
-    ensureConnected,
-  } = useAiSocketContext()
+  const {state: leagueState, webSocketUrl}: any = useLeagueContext()
   const {Get} = useNetwork()
+  const [connectionPhase, setConnectionPhase] =
+    React.useState<ConnectionPhase>('initializing')
+  const [socketError, setSocketError] = React.useState<string | null>(null)
   const flatListRef = React.useRef<FlatList>(null)
+  const socketRef = React.useRef<ReturnType<typeof createSocketClient> | null>(
+    null,
+  )
   const responseBufferRef = React.useRef('')
   const pendingResponseTokensRef = React.useRef('')
   const pendingReasoningTokensRef = React.useRef('')
@@ -99,10 +104,80 @@ export default function CueChat() {
   const reasoningFlushRafRef = React.useRef<number | null>(null)
   const activeRequestIdRef = React.useRef<string | null>(null)
 
+  const isConnected = connectionPhase === 'connected'
+  const isConnecting =
+    connectionPhase === 'initializing' || connectionPhase === 'connecting'
   const displayError = agentError ?? socketError
+
+  const ensureConnected = React.useCallback(() => {
+    const currentSocket = socketRef.current
+    if (!currentSocket) {
+      return Promise.reject(new Error('Socket not initialized'))
+    }
+    if (!leagueState.user?.id) {
+      return Promise.reject(new Error('User is not logged in'))
+    }
+    if (currentSocket.connected) {
+      return Promise.resolve(currentSocket)
+    }
+    return new Promise<NonNullable<typeof currentSocket>>((resolve, reject) => {
+      const onConnect = () => {
+        currentSocket.off('connect_error', onError)
+        resolve(currentSocket)
+      }
+      const onError = (error: Error) => {
+        currentSocket.off('connect', onConnect)
+        reject(error)
+      }
+      currentSocket.once('connect', onConnect)
+      currentSocket.once('connect_error', onError)
+      setConnectionPhase('connecting')
+      currentSocket.connect()
+    })
+  }, [leagueState.user?.id])
 
   function clearAgentActivity() {
     setAgentActivity(null)
+  }
+
+  function teardownSocket(
+    pendingSocket: ReturnType<typeof createSocketClient> | null = null,
+  ) {
+    const requestId = activeRequestIdRef.current
+    const sockets = new Set(
+      [pendingSocket, socketRef.current].filter(
+        (socket): socket is NonNullable<typeof socket> => socket != null,
+      ),
+    )
+
+    for (const socket of sockets) {
+      if (socket.connected && requestId) {
+        socket.emit('agent:cancel', {requestId})
+      }
+      socket.removeAllListeners()
+      socket.disconnect()
+    }
+
+    socketRef.current = null
+
+    if (responseFlushRafRef.current != null) {
+      cancelAnimationFrame(responseFlushRafRef.current)
+      responseFlushRafRef.current = null
+    }
+    if (reasoningFlushRafRef.current != null) {
+      cancelAnimationFrame(reasoningFlushRafRef.current)
+      reasoningFlushRafRef.current = null
+    }
+
+    activeRequestIdRef.current = null
+    responseBufferRef.current = ''
+    pendingResponseTokensRef.current = ''
+    pendingReasoningTokensRef.current = ''
+    setResponseText('')
+    setReasoningText('')
+    setIsStreaming(false)
+    clearAgentActivity()
+    setConnectionPhase('disconnected')
   }
 
   function flushPendingResponseTokens() {
@@ -199,13 +274,24 @@ export default function CueChat() {
     }
   }
 
+  function getStreamingStatusLabel(): string {
+    const activityLabel = getAgentActivityLabel(agentActivity)
+    if (activityLabel) return activityLabel
+    if (reasoningText.trim() && !responseText.trim()) {
+      return t('ai_assistant_status_reasoning')
+    }
+    if (responseText.trim()) {
+      return t('ai_assistant_status_responding')
+    }
+    return t('ai_assistant_status_preparing')
+  }
+
   function getStatusBarLabel(): string {
     if (isLoadingHistory && !isConnected) {
       return t('ai_assistant_status_connecting')
     }
-    if (isStreaming && agentActivity) {
-      const activityLabel = getAgentActivityLabel(agentActivity)
-      if (activityLabel) return activityLabel
+    if (isStreaming) {
+      return getStreamingStatusLabel()
     }
     switch (connectionPhase) {
       case 'initializing':
@@ -222,7 +308,7 @@ export default function CueChat() {
   }
 
   function getStatusBarColor(): string {
-    if (isStreaming && agentActivity) return '#2563eb'
+    if (isStreaming) return '#2563eb'
     switch (connectionPhase) {
       case 'initializing':
       case 'connecting':
@@ -238,7 +324,9 @@ export default function CueChat() {
 
   function getStatusBarIcon(): keyof typeof Ionicons.glyphMap {
     if (agentActivity?.phase === 'reconnecting') return 'sync-outline'
-    if (isStreaming && agentActivity) return 'hourglass-outline'
+    if (isStreaming) {
+      return agentActivity?.phase === 'tool' ? 'search-outline' : 'hourglass-outline'
+    }
     switch (connectionPhase) {
       case 'initializing':
       case 'connecting':
@@ -339,18 +427,48 @@ export default function CueChat() {
     }, 50)
   }, [reasoningText, responseText, isStreaming, messages.length])
 
-  React.useEffect(() => {
-    if (!socket) return
+  useFocusEffect(
+    React.useCallback(() => {
+      let cancelled = false
+      let activeSocket: ReturnType<typeof createSocketClient> | null = null
 
-    const isCurrentRequest = (requestId?: string) =>
-      !requestId || requestId === activeRequestIdRef.current
+      async function setupSocket() {
+        setConnectionPhase('initializing')
+        setSocketError(null)
 
-    const handleConnectError = () => {
-      setIsStreaming(false)
-      clearAgentActivity()
-    }
+        teardownSocket()
 
-    const handleAgentReasoningToken = (payload: {
+        const authOptions = await loadSocketAuth()
+        if (cancelled) return
+
+        activeSocket = createSocketClient(webSocketUrl, authOptions)
+        if (cancelled) {
+          activeSocket.removeAllListeners()
+          activeSocket.disconnect()
+          return
+        }
+
+      activeSocket.on('connect', () => {
+        setConnectionPhase('connected')
+        setSocketError(null)
+      })
+
+      activeSocket.on('disconnect', () => {
+        setConnectionPhase('disconnected')
+      })
+
+      activeSocket.on('connect_error', (error: Error) => {
+        console.error('CueChat socket connection error:', error.message)
+        setConnectionPhase('disconnected')
+        setSocketError(error.message || 'Socket connection failed')
+        setIsStreaming(false)
+        clearAgentActivity()
+      })
+
+      const isCurrentRequest = (requestId?: string) =>
+        !requestId || requestId === activeRequestIdRef.current
+
+      const handleAgentReasoningToken = (payload: {
       requestId?: string
       token?: string
     }) => {
@@ -434,24 +552,32 @@ export default function CueChat() {
         payload?.error || payload?.message || 'Agent request failed'
       setAgentError(message)
       console.error('CueChat agent error:', message)
+      }
+
+      activeSocket.on('agent:reasoning_token', handleAgentReasoningToken)
+      activeSocket.on('agent:token', handleAgentToken)
+      activeSocket.on('agent:tool_call', handleAgentToolCall)
+      activeSocket.on('agent:done', handleAgentDone)
+      activeSocket.on('agent:error', handleAgentError)
+
+      socketRef.current = activeSocket
+
+      if (leagueState.user?.id) {
+        setConnectionPhase('connecting')
+        activeSocket.connect()
+      } else {
+        setConnectionPhase('disconnected')
+      }
     }
 
-    socket.on('connect_error', handleConnectError)
-    socket.on('agent:reasoning_token', handleAgentReasoningToken)
-    socket.on('agent:token', handleAgentToken)
-    socket.on('agent:tool_call', handleAgentToolCall)
-    socket.on('agent:done', handleAgentDone)
-    socket.on('agent:error', handleAgentError)
+      setupSocket()
 
-    return () => {
-      socket.off('connect_error', handleConnectError)
-      socket.off('agent:reasoning_token', handleAgentReasoningToken)
-      socket.off('agent:token', handleAgentToken)
-      socket.off('agent:tool_call', handleAgentToolCall)
-      socket.off('agent:done', handleAgentDone)
-      socket.off('agent:error', handleAgentError)
-    }
-  }, [socket])
+      return () => {
+        cancelled = true
+        teardownSocket(activeSocket)
+      }
+    }, [webSocketUrl, leagueState.user?.id]),
+  )
 
   async function emitAgentRequest(
     requestId: string,
@@ -460,6 +586,7 @@ export default function CueChat() {
       content: string
     }>,
   ) {
+    const socket = socketRef.current
     if (!socket) return
 
     const payload = {requestId, messages: agentMessages}
@@ -714,7 +841,9 @@ export default function CueChat() {
   }
 
   const shouldSpinStatusIcon =
-    isConnecting || agentActivity?.phase === 'reconnecting'
+    isConnecting ||
+    isStreaming ||
+    agentActivity?.phase === 'reconnecting'
 
   const StatusBarIcon = ({
     name,

@@ -48,6 +48,9 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
   const isDark = colorScheme === 'dark'
   const borderColor = isDark ? '#374151' : '#d1d5db'
   const headerBg = isDark ? '#14532d' : '#bbf7d0'
+  const blockquoteBg = isDark ? 'rgba(15, 23, 42, 0.55)' : 'rgba(0, 0, 0, 0.06)'
+  const blockquoteBorder = isDark ? '#6ee7b7' : '#166534'
+  const codeBg = isDark ? '#111827' : '#e5e7eb'
 
   const columnCount = React.useMemo(
     () => getMarkdownTableColumnCount(content),
@@ -89,21 +92,52 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
       link: {color: isDark ? '#93c5fd' : '#2563eb'},
       bullet_list: {marginVertical: 4},
       ordered_list: {marginVertical: 4},
+      blockquote: {
+        backgroundColor: blockquoteBg,
+        borderLeftWidth: 4,
+        borderLeftColor: blockquoteBorder,
+        borderColor: blockquoteBorder,
+        marginVertical: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 4,
+      },
+      hr: {
+        backgroundColor: borderColor,
+        height: 1,
+        marginVertical: 12,
+      },
+      heading1: {color: textColor, fontSize: 22, fontWeight: '700' as const, marginVertical: 8},
+      heading2: {color: textColor, fontSize: 20, fontWeight: '700' as const, marginVertical: 8},
+      heading3: {color: textColor, fontSize: 18, fontWeight: '600' as const, marginVertical: 6},
+      heading4: {color: textColor, fontSize: 16, fontWeight: '600' as const, marginVertical: 6},
+      heading5: {color: textColor, fontSize: 15, fontWeight: '600' as const, marginVertical: 4},
+      heading6: {color: textColor, fontSize: 14, fontWeight: '600' as const, marginVertical: 4},
       code_inline: {
-        backgroundColor: isDark ? '#374151' : '#e5e7eb',
+        backgroundColor: codeBg,
         color: textColor,
         paddingHorizontal: 4,
         paddingVertical: 2,
         borderRadius: 4,
         fontSize: 14,
       },
-      fence: {
-        backgroundColor: isDark ? '#111827' : '#f3f4f6',
+      code_block: {
+        backgroundColor: codeBg,
         color: textColor,
         padding: 12,
         borderRadius: 8,
         marginVertical: 8,
         fontSize: 13,
+        borderWidth: 0,
+      },
+      fence: {
+        backgroundColor: codeBg,
+        color: textColor,
+        padding: 12,
+        borderRadius: 8,
+        marginVertical: 8,
+        fontSize: 13,
+        borderWidth: 0,
       },
       table: {
         borderWidth: 1,
@@ -139,7 +173,16 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
         justifyContent: 'center' as const,
       },
     }),
-    [textColor, isDark, borderColor, headerBg, cellLayout],
+    [
+      textColor,
+      isDark,
+      borderColor,
+      headerBg,
+      blockquoteBg,
+      blockquoteBorder,
+      codeBg,
+      cellLayout,
+    ],
   )
 
   const tableRules = React.useMemo(

@@ -19,6 +19,8 @@
   "ai_assistant_status_reconnecting": "Hookin' back up…",
   "ai_assistant_status_sending": "Sendin' your message…",
   "ai_assistant_status_preparing": "Gettin' a reply ready…",
+  "ai_assistant_status_responding": "Writin' the reply…",
+  "ai_assistant_status_reasoning": "Thinkin' it through…",
   "ai_assistant_status_tool_prefix": "Lookin' up",
   "ai_assistant_input_connecting": "Hookin' up — hang on…",
   "ai_assistant_ready_message": "I'm hooked up and ready to help with match night, standings, team tactics, and league bits. Tap a suggestion below or type your own message.",

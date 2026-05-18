@@ -19,6 +19,8 @@
   "ai_assistant_status_reconnecting": "กำลังเชื่อมต่อใหม่…",
   "ai_assistant_status_sending": "กำลังส่งข้อความของคุณ…",
   "ai_assistant_status_preparing": "กำลังเตรียมคำตอบ…",
+  "ai_assistant_status_responding": "กำลังเขียนคำตอบ…",
+  "ai_assistant_status_reasoning": "กำลังคิดวิเคราะห์…",
   "ai_assistant_status_tool_prefix": "กำลังค้นหา",
   "ai_assistant_input_connecting": "กำลังเชื่อมต่อ — โปรดรอสักครู่…",
   "ai_assistant_ready_message": "เชื่อมต่อแล้ว พร้อมช่วยเรื่องการวางแผนแข่ง ตารางคะแนน กลยุทธ์ทีม และคำถามเกี่ยวกับลีก ลองแตะคำแนะนำด้านล่างหรือพิมพ์ข้อความของคุณ",
