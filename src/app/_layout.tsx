@@ -3,12 +3,12 @@ import { MatchProvider } from '@/context/MatchContext'
 import '@/i18n'
 import notifee, { AndroidImportance } from '@notifee/react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import messaging, {
+import {
   AuthorizationStatus,
   getInitialNotification,
   getMessaging,
   onNotificationOpenedApp,
-  requestPermission
+  requestPermission,
 } from '@react-native-firebase/messaging'
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
 import * as Sentry from '@sentry/react-native'
@@ -103,7 +103,7 @@ function RootLayout() {
   // Handle notification taps
   useEffect(() => {
     if (Platform.OS !== 'web') {
-      const messagingInstance = messaging()
+      const messagingInstance = getMessaging()
 
       // Note: onMessage handler is handled in (tabs)/_layout.tsx to have access to context
       

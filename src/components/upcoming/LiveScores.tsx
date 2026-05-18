@@ -1,122 +1,249 @@
-import React from 'react'
-import {AppState, useWindowDimensions, FlatList, Pressable} from 'react-native'
-import {ThemedView as View} from '@/components/ThemedView'
+import Row from '@/components/Row'
 import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView as View} from '@/components/ThemedView'
 import {useLeague} from '@/hooks'
 import {useTheme} from '@react-navigation/native'
-import Row from '@/components/Row'
+import React from 'react'
+import {AppState, Pressable, StyleSheet} from 'react-native'
+import Animated, {
+  cancelAnimation,
+  Easing,
+  runOnUI,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated'
 
-const Score = (props: any) => {
-  const {width} = useWindowDimensions()
-  const {colors, dark} = useTheme()
+type LiveScore = {
+  id: number
+  home_name: string
+  away_name: string
+  homeScore: number | string
+  awayScore: number | string
+}
+
+const SCROLL_SPEED_PX_PER_SEC = 40
+const REFRESH_INTERVAL_MS = 30000
+
+const Score = ({
+  item,
+  onPress,
+}: {
+  item: LiveScore
+  onPress: (matchId: number) => void
+}) => {
+  const {colors} = useTheme()
 
   return (
-    <View
-      className="m-1"
-      style={{width: width, borderWidth: 1, borderColor: colors.border}}>
-      <Pressable
-        className="py-5 mx-2"
-        onPress={() => props.handlePress(props.item.id)}>
-        <Row alignItems="center" justifyContent="center" space={5}>
-          <View flex={3} alignItems="flex-end">
-            <Text type="subtitle" style={{textAlign: 'right'}}>
-              {props.item.home_name}
-            </Text>
-          </View>
-          <View flex={2} alignItems="center">
-            <Text type="subtitle">
-              {props.item.homeScore} vs {props.item.awayScore}
-            </Text>
-          </View>
-          <View flex={3} alignItems="flex-start">
-            <Text type="subtitle" style={{textAlign: 'left'}}>
-              {props.item.away_name}
-            </Text>
-          </View>
+    <Pressable
+      onPress={() => onPress(item.id)}
+      accessibilityRole="button"
+      accessibilityLabel={`${item.home_name} ${item.homeScore} vs ${item.awayScore} ${item.away_name}`}>
+      <View
+        className="py-4 px-4"
+        style={{
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginRight: 12,
+        }}>
+        <Row alignItems="center" justifyContent="center">
+          <Text type="subtitle" style={{textAlign: 'right'}} numberOfLines={1}>
+            {item.home_name}
+          </Text>
+          <Text type="subtitle" style={{marginHorizontal: 8}}>
+            {item.homeScore} vs {item.awayScore}
+          </Text>
+          <Text type="subtitle" style={{textAlign: 'left'}} numberOfLines={1}>
+            {item.away_name}
+          </Text>
         </Row>
-      </Pressable>
-    </View>
+      </View>
+    </Pressable>
   )
 }
 
-const LiveScores = (props: any) => {
-  const [scores, setScores] = React.useState([])
+const scoresKey = (items: LiveScore[]) =>
+  items.map(s => `${s.id}:${s.homeScore}-${s.awayScore}`).join('|')
+
+const LiveScores = (props: {handlePress: (matchId: number) => void}) => {
+  const [scores, setScores] = React.useState<LiveScore[]>([])
   const league = useLeague()
+  const translateX = useSharedValue(0)
+  const refreshTimer = React.useRef<ReturnType<typeof setInterval> | null>(null)
+  const scoresKeyRef = React.useRef('')
+  const measuredWidthRef = React.useRef(0)
+  const animationStartedRef = React.useRef(false)
+  const layoutDebounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
 
-  const flatlist = React.useRef(null)
-  const timer = React.useRef(null)
-  const currentSlide = React.useRef(0)
+  const startScroll = React.useRef((width: number) => {
+    'worklet'
+    if (width <= 0) {
+      return
+    }
+    cancelAnimation(translateX)
+    translateX.value = 0
+    translateX.value = withRepeat(
+      withTiming(-width, {
+        duration: (width / SCROLL_SPEED_PX_PER_SEC) * 1000,
+        easing: Easing.linear,
+      }),
+      -1,
+      false,
+    )
+  }).current
 
-  async function GetLiveScores() {
+  const stopScroll = React.useRef(() => {
+    'worklet'
+    cancelAnimation(translateX)
+  }).current
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{translateX: translateX.value}],
+  }))
+
+  const getLiveScores = React.useCallback(async () => {
     try {
       const res = await league.GetLiveScores()
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        setScores(res.data)
+        const next = res.data as unknown as LiveScore[]
+        const key = scoresKey(next)
+        if (key !== scoresKeyRef.current) {
+          scoresKeyRef.current = key
+          measuredWidthRef.current = 0
+          animationStartedRef.current = false
+          runOnUI(stopScroll)()
+          setScores(next)
+        }
       }
     } catch (e) {
       console.log(e)
     }
-  }
+  }, [stopScroll])
 
   React.useEffect(() => {
-    GetLiveScores()
-  }, [])
-
-  async function AdvanceTicker() {
-    currentSlide.current = currentSlide.current + 1
-    if (currentSlide.current > scores.length - 1) {
-      await GetLiveScores()
-      currentSlide.current = 0
-    }
-
-    if (flatlist.current) {
-      flatlist.current.scrollToIndex({
-        index: currentSlide.current,
-        animated: true,
-        viewPosition: 0.5,
-      })
-    }
-  }
+    getLiveScores()
+  }, [getLiveScores])
 
   React.useEffect(() => {
-    const subscribe = AppState.addEventListener('change', nextAppState => {
+    refreshTimer.current = setInterval(getLiveScores, REFRESH_INTERVAL_MS)
+    return () => {
+      if (refreshTimer.current) {
+        clearInterval(refreshTimer.current)
+      }
+    }
+  }, [getLiveScores])
+
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
       if (nextAppState !== 'active') {
-        clearInterval(timer.current)
+        runOnUI(stopScroll)()
+        if (refreshTimer.current) {
+          clearInterval(refreshTimer.current)
+          refreshTimer.current = null
+        }
       } else {
-        timer.current = setInterval(() => AdvanceTicker(), 4000)
+        getLiveScores()
+        if (measuredWidthRef.current > 0) {
+          runOnUI(startScroll)(measuredWidthRef.current)
+        }
+        refreshTimer.current = setInterval(getLiveScores, REFRESH_INTERVAL_MS)
       }
     })
+
     return () => {
-      subscribe.remove()
+      subscription.remove()
+      if (layoutDebounceRef.current) {
+        clearTimeout(layoutDebounceRef.current)
+      }
+      runOnUI(stopScroll)()
     }
-  })
+  }, [getLiveScores, startScroll, stopScroll])
 
-  React.useEffect(() => {
-    if (scores.length > 0) {
-      timer.current = setInterval(() => AdvanceTicker(), 4000)
-    } else {
-      clearInterval(timer.current)
-    }
-    return () => clearInterval(timer.current)
-  }, [scores])
+  const handlePress = React.useCallback(
+    (matchId: number) => {
+      props.handlePress(matchId)
+    },
+    [props],
+  )
 
-  if (scores.length > 0) {
-    return (
-      <FlatList
-        horizontal
-        numColumns={1}
-        data={scores}
-        showsHorizontalScrollIndicator={false}
-        renderItem={({item, index}) => (
-          <Score item={item} idx={index} handlePress={props.handlePress} />
-        )}
-        ref={flatlist}
-        pagingEnabled
-      />
-    )
-  } else {
+  const handleCycleLayout = React.useCallback(
+    (width: number) => {
+      const w = width
+      if (w <= 0) {
+        return
+      }
+
+      if (layoutDebounceRef.current) {
+        clearTimeout(layoutDebounceRef.current)
+      }
+
+      layoutDebounceRef.current = setTimeout(() => {
+        if (
+          animationStartedRef.current &&
+          Math.abs(w - measuredWidthRef.current) < 2
+        ) {
+          return
+        }
+        measuredWidthRef.current = w
+        animationStartedRef.current = true
+        runOnUI(startScroll)(w)
+      }, 200)
+    },
+    [startScroll],
+  )
+
+  if (scores.length === 0) {
     return null
   }
+
+  const renderScores = (keyPrefix: string) =>
+    scores.map((item, index) => (
+      <Score
+        key={`${keyPrefix}-${item.id}-${index}`}
+        item={item}
+        onPress={handlePress}
+      />
+    ))
+
+  return (
+    <View>
+      {/* Measure intrinsic width off-screen so overflow:hidden does not clip layout */}
+      <View pointerEvents="none" style={styles.measureRow} collapsable={false}>
+        <View
+          style={styles.scoreRow}
+          onLayout={e => handleCycleLayout(e.nativeEvent.layout.width)}>
+          {renderScores('measure')}
+        </View>
+      </View>
+
+      <View style={styles.clip}>
+        <Animated.View style={[styles.scoreRow, animatedStyle]}>
+          <View style={styles.scoreRow}>{renderScores('a')}</View>
+          <View style={styles.scoreRow}>{renderScores('b')}</View>
+        </Animated.View>
+      </View>
+    </View>
+  )
 }
+
+const styles = StyleSheet.create({
+  clip: {
+    overflow: 'hidden',
+  },
+  measureRow: {
+    position: 'absolute',
+    opacity: 0,
+    left: 0,
+    top: 0,
+    zIndex: -1,
+  },
+  scoreRow: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+  },
+})
 
 export default LiveScores

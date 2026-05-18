@@ -8,8 +8,8 @@ import MatchCardOld from '@/components/upcoming/MatchCardOld'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount, useAd, useLeague, useSeason} from '@/hooks'
 import {MaterialIcons} from '@expo/vector-icons'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import notifee from '@notifee/react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import {
   getMessaging,
@@ -101,7 +101,7 @@ export default function UpcomingMatches(props: any) {
 
   async function HandleScorePress(matchId: number) {
     try {
-      const res = await league.getMatchById(matchId)
+      const res = await league.GetMatchById(matchId)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
         router.push({
           pathname: '/Match',
@@ -291,7 +291,10 @@ export default function UpcomingMatches(props: any) {
               PushNotificationIOS.setApplicationIconBadgeNumber(count)
             } else if (Platform.OS === 'android') {
               await notifee.setBadgeCount(count)
-              console.log('Android badge updated from API (onMessage) to:', count)
+              console.log(
+                'Android badge updated from API (onMessage) to:',
+                count,
+              )
             }
             dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
           }
