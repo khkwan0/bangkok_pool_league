@@ -869,17 +869,20 @@ export default function CueChat() {
               style={{
                 color: '#ffffff',
                 fontSize: 16,
+                marginBottom: 16,
               }}>
               {item.message}
             </Text>
           ) : (
-            <ChatMarkdown content={item.message} textColor={apiTextColor} />
+            <RNView style={{marginBottom: 16}}>
+              <ChatMarkdown content={item.message} textColor={apiTextColor} />
+            </RNView>
           )}
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              marginTop: 6,
+              marginTop: 20,
               backgroundColor: isUserMessage ? userBgColor : apiBgColor,
             }}>
             <Text
