@@ -2,7 +2,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import config from '@/config'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import {DateTime} from 'luxon'
+import {formatRelativeMessageListDate} from '@/lib/bangkokTime'
 import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
@@ -56,19 +56,9 @@ export default function Messages({
     const lastMessageDate = item.last_message_at || item.created_at
     const unreadCount = item.unread_count || 0
 
-    let dateText = ''
-    if (lastMessageDate) {
-      // Parse as UTC and convert to local timezone
-      const date = DateTime.fromISO(lastMessageDate, {zone: 'utc'}).toLocal()
-      const now = DateTime.now()
-      if (date.hasSame(now, 'day')) {
-        dateText = date.toFormat('h:mm a')
-      } else if (date.hasSame(now.minus({days: 1}), 'day')) {
-        dateText = t('yesterday')
-      } else {
-        dateText = date.toFormat('LLL d')
-      }
-    }
+    const dateText = lastMessageDate
+      ? formatRelativeMessageListDate(lastMessageDate, t('yesterday'))
+      : ''
 
     return (
       <TouchableOpacity

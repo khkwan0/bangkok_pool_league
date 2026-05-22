@@ -1,6 +1,6 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
-import {DateTime} from 'luxon'
+import {formatBangkokDateMed} from '@/lib/bangkokTime'
 import {Pressable} from 'react-native'
 import {router} from 'expo-router'
 import {useColorScheme} from 'nativewind'
@@ -19,11 +19,9 @@ type CompletedMatchProps = {
 
 export default function CompletedMatch({item}: CompletedMatchProps) {
   const isHomeWinner = item.home_frames > item.away_frames
-  const matchDate = DateTime.fromISO(item.date).toLocaleString(
-    DateTime.DATE_MED,
-  )
+  const matchDate = formatBangkokDateMed(item.date)
   const originalDate = item.original_date
-    ? DateTime.fromISO(item.original_date).toLocaleString(DateTime.DATE_MED)
+    ? formatBangkokDateMed(item.original_date)
     : null
   const colorscheme = useColorScheme()
 

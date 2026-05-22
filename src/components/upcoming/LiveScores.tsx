@@ -274,7 +274,9 @@ function LiveScoresWithData() {
     try {
       const res = await league.GetLiveScores()
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        const next = res.data as unknown as LiveScore[]
+        const next = Array.isArray(res.data)
+          ? (res.data as unknown as LiveScore[])
+          : []
         const key = scoresKey(next)
         if (key === scoresKeyRef.current) {
           return
@@ -372,21 +374,31 @@ function LiveScoresWithData() {
     return null
   }
 
+  const backgroundColor = colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5'
+
   return (
-    <ScoreMarquee
-      key={tickerKey}
-      scores={scores}
-      borderColor={colors.border}
-      textColor={textColor}
-      onPress={openMatchScoresheet}
-      navigatingMatchId={navigatingMatchId}
-    />
+    <View
+      style={[styles.container, {backgroundColor}]}
+      collapsable={false}>
+      <ScoreMarquee
+        key={tickerKey}
+        scores={scores}
+        borderColor={colors.border}
+        textColor={textColor}
+        onPress={openMatchScoresheet}
+        navigatingMatchId={navigatingMatchId}
+      />
+    </View>
   )
 }
 
 const LiveScores = React.memo(LiveScoresWithData)
 
 const styles = StyleSheet.create({
+  container: {
+    height: 92,
+    overflow: 'hidden',
+  },
   clip: {
     flex: 1,
     overflow: 'hidden',

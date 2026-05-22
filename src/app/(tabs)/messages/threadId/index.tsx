@@ -10,7 +10,12 @@ import { useLeague } from '@/hooks/useLeague'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useNavigation } from '@react-navigation/native'
 import { useLocalSearchParams } from 'expo-router'
-import { DateTime } from 'luxon'
+import {
+  bangkokDayStart,
+  formatMessageDateSeparator,
+  formatMessageTimestamp,
+  minutesBetweenIso,
+} from '@/lib/bangkokTime'
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, Image, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
@@ -93,24 +98,8 @@ function ResponseInput({
 function DateSeparator({ date }: { date: string }) {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
-  
-  const dateObj = DateTime.fromISO(date).setZone('local')
-  const now = DateTime.now().setZone('local')
-  const isToday = dateObj.hasSame(now, 'day')
-  const isYesterday = dateObj.hasSame(now.minus({ days: 1 }), 'day')
-  const isThisYear = dateObj.hasSame(now, 'year')
-  
-  let formattedDate: string
-  if (isToday) {
-    formattedDate = 'Today'
-  } else if (isYesterday) {
-    formattedDate = 'Yesterday'
-  } else if (isThisYear) {
-    formattedDate = dateObj.toFormat('MMMM d')
-  } else {
-    formattedDate = dateObj.toFormat('MMMM d, yyyy')
-  }
-  
+  const formattedDate = formatMessageDateSeparator(date)
+
   return (
     <View style={styles.dateSeparator}>
       <View style={[
@@ -167,33 +156,13 @@ function MessageLine({
 
   // Check if we should show the timestamp
   // Show if: no next message OR next message is more than 1 minute away
-  const shouldShowTimestamp = (() => {
-    if (!nextMessage) return true // Last message, always show
-    
-    const currentDate = DateTime.fromISO(message.created_at)
-    const nextDate = DateTime.fromISO(nextMessage.created_at)
-    const diffInMinutes = Math.abs(nextDate.diff(currentDate, 'minutes').minutes)
-    
-    return diffInMinutes >= 1
-  })()
+  const shouldShowTimestamp =
+    !nextMessage ||
+    minutesBetweenIso(message.created_at, nextMessage.created_at) >= 1
 
-  // Format the timestamp
-  const formattedTimestamp = (() => {
-    if (!shouldShowTimestamp) return null
-    
-    const date = DateTime.fromISO(message.created_at)
-    const now = DateTime.now()
-    const isToday = date.hasSame(now, 'day')
-    const isThisYear = date.hasSame(now, 'year')
-    
-    if (isToday) {
-      return date.toFormat('h:mm a')
-    } else if (isThisYear) {
-      return date.toFormat('MMM d, h:mm a')
-    } else {
-      return date.toFormat('MMM d, yyyy, h:mm a')
-    }
-  })()
+  const formattedTimestamp = shouldShowTimestamp
+    ? formatMessageTimestamp(message.created_at)
+    : null
 
   return (
     <View style={[styles.messageWrapper, isUserMessage ? styles.userMessageWrapper : styles.otherMessageWrapper]}>

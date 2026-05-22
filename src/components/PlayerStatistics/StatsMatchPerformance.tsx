@@ -1,7 +1,7 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {usePathname, useRouter} from 'expo-router'
-import {DateTime} from 'luxon'
+import {formatBangkokDateMed} from '@/lib/bangkokTime'
 import {Pressable} from 'react-native'
 
 type StatType = {
@@ -74,9 +74,7 @@ const StatsMatchPerformance = ({
                   } as any)
                 }}>
                 <Text type="link">
-                  {DateTime.fromISO(stat.date).toLocaleString(
-                    DateTime.DATE_MED,
-                  )}
+                  {formatBangkokDateMed(stat.date)}
                 </Text>
               </Pressable>
             </View>

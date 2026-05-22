@@ -1,5 +1,6 @@
 import {View, TouchableOpacity} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
+import {formatBangkokDateMed, nowInBangkok} from '@/lib/bangkokTime'
 import {DateTime} from 'luxon'
 import React from 'react'
 import {MaterialIcons} from '@expo/vector-icons'
@@ -24,7 +25,7 @@ type MatchDateItemProps = {
 }
 
 export default function MatchDateItem({date}: MatchDateItemProps) {
-  const dateObj = DateTime.fromISO(date.date)
+  const dateLabel = formatBangkokDateMed(date.date)
   const [show, setShow] = React.useState(false)
   const colorscheme = useColorScheme()
   const isDark = colorscheme.colorScheme === 'dark'
@@ -34,7 +35,8 @@ export default function MatchDateItem({date}: MatchDateItemProps) {
     return date.matches.reduce((acc, match) => {
       if (
         match.match_status_id === 1 &&
-        DateTime.fromISO(match.match_date).toMillis() < Date.now()
+        DateTime.fromISO(match.match_date).toMillis() <
+          nowInBangkok().toMillis()
       ) {
         return acc + 1
       }
@@ -59,7 +61,7 @@ export default function MatchDateItem({date}: MatchDateItemProps) {
             className="mr-2"
           />
           <Text className="text-base font-medium text-slate-600 dark:text-slate-300">
-            {dateObj.toLocaleString(DateTime.DATE_MED)}
+            {dateLabel}
           </Text>
         </View>
         {count > 0 && (

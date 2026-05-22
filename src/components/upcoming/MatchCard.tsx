@@ -7,7 +7,6 @@ import {Ionicons, MaterialIcons} from '@expo/vector-icons'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {LinearGradient} from 'expo-linear-gradient'
 import {Link, useRouter} from 'expo-router'
-import {DateTime} from 'luxon'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
@@ -21,6 +20,15 @@ import {
   View,
 } from 'react-native'
 import {showLocation} from 'react-native-map-link'
+import {
+  formatMatchDate,
+  formatProposedDate,
+  getMatchDisplayDate,
+  isIndefinitePostponement,
+  parsePostponedProposal,
+  resolveIndefinitePostponement,
+  shouldShowIndefiniteProposeNewDate,
+} from '@/lib/postponedProposal'
 
 const colorPairs = [
   ['#1e3a8a', '#dc2626'] as const, // Blue & Red
@@ -167,7 +175,7 @@ export default function MatchCard({
 
   async function HandlePostpone() {
     router.push({
-      pathname: '/PostponeScreen',
+      pathname: '/(tabs)/(index)/PostponeScreen',
       params: {matchInfo: JSON.stringify(matchInfo)},
     })
   }
@@ -198,9 +206,7 @@ export default function MatchCard({
   async function HandleShare() {
     if (!matchInfo) return
 
-    const matchDate = DateTime.fromISO(matchInfo.date)
-      .setZone('Asia/Bangkok')
-      .toLocaleString(DateTime.DATE_HUGE)
+    const matchDate = formatMatchDate(getMatchDisplayDate(matchInfo))
 
     let message = `${matchInfo.home_team_short_name} vs ${matchInfo.away_team_short_name}\n${matchDate}\n${matchInfo.name}\n${matchInfo.location}`
 
@@ -219,6 +225,28 @@ export default function MatchCard({
       console.error(error)
     }
   }
+
+  const rawPostponedProposal =
+    propsMatchInfo?.postponed_proposal ?? matchInfo?.postponed_proposal
+
+  const postponedProposal = React.useMemo(
+    () => parsePostponedProposal(rawPostponedProposal),
+    [rawPostponedProposal],
+  )
+
+  const indefinitePostponement = React.useMemo(() => {
+    const source = propsMatchInfo ?? matchInfo
+    if (!source) return null
+    return resolveIndefinitePostponement(source)
+  }, [propsMatchInfo, matchInfo])
+
+  const showProposeNewDate =
+    isIndefinitePostponement(postponedProposal) ||
+    shouldShowIndefiniteProposeNewDate(
+      rawPostponedProposal,
+      propsMatchInfo?.date ?? matchInfo?.date,
+    ) ||
+    !!indefinitePostponement
 
   if (!isMounted || !matchInfo) return null
   return (
@@ -268,41 +296,49 @@ export default function MatchCard({
                     fontFamily:
                       Platform.OS === 'ios' ? 'Helvetica Neue' : 'sans-serif',
                   }}>
-                  {DateTime.fromISO(matchInfo.date)
-                    .setZone('Asia/Bangkok')
-                    .toLocaleString(DateTime.DATE_HUGE)}
+                  {formatMatchDate(getMatchDisplayDate(matchInfo))}
                 </Text>
-                {matchInfo?.postponed_proposal?.newDate && (
+                {postponedProposal?.newDate && (
                   <Text
                     style={{
                       fontSize: width * 0.035,
                     }}>
-                    {t('postponed_to')} {matchInfo?.postponed_proposal?.newDate}
+                    {t('postponed_to')}{' '}
+                    {formatProposedDate(postponedProposal.newDate)}
                   </Text>
                 )}
-                {typeof matchInfo.postponed_proposal !== 'undefined' &&
-                  typeof matchInfo?.postponed_proposal?.newDate !==
-                    'undefined' &&
-                  matchInfo.postponed_proposal.newDate === null && (
+                {indefinitePostponement && (
+                  <View
+                    style={{
+                      width: '100%',
+                      marginTop: width * 0.02,
+                      paddingHorizontal: width * 0.03,
+                      alignItems: 'center',
+                    }}>
+                    {indefinitePostponement.proposingTeamName ? (
+                      <Text
+                        style={{
+                          fontSize: width * 0.04,
+                          textAlign: 'center',
+                          color: 'red',
+                          fontWeight: '800',
+                          width: '100%',
+                        }}>
+                        {indefinitePostponement.proposingTeamName}
+                      </Text>
+                    ) : null}
                     <Text
                       style={{
-                        fontSize: width * 0.07,
+                        fontSize: width * 0.04,
                         textAlign: 'center',
                         color: 'red',
                         fontWeight: '800',
-                        textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                        textShadowOffset: {width: 2, height: 2},
-                        textShadowRadius: 4,
-                        letterSpacing: 1,
-                        textTransform: 'uppercase',
-                        fontFamily:
-                          Platform.OS === 'ios'
-                            ? 'Helvetica Neue'
-                            : 'sans-serif',
+                        width: '100%',
                       }}>
                       {t('postponed_indefinitely')}
                     </Text>
-                  )}
+                  </View>
+                )}
               </View>
 
               {/* Teams Section */}
@@ -662,6 +698,28 @@ export default function MatchCard({
                           fontSize: width * 0.035,
                         }}>
                         {t('unconfirm')}
+                      </Text>
+                    </Button>
+                  ) : showProposeNewDate ? (
+                    <Button
+                      type="outline"
+                      onPress={() => HandlePostpone()}
+                      icon={
+                        <MaterialIcons
+                          name="date-range"
+                          size={width * 0.04}
+                          color="white"
+                        />
+                      }
+                      style={{borderColor: 'white'}}>
+                      <Text
+                        style={{
+                          color: 'white',
+                          fontSize: width * 0.035,
+                          fontWeight: '600',
+                          textAlign: 'center',
+                        }}>
+                        {t('propose_new_date')}
                       </Text>
                     </Button>
                   ) : user.id && user.teams.length > 0 ? (

@@ -52,6 +52,10 @@ export interface League {
 
 export interface Match {
   GetMatchMetadata(matchId: number): Promise<MatchMetadata>
+  AcceptRescheduleProposal(
+    matchId: number,
+    teamId: number,
+  ): Promise<{status: string} | null>
   ConfirmMatch(matchId: number, teamId: number): Promise<{status: string}>
   UnconfirmMatch(matchId: number, teamId: number): Promise<{status: string}>
   GetMatchDetails(matchId: number): Promise<MatchDetails>

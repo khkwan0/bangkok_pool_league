@@ -5,9 +5,18 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatch} from '@/hooks/useMatch'
+import {
+  formatMatchDate,
+  formatProposedDate,
+  getMatchDisplayDate,
+  getProposingTeamShortName,
+  isIndefinitePostponement,
+  parsePostponedProposal,
+  resolveIndefinitePostponement,
+  shouldShowIndefiniteProposeNewDate,
+} from '@/lib/postponedProposal'
 import {Ionicons, MaterialIcons} from '@expo/vector-icons'
 import {Link, useRouter} from 'expo-router'
-import {DateTime} from 'luxon'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {Appearance, Image, Pressable, Share} from 'react-native'
@@ -97,7 +106,7 @@ export default function MatchCardOld({
 
   async function HandlePostpone() {
     router.push({
-      pathname: '/PostponeScreen',
+      pathname: '/(tabs)/(index)/PostponeScreen',
       params: {matchInfo: JSON.stringify(matchInfo)},
     })
   }
@@ -128,9 +137,7 @@ export default function MatchCardOld({
   async function HandleShare() {
     if (!matchInfo) return
 
-    const matchDate = DateTime.fromISO(matchInfo.date)
-      .setZone('Asia/Bangkok')
-      .toLocaleString(DateTime.DATE_HUGE)
+    const matchDate = formatMatchDate(getMatchDisplayDate(matchInfo))
 
     let message = `${matchInfo.home_team_short_name} vs ${matchInfo.away_team_short_name}\n${matchDate}\n${matchInfo.name}\n${matchInfo.location}`
 
@@ -149,6 +156,28 @@ export default function MatchCardOld({
       console.error(error)
     }
   }
+
+  const rawPostponedProposal =
+    propsMatchInfo?.postponed_proposal ?? matchInfo?.postponed_proposal
+
+  const postponedProposal = React.useMemo(
+    () => parsePostponedProposal(rawPostponedProposal),
+    [rawPostponedProposal],
+  )
+
+  const indefinitePostponement = React.useMemo(() => {
+    const source = propsMatchInfo ?? matchInfo
+    if (!source) return null
+    return resolveIndefinitePostponement(source)
+  }, [propsMatchInfo, matchInfo])
+
+  const showProposeNewDate =
+    isIndefinitePostponement(postponedProposal) ||
+    shouldShowIndefiniteProposeNewDate(
+      rawPostponedProposal,
+      propsMatchInfo?.date ?? matchInfo?.date,
+    ) ||
+    !!indefinitePostponement
 
   if (!isMounted || !matchInfo) return null
 
@@ -201,12 +230,10 @@ export default function MatchCardOld({
                   }
                 />
                 <Text type="subtitle" className="text-center">
-                  {DateTime.fromISO(matchInfo.date)
-                    .setZone('Asia/Bangkok')
-                    .toLocaleString(DateTime.DATE_HUGE)}
+                  {formatMatchDate(getMatchDisplayDate(matchInfo))}
                 </Text>
               </View>
-              {matchInfo.postponed_proposal?.newDate &&
+              {postponedProposal?.newDate &&
                 !(matchInfo.home_confirmed && matchInfo.away_confirmed) && (
                   <View
                     style={{
@@ -232,26 +259,51 @@ export default function MatchCardOld({
                       </Text>
                     </View>
                     <Text type="subtitle" className="text-center">
-                      {DateTime.fromISO(matchInfo.postponed_proposal.newDate)
-                        .setZone('Asia/Bangkok')
-                        .toLocaleString(DateTime.DATE_HUGE)}
+                      {formatProposedDate(postponedProposal.newDate)}
                     </Text>
                   </View>
                 )}
-                {typeof matchInfo.postponed_proposal !== 'undefined' && typeof matchInfo?.postponed_proposal?.newDate !== 'undefined' &&  matchInfo.postponed_proposal.newDate === null && (
-                  <View className="flex-row items-center justify-center mb-1 gap-2 px-2">
+              {indefinitePostponement && (
+                <View
+                  style={{
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                    borderColor: 'red',
+                    borderWidth: 1,
+                    padding: 10,
+                    borderRadius: 10,
+                    marginTop: 8,
+                    width: '100%',
+                    alignSelf: 'stretch',
+                  }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'flex-start',
+                      width: '100%',
+                    }}>
                     <MaterialIcons
                       name="warning"
                       size={18}
                       color="red"
+                      style={{marginTop: 2, marginRight: 8, flexShrink: 0}}
                     />
-                    <Text type="subtitle" className="text-center font-bold">
-                       {typeof matchInfo?.postponed_proposal?.isHome !== 'undefined' ?
-                         matchInfo?.postponed_proposal?.isHome ?
-                         matchInfo.home_team_short_name : matchInfo.away_team_short_name: ''} {t('postponed_indefinitely')}
-                    </Text>
+                    <View style={{flex: 1, minWidth: 0}}>
+                      {indefinitePostponement.proposingTeamName ? (
+                        <Text
+                          className="text-center font-bold text-base"
+                          style={{color: 'red'}}>
+                          {indefinitePostponement.proposingTeamName}
+                        </Text>
+                      ) : null}
+                      <Text
+                        className="text-center font-bold text-base"
+                        style={{color: 'red'}}>
+                        {t('postponed_indefinitely')}
+                      </Text>
+                    </View>
                   </View>
-                )}
+                </View>
+              )}
             </View>
 
             {/* Venue Information */}
@@ -410,8 +462,7 @@ export default function MatchCardOld({
           (matchInfo.team_role_id > 0 || user.role_id === 9) && (
             <View className="my-3 border-t border-gray-200 dark:border-gray-700">
               <View className="my-2">
-                {matchInfo.postponed_proposal &&
-                  (!matchInfo.postponed_proposal?.isHome ? (
+                {postponedProposal?.newDate && !postponedProposal.isHome ? (
                     <Button
                       type="primary"
                       onPress={() => HandlePostpone()}
@@ -425,9 +476,8 @@ export default function MatchCardOld({
                       style={{marginBottom: 8}}>
                       {t('review_and_confirm')}
                     </Button>
-                  ) : null)}
-                {(typeof matchInfo?.postponed_proposal === 'undefined' ||
-                  !matchInfo.postponed_proposal) && (
+                  ) : null}
+                {!postponedProposal && (
                   <Button
                     type="primary"
                     onPress={() => HandleConfirm()}
@@ -443,21 +493,15 @@ export default function MatchCardOld({
                   </Button>
                 )}
               </View>
-              {matchInfo.postponed_proposal?.newDate && (
+              {postponedProposal?.newDate && (
                 <View className="flex-row gap-2 items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
                   <View className="flex-1">
                     <Text className="font-bold">
-                      {matchInfo?.postponed_proposal?.isHome
-                        ? matchInfo.home_team_short_name
-                        : matchInfo.away_team_short_name}{' '}
+                      {getProposingTeamShortName(matchInfo, postponedProposal)}{' '}
                       {t('proposed_date')}:
                     </Text>
                     <Text>
-                      {matchInfo.postponed_proposal?.newDate
-                        ? DateTime.fromISO(
-                            matchInfo.postponed_proposal.newDate,
-                          ).toFormat('dd LLL yyyy hh:mm a')
-                        : ''}
+                      {formatProposedDate(postponedProposal.newDate)}
                     </Text>
                   </View>
                   <View className="flex-1">
@@ -471,20 +515,40 @@ export default function MatchCardOld({
                           color="#4a90e2"
                         />
                       }>
-                      {matchInfo.postponed_proposal && t('propose_new_date')}
+                      {postponedProposal && t('propose_new_date')}
                     </Button>
                   </View>
                 </View>
               )}
-              {!matchInfo.postponed_proposal?.newDate && (
+              {showProposeNewDate ? (
                 <Button
                   type="outline"
                   onPress={() => HandlePostpone()}
                   icon={
-                    <MaterialIcons name="schedule" size={20} color="#4a90e2" />
+                    <MaterialIcons
+                      name="date-range"
+                      size={20}
+                      color="#4a90e2"
+                    />
                   }>
-                  {t('reschedule')}
+                  {t('propose_new_date')}
                 </Button>
+              ) : (
+                !postponedProposal?.newDate &&
+                !rawPostponedProposal && (
+                  <Button
+                    type="outline"
+                    onPress={() => HandlePostpone()}
+                    icon={
+                      <MaterialIcons
+                        name="schedule"
+                        size={20}
+                        color="#4a90e2"
+                      />
+                    }>
+                    {t('reschedule')}
+                  </Button>
+                )
               )}
             </View>
           )}
@@ -495,7 +559,7 @@ export default function MatchCardOld({
           (matchInfo.team_role_id > 0 || user.role_id === 9) && (
             <View className="my-3 border-t border-gray-700 dark:border-gray-400">
               <View className="my-2">
-                {matchInfo.postponed_proposal?.isHome ? (
+                {postponedProposal?.newDate && postponedProposal.isHome ? (
                   <Button
                     type="primary"
                     onPress={() => HandlePostpone()}
@@ -510,8 +574,7 @@ export default function MatchCardOld({
                     {t('review_and_confirm')}
                   </Button>
                 ) : null}
-                {(typeof matchInfo?.postponed_proposal === 'undefined' ||
-                  !matchInfo.postponed_proposal) && (
+                {!postponedProposal && (
                   <Button
                     type="primary"
                     onPress={() => HandleConfirm()}
@@ -527,21 +590,15 @@ export default function MatchCardOld({
                   </Button>
                 )}
               </View>
-              {matchInfo.postponed_proposal?.newDate && (
+              {postponedProposal?.newDate && (
                 <View className="flex-row gap-2 items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
                   <View className="flex-1">
                     <Text className="font-bold">
-                      {matchInfo?.postponed_proposal?.isHome
-                        ? matchInfo.home_team_short_name
-                        : matchInfo.away_team_short_name}{' '}
+                      {getProposingTeamShortName(matchInfo, postponedProposal)}{' '}
                       {t('proposed_date')}:
                     </Text>
                     <Text>
-                      {matchInfo.postponed_proposal?.newDate
-                        ? DateTime.fromISO(
-                            matchInfo.postponed_proposal.newDate,
-                          ).toFormat('dd LLL yyyy hh:mm a')
-                        : ''}
+                      {formatProposedDate(postponedProposal.newDate)}
                     </Text>
                   </View>
                   <View className="flex-1">
@@ -555,20 +612,40 @@ export default function MatchCardOld({
                           color="#4a90e2"
                         />
                       }>
-                      {matchInfo.postponed_proposal && t('propose_new_date')}
+                      {postponedProposal && t('propose_new_date')}
                     </Button>
                   </View>
                 </View>
               )}
-              {!matchInfo.postponed_proposal?.newDate && (
+              {showProposeNewDate ? (
                 <Button
                   type="outline"
                   onPress={() => HandlePostpone()}
                   icon={
-                    <MaterialIcons name="schedule" size={20} color="#4a90e2" />
+                    <MaterialIcons
+                      name="date-range"
+                      size={20}
+                      color="#4a90e2"
+                    />
                   }>
-                  {t('reschedule')}
+                  {t('propose_new_date')}
                 </Button>
+              ) : (
+                !postponedProposal?.newDate &&
+                !rawPostponedProposal && (
+                  <Button
+                    type="outline"
+                    onPress={() => HandlePostpone()}
+                    icon={
+                      <MaterialIcons
+                        name="schedule"
+                        size={20}
+                        color="#4a90e2"
+                      />
+                    }>
+                    {t('reschedule')}
+                  </Button>
+                )
               )}
             </View>
           )}

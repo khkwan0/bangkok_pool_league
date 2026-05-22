@@ -12,6 +12,7 @@ export type MatchInfoDataType = {
   logo?: string
   match_id: number
   date: string
+  original_date?: string
   home_confirmed: number
   away_confirmed: number
   team_role_id: number
@@ -30,12 +31,24 @@ export type MatchInfoDataType = {
     lost?: number
     tied?: number
   }
-  postponed_proposal?: {
-    isHome: boolean
-    newDate: string
-    timestamp: string
-    userId: number
-  } | null
+  postponed_proposal?:
+    | string
+    | {
+        matchId?: number
+        proposedData?: {
+          isHome: boolean
+          newDate: string | null
+          teamId: number
+          timestamp: string
+          userId: number
+        }
+        isHome?: boolean
+        newDate?: string | null
+        teamId?: number
+        timestamp?: string
+        userId?: number
+      }
+    | null
   initialFrames?: FrameType[]
 }
 

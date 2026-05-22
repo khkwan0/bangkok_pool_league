@@ -16,6 +16,10 @@ export default function MatchLayout() {
         name="Match/index"
         options={{headerRight: () => <SettingsButton />}}
       />
+      <Stack.Screen
+        name="PostponeScreen/index"
+        options={{headerRight: () => <SettingsButton />}}
+      />
     </Stack>
   )
 }

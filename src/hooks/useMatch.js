@@ -58,8 +58,24 @@ export const useMatch = () => {
 
   const ProposeRescheduleMatch = async proposedData => {
     try {
-      const res = await Post('/match/reschedule', proposedData)
+      const res = await Post('/match/reschedule/propose', proposedData)
       return res
+    } catch (e) {
+      throw new Error(e)
+    }
+  }
+
+  const AcceptRescheduleProposal = async (matchId, teamId) => {
+    try {
+      const res = await Post('/match/reschedule/accept', {
+        matchId: matchId,
+        teamId: teamId,
+      })
+      if (res.status === 'ok') {
+        return res
+      } else {
+        return null
+      }
     } catch (e) {
       throw new Error(e)
     }
@@ -127,6 +143,7 @@ export const useMatch = () => {
   }
 
   return {
+    AcceptRescheduleProposal,
     ConfirmMatch,
     FinalizeMatch,
     GetFrames,

@@ -23,71 +23,39 @@ export default function Button({
   const colorScheme = useColorScheme()
   const {t} = useTranslation()
 
-  const borderColor = colorScheme === 'dark' ? '#ddd' : '#888'
-  const backgroundColor =
-    colorScheme === 'dark'
-      ? disabled
-        ? '#bbb'
-        : '#00d'
-      : disabled
-        ? '#888'
-        : '#ddd'
-
-  const pressedBackgroundColor =
-    colorScheme === 'dark'
-      ? disabled
-        ? '#bbb'
-        : '#00d'
-      : disabled
-        ? '#888'
-        : '#ddd'
-
-  if (colorScheme === 'dark') {
-    const bgColor =
-      type !== 'outline'
-        ? `bg-blue-600 active:bg-purple-700`
-        : 'border border-slate-50'
-    const padding = small ? 'p-2' : 'p-4'
-    return (
-      <Pressable
-        disabled={disabled}
-        className={`${bgColor} ${padding} rounded-lg`}
-        style={style}
-        {...rest}>
-        {typeof children === 'object' && [children]}
-        {typeof children === 'string' && (
-          <View className="flex-row items-center gap-2 justify-center">
-            {icon}
-            <Text className="text-center" style={{fontSize: small ? 14 : 18}}>
-              {t(children)}
-            </Text>
-          </View>
-        )}
-      </Pressable>
-    )
-  } else {
-    const bgColor =
-      type !== 'outline'
-        ? `bg-blue-600 active:bg-purple-700`
+  const padding = small ? 'p-2' : 'p-4'
+  const disabledBg = 'bg-gray-400 dark:bg-gray-600 border-gray-400 dark:border-gray-600'
+  const enabledBg =
+    type === 'outline'
+      ? colorScheme === 'dark'
+        ? 'border border-slate-50'
         : 'border border-slate-600'
-    const textColor = type !== 'outline' ? 'text-white' : 'text-slate-600'
-    const padding = small ? 'p-2' : 'p-4'
-    return (
-      <Pressable
-        disabled={disabled}
-        className={`${bgColor} ${padding} rounded-lg`}
-        style={style}
-        {...rest}>
-        {typeof children === 'object' && [children]}
-        {typeof children === 'string' && (
-          <View className="flex-row items-center gap-2 justify-center">
-            {icon}
-            <Text className={`${textColor} text-center ${small ? 'text-base' : 'text-xl'}`}>
-              {t(children)}
-            </Text>
-          </View>
-        )}
-      </Pressable>
-    )
-  }
+      : 'bg-blue-600 active:bg-purple-700'
+  const bgColor = disabled ? disabledBg : enabledBg
+  const textColor = disabled
+    ? 'text-gray-200 dark:text-gray-400'
+    : type !== 'outline'
+      ? 'text-white'
+      : colorScheme === 'dark'
+        ? 'text-slate-50'
+        : 'text-slate-600'
+
+  return (
+    <Pressable
+      disabled={disabled}
+      className={`${bgColor} ${padding} rounded-lg`}
+      style={[{opacity: disabled ? 0.65 : 1}, style]}
+      {...rest}>
+      {typeof children === 'object' && [children]}
+      {typeof children === 'string' && (
+        <View className="flex-row items-center gap-2 justify-center">
+          {icon}
+          <Text
+            className={`${textColor} text-center ${small ? 'text-base' : 'text-xl'}`}>
+            {t(children)}
+          </Text>
+        </View>
+      )}
+    </Pressable>
+  )
 }

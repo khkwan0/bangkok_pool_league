@@ -3,7 +3,7 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {useMatch} from '@/hooks'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useNavigation, usePathname, useRouter} from 'expo-router'
-import {DateTime} from 'luxon'
+import {formatBangkokDateMed} from '@/lib/bangkokTime'
 import React from 'react'
 import {FlatList, Pressable, useColorScheme} from 'react-native'
 
@@ -210,9 +210,7 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
           {typeof matchMetadata?.matchDate === 'string' && (
             <View>
               <Text type="subtitle">
-                {DateTime.fromISO(matchMetadata?.matchDate).toLocaleString(
-                  DateTime.DATE_MED,
-                )}
+                {formatBangkokDateMed(matchMetadata.matchDate)}
               </Text>
             </View>
           )}

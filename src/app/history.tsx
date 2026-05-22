@@ -4,7 +4,7 @@ import {useLocalSearchParams} from 'expo-router'
 import {useMatch} from '@/hooks'
 import {FlatList} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {DateTime} from 'luxon'
+import {formatBangkokFromMillis} from '@/lib/bangkokTime'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
@@ -14,13 +14,7 @@ type HistoryItem = {
 }
 
 function formatDate(timestamp: number) {
-  if (timestamp) {
-    return DateTime.fromMillis(timestamp)
-      .setZone('Asia/Bangkok')
-      .toLocaleString(DateTime.DATETIME_MED)
-  } else {
-    return 'unknown'
-  }
+  return formatBangkokFromMillis(timestamp)
 }
 
 export default function History() {

@@ -392,15 +392,7 @@ export default function UpcomingMatches(props: any) {
           flex: 1,
           backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5',
         }}>
-        <View
-          style={{
-            height: 92,
-            overflow: 'hidden',
-            backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5',
-          }}
-          collapsable={false}>
-          <LiveScores />
-        </View>
+        <LiveScores />
         <View className="flex-1 items-center justify-center px-6">
           <Text style={{textAlign: 'center', opacity: 0.5}}>
             DEBUG_MINIMAL_MATCHES_SCREEN — only ticker visible
@@ -439,18 +431,7 @@ export default function UpcomingMatches(props: any) {
                 </View>
               )}
               {(typeof state.showLiveScores === 'undefined' ||
-                state.showLiveScores) && (
-                <View
-                  style={{
-                    height: 92,
-                    overflow: 'hidden',
-                    backgroundColor:
-                      colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5',
-                  }}
-                  collapsable={false}>
-                  <LiveScores />
-                </View>
-              )}
+                state.showLiveScores) && <LiveScores />}
               {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
                 user.id && (
                   <View className="my-2 mx-2">

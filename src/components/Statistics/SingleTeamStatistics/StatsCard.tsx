@@ -1,7 +1,7 @@
 import {View} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as Card} from '@/components/ThemedView'
-import {DateTime} from 'luxon'
+import {formatBangkokDateMed} from '@/lib/bangkokTime'
 
 export interface StatType {
   home_team_name: string
@@ -41,7 +41,7 @@ export default function StatsCard({stat}: StatsCardProps) {
         </View>
         <View className="flex-1">
           <Text className="text-center text-2xl">
-            {DateTime.fromISO(stat.date).toLocaleString(DateTime.DATE_MED)}
+            {formatBangkokDateMed(stat.date)}
           </Text>
         </View>
         <View className="flex-1">

@@ -6,14 +6,18 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import notifee from '@notifee/react-native'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import { router } from 'expo-router'
-import { DateTime } from 'luxon'
+import {
+  bangkokNowIso,
+  formatMessageCardDate,
+  formatMessageCardTime,
+} from '@/lib/bangkokTime'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Platform, StyleSheet, TouchableOpacity } from 'react-native'
 import { MessageCardProps } from './types'
 
 export default function MessageCard({message, showAll}: MessageCardProps) {
-  const date = DateTime.fromISO(message.created_at)
+  const messageDate = message.created_at
   const account = useAccount()
   const [isRead, setIsRead] = React.useState(message.read_at)
   const [isDeleted, setIsDeleted] = React.useState(false)
@@ -25,7 +29,7 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
       if (!isRead) {
         const res = await account.MarkMessageAsRead(message.id)
         if (res.status === 'ok') {
-          setIsRead(DateTime.now().toFormat('LLL d, yyyy'))
+          setIsRead(formatMessageCardDate(bangkokNowIso()))
           const count = await account.GetUnreadMessageCount()
           dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
           if (Platform.OS === 'ios') {
@@ -115,8 +119,12 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
         <Text style={styles.content} numberOfLines={2}>
           {message.message}
         </Text>
-        <Text style={styles.date}>{date.toFormat('LLL d, yyyy')}</Text>
-        <Text style={styles.time}>{date.toFormat('HH mm a')}</Text>
+        <Text style={styles.date}>
+          {messageDate ? formatMessageCardDate(messageDate) : ''}
+        </Text>
+        <Text style={styles.time}>
+          {messageDate ? formatMessageCardTime(messageDate) : ''}
+        </Text>
       </View>
     </TouchableOpacity>
   )

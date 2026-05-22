@@ -1,41 +1,85 @@
-import {ThemedView as View} from '@/components/ThemedView'
-import {ThemedText as Text} from '@/components/ThemedText'
-import {useLeagueContext} from '@/context/LeagueContext'
 import Button from '@/components/Button'
-import React, {useState} from 'react'
-import DateTimePicker from 'react-native-modal-datetime-picker'
-import {router} from 'expo-router'
-import {DateTime} from 'luxon'
 import ConfirmDialog from '@/components/ConfirmDialog'
-import {useTranslation} from 'react-i18next'
-import {useNavigation} from '@react-navigation/native'
+import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView as View} from '@/components/ThemedView'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatch} from '@/hooks/useMatch'
+import {
+  bangkokDefaultProposeTimeForPicker,
+  bangkokMinimumPickerDate,
+  formatBangkok,
+  formatBangkokWeekdayDate,
+  isoToPickerDate,
+  nowInBangkok,
+  pickerWallClockToBangkokIso,
+} from '@/lib/bangkokTime'
+import {
+  formatPostponedProposalDisplay,
+  getProposingTeamShortName,
+  parsePostponedProposal,
+} from '@/lib/postponedProposal'
+import {Ionicons} from '@expo/vector-icons'
+import {useNavigation} from '@react-navigation/native'
+import {router} from 'expo-router'
+import React, {useState} from 'react'
+import {useTranslation} from 'react-i18next'
 import {ActivityIndicator} from 'react-native'
+import DateTimePicker from 'react-native-modal-datetime-picker'
 
 export default function Postpone({matchInfo}: {matchInfo: any}) {
+  const parsedMatchInfo =
+    typeof matchInfo === 'string' ? JSON.parse(matchInfo) : matchInfo
+  const postponedProposal = parsePostponedProposal(
+    parsedMatchInfo.postponed_proposal,
+  )
+  const hasValidProposal = postponedProposal !== null
+  const canConfirmOpponentProposal =
+    hasValidProposal &&
+    !!postponedProposal?.newDate &&
+    ((postponedProposal.isHome &&
+      parsedMatchInfo.player_team_id !== parsedMatchInfo.home_team_id) ||
+      (!postponedProposal.isHome &&
+        parsedMatchInfo.player_team_id === parsedMatchInfo.home_team_id))
+
   const {state, RefreshUpcoming} = useLeagueContext()
   const user = state.user
   const match = useMatch()
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [postponedDate, setPostponedDate] = useState(
-    matchInfo.postponed_proposal?.newDate
-      ? DateTime.fromISO(matchInfo.postponed_proposal.newDate).toJSDate()
+    postponedProposal?.newDate
+      ? isoToPickerDate(postponedProposal.newDate)
       : null,
   )
   const [dateSelected, setDateSelected] = useState(false)
   const [showConfirmPostponeDate, setShowConfirmPostponeDate] = useState(false)
-  const [showConfirmPostponeIndefinitely, setShowConfirmPostponeIndefinitely] = useState(false)
+  const [showConfirmPostponeIndefinitely, setShowConfirmPostponeIndefinitely] =
+    useState(false)
   const [newDate, setNewDate] = useState<Date | null>(null)
+  const [newDateBangkokIso, setNewDateBangkokIso] = useState<string | null>(
+    null,
+  )
   const [isMounted, setIsMounted] = useState(false)
   const [loading, setLoading] = useState(false)
-  const parsedMatchInfo =
-    typeof matchInfo === 'string' ? JSON.parse(matchInfo) : matchInfo
+  const [dialogSubmitting, setDialogSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [wasCancelled, setWasCancelled] = useState(false)
   const {t} = useTranslation()
   const navigation = useNavigation()
 
+  function exitPostponeScreen() {
+    if (router.canGoBack()) {
+      router.back()
+      return
+    }
+    if (navigation.canGoBack()) {
+      navigation.goBack()
+      return
+    }
+    router.dismissTo('/(tabs)/(index)')
+  }
+
   const handleConfirmDatePostpone = async () => {
+    setDialogSubmitting(true)
     try {
       setError('')
       const res = await match.ProposeRescheduleMatch({
@@ -44,16 +88,16 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
           isHome:
             parsedMatchInfo.player_team_id === parsedMatchInfo.home_team_id,
           userId: user.id,
-          newDate: newDate,
+          newDate: newDateBangkokIso,
           teamId: parsedMatchInfo.player_team_id,
-          timestamp: new Date().toISOString(),
+          timestamp: nowInBangkok().toISO() ?? new Date().toISOString(),
         },
       })
       if (res.status === 'ok') {
         setPostponedDate(newDate)
         setShowConfirmPostponeDate(false)
         RefreshUpcoming()
-        router.back()
+        exitPostponeScreen()
       } else {
         setError('Failed to postpone to date')
         setLoading(false)
@@ -61,29 +105,28 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
     } catch (error) {
       setError('Failed to postpone to date')
       setLoading(false)
+    } finally {
+      setDialogSubmitting(false)
     }
   }
 
   const handleConfirmMatch = async () => {
+    setLoading(true)
     try {
-      const res = await match.ConfirmMatch(
+      const res = await match.AcceptRescheduleProposal(
         parsedMatchInfo.match_id,
         parsedMatchInfo.player_team_id,
       )
       if (res.status === 'ok') {
-        router.back()
-        router.setParams({
-          params: JSON.stringify({
-            refresh: true,
-          }),
-        })
+        RefreshUpcoming()
+        exitPostponeScreen()
       } else {
         setError(t('failed_to_confirm_match'))
-        setLoading(false)
       }
     } catch (error) {
       console.error('Failed to confirm match:', error)
       setError(t('failed_to_confirm_match'))
+    } finally {
       setLoading(false)
     }
   }
@@ -113,26 +156,33 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
   }
 
   async function postponeIndefinitely() {
+    setDialogSubmitting(true)
     try {
       const res = await match.ProposeRescheduleMatch({
         matchId: parsedMatchInfo.match_id,
         proposedData: {
-          isHome: parsedMatchInfo.player_team_id === parsedMatchInfo.home_team_id,
+          isHome:
+            parsedMatchInfo.player_team_id === parsedMatchInfo.home_team_id,
           userId: user.id,
           newDate: null,
           teamId: parsedMatchInfo.player_team_id,
-          timestamp: new Date().toISOString(),
+          timestamp: nowInBangkok().toISO() ?? new Date().toISOString(),
         },
       })
       if (res.status === 'ok') {
+        setShowConfirmPostponeIndefinitely(false)
         RefreshUpcoming()
-        router.back()
+        exitPostponeScreen()
       } else {
         setError(t('failed_to_postpone'))
+        setLoading(false)
       }
     } catch (e) {
       console.error('Failed to postpone indefinitely:', e)
       setError(t('failed_to_postpone'))
+      setLoading(false)
+    } finally {
+      setDialogSubmitting(false)
     }
   }
 
@@ -141,6 +191,35 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
       <View className="flex-1 p-6 bg-gray-50 dark:bg-gray-900">
         <View className="flex-1 items-center justify-center">
           <View className="w-full rounded-xl bg-white dark:bg-gray-800 p-6 shadow-md">
+            {hasValidProposal && postponedProposal && (
+              <View className="mb-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+                <Text
+                  type="subtitle"
+                  className="text-center text-amber-800 dark:text-amber-200 mb-2 font-semibold">
+                  {t('latest_proposal')}
+                </Text>
+                <Text
+                  type="title"
+                  className="text-center font-bold text-lg text-gray-900 dark:text-gray-100">
+                  {getProposingTeamShortName(
+                    parsedMatchInfo,
+                    postponedProposal,
+                  )}
+                </Text>
+                <Text className="text-center text-gray-600 dark:text-gray-400 mt-2">
+                  {t('proposed_date')}:
+                </Text>
+                <Text
+                  type="subtitle"
+                  className="text-center font-semibold text-gray-800 dark:text-gray-200">
+                  {formatPostponedProposalDisplay(postponedProposal, {
+                    indefinite: t('indefinite'),
+                    noDate: t('no_date_selected'),
+                  })}
+                </Text>
+              </View>
+            )}
+
             {/* Original Date Section */}
             <View className="mb-8">
               <Text
@@ -149,30 +228,15 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
                 {t('original_date')}
               </Text>
               <Text type="title" className="text-center font-bold text-lg">
-                {DateTime.fromISO(
+                {formatBangkokWeekdayDate(
                   parsedMatchInfo.original_date ?? parsedMatchInfo.date,
-                ).toFormat('DDDD')}
+                )}
               </Text>
             </View>
 
-            {/* Divider */}
-            <View className="h-px bg-gray-200 dark:bg-gray-700 my-4" />
-
-            {/* Proposed Date Section */}
-            <View className="mb-8">
-              <Text type="title" className="text-center font-bold text-xl mb-2">
-                {t('proposed_date')}
-              </Text>
-              <Text
-                type="subtitle"
-                className="text-center mb-4 text-gray-700 dark:text-gray-300">
-                {postponedDate
-                  ? DateTime.fromJSDate(postponedDate).toFormat(
-                      'dd LLL yyyy hh:mm a',
-                    )
-                  : t('no_date_selected')}
-              </Text>
-            </View>
+            <Text className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {t('times_in_bangkok')}
+            </Text>
 
             {/* Action Buttons */}
             <View className="mt-4">
@@ -182,39 +246,50 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
                 </View>
               ) : (
                 <>
-                  <Button onPress={() => {
-                    setLoading(true)
-                    handleOpenDatePicker()
-                  }}>
-                    {matchInfo.postponed_proposal?.newDate
+                  <Button
+                    onPress={() => {
+                      setLoading(true)
+                      handleOpenDatePicker()
+                    }}>
+                    {postponedProposal?.newDate
                       ? t('propose_a_new_date')
                       : t('reschedule')}
                   </Button>
-                  <View className="mt-4">
-                    <Button onPress={() => {
-                      setLoading(true)
-                      setShowConfirmPostponeIndefinitely(true)
-                    }}>
-                      {t('postpone_indefinitely')}
-                    </Button>
-                  </View>
+                  {!hasValidProposal && (
+                    <View className="mt-4">
+                      <Button
+                        onPress={() => {
+                          setLoading(true)
+                          setShowConfirmPostponeIndefinitely(true)
+                        }}>
+                        {t('postpone_indefinitely')}
+                      </Button>
+                    </View>
+                  )}
                 </>
               )}
 
-              {/* Confirm button - only shown in specific conditions */}
-              {postponedDate &&
-                ((parsedMatchInfo.postponed_proposal?.isHome === true &&
-                  parsedMatchInfo.player_team_id !==
-                    parsedMatchInfo.home_team_id) ||
-                  (parsedMatchInfo.postponed_proposal?.isHome === false &&
-                    parsedMatchInfo.player_team_id ===
-                      parsedMatchInfo.home_team_id)) && (
+              {canConfirmOpponentProposal && (
+                <View className="mt-4 w-full">
                   <Button
                     onPress={() => handleConfirmMatch()}
-                    className="bg-green-600 dark:bg-green-700">
-                    {t('confirm')}
+                    disabled={loading || dialogSubmitting}
+                    style={{
+                      width: '100%',
+                      minHeight: 52,
+                      backgroundColor: '#16a34a',
+                    }}
+                    icon={
+                      <Ionicons
+                        name="checkmark-circle-outline"
+                        size={22}
+                        color="white"
+                      />
+                    }>
+                    confirm_proposed_date
                   </Button>
-                )}
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -231,8 +306,8 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
         {/* Date Picker */}
         <DateTimePicker
           isVisible={showDatePicker}
-          date={newDate || new Date()}
-          minimumDate={new Date()}
+          date={newDate ?? bangkokDefaultProposeTimeForPicker()}
+          minimumDate={bangkokMinimumPickerDate()}
           mode="datetime"
           is24Hour={false}
           minuteInterval={30}
@@ -240,6 +315,7 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
           onCancel={handleCancel}
           onConfirm={date => {
             setNewDate(date)
+            setNewDateBangkokIso(pickerWallClockToBangkokIso(date))
             setDateSelected(true)
             setShowDatePicker(false)
           }}
@@ -250,21 +326,31 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
           isVisible={showConfirmPostponeDate}
           title={t('schedule_for_later')}
           message={t('confirm_postpone_date', {
-            date:newDate 
-              ? DateTime.fromJSDate(newDate).toFormat(
-                  'dd LLL yyyy hh:mm a',
-                )
+            date: newDateBangkokIso
+              ? `${formatBangkok(newDateBangkokIso)} (${t('bangkok_timezone_abbr')})`
               : t('no_date_selected'),
           })}
           onConfirm={handleConfirmDatePostpone}
-          onCancel={() => setShowConfirmPostponeDate(false)}
+          onCancel={() => {
+            if (!dialogSubmitting) {
+              setShowConfirmPostponeDate(false)
+              setLoading(false)
+            }
+          }}
+          submitting={dialogSubmitting}
         />
         <ConfirmDialog
           isVisible={showConfirmPostponeIndefinitely}
           title={t('postpone_indefinitely')}
           message={t('confirm_postpone_indefinitely')}
           onConfirm={postponeIndefinitely}
-          onCancel={() => setShowConfirmPostponeIndefinitely(false)}
+          onCancel={() => {
+            if (!dialogSubmitting) {
+              setShowConfirmPostponeIndefinitely(false)
+              setLoading(false)
+            }
+          }}
+          submitting={dialogSubmitting}
         />
       </View>
     )

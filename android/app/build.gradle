@@ -94,8 +94,8 @@ android {
         applicationId 'com.bangkok_pool_league'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 147
-        versionName "1.92"
+        versionCode 148
+        versionName "1.93"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }

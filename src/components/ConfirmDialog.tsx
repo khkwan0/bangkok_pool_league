@@ -1,5 +1,5 @@
 import React from 'react'
-import {Modal, Pressable, Platform} from 'react-native'
+import {ActivityIndicator, Modal, Platform, useColorScheme} from 'react-native'
 import {ThemedView as View} from './ThemedView'
 import {ThemedText as Text} from './ThemedText'
 import Button from './Button'
@@ -11,6 +11,9 @@ interface ConfirmDialogProps {
   message: string
   onConfirm: () => void
   onCancel: () => void
+  /** @deprecated Use `submitting` */
+  buttonsDisabled?: boolean
+  submitting?: boolean
 }
 
 export default function ConfirmDialog({
@@ -19,15 +22,20 @@ export default function ConfirmDialog({
   message,
   onConfirm,
   onCancel,
+  buttonsDisabled = false,
+  submitting = false,
 }: ConfirmDialogProps) {
   const {t} = useTranslation()
+  const colorScheme = useColorScheme()
+  const isBusy = submitting || buttonsDisabled
+  const spinnerColor = colorScheme === 'dark' ? '#e5e7eb' : '#ffffff'
 
   return (
     <Modal
       animationType="fade"
       transparent={true}
       visible={isVisible}
-      onRequestClose={onCancel}>
+      onRequestClose={isBusy ? () => {} : onCancel}>
       <View
         style={{
           flex: 1,
@@ -47,12 +55,31 @@ export default function ConfirmDialog({
             {title}
           </Text>
           <Text className="mb-4">{message}</Text>
+          {isBusy && (
+            <View className="flex-row items-center justify-center gap-2 mb-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700">
+              <ActivityIndicator size="small" color="#3b82f6" />
+              <Text className="text-gray-600 dark:text-gray-300">
+                {t('submitting')}
+              </Text>
+            </View>
+          )}
           <View className="flex-row justify-end gap-2">
-            <Button onPress={onCancel}>Cancel</Button>
-            <Button onPress={onConfirm}>Confirm</Button>
+            <Button onPress={onCancel} disabled={isBusy}>
+              cancel
+            </Button>
+            <Button
+              onPress={onConfirm}
+              disabled={isBusy}
+              icon={
+                isBusy ? (
+                  <ActivityIndicator size="small" color={spinnerColor} />
+                ) : undefined
+              }>
+              confirm
+            </Button>
           </View>
         </View>
       </View>
     </Modal>
   )
-} 
+}
