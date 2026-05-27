@@ -17,6 +17,7 @@ import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
   Animated,
+  AppState,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -118,6 +119,16 @@ export default function CueChat() {
     connectionPhase === 'initializing' || connectionPhase === 'connecting'
   const displayError = agentError ?? socketError
 
+  const reconnectSocket = React.useCallback(() => {
+    const socket = socketRef.current
+    if (!socket || !leagueState.user?.id || socket.connected) {
+      return
+    }
+    setSocketError(null)
+    setConnectionPhase('connecting')
+    socket.connect()
+  }, [leagueState.user?.id])
+
   const ensureConnected = React.useCallback(() => {
     const currentSocket = socketRef.current
     if (!currentSocket) {
@@ -144,6 +155,19 @@ export default function CueChat() {
       currentSocket.connect()
     })
   }, [leagueState.user?.id])
+
+  const appStateRef = React.useRef(AppState.currentState)
+
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      const wasBackground = appStateRef.current.match(/inactive|background/)
+      appStateRef.current = nextAppState
+      if (wasBackground && nextAppState === 'active') {
+        reconnectSocket()
+      }
+    })
+    return () => subscription.remove()
+  }, [reconnectSocket])
 
   function clearAgentActivity() {
     setAgentActivity(null)
