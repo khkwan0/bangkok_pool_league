@@ -1,3 +1,4 @@
+import Button from '@/components/Button'
 import {ChatMarkdown, markdownContainsTable} from '@/components/ChatMarkdown'
 import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
@@ -12,7 +13,7 @@ import {
 import {createSocketClient, loadSocketAuth} from '@/lib/socketAuth'
 import {Ionicons} from '@expo/vector-icons'
 import {useFocusEffect} from '@react-navigation/native'
-import {Stack} from 'expo-router'
+import {Stack, usePathname, useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
@@ -82,6 +83,8 @@ function formatToolDisplayName(rawName: string): string {
 
 export default function CueChat() {
   const {t} = useTranslation()
+  const router = useRouter()
+  const pathname = usePathname()
   const [messages, setMessages] = React.useState<ChatMessage[]>([])
   const [inputText, setInputText] = React.useState('')
   const [agentActivity, setAgentActivity] =
@@ -114,6 +117,7 @@ export default function CueChat() {
   const messagesRef = React.useRef(messages)
   messagesRef.current = messages
 
+  const isLoggedIn = Boolean(leagueState.user?.id)
   const isConnected = connectionPhase === 'connected'
   const isConnecting =
     connectionPhase === 'initializing' || connectionPhase === 'connecting'
@@ -320,6 +324,9 @@ export default function CueChat() {
   }
 
   function getStatusBarLabel(): string {
+    if (!isLoggedIn) {
+      return t('ai_assistant_status_login_required')
+    }
     if (isLoadingHistory && !isConnected) {
       return t('ai_assistant_status_connecting')
     }
@@ -341,6 +348,7 @@ export default function CueChat() {
   }
 
   function getStatusBarColor(): string {
+    if (!isLoggedIn) return '#64748b'
     if (isStreaming) return '#2563eb'
     switch (connectionPhase) {
       case 'initializing':
@@ -356,6 +364,7 @@ export default function CueChat() {
   }
 
   function getStatusBarIcon(): keyof typeof Ionicons.glyphMap {
+    if (!isLoggedIn) return 'log-in-outline'
     if (agentActivity?.phase === 'reconnecting') return 'sync-outline'
     if (isStreaming) {
       return agentActivity?.phase === 'tool' ? 'search-outline' : 'hourglass-outline'
@@ -739,15 +748,18 @@ export default function CueChat() {
     }
   }
 
-  const isInputEnabled = isConnected && !isStreaming && !isConnecting
+  const isInputEnabled =
+    isLoggedIn && isConnected && !isStreaming && !isConnecting
   const canSend = isInputEnabled && Boolean(inputText.trim())
-  const inputPlaceholder = isConnecting
-    ? t('ai_assistant_input_connecting')
-    : !isConnected
-      ? t('ai_assistant_input_disconnected')
-      : isStreaming
-        ? t('ai_assistant_input_responding')
-        : t('ai_assistant_message_placeholder')
+  const inputPlaceholder = !isLoggedIn
+    ? t('ai_assistant_input_login_required')
+    : isConnecting
+      ? t('ai_assistant_input_connecting')
+      : !isConnected
+        ? t('ai_assistant_input_disconnected')
+        : isStreaming
+          ? t('ai_assistant_input_responding')
+          : t('ai_assistant_message_placeholder')
 
   const suggestionKeys = [
     'ai_assistant_suggestion_1',
@@ -757,6 +769,7 @@ export default function CueChat() {
   ] as const
 
   const showReadyPrompt =
+    isLoggedIn &&
     isConnected &&
     !isConnecting &&
     !isStreaming &&
@@ -1276,7 +1289,44 @@ export default function CueChat() {
     </RNView>
   )
 
+  const renderLoginRequired = () => (
+    <View className="flex-1 justify-center items-center py-8 px-6">
+      <Ionicons
+        name="log-in-outline"
+        size={48}
+        color={isDark ? '#9ca3af' : '#6b7280'}
+        style={{marginBottom: 16}}
+      />
+      <Text
+        style={{
+          fontSize: 17,
+          fontWeight: '600',
+          textAlign: 'center',
+          marginBottom: 8,
+        }}>
+        {t('ai_assistant_login_required')}
+      </Text>
+      <Text
+        className="opacity-60"
+        style={{textAlign: 'center', marginBottom: 24, lineHeight: 22}}>
+        {t('ai_assistant_login_required_detail')}
+      </Text>
+      <Button
+        onPress={() =>
+          router.push({
+            pathname: '/Auth',
+            params: {from: pathname},
+          })
+        }>
+        {t('login')}
+      </Button>
+    </View>
+  )
+
   const renderListEmpty = () => {
+    if (!isLoggedIn) {
+      return renderLoginRequired()
+    }
     if (showReadyPrompt) {
       return renderReadyPrompt()
     }
@@ -1378,53 +1428,55 @@ export default function CueChat() {
           />
 
           {/* Input Area */}
-          <View
-            className="border-t border-gray-300 dark:border-gray-700"
-            style={{
-              paddingBottom: insets.bottom,
-              backgroundColor: 'transparent',
-            }}>
-            <View className="flex-row items-center px-4 py-2 gap-2">
-              <View style={{flex: 1, justifyContent: 'center'}}>
-                <TextInput
-                  placeholder={inputPlaceholder}
-                  value={inputText}
-                  onChangeText={setInputText}
-                  onSubmitEditing={() => SendMessage()}
-                  disabled={!isInputEnabled}
-                  multiline
-                  maxLength={500}
-                  textAlignVertical="center"
-                  containerStyle={{
-                    opacity: isInputEnabled ? 1 : 0.5,
-                  }}
-                  inputStyle={{
-                    height: undefined,
-                    minHeight: 48,
-                    paddingTop: 12,
-                    paddingBottom: 12,
-                  }}
-                />
+          {isLoggedIn ? (
+            <View
+              className="border-t border-gray-300 dark:border-gray-700"
+              style={{
+                paddingBottom: insets.bottom,
+                backgroundColor: 'transparent',
+              }}>
+              <View className="flex-row items-center px-4 py-2 gap-2">
+                <View style={{flex: 1, justifyContent: 'center'}}>
+                  <TextInput
+                    placeholder={inputPlaceholder}
+                    value={inputText}
+                    onChangeText={setInputText}
+                    onSubmitEditing={() => SendMessage()}
+                    disabled={!isInputEnabled}
+                    multiline
+                    maxLength={500}
+                    textAlignVertical="center"
+                    containerStyle={{
+                      opacity: isInputEnabled ? 1 : 0.5,
+                    }}
+                    inputStyle={{
+                      height: undefined,
+                      minHeight: 48,
+                      paddingTop: 12,
+                      paddingBottom: 12,
+                    }}
+                  />
+                </View>
+                <TouchableOpacity
+                  onPress={() => SendMessage()}
+                  disabled={!canSend}
+                  className={`rounded-full p-3 ${
+                    canSend
+                      ? 'bg-blue-500 dark:bg-blue-600'
+                      : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                  style={{
+                    opacity: canSend ? 1 : 0.5,
+                  }}>
+                  <Ionicons
+                    name="send"
+                    size={20}
+                    color={canSend ? 'white' : 'gray'}
+                  />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                onPress={() => SendMessage()}
-                disabled={!canSend}
-                className={`rounded-full p-3 ${
-                  canSend
-                    ? 'bg-blue-500 dark:bg-blue-600'
-                    : 'bg-gray-300 dark:bg-gray-600'
-                }`}
-                style={{
-                  opacity: canSend ? 1 : 0.5,
-                }}>
-                <Ionicons
-                  name="send"
-                  size={20}
-                  color={canSend ? 'white' : 'gray'}
-                />
-              </TouchableOpacity>
             </View>
-          </View>
+          ) : null}
         </View>
       </KeyboardAvoidingView>
     </>
