@@ -10,6 +10,7 @@ interface NavDestProps {
   text: string
   icon: any
   messageCount?: number
+  onPress?: () => void
 }
 
 export default function NavDest(props: NavDestProps) {
@@ -18,7 +19,15 @@ export default function NavDest(props: NavDestProps) {
   const {messageCount = 0, text} = props
 
   return (
-    <Pressable className="my-3" onPress={() => router.push(props.url as any)}>
+    <Pressable
+      className="my-3"
+      onPress={() => {
+        if (props.onPress) {
+          props.onPress()
+        } else {
+          router.push(props.url as any)
+        }
+      }}>
       <View className="flex-row p-4 items-center">
         <View className="flex-0 w-10 ">
           <MCI name={props.icon} color={colors.text} size={20} />

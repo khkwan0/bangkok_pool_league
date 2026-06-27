@@ -2,6 +2,7 @@ import { ThemedText as Text } from '@/components/ThemedText'
 import { ThemedView as CardView } from '@/components/ThemedView'
 import { useLeagueContext } from '@/context/LeagueContext'
 import { useLeague } from '@/hooks'
+import { useTabListContentContainerStyle } from '@/hooks/useTabListContentContainerStyle'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from '@react-navigation/native'
 import { router } from 'expo-router'
@@ -70,6 +71,9 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
   const {colors} = useTheme()
   const league = useLeague()
   const {t} = useTranslation()
+  const listContentStyle = useTabListContentContainerStyle({
+    backgroundColor: colors.background,
+  })
 
   const userTeams = React.useMemo(() => {
     return user?.teams?.map((team: {id: number}) => team.id) || []
@@ -136,9 +140,7 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
   return (
     <View className="flex-1">
       <FlatList
-        contentContainerStyle={{
-          backgroundColor: colors.background,
-        }}
+        contentContainerStyle={listContentStyle}
         ListHeaderComponent={
           typeof user.id !== 'undefined' ? (
             <View className="px-4 py-3 border-b border-slate-200">

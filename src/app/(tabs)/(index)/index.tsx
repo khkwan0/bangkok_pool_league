@@ -7,6 +7,7 @@ import MatchCard from '@/components/upcoming/MatchCard'
 import MatchCardOld from '@/components/upcoming/MatchCardOld'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount, useAd, useLeague, useSeason} from '@/hooks'
+import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {MaterialIcons} from '@expo/vector-icons'
 import notifee from '@notifee/react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -67,6 +68,10 @@ export default function UpcomingMatches(props: any) {
   const router = useRouter()
   const {width} = Dimensions.get('window')
   const colorScheme = useColorScheme()
+  const listContentStyle = useTabListContentContainerStyle({
+    backgroundColor: colors.background,
+    paddingHorizontal: 0,
+  })
 
   const pathname = usePathname()
 
@@ -500,21 +505,52 @@ export default function UpcomingMatches(props: any) {
                   />
                 </View>
               </Animated.View>
-              <Pressable
-                className="flex-row items-center justify-center"
-                onPress={toggleFilters}>
-                <MaterialIcons
-                  name="filter-list"
-                  size={24}
-                  style={{margin: 4}}
-                  color={colorScheme === 'dark' ? '#ffffff' : '#37003C'}
-                />
-                <Text
-                  type="subtitle"
-                  className="text-[#37003C] dark:text-white">
-                  {showFilters ? t('hide_filters') : t('show_filters')}
-                </Text>
-              </Pressable>
+              <View className="mx-4 my-2">
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={toggleFilters}
+                  className="flex-row items-center justify-center py-3 px-5 rounded-lg w-full"
+                  style={({pressed}) => {
+                    const isDark = colorScheme === 'dark'
+                    return {
+                      backgroundColor: isDark
+                        ? pressed
+                          ? '#2A002E'
+                          : '#37003C'
+                        : pressed
+                          ? '#E8D4EA'
+                          : '#FFFFFF',
+                      borderWidth: isDark ? 0 : 2,
+                      borderColor: '#37003C',
+                      shadowColor: '#000',
+                      shadowOffset: {width: 0, height: 2},
+                      shadowOpacity: isDark ? 0.35 : 0.12,
+                      shadowRadius: 4,
+                      elevation: 4,
+                      transform: [{scale: pressed ? 0.98 : 1}],
+                    }
+                  }}>
+                  <MaterialIcons
+                    name="filter-list"
+                    size={22}
+                    style={{marginRight: 8}}
+                    color={colorScheme === 'dark' ? '#FFFFFF' : '#37003C'}
+                  />
+                  <Text
+                    className="font-semibold text-base"
+                    style={{
+                      color: colorScheme === 'dark' ? '#FFFFFF' : '#37003C',
+                    }}>
+                    {showFilters ? t('hide_filters') : t('show_filters')}
+                  </Text>
+                  <MaterialIcons
+                    name={showFilters ? 'expand-less' : 'expand-more'}
+                    size={22}
+                    style={{marginLeft: 6}}
+                    color={colorScheme === 'dark' ? '#FFFFFF' : '#37003C'}
+                  />
+                </Pressable>
+              </View>
             </View>
             <View
               style={{height: '100%', overflow: 'hidden', marginHorizontal: 0}}>
@@ -527,11 +563,8 @@ export default function UpcomingMatches(props: any) {
                 </View>
               ) : (
                 <FlatList
-                  contentContainerStyle={{
-                    backgroundColor: colors.background,
-                    paddingHorizontal: 0,
-                  }}
-                  style={{height: '100%'}}
+                  contentContainerStyle={listContentStyle}
+                  style={{flex: 1}}
                   horizontal={state.isNewMatchCard ? true : false}
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}

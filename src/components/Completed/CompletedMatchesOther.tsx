@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {View, FlatList, ActivityIndicator} from 'react-native'
 import {useSeason} from '@/hooks/useSeason'
+import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import React from 'react'
 import {useLeagueContext} from '@/context/LeagueContext'
 import MatchDateItem from './MatchDateItem'
@@ -27,6 +28,7 @@ export default function CompletedMatchesOther() {
   const [matchDates, setMatchDates] = React.useState<MatchDate[]>([])
   const {t} = useTranslation()
   const [isMounted, setIsMounted] = React.useState(false)
+  const listContentStyle = useTabListContentContainerStyle()
 
   React.useEffect(() => {
     const getCompletedMatches = async () => {
@@ -53,6 +55,7 @@ export default function CompletedMatchesOther() {
   return (
     <FlatList
       data={matchDates}
+      contentContainerStyle={listContentStyle}
       renderItem={({item}) => <MatchDateItem date={item} />}
       keyExtractor={(item, index) => `${index.toString()}_${item.date}`}
       ItemSeparatorComponent={() => <View className="h-4" />}

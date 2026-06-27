@@ -4,7 +4,7 @@ import {useNavigation} from '@react-navigation/native'
 import {useTranslation} from 'react-i18next'
 import React from 'react'
 import {useLeague} from '@/hooks'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useState} from 'react'
 import {FlatList} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
@@ -126,7 +126,7 @@ export default function LeagueStandings() {
   const {t} = useTranslation()
   const league = useLeague()
   const [standings, setStandings] = useState<DivisionData[]>([])
-  const inset = useSafeAreaInsets()
+  const listContentStyle = useTabListContentContainerStyle()
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -143,7 +143,7 @@ export default function LeagueStandings() {
 
   return (
     <FlatList
-      contentContainerStyle={{paddingBottom: inset.bottom}}
+      contentContainerStyle={listContentStyle}
       data={standings}
       renderItem={({item}) => <DivisionStandings data={item} />}
     />

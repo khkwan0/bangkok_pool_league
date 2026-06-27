@@ -8,6 +8,7 @@ import { ThemedText as Text } from '@/components/ThemedText'
 import { ThemedView as View } from '@/components/ThemedView'
 import config from '@/config'
 import { useSeason } from '@/hooks/useSeason'
+import { useTabListContentContainerStyle } from '@/hooks/useTabListContentContainerStyle'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, RefreshControl, ScrollView } from 'react-native'
@@ -41,6 +42,10 @@ export default function PlayerStatistics({
     useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const {t} = useTranslation()
+  const listContentStyle = useTabListContentContainerStyle({
+    flexGrow: 1,
+    padding: 20,
+  })
 
   const onRefresh = React.useCallback(async () => {
     setIsRefreshing(true)
@@ -123,7 +128,7 @@ export default function PlayerStatistics({
 
   return (
     <ScrollView
-      contentContainerStyle={{flexGrow: 1, padding: 20}}
+      contentContainerStyle={listContentStyle}
       refreshControl={
         <RefreshControl
           refreshing={isRefreshing}

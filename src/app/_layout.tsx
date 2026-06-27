@@ -24,6 +24,7 @@ import {
   Platform,
   useColorScheme
 } from 'react-native'
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet'
 import {GestureHandlerRootView} from 'react-native-gesture-handler'
 import {SafeAreaProvider} from 'react-native-safe-area-context'
 import '../../global.css'
@@ -211,21 +212,23 @@ function RootLayout() {
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <SafeAreaProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <LeagueProvider>
-            <MatchProvider>
-              <Stack>
-                <Stack.Screen
-                  name="(tabs)"
-                  options={{
-                    headerTitle: t('bangkok_pool_league'),
-                    headerShown: false,
-                  }}
-                />
-              </Stack>
-            </MatchProvider>
-          </LeagueProvider>
-        </ThemeProvider>
+        <BottomSheetModalProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <LeagueProvider>
+              <MatchProvider>
+                <Stack>
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{
+                      headerTitle: t('bangkok_pool_league'),
+                      headerShown: false,
+                    }}
+                  />
+                </Stack>
+              </MatchProvider>
+            </LeagueProvider>
+          </ThemeProvider>
+        </BottomSheetModalProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   )

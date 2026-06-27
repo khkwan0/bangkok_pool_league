@@ -1,4 +1,5 @@
 import LanguageOption from '@/components/LanguageOption'
+import { CustomTabBar } from '@/components/navigation/CustomTabBar'
 import { TabBarIcon } from '@/components/navigation/TabBarIcon'
 import { useLeagueContext } from '@/context/LeagueContext'
 import { useAccount } from '@/hooks/useAccount'
@@ -211,7 +212,7 @@ export default function TabLayout() {
     )
   } else {
     return (
-      <Tabs>
+      <Tabs tabBar={props => <CustomTabBar {...props} />}>
         <Tabs.Screen
           name="(index)"
           options={{
@@ -255,14 +256,8 @@ export default function TabLayout() {
         <Tabs.Screen
           name="teams"
           options={{
-            title: t('teams'),
+            href: null,
             headerShown: false,
-            tabBarIcon: ({color, focused}) => (
-              <TabBarIcon
-                name={focused ? 'people' : 'people-outline'}
-                color={color}
-              />
-            ),
           }}
         />
         <Tabs.Screen

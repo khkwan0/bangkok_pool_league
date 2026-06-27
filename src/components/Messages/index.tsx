@@ -3,6 +3,7 @@ import {ThemedView as View} from '@/components/ThemedView'
 import config from '@/config'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import {formatRelativeMessageListDate} from '@/lib/bangkokTime'
+import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
@@ -26,6 +27,7 @@ export default function Messages({
 }: MessagesProps) {
   const {t} = useTranslation()
   const insets = useSafeAreaInsets()
+  const listContentStyle = useTabListContentContainerStyle()
 
   const showThreadOptions = (item: Thread) => {
     const buttons: {text: string; onPress?: () => void; style?: 'cancel' | 'destructive'}[] = []
@@ -164,6 +166,7 @@ export default function Messages({
       <FlatList
         data={threads}
         renderItem={renderThreadItem}
+        contentContainerStyle={listContentStyle}
         keyExtractor={(item, index) => {
           const threadId = item.id || item.thread_id || item.root_id
           return threadId ? String(threadId) : `thread-${index}`

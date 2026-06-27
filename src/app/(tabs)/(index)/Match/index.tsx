@@ -12,11 +12,11 @@ import { FrameType } from '@/components/Match/types'
 import { ThemedView as View } from '@/components/ThemedView'
 import { useMatchContext } from '@/context/MatchContext'
 import { useMatch } from '@/hooks/useMatch'
+import { useTabListContentContainerStyle } from '@/hooks/useTabListContentContainerStyle'
 import { useNavigation } from '@react-navigation/native'
 import { router, useLocalSearchParams } from 'expo-router'
 import React from 'react'
 import { AppState, FlatList } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function ScoreSheet() {
   const {state, dispatch, SocketConnect, SocketDisconnect, UpdateTeams}: any =
@@ -24,8 +24,8 @@ export default function ScoreSheet() {
   const match = useMatch()
   const {params} = useLocalSearchParams()
   const [isMounted, setIsMounted] = React.useState(false)
-  const insets = useSafeAreaInsets()
   const navigation = useNavigation()
+  const listContentStyle = useTabListContentContainerStyle({paddingBottom: 16})
   /*
   const matchInfo = React.useMemo(
     () =>
@@ -222,7 +222,7 @@ export default function ScoreSheet() {
   } else {
     return (
       <FlatList
-        contentContainerStyle={{paddingBottom: insets.bottom}}
+        contentContainerStyle={listContentStyle}
         refreshing={refreshing}
         onRefresh={() => GetFrames()}
         ListHeaderComponent={

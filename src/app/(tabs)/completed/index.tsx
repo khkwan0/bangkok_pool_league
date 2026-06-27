@@ -2,6 +2,7 @@ import Button from '@/components/Button'
 import CompletedMatch from '@/components/Completed/CompletedMatch'
 import CompletedMatchesOther from '@/components/Completed/CompletedMatchesOther'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useLeague} from '@/hooks/useLeague'
 import {usePathname, useRouter} from 'expo-router'
 import React, {useCallback} from 'react'
@@ -53,6 +54,7 @@ export default function CompletedHome() {
   const [matches, setMatches] = React.useState<CompletedMatchType[]>([])
   const [refreshing, setRefreshing] = React.useState(false)
   const [isMounted, setIsMounted] = React.useState(false)
+  const listContentStyle = useTabListContentContainerStyle()
 
   const getCompletedMatches = useCallback(
     async (teams: {id: number}[]) => {
@@ -90,6 +92,7 @@ export default function CompletedHome() {
         refreshing={refreshing}
         onRefresh={() => getCompletedMatches(user.teams || [])}
         contentContainerClassName="py-4"
+        contentContainerStyle={listContentStyle}
         ListHeaderComponent={matches.length > 0 ? <ShowAllMatches /> : null}
         ListEmptyComponent={isMounted ? <NoMatches /> : null}
         ListFooterComponent={<View className="h-4" />}

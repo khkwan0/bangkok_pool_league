@@ -1,0 +1,139 @@
+import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView as View} from '@/components/ThemedView'
+import {Colors} from '@/constants/Colors'
+import config from '@/config.js'
+import {useLeagueContext} from '@/context/LeagueContext'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+  type BottomSheetBackdropProps,
+} from '@gorhom/bottom-sheet'
+import {useRouter} from 'expo-router'
+import React from 'react'
+import {Pressable, useColorScheme} from 'react-native'
+import {useTranslation} from 'react-i18next'
+
+type QuickActionItemProps = {
+  icon: React.ComponentProps<typeof MCI>['name']
+  label: string
+  iconColor: string
+  iconBackground: string
+  onPress: () => void
+}
+
+function QuickActionItem({
+  icon,
+  label,
+  iconColor,
+  iconBackground,
+  onPress,
+}: QuickActionItemProps) {
+  const colorScheme = useColorScheme() ?? 'light'
+  const colors = Colors[colorScheme]
+
+  return (
+    <Pressable
+      className="my-2 flex-row items-center rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-700"
+      onPress={onPress}>
+      <View
+        className="mr-4 h-11 w-11 items-center justify-center rounded-full"
+        style={{backgroundColor: iconBackground}}>
+        <MCI name={icon} color={iconColor} size={24} />
+      </View>
+      <Text className="flex-1 font-bold">{label}</Text>
+      <MCI name="chevron-right" color={colors.icon} size={22} />
+    </Pressable>
+  )
+}
+
+export const TabActionSheet = React.forwardRef<BottomSheetModal>(
+  function TabActionSheet(_props, ref) {
+    const colorScheme = useColorScheme() ?? 'light'
+    const colors = Colors[colorScheme]
+    const router = useRouter()
+    const {t} = useTranslation()
+    const {state} = useLeagueContext()
+    const user = state.user
+    const snapPoints = React.useMemo(() => ['50%'], [])
+
+    const renderBackdrop = React.useCallback(
+      (props: BottomSheetBackdropProps) => (
+        <BottomSheetBackdrop
+          {...props}
+          disappearsOnIndex={-1}
+          appearsOnIndex={0}
+          opacity={0.5}
+        />
+      ),
+      [],
+    )
+
+    const navigate = (url: string) => {
+      if (ref && 'current' in ref) {
+        ref.current?.dismiss()
+      }
+      router.push(url as any)
+    }
+
+    return (
+      <BottomSheetModal
+        ref={ref}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{backgroundColor: colors.background}}
+        handleIndicatorStyle={{backgroundColor: colors.icon}}>
+        <BottomSheetView className="flex-1 px-5 pb-6">
+          <View className="mb-4">
+            <View className="flex-row items-center justify-between">
+              <Text type="subtitle">Quick Actions</Text>
+              <Text className="text-sm opacity-60">
+                Build {config.build}
+              </Text>
+            </View>
+            <Text className="mt-1 text-sm opacity-60">
+              {t('player_id')}:{' '}
+              {typeof user?.id !== 'undefined' && user.id
+                ? String(user.id)
+                : '—'}
+            </Text>
+          </View>
+          <QuickActionItem
+            icon="cog"
+            label={t('settings')}
+            iconColor={colors.tint}
+            iconBackground={
+              colorScheme === 'dark'
+                ? 'rgba(255, 255, 255, 0.12)'
+                : 'rgba(10, 126, 164, 0.12)'
+            }
+            onPress={() => navigate('/Settings')}
+          />
+          <QuickActionItem
+            icon="account-group"
+            label={t('teams')}
+            iconColor="#4CAF50"
+            iconBackground="rgba(76, 175, 80, 0.15)"
+            onPress={() => navigate('/teams')}
+          />
+          <QuickActionItem
+            icon="information-outline"
+            label={t('info_and_guides')}
+            iconColor="#FF9800"
+            iconBackground="rgba(255, 152, 0, 0.15)"
+            onPress={() => navigate('/Settings/Info')}
+          />
+          <QuickActionItem
+            icon="robot-outline"
+            label={t('ai_assistant')}
+            iconColor="#9C27B0"
+            iconBackground="rgba(156, 39, 176, 0.15)"
+            onPress={() => navigate('/Settings/CueChat')}
+          />
+        </BottomSheetView>
+      </BottomSheetModal>
+    )
+  },
+)

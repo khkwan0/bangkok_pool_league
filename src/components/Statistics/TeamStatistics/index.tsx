@@ -1,5 +1,6 @@
 import React from 'react'
 import {useLeague} from '@/hooks'
+import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useNavigation, useRouter} from 'expo-router'
 import Button from '@/components/Button'
 import {ActivityIndicator, Pressable, ScrollView} from 'react-native'
@@ -128,6 +129,10 @@ export default function TeamStatistics() {
   const [stats, setStats] = React.useState({})
   const [isLoading, setIsLoading] = React.useState(false)
   const navigation = useNavigation()
+  const listContentStyle = useTabListContentContainerStyle({
+    flexGrow: 1,
+    paddingHorizontal: 20,
+  })
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -165,11 +170,7 @@ export default function TeamStatistics() {
     )
   } else {
     return (
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingHorizontal: 20,
-        }}>
+      <ScrollView contentContainerStyle={listContentStyle}>
         <View className="my-4">
           <Text type="subtitle">8-Ball</Text>
         </View>
