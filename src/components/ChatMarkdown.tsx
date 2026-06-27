@@ -3,12 +3,115 @@ import Markdown, {
   renderRules as defaultRenderRules,
 } from 'react-native-markdown-display'
 import React from 'react'
-import {ScrollView, View, useColorScheme} from 'react-native'
+import {ScrollView, Text, View, useColorScheme} from 'react-native'
+import {
+  extractColorFromStyle,
+  normalizeForumMarkdown,
+} from '@/components/forumMarkdownNormalize'
 
 const markdownItInstance = MarkdownIt({
   typographer: true,
   linkify: true,
+  html: true,
 })
+
+const SPAN_CLOSE_RE = /^<\/span>$/i
+
+type MarkdownRule = (
+  node: {key: string; content?: string; attributes?: {href?: string}},
+  children: React.ReactNode,
+  parent: unknown,
+  styles: Record<string, object>,
+  ...rest: unknown[]
+) => React.ReactNode
+
+function createColoredSpanRules(): Record<string, MarkdownRule> {
+  const colorStack: string[] = []
+
+  const activeColorStyle = (): {color: string} | null => {
+    const color = colorStack[colorStack.length - 1]
+    return color ? {color} : null
+  }
+
+  return {
+    body: (node, children, parent, styles) => {
+      colorStack.length = 0
+      return defaultRenderRules.body(node, children, parent, styles)
+    },
+    html_inline: node => {
+      const content = node.content?.trim() ?? ''
+      if (SPAN_CLOSE_RE.test(content)) {
+        colorStack.pop()
+        return null
+      }
+      if (/^<span\b/i.test(content)) {
+        const styleMatch = content.match(/\bstyle=["']([^"']*)["']/i)
+        if (styleMatch) {
+          const color = extractColorFromStyle(styleMatch[1] ?? '')
+          if (color) colorStack.push(color)
+        }
+      }
+      return null
+    },
+    text: (node, children, parent, styles, inheritedStyles = {}) => (
+      <Text
+        key={node.key}
+        style={[styles.text, inheritedStyles, activeColorStyle()]}>
+        {node.content}
+      </Text>
+    ),
+    textgroup: (node, children, parent, styles, inheritedStyles = {}) => (
+      <Text
+        key={node.key}
+        style={[styles.textgroup, inheritedStyles, activeColorStyle()]}>
+        {children}
+      </Text>
+    ),
+    inline: (node, children, parent, styles, inheritedStyles = {}) => (
+      <Text key={node.key} style={[inheritedStyles, activeColorStyle()]}>
+        {children}
+      </Text>
+    ),
+    strong: (node, children, parent, styles, inheritedStyles = {}) => (
+      <Text
+        key={node.key}
+        style={[styles.strong, inheritedStyles, activeColorStyle()]}>
+        {children}
+      </Text>
+    ),
+    em: (node, children, parent, styles, inheritedStyles = {}) => (
+      <Text
+        key={node.key}
+        style={[styles.em, inheritedStyles, activeColorStyle()]}>
+        {children}
+      </Text>
+    ),
+    s: (node, children, parent, styles, inheritedStyles = {}) => (
+      <Text
+        key={node.key}
+        style={[styles.s, inheritedStyles, activeColorStyle()]}>
+        {children}
+      </Text>
+    ),
+    code_inline: (node, children, parent, styles, inheritedStyles = {}) => (
+      <Text
+        key={node.key}
+        style={[styles.code_inline, inheritedStyles, activeColorStyle()]}>
+        {node.content}
+      </Text>
+    ),
+    heading2: (node, children, parent, styles) => (
+      <Text key={node.key} style={styles.heading2}>
+        {children}
+      </Text>
+    ),
+    heading3: (node, children, parent, styles) => (
+      <Text key={node.key} style={styles.heading3}>
+        {children}
+      </Text>
+    ),
+  }
+}
 
 const COLUMN_MIN_WIDTH = 108
 const COLUMN_MAX_WIDTH = 160
@@ -46,6 +149,10 @@ type ChatMarkdownProps = {
 export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
+  const normalizedContent = React.useMemo(
+    () => normalizeForumMarkdown(content),
+    [content],
+  )
   const borderColor = isDark ? '#374151' : '#d1d5db'
   const headerBg = isDark ? '#14532d' : '#bbf7d0'
   const blockquoteBg = isDark ? 'rgba(15, 23, 42, 0.55)' : 'rgba(0, 0, 0, 0.06)'
@@ -53,8 +160,8 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
   const codeBg = isDark ? '#111827' : '#e5e7eb'
 
   const columnCount = React.useMemo(
-    () => getMarkdownTableColumnCount(content),
-    [content],
+    () => getMarkdownTableColumnCount(normalizedContent),
+    [normalizedContent],
   )
   const columnWidth = React.useMemo(() => {
     if (columnCount <= 0) {
@@ -78,8 +185,8 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
   const markdownStyles = React.useMemo(
     () => ({
       body: {color: textColor},
-      text: {color: textColor, fontSize: 15, lineHeight: 21},
-      textgroup: {color: textColor},
+      text: {fontSize: 15, lineHeight: 21},
+      textgroup: {},
       paragraph: {
         marginTop: 2,
         marginBottom: 2,
@@ -87,8 +194,8 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
         flexWrap: 'wrap' as const,
         width: '100%',
       },
-      strong: {fontWeight: '700' as const, color: textColor},
-      em: {fontStyle: 'italic' as const, color: textColor},
+      strong: {fontWeight: '700' as const},
+      em: {fontStyle: 'italic' as const},
       link: {color: isDark ? '#93c5fd' : '#2563eb'},
       bullet_list: {marginVertical: 4},
       ordered_list: {marginVertical: 4},
@@ -261,7 +368,16 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
     [columnWidth],
   )
 
-  if (!content.trim()) {
+  const renderRules = React.useMemo(
+    () => ({
+      ...defaultRenderRules,
+      ...createColoredSpanRules(),
+      ...tableRules,
+    }),
+    [tableRules],
+  )
+
+  if (!normalizedContent.trim()) {
     return null
   }
 
@@ -269,9 +385,9 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
     <Markdown
       markdownit={markdownItInstance}
       style={markdownStyles}
-      rules={{...defaultRenderRules, ...tableRules}}
+      rules={renderRules}
       mergeStyle>
-      {content}
+      {normalizedContent}
     </Markdown>
   )
 }

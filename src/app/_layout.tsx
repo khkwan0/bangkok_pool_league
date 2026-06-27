@@ -1,7 +1,8 @@
-import { LeagueProvider } from '@/context/LeagueContext'
-import { MatchProvider } from '@/context/MatchContext'
+import {LeagueProvider} from '@/context/LeagueContext'
+import {MatchProvider} from '@/context/MatchContext'
 import '@/i18n'
-import notifee, { AndroidImportance } from '@notifee/react-native'
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet'
+import notifee, {AndroidImportance} from '@notifee/react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   AuthorizationStatus,
@@ -10,21 +11,20 @@ import {
   onNotificationOpenedApp,
   requestPermission,
 } from '@react-native-firebase/messaging'
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native'
 import * as Sentry from '@sentry/react-native'
-import { useFonts } from 'expo-font'
-import { router, Stack } from 'expo-router'
-import { useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
+import {useFonts} from 'expo-font'
+import {router, Stack} from 'expo-router'
+import {useEffect} from 'react'
+import {useTranslation} from 'react-i18next'
 import {
   Appearance,
   ColorSchemeName,
   Linking,
   PermissionsAndroid,
   Platform,
-  useColorScheme
+  useColorScheme,
 } from 'react-native'
-import {BottomSheetModalProvider} from '@gorhom/bottom-sheet'
 import {GestureHandlerRootView} from 'react-native-gesture-handler'
 import {SafeAreaProvider} from 'react-native-safe-area-context'
 import '../../global.css'
@@ -36,9 +36,8 @@ function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   })
 
-  const sentryIntegrations: Parameters<typeof Sentry.init>[0]['integrations'] = [
-    Sentry.feedbackIntegration(),
-  ]
+  const sentryIntegrations: Parameters<typeof Sentry.init>[0]['integrations'] =
+    [Sentry.feedbackIntegration()]
   if (!__DEV__) {
     sentryIntegrations.unshift(Sentry.mobileReplayIntegration())
   }
@@ -47,8 +46,10 @@ function RootLayout() {
     dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
     sendDefaultPii: true,
     enableLogs: true,
-    replaysSessionSampleRate: __DEV__ ? 0 : 0.1,
-    replaysOnErrorSampleRate: __DEV__ ? 0 : 1.0,
+    // replaysSessionSampleRate: __DEV__ ? 0 : 0.1,
+    // replaysOnErrorSampleRate: __DEV__ ? 0 : 1.0,
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 0,
     integrations: sentryIntegrations,
   })
 
@@ -106,33 +107,36 @@ function RootLayout() {
       const messagingInstance = getMessaging()
 
       // Note: onMessage handler is handled in (tabs)/_layout.tsx to have access to context
-      
+
       // Handle notification taps when app is in background/foreground
-      const unsubscribe = onNotificationOpenedApp(messagingInstance, remoteMessage => {
-        // console.log('Notification opened app (background/foreground):', JSON.stringify(remoteMessage, null, 2))
-        
-        // Check for threadId first - if it exists, navigate to message thread
-        const senderId = remoteMessage?.data?.senderId || null
-        if (senderId) {
-          //console.log('Found threadId, navigating to message thread')
-          // Add small delay to ensure router is ready
-          setTimeout(() => {
-            handleNotificationNavigation(remoteMessage)
-          }, 500)
-        } else {
-          // No threadId, check for link URL
-          const url = remoteMessage.data?.link
-          if (url) {
-            // console.log('No threadId, opening link:', url)
-            Linking.openURL(url as string)
-          } else {
-            // console.log('No threadId or link, attempting navigation anyway')
+      const unsubscribe = onNotificationOpenedApp(
+        messagingInstance,
+        remoteMessage => {
+          // console.log('Notification opened app (background/foreground):', JSON.stringify(remoteMessage, null, 2))
+
+          // Check for threadId first - if it exists, navigate to message thread
+          const senderId = remoteMessage?.data?.senderId || null
+          if (senderId) {
+            //console.log('Found threadId, navigating to message thread')
+            // Add small delay to ensure router is ready
             setTimeout(() => {
               handleNotificationNavigation(remoteMessage)
             }, 500)
+          } else {
+            // No threadId, check for link URL
+            const url = remoteMessage.data?.link
+            if (url) {
+              // console.log('No threadId, opening link:', url)
+              Linking.openURL(url as string)
+            } else {
+              // console.log('No threadId or link, attempting navigation anyway')
+              setTimeout(() => {
+                handleNotificationNavigation(remoteMessage)
+              }, 500)
+            }
           }
-        }
-      })
+        },
+      )
 
       // Check if app was opened from a notification (quit state)
       getInitialNotification(messagingInstance)
@@ -180,24 +184,33 @@ function RootLayout() {
 
         try {
           // Extract sender name from notification
-          const fromPlayerId = parseInt(remoteMessage?.data?.senderId || '0', 10)
-          const senderName = remoteMessage?.data?.senderName || remoteMessage?.notification?.title || ''
+          const fromPlayerId = parseInt(
+            remoteMessage?.data?.senderId || '0',
+            10,
+          )
+          const senderName =
+            remoteMessage?.data?.senderName ||
+            remoteMessage?.notification?.title ||
+            ''
 
           if (fromPlayerId) {
             // First navigate to messages tab to ensure it's in the stack
             // This ensures the messages list screen is in the navigation stack
             router.push('/messages' as any)
-            
+
             // Then navigate to the specific thread after a short delay
             // This ensures the messages tab is mounted and the stack is properly set up
             setTimeout(() => {
               router.push({
                 pathname: `/messages/${fromPlayerId}` as any,
-                params: {from: senderName || fromPlayerId.toString()}
+                params: {from: senderName || fromPlayerId.toString()},
               })
             }, 200)
           } else {
-            console.warn('No threadId found in notification data. Available data:', remoteMessage?.data)
+            console.warn(
+              'No threadId found in notification data. Available data:',
+              remoteMessage?.data,
+            )
             console.warn('Full notification object:', remoteMessage)
           }
         } catch (error) {
@@ -213,7 +226,8 @@ function RootLayout() {
     <GestureHandlerRootView style={{flex: 1}}>
       <SafeAreaProvider>
         <BottomSheetModalProvider>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <ThemeProvider
+            value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <LeagueProvider>
               <MatchProvider>
                 <Stack>

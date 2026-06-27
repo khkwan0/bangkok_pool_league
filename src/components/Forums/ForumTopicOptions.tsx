@@ -16,6 +16,9 @@ type ForumTopicOptionsProps = {
   isPinned: boolean
   isLocked: boolean
   isHidden: boolean
+  canPin?: boolean
+  canLockHide?: boolean
+  showEdit?: boolean
   loadingField: ForumTopicOptionField | null
   onToggle: (field: ForumTopicOptionField, nextValue: boolean) => void
   onEdit: () => void
@@ -77,6 +80,9 @@ export default function ForumTopicOptions({
   isPinned,
   isLocked,
   isHidden,
+  canPin = false,
+  canLockHide = false,
+  showEdit = true,
   loadingField,
   onToggle,
   onEdit,
@@ -84,6 +90,8 @@ export default function ForumTopicOptions({
   const {t} = useTranslation()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
+
+  const hasModerationActions = canPin || canLockHide
 
   return (
     <View
@@ -95,39 +103,51 @@ export default function ForumTopicOptions({
         borderWidth: 1,
         borderColor: isDark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(203, 213, 225, 0.9)',
       }}>
-      <Text className="mb-2 text-xs font-semibold uppercase tracking-wide opacity-60">
-        {t('forums_topic_options')}
-      </Text>
-      <RNView style={styles.optionsRow}>
-        <OptionButton
-          label={isPinned ? t('forums_unpin') : t('forums_pin')}
-          loading={loadingField === 'is_pinned'}
-          onPress={() => onToggle('is_pinned', !isPinned)}
-        />
-        <OptionButton
-          label={isLocked ? t('forums_unlock') : t('forums_lock')}
-          loading={loadingField === 'is_locked'}
-          onPress={() => onToggle('is_locked', !isLocked)}
-        />
-        <OptionButton
-          label={isHidden ? t('forums_unhide') : t('forums_hide')}
-          loading={loadingField === 'is_hidden'}
-          onPress={() => onToggle('is_hidden', !isHidden)}
-          danger
-        />
-      </RNView>
-      <Pressable
-        onPress={onEdit}
-        style={[
-          styles.editButton,
-          isDark ? styles.editButtonDark : styles.editButtonLight,
-        ]}>
-        <Text
-          className="text-xs font-semibold"
-          style={{color: isDark ? '#90CAF9' : '#1565C0'}}>
-          {t('forums_edit_topic')}
-        </Text>
-      </Pressable>
+      {hasModerationActions ? (
+        <>
+          <Text className="mb-2 text-xs font-semibold uppercase tracking-wide opacity-60">
+            {t('forums_topic_options')}
+          </Text>
+          <RNView style={styles.optionsRow}>
+            {canPin ? (
+              <OptionButton
+                label={isPinned ? t('forums_unpin') : t('forums_pin')}
+                loading={loadingField === 'is_pinned'}
+                onPress={() => onToggle('is_pinned', !isPinned)}
+              />
+            ) : null}
+            {canLockHide ? (
+              <>
+                <OptionButton
+                  label={isLocked ? t('forums_unlock') : t('forums_lock')}
+                  loading={loadingField === 'is_locked'}
+                  onPress={() => onToggle('is_locked', !isLocked)}
+                />
+                <OptionButton
+                  label={isHidden ? t('forums_unhide') : t('forums_hide')}
+                  loading={loadingField === 'is_hidden'}
+                  onPress={() => onToggle('is_hidden', !isHidden)}
+                  danger
+                />
+              </>
+            ) : null}
+          </RNView>
+        </>
+      ) : null}
+      {showEdit ? (
+        <Pressable
+          onPress={onEdit}
+          style={[
+            styles.editButton,
+            isDark ? styles.editButtonDark : styles.editButtonLight,
+          ]}>
+          <Text
+            className="text-xs font-semibold"
+            style={{color: isDark ? '#90CAF9' : '#1565C0'}}>
+            {t('forums_edit_topic')}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   )
 }

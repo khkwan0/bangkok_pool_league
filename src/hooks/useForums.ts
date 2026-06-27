@@ -8,6 +8,8 @@ import type {
   ForumTopicListItem,
   ForumTopicPatchResult,
   ForumTopicUpdate,
+  ForumTopicCreateInput,
+  ForumTopicCreateResult,
   ForumPostsPage,
   ForumPostReactionState,
   ForumReactionIcon,
@@ -35,7 +37,11 @@ export function useForums() {
   ): Promise<ForumBoard | null> => {
     const res = await Get(`/forums/${encodePath(categorySlug, forumSlug)}`)
     if (res?.status === 'ok' && res.data) {
-      return res.data
+      return {
+        ...res.data,
+        can_pin: Boolean(res.data.can_pin),
+        can_lock_hide: Boolean(res.data.can_lock_hide),
+      }
     }
     return null
   }
@@ -73,6 +79,8 @@ export function useForums() {
       return {
         ...res.data,
         can_manage: Boolean(res.data.can_manage),
+        can_pin: Boolean(res.data.can_pin),
+        can_lock_hide: Boolean(res.data.can_lock_hide),
       }
     }
     return null
@@ -135,6 +143,32 @@ export function useForums() {
       `/forums/${encodePath(categorySlug, forumSlug)}/topics/${encodeURIComponent(topicSlug)}/posts`,
       {content, is_anonymous: isAnonymous},
     )
+  }
+
+  const createTopic = async (
+    categorySlug: string,
+    forumSlug: string,
+    input: ForumTopicCreateInput,
+  ): Promise<ForumTopicCreateResult> => {
+    const res = await Post(
+      `/forums/${encodePath(categorySlug, forumSlug)}/topics`,
+      {
+        title: input.title.trim(),
+        content: input.content?.trim() ?? '',
+        is_anonymous: Boolean(input.is_anonymous),
+        ...(input.is_pinned != null ? {is_pinned: input.is_pinned} : {}),
+        ...(input.is_locked != null ? {is_locked: input.is_locked} : {}),
+        ...(input.is_hidden != null ? {is_hidden: input.is_hidden} : {}),
+      },
+    )
+    if (res?.status === 'ok' && res.topic_slug) {
+      return {
+        status: 'ok',
+        topic_slug: res.topic_slug,
+        topic_id: res.topic_id,
+      }
+    }
+    return {status: 'error', error: res?.error ?? 'server_error'}
   }
 
   const getReactionIcons = async (): Promise<ForumReactionIcon[]> => {
@@ -207,6 +241,7 @@ export function useForums() {
     getPostReactions,
     getRegistrationStatus,
     joinForums,
+    createTopic,
     createReply,
     addPostReaction,
     updateTopic,

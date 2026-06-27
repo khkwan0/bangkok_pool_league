@@ -3,6 +3,7 @@ import {ForumIconBadge, ForumStatChip} from '@/components/Forums/ForumUiParts'
 import {FORUM_STAT_COLORS, getForumAccent} from '@/components/Forums/forumUi'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {useForums} from '@/hooks/useForums'
 import type {ForumBoard, ForumTopicListItem} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -17,6 +18,32 @@ import {
   RefreshControl,
   useColorScheme,
 } from 'react-native'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
+
+function ForumNewTopicFab({onPress}: {onPress: () => void}) {
+  const {t} = useTranslation()
+  const insets = useSafeAreaInsets()
+  const colorScheme = useColorScheme()
+  const isDark = colorScheme === 'dark'
+
+  return (
+    <Pressable
+      onPress={onPress}
+      className="absolute right-4 flex-row items-center rounded-full px-5 py-3.5"
+      style={{
+        bottom: insets.bottom + 16,
+        backgroundColor: '#2196F3',
+        shadowColor: '#1565C0',
+        shadowOffset: {width: 0, height: 4},
+        shadowOpacity: isDark ? 0.4 : 0.28,
+        shadowRadius: 8,
+        elevation: 6,
+      }}>
+      <MCI name="plus" size={20} color="#fff" style={{marginRight: 8}} />
+      <Text className="font-bold text-white">{t('forums_new_topic')}</Text>
+    </Pressable>
+  )
+}
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0]
@@ -134,6 +161,8 @@ export default function ForumTopics() {
   const {t} = useTranslation()
   const router = useRouter()
   const {colors} = useTheme()
+  const {state} = useLeagueContext()
+  const insets = useSafeAreaInsets()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const params = useLocalSearchParams<{
@@ -207,6 +236,18 @@ export default function ForumTopics() {
     })
   }
 
+  function openNewTopic() {
+    if (!cat || !forumKey || !forum) return
+    router.push({
+      pathname: '/Settings/Forums/new-topic',
+      params: {
+        categorySlug: cat,
+        forumSlug: forumKey,
+        forumName: forum.name,
+      },
+    })
+  }
+
   function loadMore() {
     if (loadingMore || page >= totalPages) return
     setLoadingMore(true)
@@ -223,6 +264,8 @@ export default function ForumTopics() {
       </>
     )
   }
+
+  const canCreateTopic = Boolean(state.user?.id && forum && !forum.is_locked)
 
   return (
     <>
@@ -261,7 +304,11 @@ export default function ForumTopics() {
         <FlatList
           data={topics}
           keyExtractor={item => String(item.id)}
-          contentContainerClassName="px-4 py-3"
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: canCreateTopic ? insets.bottom + 88 : 12,
+          }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -291,6 +338,7 @@ export default function ForumTopics() {
             />
           )}
         />
+        {canCreateTopic ? <ForumNewTopicFab onPress={openNewTopic} /> : null}
       </View>
     </>
   )

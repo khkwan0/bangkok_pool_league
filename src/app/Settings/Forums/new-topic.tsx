@@ -3,13 +3,15 @@ import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useForums} from '@/hooks/useForums'
-import type {ForumTopicDetail} from '@/types/forums'
+import type {ForumBoard} from '@/types/forums'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useTheme} from '@react-navigation/native'
 import {useLocalSearchParams, useRouter, Stack} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   Switch,
   useColorScheme,
@@ -20,7 +22,7 @@ function firstParam(value: string | string[] | undefined): string | undefined {
   return value
 }
 
-export default function ForumEditTopic() {
+export default function ForumNewTopic() {
   const {t} = useTranslation()
   const {colors} = useTheme()
   const router = useRouter()
@@ -29,19 +31,19 @@ export default function ForumEditTopic() {
   const params = useLocalSearchParams<{
     categorySlug: string
     forumSlug: string
-    topicSlug: string
-    title?: string
+    forumName?: string
   }>()
-  const {getTopic, updateTopic} = useForums()
+  const {getForum, createTopic} = useForums()
 
   const cat = firstParam(params.categorySlug)
   const forumKey = firstParam(params.forumSlug)
-  const topicKey = firstParam(params.topicSlug)
-  const headerTitle = firstParam(params.title) ?? t('forums_edit_topic')
+  const headerTitle = firstParam(params.forumName) ?? t('forums_new_topic')
 
-  const [detail, setDetail] = React.useState<ForumTopicDetail | null>(null)
+  const [forum, setForum] = React.useState<ForumBoard | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [title, setTitle] = React.useState('')
+  const [content, setContent] = React.useState('')
+  const [isAnonymous, setIsAnonymous] = React.useState(false)
   const [isPinned, setIsPinned] = React.useState(false)
   const [isLocked, setIsLocked] = React.useState(false)
   const [isHidden, setIsHidden] = React.useState(false)
@@ -49,60 +51,56 @@ export default function ForumEditTopic() {
   const [error, setError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    if (!cat || !forumKey || !topicKey) {
+    if (!cat || !forumKey) {
       setLoading(false)
       return
     }
     ;(async () => {
       try {
-        const topicDetail = await getTopic(cat, forumKey, topicKey)
-        if (!topicDetail?.can_manage) {
-          setDetail(null)
-          return
-        }
-        setDetail(topicDetail)
-        setTitle(topicDetail.topic.title)
-        setIsPinned(topicDetail.topic.is_pinned)
-        setIsLocked(topicDetail.topic.is_locked)
-        setIsHidden(topicDetail.topic.is_hidden)
+        const board = await getForum(cat, forumKey)
+        setForum(board)
       } catch (e) {
         console.error(e)
       } finally {
         setLoading(false)
       }
     })()
-  }, [cat, forumKey, topicKey, getTopic])
+  }, [cat, forumKey, getForum])
 
-  async function handleSave() {
-    if (!cat || !forumKey || !topicKey || !title.trim()) {
+  async function handleSubmit() {
+    if (!cat || !forumKey || !title.trim()) {
       setError(t('forums_topic_title_required'))
       return
     }
+    if (forum?.is_locked) {
+      setError(t('forums_forum_locked'))
+      return
+    }
+
     try {
       setSubmitting(true)
       setError(null)
-      const updates: {
-        title: string
-        is_pinned?: boolean
-        is_locked?: boolean
-        is_hidden?: boolean
-      } = {title: title.trim()}
-      if (detail.can_pin) {
-        updates.is_pinned = isPinned
+      const payload: Parameters<typeof createTopic>[2] = {
+        title: title.trim(),
+        content: content.trim(),
+        is_anonymous: isAnonymous,
       }
-      if (detail.can_lock_hide) {
-        updates.is_locked = isLocked
-        updates.is_hidden = isHidden
+      if (canPin) {
+        payload.is_pinned = isPinned
       }
-      const result = await updateTopic(cat, forumKey, topicKey, updates)
-      if (result.status === 'ok') {
-        const nextSlug = result.topic_slug ?? topicKey
+      if (canLockHide) {
+        payload.is_locked = isLocked
+        payload.is_hidden = isHidden
+      }
+
+      const result = await createTopic(cat, forumKey, payload)
+      if (result.status === 'ok' && result.topic_slug) {
         router.replace({
           pathname: '/Settings/Forums/topic',
           params: {
             categorySlug: cat,
             forumSlug: forumKey,
-            topicSlug: nextSlug,
+            topicSlug: result.topic_slug,
             title: title.trim(),
           },
         })
@@ -110,37 +108,19 @@ export default function ForumEditTopic() {
       }
       if (result.error === 'topic_title_required') {
         setError(t('forums_topic_title_required'))
+      } else if (result.error === 'locked') {
+        setError(t('forums_forum_locked'))
+      } else if (result.error === 'unauthorized') {
+        setError(t('forums_login_required'))
       } else {
-        setError(t('forums_update_failed'))
+        setError(t('forums_create_failed'))
       }
     } catch (e) {
       console.error(e)
-      setError(t('forums_update_failed'))
+      setError(t('forums_create_failed'))
     } finally {
       setSubmitting(false)
     }
-  }
-
-  if (loading) {
-    return (
-      <>
-        <Stack.Screen options={{title: t('forums_edit_topic')}} />
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </>
-    )
-  }
-
-  if (!detail) {
-    return (
-      <>
-        <Stack.Screen options={{title: t('forums_edit_topic')}} />
-        <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-center opacity-70">{t('forums_not_found')}</Text>
-        </View>
-      </>
-    )
   }
 
   function OptionRow({
@@ -172,6 +152,44 @@ export default function ForumEditTopic() {
     )
   }
 
+  if (loading) {
+    return (
+      <>
+        <Stack.Screen options={{title: t('forums_new_topic')}} />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </>
+    )
+  }
+
+  if (!forum) {
+    return (
+      <>
+        <Stack.Screen options={{title: t('forums_new_topic')}} />
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-center opacity-70">{t('forums_load_error')}</Text>
+        </View>
+      </>
+    )
+  }
+
+  if (forum.is_locked) {
+    return (
+      <>
+        <Stack.Screen options={{title: headerTitle}} />
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-center opacity-70">{t('forums_forum_locked')}</Text>
+        </View>
+      </>
+    )
+  }
+
+  const accent = isDark ? '#60a5fa' : '#1565C0'
+  const canPin = Boolean(forum.can_pin)
+  const canLockHide = forum.can_lock_hide ?? true
+  const showTopicOptions = canPin || canLockHide
+
   return (
     <>
       <Stack.Screen options={{title: headerTitle}} />
@@ -191,7 +209,63 @@ export default function ForumEditTopic() {
           placeholder={t('forums_topic_title')}
         />
 
-        {(detail.can_pin || detail.can_lock_hide) && (
+        <Text className="mb-2 mt-4 text-sm font-semibold">
+          {t('forums_message')}{' '}
+          <Text className="text-xs font-normal opacity-60">({t('optional')})</Text>
+        </Text>
+        <TextInput
+          value={content}
+          onChangeText={setContent}
+          placeholder={t('forums_message_placeholder')}
+          multiline
+          inputStyle={{
+            minHeight: 140,
+            paddingTop: 12,
+            paddingBottom: 12,
+            textAlignVertical: 'top',
+          }}
+        />
+
+        <Pressable
+          onPress={() => setIsAnonymous(prev => !prev)}
+          disabled={submitting}
+          className="mt-4 flex-row items-center self-start rounded-full px-3 py-2"
+          style={{
+            backgroundColor: isAnonymous
+              ? isDark
+                ? 'rgba(148, 163, 184, 0.22)'
+                : 'rgba(100, 116, 139, 0.14)'
+              : isDark
+                ? 'rgba(148, 163, 184, 0.1)'
+                : 'rgba(148, 163, 184, 0.12)',
+            borderWidth: 1,
+            borderColor: isAnonymous
+              ? isDark
+                ? 'rgba(148, 163, 184, 0.45)'
+                : 'rgba(100, 116, 139, 0.35)'
+              : 'transparent',
+            opacity: submitting ? 0.6 : 1,
+          }}>
+          <MCI
+            name={isAnonymous ? 'incognito' : 'account-outline'}
+            size={18}
+            color={isAnonymous ? (isDark ? '#cbd5e1' : '#475569') : accent}
+            style={{marginRight: 8}}
+          />
+          <Text
+            className="text-sm font-semibold"
+            style={{
+              color: isAnonymous
+                ? isDark
+                  ? '#e2e8f0'
+                  : '#475569'
+                : accent,
+            }}>
+            {t('forums_post_anonymous')}
+          </Text>
+        </Pressable>
+
+        {showTopicOptions ? (
           <View
             className="mt-6 rounded-xl p-4"
             style={{
@@ -200,7 +274,7 @@ export default function ForumEditTopic() {
               borderColor: isDark ? 'rgba(148, 163, 184, 0.2)' : '#e2e8f0',
             }}>
             <Text className="mb-4 text-sm font-semibold">{t('forums_topic_options')}</Text>
-            {detail.can_pin ? (
+            {canPin ? (
               <OptionRow
                 label={t('forums_option_pin')}
                 hint={t('forums_option_pin_hint')}
@@ -208,7 +282,7 @@ export default function ForumEditTopic() {
                 onValueChange={setIsPinned}
               />
             ) : null}
-            {detail.can_lock_hide ? (
+            {canLockHide ? (
               <>
                 <OptionRow
                   label={t('forums_option_lock')}
@@ -225,14 +299,14 @@ export default function ForumEditTopic() {
               </>
             ) : null}
           </View>
-        )}
+        ) : null}
 
         <View className="mt-6 flex-row gap-3">
           <View className="flex-1">
             <Button
-              onPress={handleSave}
+              onPress={handleSubmit}
               disabled={submitting || !title.trim()}>
-              {submitting ? t('forums_saving') : t('forums_save_topic')}
+              {submitting ? t('forums_posting') : t('forums_post_topic')}
             </Button>
           </View>
           <View className="flex-1">

@@ -21,6 +21,8 @@ export type ForumBoard = {
   last_post_at: string | null
   category_slug?: string
   category_name?: string
+  can_pin?: boolean
+  can_lock_hide?: boolean
 }
 
 export type ForumCategoryWithForums = ForumCategory & {
@@ -80,6 +82,8 @@ export type ForumTopicDetail = {
   can_reply: boolean
   can_moderate: boolean
   can_manage: boolean
+  can_pin: boolean
+  can_lock_hide: boolean
 }
 
 export type Paginated<T> = {
@@ -120,5 +124,21 @@ export type ForumTopicUpdate = {
 export type ForumTopicPatchResult = {
   status: 'ok' | 'error'
   topic_slug?: string
+  error?: string
+}
+
+export type ForumTopicCreateInput = {
+  title: string
+  content?: string
+  is_anonymous?: boolean
+  is_pinned?: boolean
+  is_locked?: boolean
+  is_hidden?: boolean
+}
+
+export type ForumTopicCreateResult = {
+  status: 'ok' | 'error'
+  topic_slug?: string
+  topic_id?: number
   error?: string
 }

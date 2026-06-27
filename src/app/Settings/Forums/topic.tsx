@@ -423,11 +423,10 @@ export default function ForumTopic() {
   }
 
   const canReply = detail.can_reply
-  const userId = state.user?.id ?? 0
-  const canManageTopic =
-    detail.can_manage ||
-    detail.can_moderate ||
-    detail.topic.author_id === userId
+  const canManageTopic = detail.can_manage
+  const canPinTopic = detail.can_pin
+  const canLockHideTopic = detail.can_lock_hide
+  const showTopicOptions = canPinTopic || canLockHideTopic
   const listBottomPadding =
     canReply && replyOpen ? 24 : canReply && !replyOpen ? insets.bottom + 80 : 16
 
@@ -456,11 +455,14 @@ export default function ForumTopic() {
           ListHeaderComponent={
             <>
               <ForumTopicHeader detail={detail} canReply={canReply} />
-              {canManageTopic ? (
+              {showTopicOptions || canManageTopic ? (
                 <ForumTopicOptions
                   isPinned={detail.topic.is_pinned}
                   isLocked={detail.topic.is_locked}
                   isHidden={detail.topic.is_hidden}
+                  canPin={canPinTopic}
+                  canLockHide={canLockHideTopic}
+                  showEdit={canManageTopic}
                   loadingField={topicOptionLoading}
                   onToggle={handleTopicOptionToggle}
                   onEdit={handleEditTopic}
