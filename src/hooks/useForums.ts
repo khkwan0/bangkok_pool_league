@@ -13,6 +13,8 @@ import type {
   ForumPostsPage,
   ForumPostReactionState,
   ForumReactionIcon,
+  ForumSettings,
+  FORUM_SETTINGS_DEFAULTS,
   Paginated,
 } from '@/types/forums'
 
@@ -22,6 +24,18 @@ function encodePath(...segments: string[]) {
 
 export function useForums() {
   const {Get, Post, Put, Patch} = useNetwork()
+
+  const getForumSettings = async (): Promise<ForumSettings> => {
+    const res = await Get('/forums/settings')
+    if (res?.status === 'ok' && res.data) {
+      return {
+        opening_post_max_length: Number(res.data.opening_post_max_length),
+        reply_max_length: Number(res.data.reply_max_length),
+        topic_title_max_length: Number(res.data.topic_title_max_length),
+      }
+    }
+    return FORUM_SETTINGS_DEFAULTS
+  }
 
   const getCategories = async (): Promise<ForumCategoryWithForums[]> => {
     const res = await Get('/forums')
@@ -170,7 +184,11 @@ export function useForums() {
         topic_id: res.topic_id,
       }
     }
-    return {status: 'error', error: res?.error ?? 'server_error'}
+    return {
+      status: 'error',
+      error: res?.error ?? 'server_error',
+      max_length: res?.max_length,
+    }
   }
 
   const getReactionIcons = async (): Promise<ForumReactionIcon[]> => {
@@ -220,12 +238,19 @@ export function useForums() {
   const updatePost = async (
     postId: number,
     content: string,
-  ): Promise<{status: 'ok'; edited_at: string} | {status: 'error'; error: string}> => {
+  ): Promise<
+    | {status: 'ok'; edited_at: string}
+    | {status: 'error'; error: string; max_length?: number}
+  > => {
     const res = await Put(`/forums/posts/${postId}`, {content: content.trim()})
     if (res?.status === 'ok' && res.edited_at) {
       return {status: 'ok', edited_at: res.edited_at}
     }
-    return {status: 'error', error: res?.error ?? 'server_error'}
+    return {
+      status: 'error',
+      error: res?.error ?? 'server_error',
+      max_length: res?.max_length,
+    }
   }
 
   const updateTopic = async (
@@ -241,11 +266,16 @@ export function useForums() {
     if (res?.status === 'ok') {
       return {status: 'ok', topic_slug: res.topic_slug}
     }
-    return {status: 'error', error: res?.error ?? 'server_error'}
+    return {
+      status: 'error',
+      error: res?.error ?? 'server_error',
+      max_length: res?.max_length,
+    }
   }
 
   return {
     getCategories,
+    getForumSettings,
     getForum,
     getTopics,
     getTopic,

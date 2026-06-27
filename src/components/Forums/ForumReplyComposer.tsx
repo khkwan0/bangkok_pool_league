@@ -1,5 +1,6 @@
 import Button from '@/components/Button'
 import TextInput from '@/components/TextInput'
+import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -53,6 +54,7 @@ type ForumReplyComposerProps = {
   onCancel: () => void
   submitting: boolean
   error: string | null
+  maxLength?: number
 }
 
 export function ForumReplyComposer({
@@ -64,6 +66,7 @@ export function ForumReplyComposer({
   onCancel,
   submitting,
   error,
+  maxLength,
 }: ForumReplyComposerProps) {
   const {t} = useTranslation()
   const insets = useSafeAreaInsets()
@@ -138,6 +141,7 @@ export function ForumReplyComposer({
           onChangeText={onChangeText}
           placeholder={t('forums_reply_placeholder')}
           multiline
+          maxLength={maxLength}
           textAlignVertical="top"
           scrollEnabled
           containerStyle={{
@@ -160,6 +164,9 @@ export function ForumReplyComposer({
           }}
           autoFocus
         />
+        {maxLength ? (
+          <ForumCharCounter length={value.length} maxLength={maxLength} className="mt-1" />
+        ) : null}
       </View>
 
       <View className="px-4 pb-2">
@@ -216,7 +223,7 @@ export function ForumReplyComposer({
         <View className="flex-1">
           <Button
             onPress={onSubmit}
-            disabled={submitting || !value.trim()}
+            disabled={submitting || !value.trim() || (maxLength != null && value.length > maxLength)}
             small
             icon={submitting ? <ActivityIndicator color="#fff" size="small" /> : undefined}>
             {submitting ? 'forums_posting' : 'forums_post_reply'}

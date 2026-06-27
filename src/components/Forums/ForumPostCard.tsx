@@ -1,5 +1,6 @@
 import Button from '@/components/Button'
 import TextInput from '@/components/TextInput'
+import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
 import {ChatMarkdown} from '@/components/ChatMarkdown'
 import {formatForumDate} from '@/components/Forums/formatForumDate'
 import {ForumIconBadge, ForumStatChip} from '@/components/Forums/ForumUiParts'
@@ -79,6 +80,7 @@ type ForumPostCardProps = {
   onEditCancel?: () => void
   editSubmitting?: boolean
   editError?: string | null
+  editMaxLength?: number
 }
 
 export function ForumPostCard({
@@ -99,6 +101,7 @@ export function ForumPostCard({
   onEditCancel,
   editSubmitting = false,
   editError = null,
+  editMaxLength,
 }: ForumPostCardProps) {
   const {t, i18n} = useTranslation()
   const {colors} = useTheme()
@@ -223,6 +226,7 @@ export function ForumPostCard({
                 onChangeText={onEditChange}
                 placeholder={t('forums_message_placeholder')}
                 multiline
+                maxLength={editMaxLength}
                 textAlignVertical="top"
                 scrollEnabled
                 containerStyle={{
@@ -242,6 +246,13 @@ export function ForumPostCard({
                   fontSize: 16,
                 }}
               />
+              {editMaxLength ? (
+                <ForumCharCounter
+                  length={editContent.length}
+                  maxLength={editMaxLength}
+                  className="mt-1"
+                />
+              ) : null}
               {editError ? (
                 <Text className="mt-2 text-sm text-red-600 dark:text-red-400">
                   {editError}
@@ -260,7 +271,11 @@ export function ForumPostCard({
                 <RNView className="flex-1">
                   <Button
                     onPress={onEditSave}
-                    disabled={editSubmitting || !editContent.trim()}
+                    disabled={
+                      editSubmitting ||
+                      !editContent.trim() ||
+                      (editMaxLength != null && editContent.length > editMaxLength)
+                    }
                     small
                     icon={
                       editSubmitting ? (

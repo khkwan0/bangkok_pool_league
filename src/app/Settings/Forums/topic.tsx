@@ -12,6 +12,7 @@ import {
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {useForumSettings, forumLengthErrorKey} from '@/hooks/useForumSettings'
 import {useForums} from '@/hooks/useForums'
 import type {
   ForumPost,
@@ -55,6 +56,7 @@ export default function ForumTopic() {
   }>()
   const {getTopic, getPosts, createReply, addPostReaction, getReactionIcons, getPostReactions, updateTopic, updatePost} =
     useForums()
+  const {settings: forumSettings} = useForumSettings()
 
   const cat = firstParam(params.categorySlug)
   const forumKey = firstParam(params.forumSlug)
@@ -326,10 +328,13 @@ export default function ForumTopic() {
       if (result.status === 'ok') {
         patchPostInState(editingPostId, editContent.trim(), result.edited_at)
         cancelPostEdit()
-      } else if (result.error === 'forbidden') {
-        setEditError(t('forums_edit_post_failed'))
       } else {
-        setEditError(t('forums_edit_post_failed'))
+        const lengthKey = forumLengthErrorKey(result.error)
+        setEditError(
+          lengthKey
+            ? t(lengthKey, {max: result.max_length ?? 0})
+            : t('forums_edit_post_failed'),
+        )
       }
     } catch (e) {
       console.error(e)
@@ -346,6 +351,10 @@ export default function ForumTopic() {
   ) {
     const reactions = reactionsByPostId[post.id] ?? emptyReactions()
     const isEditing = editingPostId === post.id
+    const editMaxLength =
+      post.post_number === 1
+        ? forumSettings.opening_post_max_length
+        : forumSettings.reply_max_length
     return (
       <ForumPostCard
         post={post}
@@ -367,6 +376,7 @@ export default function ForumTopic() {
         onEditCancel={cancelPostEdit}
         editSubmitting={editSubmitting && isEditing}
         editError={isEditing ? editError : null}
+        editMaxLength={editMaxLength}
       />
     )
   }
@@ -455,7 +465,12 @@ export default function ForumTopic() {
       } else if (res?.error === 'locked') {
         setReplyError(t('forums_locked'))
       } else {
-        setReplyError(t('forums_reply_error'))
+        const lengthKey = forumLengthErrorKey(res?.error ?? '')
+        setReplyError(
+          lengthKey
+            ? t(lengthKey, {max: res?.max_length ?? forumSettings.reply_max_length})
+            : t('forums_reply_error'),
+        )
       }
     } catch (e) {
       console.error(e)
@@ -576,6 +591,7 @@ export default function ForumTopic() {
             }}
             submitting={submitting}
             error={replyError}
+            maxLength={forumSettings.reply_max_length}
           />
         ) : null}
 

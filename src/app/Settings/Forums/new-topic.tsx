@@ -2,6 +2,8 @@ import Button from '@/components/Button'
 import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
+import {useForumSettings, forumLengthErrorKey} from '@/hooks/useForumSettings'
 import {useForums} from '@/hooks/useForums'
 import type {ForumBoard} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -34,6 +36,7 @@ export default function ForumNewTopic() {
     forumName?: string
   }>()
   const {getForum, createTopic} = useForums()
+  const {settings: forumSettings} = useForumSettings()
 
   const cat = firstParam(params.categorySlug)
   const forumKey = firstParam(params.forumSlug)
@@ -113,7 +116,12 @@ export default function ForumNewTopic() {
       } else if (result.error === 'unauthorized') {
         setError(t('forums_login_required'))
       } else {
-        setError(t('forums_create_failed'))
+        const lengthKey = forumLengthErrorKey(result.error ?? '')
+        setError(
+          lengthKey
+            ? t(lengthKey, {max: result.max_length ?? 0})
+            : t('forums_create_failed'),
+        )
       }
     } catch (e) {
       console.error(e)
@@ -205,8 +213,13 @@ export default function ForumNewTopic() {
         <TextInput
           value={title}
           onChangeText={setTitle}
-          maxLength={512}
+          maxLength={forumSettings.topic_title_max_length}
           placeholder={t('forums_topic_title')}
+        />
+        <ForumCharCounter
+          length={title.length}
+          maxLength={forumSettings.topic_title_max_length}
+          className="mt-1"
         />
 
         <Text className="mb-2 mt-4 text-sm font-semibold">
@@ -218,12 +231,18 @@ export default function ForumNewTopic() {
           onChangeText={setContent}
           placeholder={t('forums_message_placeholder')}
           multiline
+          maxLength={forumSettings.opening_post_max_length}
           inputStyle={{
             minHeight: 140,
             paddingTop: 12,
             paddingBottom: 12,
             textAlignVertical: 'top',
           }}
+        />
+        <ForumCharCounter
+          length={content.length}
+          maxLength={forumSettings.opening_post_max_length}
+          className="mt-1"
         />
 
         <Pressable
@@ -305,7 +324,12 @@ export default function ForumNewTopic() {
           <View className="flex-1">
             <Button
               onPress={handleSubmit}
-              disabled={submitting || !title.trim()}>
+              disabled={
+                submitting ||
+                !title.trim() ||
+                title.length > forumSettings.topic_title_max_length ||
+                content.length > forumSettings.opening_post_max_length
+              }>
               {submitting ? t('forums_posting') : t('forums_post_topic')}
             </Button>
           </View>

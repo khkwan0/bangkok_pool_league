@@ -2,6 +2,8 @@ import Button from '@/components/Button'
 import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
+import {useForumSettings, forumLengthErrorKey} from '@/hooks/useForumSettings'
 import {useForums} from '@/hooks/useForums'
 import type {ForumTopicDetail} from '@/types/forums'
 import {useTheme} from '@react-navigation/native'
@@ -33,6 +35,7 @@ export default function ForumEditTopic() {
     title?: string
   }>()
   const {getTopic, updateTopic} = useForums()
+  const {settings: forumSettings} = useForumSettings()
 
   const cat = firstParam(params.categorySlug)
   const forumKey = firstParam(params.forumSlug)
@@ -111,7 +114,12 @@ export default function ForumEditTopic() {
       if (result.error === 'topic_title_required') {
         setError(t('forums_topic_title_required'))
       } else {
-        setError(t('forums_update_failed'))
+        const lengthKey = forumLengthErrorKey(result.error ?? '')
+        setError(
+          lengthKey
+            ? t(lengthKey, {max: result.max_length ?? 0})
+            : t('forums_update_failed'),
+        )
       }
     } catch (e) {
       console.error(e)
@@ -187,8 +195,13 @@ export default function ForumEditTopic() {
         <TextInput
           value={title}
           onChangeText={setTitle}
-          maxLength={512}
+          maxLength={forumSettings.topic_title_max_length}
           placeholder={t('forums_topic_title')}
+        />
+        <ForumCharCounter
+          length={title.length}
+          maxLength={forumSettings.topic_title_max_length}
+          className="mt-1"
         />
 
         {(detail.can_pin || detail.can_lock_hide) && (
@@ -231,7 +244,9 @@ export default function ForumEditTopic() {
           <View className="flex-1">
             <Button
               onPress={handleSave}
-              disabled={submitting || !title.trim()}>
+              disabled={
+                submitting || !title.trim() || title.length > forumSettings.topic_title_max_length
+              }>
               {submitting ? t('forums_saving') : t('forums_save_topic')}
             </Button>
           </View>

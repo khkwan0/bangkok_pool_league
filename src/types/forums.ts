@@ -76,6 +76,18 @@ export type ForumPoll = {
   user_votes: number[]
 }
 
+export type ForumSettings = {
+  opening_post_max_length: number
+  reply_max_length: number
+  topic_title_max_length: number
+}
+
+export const FORUM_SETTINGS_DEFAULTS: ForumSettings = {
+  opening_post_max_length: 10000,
+  reply_max_length: 5000,
+  topic_title_max_length: 512,
+}
+
 export type ForumTopicDetail = {
   forum: ForumBoard
   topic: ForumTopicListItem & {forum_slug?: string; category_slug?: string}
@@ -126,6 +138,7 @@ export type ForumTopicPatchResult = {
   status: 'ok' | 'error'
   topic_slug?: string
   error?: string
+  max_length?: number
 }
 
 export type ForumTopicCreateInput = {
@@ -142,4 +155,5 @@ export type ForumTopicCreateResult = {
   topic_slug?: string
   topic_id?: number
   error?: string
+  max_length?: number
 }
