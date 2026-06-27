@@ -14,6 +14,7 @@ import type {
 } from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useTheme} from '@react-navigation/native'
+import {useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {Pressable, StyleSheet, useColorScheme} from 'react-native'
@@ -41,6 +42,18 @@ function emptyReactions(): ForumPostReactionState {
   return {counts: {}, userIconId: null}
 }
 
+function canNavigateToPostAuthor(post: ForumPost): boolean {
+  if (!post.is_anonymous) return true
+  return Boolean(post.author_real_name)
+}
+
+function navigateToPlayer(router: ReturnType<typeof useRouter>, authorId: number) {
+  router.push({
+    pathname: '/Settings/Players/PlayerInfo',
+    params: {params: JSON.stringify({playerId: authorId})},
+  })
+}
+
 type ForumPostCardProps = {
   post: ForumPost
   accentIndex: number
@@ -64,11 +77,44 @@ export function ForumPostCard({
 }: ForumPostCardProps) {
   const {t, i18n} = useTranslation()
   const {colors} = useTheme()
+  const router = useRouter()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const accent = isOriginalPost ? getForumAccent(0) : getForumAccent(accentIndex)
   const displayName = formatPostAuthorLabel(post, t)
   const avatarName = post.author_real_name ?? post.author_name
+  const authorNavigable = canNavigateToPostAuthor(post)
+
+  const handleAuthorPress = () => {
+    if (authorNavigable) {
+      navigateToPlayer(router, post.author_id)
+    }
+  }
+
+  const avatarContent = (
+    <View
+      className="h-11 w-11 items-center justify-center rounded-full"
+      style={{
+        backgroundColor: isOriginalPost
+          ? 'rgba(33, 150, 243, 0.2)'
+          : accent.bg,
+      }}>
+      <Text
+        className="text-sm font-bold"
+        style={{color: isOriginalPost ? '#1565C0' : accent.fg}}>
+        {post.is_anonymous && !post.author_real_name
+          ? '?'
+          : authorInitials(avatarName)}
+      </Text>
+    </View>
+  )
+
+  const nameContent = (
+    <Text
+      className={`text-base font-bold ${authorNavigable ? 'text-blue-600 dark:text-blue-400' : ''}`}>
+      {displayName}
+    </Text>
+  )
 
   return (
     <View
@@ -91,24 +137,28 @@ export function ForumPostCard({
       ) : null}
       <View className={`px-4 py-3.5 ${isOriginalPost ? '' : 'pl-5'}`}>
         <View className="flex-row items-start">
-          <View
-            className="h-11 w-11 items-center justify-center rounded-full"
-            style={{
-              backgroundColor: isOriginalPost
-                ? 'rgba(33, 150, 243, 0.2)'
-                : accent.bg,
-            }}>
-            <Text
-              className="text-sm font-bold"
-              style={{color: isOriginalPost ? '#1565C0' : accent.fg}}>
-              {post.is_anonymous && !post.author_real_name
-                ? '?'
-                : authorInitials(avatarName)}
-            </Text>
-          </View>
+          {authorNavigable ? (
+            <Pressable
+              onPress={handleAuthorPress}
+              accessibilityRole="button"
+              accessibilityLabel={displayName}>
+              {avatarContent}
+            </Pressable>
+          ) : (
+            avatarContent
+          )}
           <View className="ml-3 flex-1">
             <View className="flex-row flex-wrap items-center gap-2">
-              <Text className="text-base font-bold">{displayName}</Text>
+              {authorNavigable ? (
+                <Pressable
+                  onPress={handleAuthorPress}
+                  accessibilityRole="button"
+                  accessibilityLabel={displayName}>
+                  {nameContent}
+                </Pressable>
+              ) : (
+                nameContent
+              )}
               {isOriginalPost ? (
                 <ForumStatChip
                   icon="star-circle"
