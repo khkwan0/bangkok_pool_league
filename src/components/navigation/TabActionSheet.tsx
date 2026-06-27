@@ -56,7 +56,7 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
     const {t} = useTranslation()
     const {state} = useLeagueContext()
     const user = state.user
-    const snapPoints = React.useMemo(() => ['50%'], [])
+    const snapPoints = React.useMemo(() => ['55%'], [])
 
     const renderBackdrop = React.useCallback(
       (props: BottomSheetBackdropProps) => (
@@ -124,6 +124,13 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             iconColor="#FF9800"
             iconBackground="rgba(255, 152, 0, 0.15)"
             onPress={() => navigate('/Settings/Info')}
+          />
+          <QuickActionItem
+            icon="forum-outline"
+            label={t('forums')}
+            iconColor="#2196F3"
+            iconBackground="rgba(33, 150, 243, 0.15)"
+            onPress={() => navigate('/Settings/Forums')}
           />
           <QuickActionItem
             icon="robot-outline"

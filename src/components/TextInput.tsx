@@ -54,8 +54,8 @@ export default function CustomTextInput({
   const [isFocused, setIsFocused] = useState(false)
 
   const defaultContainerStyle: ViewStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: multiline ? 'column' : 'row',
+    alignItems: multiline ? 'stretch' : 'center',
     position: 'relative',
     backgroundColor: isDark ? '#1f2937' : '#f3f4f6',
     borderRadius: 12,
@@ -72,13 +72,16 @@ export default function CustomTextInput({
   }
 
   const defaultInputStyle: TextStyle = {
-    flex: 1,
+    flex: multiline ? undefined : 1,
+    alignSelf: multiline ? 'stretch' : undefined,
+    width: multiline ? '100%' : undefined,
     height: multiline ? undefined : 48,
     minHeight: multiline ? 48 : undefined,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingLeft: LeftIcon ? 44 : 16,
     paddingRight: RightIcon ? 44 : 16,
+    paddingTop: multiline ? 12 : undefined,
     color: isDark ? '#fff' : '#000',
     fontSize: 16,
   }
@@ -114,6 +117,8 @@ export default function CustomTextInput({
       )}
       <RNTextInput
         editable={!disabled}
+        multiline={multiline}
+        textAlignVertical={multiline ? 'top' : 'center'}
         style={[defaultInputStyle, inputStyle, style]}
         placeholderTextColor={isDark ? '#9ca3af' : '#6b7280'}
         onFocus={() => setIsFocused(true)}
