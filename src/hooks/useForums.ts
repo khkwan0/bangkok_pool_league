@@ -21,7 +21,7 @@ function encodePath(...segments: string[]) {
 }
 
 export function useForums() {
-  const {Get, Post, Patch} = useNetwork()
+  const {Get, Post, Put, Patch} = useNetwork()
 
   const getCategories = async (): Promise<ForumCategoryWithForums[]> => {
     const res = await Get('/forums')
@@ -78,6 +78,8 @@ export function useForums() {
     if (res?.status === 'ok' && res.data) {
       return {
         ...res.data,
+        can_reply: Boolean(res.data.can_reply),
+        can_moderate: Boolean(res.data.can_moderate),
         can_manage: Boolean(res.data.can_manage),
         can_pin: Boolean(res.data.can_pin),
         can_lock_hide: Boolean(res.data.can_lock_hide),
@@ -215,6 +217,17 @@ export function useForums() {
     return {status: 'error', error: res?.error ?? 'server_error'}
   }
 
+  const updatePost = async (
+    postId: number,
+    content: string,
+  ): Promise<{status: 'ok'; edited_at: string} | {status: 'error'; error: string}> => {
+    const res = await Put(`/forums/posts/${postId}`, {content: content.trim()})
+    if (res?.status === 'ok' && res.edited_at) {
+      return {status: 'ok', edited_at: res.edited_at}
+    }
+    return {status: 'error', error: res?.error ?? 'server_error'}
+  }
+
   const updateTopic = async (
     categorySlug: string,
     forumSlug: string,
@@ -244,6 +257,7 @@ export function useForums() {
     createTopic,
     createReply,
     addPostReaction,
+    updatePost,
     updateTopic,
   }
 }

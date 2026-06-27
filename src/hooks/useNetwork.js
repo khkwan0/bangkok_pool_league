@@ -77,6 +77,29 @@ export const useNetwork = () => {
     }
   }
 
+  const Put = async function (endpoint, payload) {
+    try {
+      const _endpoint =
+        typeof endpoint !== 'undefined' && endpoint[0] === '/'
+          ? endpoint.substring(1)
+          : endpoint
+      const apiDomain = apiUrl ?? config.apiUrl ?? 'localhost'
+      const token = await AsyncStorage.getItem('jwt')
+      const res = await fetch(apiDomain + '/' + _endpoint, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      })
+      const json = await res.json()
+      return json
+    } catch (e) {
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   const SocketSend = async (
     type = '',
     matchId = 0,
@@ -105,5 +128,5 @@ export const useNetwork = () => {
       socket.emit('matchupdate', toSend)
     }
   }
-  return {Get, Post, Patch, SocketSend}
+  return {Get, Post, Put, Patch, SocketSend}
 }

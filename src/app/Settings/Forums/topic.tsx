@@ -53,7 +53,7 @@ export default function ForumTopic() {
     topicSlug: string
     title?: string
   }>()
-  const {getTopic, getPosts, createReply, addPostReaction, getReactionIcons, getPostReactions, updateTopic} =
+  const {getTopic, getPosts, createReply, addPostReaction, getReactionIcons, getPostReactions, updateTopic, updatePost} =
     useForums()
 
   const cat = firstParam(params.categorySlug)
@@ -91,6 +91,10 @@ export default function ForumTopic() {
   >({})
   const [topicOptionLoading, setTopicOptionLoading] =
     React.useState<ForumTopicOptionField | null>(null)
+  const [editingPostId, setEditingPostId] = React.useState<number | null>(null)
+  const [editContent, setEditContent] = React.useState('')
+  const [editSubmitting, setEditSubmitting] = React.useState(false)
+  const [editError, setEditError] = React.useState<string | null>(null)
   const postsRequestRef = React.useRef(0)
   const getPostsRef = React.useRef(getPosts)
   const getReactionIconsRef = React.useRef(getReactionIcons)
@@ -284,12 +288,64 @@ export default function ForumTopic() {
     }
   }
 
+  function canEditPost(post: ForumPost): boolean {
+    const userId = state.user?.id
+    if (!userId || !detail) return false
+    return post.author_id === userId || detail.can_moderate
+  }
+
+  function patchPostInState(postId: number, content: string, editedAt: string) {
+    setOriginalPost(prev =>
+      prev?.id === postId ? {...prev, content, edited_at: editedAt} : prev,
+    )
+    setPosts(prev =>
+      prev.map(post =>
+        post.id === postId ? {...post, content, edited_at: editedAt} : post,
+      ),
+    )
+  }
+
+  function startPostEdit(post: ForumPost) {
+    setEditingPostId(post.id)
+    setEditContent(post.content)
+    setEditError(null)
+  }
+
+  function cancelPostEdit() {
+    setEditingPostId(null)
+    setEditContent('')
+    setEditError(null)
+  }
+
+  async function savePostEdit() {
+    if (editingPostId == null || !editContent.trim()) return
+    try {
+      setEditSubmitting(true)
+      setEditError(null)
+      const result = await updatePost(editingPostId, editContent.trim())
+      if (result.status === 'ok') {
+        patchPostInState(editingPostId, editContent.trim(), result.edited_at)
+        cancelPostEdit()
+      } else if (result.error === 'forbidden') {
+        setEditError(t('forums_edit_post_failed'))
+      } else {
+        setEditError(t('forums_edit_post_failed'))
+      }
+    } catch (e) {
+      console.error(e)
+      setEditError(t('forums_edit_post_failed'))
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+
   function renderPostCard(
     post: ForumPost,
     accentIndex: number,
     isOriginalPost = false,
   ) {
     const reactions = reactionsByPostId[post.id] ?? emptyReactions()
+    const isEditing = editingPostId === post.id
     return (
       <ForumPostCard
         post={post}
@@ -302,6 +358,15 @@ export default function ForumTopic() {
           reacting?.postId === post.id ? reacting.iconId : null
         }
         reactionError={reactionErrorsByPostId[post.id] ?? null}
+        canEdit={canEditPost(post)}
+        editing={isEditing}
+        editContent={isEditing ? editContent : post.content}
+        onEditStart={() => startPostEdit(post)}
+        onEditChange={setEditContent}
+        onEditSave={savePostEdit}
+        onEditCancel={cancelPostEdit}
+        editSubmitting={editSubmitting && isEditing}
+        editError={isEditing ? editError : null}
       />
     )
   }
