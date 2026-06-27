@@ -1,6 +1,6 @@
 import {formatForumDate, topicSlug} from '@/components/Forums/formatForumDate'
 import {ForumIconBadge, ForumStatChip} from '@/components/Forums/ForumUiParts'
-import {FORUM_STAT_COLORS, getForumAccent} from '@/components/Forums/forumUi'
+import {FORUM_STAT_COLORS, forumListCardStyle, getForumAccent} from '@/components/Forums/forumUi'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -16,7 +16,9 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
+  StyleSheet,
   useColorScheme,
+  View as RNView,
 } from 'react-native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
@@ -64,59 +66,53 @@ function TopicRow({
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const accent = getForumAccent(accentIndex)
+  const rowIcon = topic.is_locked
+    ? 'lock'
+    : topic.is_pinned
+      ? 'pin'
+      : topic.has_poll
+        ? 'poll'
+        : 'comment-text-outline'
 
   return (
     <Pressable
       onPress={onPress}
-      className="mb-3 overflow-hidden rounded-2xl"
-      style={{
-        backgroundColor: colors.card,
-        borderWidth: 1,
-        borderColor: topic.is_pinned
-          ? 'rgba(233, 30, 99, 0.45)'
-          : accent.border,
-        shadowColor: accent.fg,
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: isDark ? 0.12 : 0.07,
-        shadowRadius: 5,
-        elevation: 2,
-      }}>
-      <View
-        className="absolute bottom-0 left-0 top-0 w-1.5"
+      className="mb-3 overflow-hidden rounded-xl"
+      style={forumListCardStyle(
+        colors.card,
+        isDark,
+        topic.is_pinned ? 'rgba(233, 30, 99, 0.35)' : accent.border,
+      )}>
+      <RNView
+        className="absolute bottom-0 left-0 top-0 w-0.5"
         style={{
           backgroundColor: topic.is_pinned
             ? FORUM_STAT_COLORS.pinned.fg
             : accent.fg,
         }}
       />
-      <View className="flex-row items-start px-4 py-3.5 pl-5">
+      <RNView className="flex-row items-start px-4 py-3.5 pl-5">
         <ForumIconBadge
-          icon={
-            topic.is_locked
-              ? 'lock'
-              : topic.is_pinned
-                ? 'pin'
-                : 'comment-text-outline'
-          }
+          icon={rowIcon}
           fg={topic.is_pinned ? FORUM_STAT_COLORS.pinned.fg : accent.fg}
           bg={topic.is_pinned ? FORUM_STAT_COLORS.pinned.bg : accent.bg}
         />
-        <View className="ml-3 flex-1">
-          <View className="flex-row items-start justify-between">
+        <RNView className="ml-3 flex-1">
+          <RNView className="flex-row items-start justify-between">
             <Text className="flex-1 pr-2 text-base font-bold">{topic.title}</Text>
             <MCI
               name="chevron-right"
               size={22}
               color={topic.is_pinned ? FORUM_STAT_COLORS.pinned.fg : accent.fg}
             />
-          </View>
+          </RNView>
           <Text className="mt-1 text-sm font-medium" style={{color: accent.fg}}>
             {topic.author_name}
           </Text>
           <Text className="mt-0.5 text-xs opacity-60">
             {formatForumDate(topic.created_at, i18n.language)}
           </Text>
-          <View className="mt-3 flex-row flex-wrap gap-2">
+          <RNView className="mt-3 flex-row flex-wrap gap-2">
             {topic.is_pinned ? (
               <ForumStatChip
                 icon="pin"
@@ -150,9 +146,9 @@ function TopicRow({
               fg={FORUM_STAT_COLORS.views.fg}
               bg={FORUM_STAT_COLORS.views.bg}
             />
-          </View>
-        </View>
-      </View>
+          </RNView>
+        </RNView>
+      </RNView>
     </Pressable>
   )
 }
@@ -272,16 +268,13 @@ export default function ForumTopics() {
       <Stack.Screen options={{title: headerTitle}} />
       <View className="flex-1">
         {forum?.description || forum?.is_locked ? (
-          <View
-            className="mx-4 mb-2 mt-3 rounded-2xl px-4 py-3"
+          <RNView
+            className="mb-2 mt-3 px-4 py-3"
             style={{
-              backgroundColor: isDark
-                ? 'rgba(33, 150, 243, 0.18)'
-                : 'rgba(33, 150, 243, 0.1)',
-              borderWidth: 1,
-              borderColor: isDark
-                ? 'rgba(33, 150, 243, 0.35)'
-                : 'rgba(33, 150, 243, 0.22)',
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: isDark
+                ? 'rgba(148, 163, 184, 0.2)'
+                : 'rgba(148, 163, 184, 0.25)',
             }}>
             {forum.description ? (
               <Text className="text-sm" style={{color: isDark ? '#90CAF9' : '#1565C0'}}>
@@ -298,7 +291,7 @@ export default function ForumTopics() {
                 />
               </View>
             ) : null}
-          </View>
+          </RNView>
         ) : null}
 
         <FlatList

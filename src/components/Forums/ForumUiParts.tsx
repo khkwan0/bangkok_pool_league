@@ -1,9 +1,9 @@
 import {getForumAccent} from '@/components/Forums/forumUi'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {ThemedView as View} from '@/components/ThemedView'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {useTheme} from '@react-navigation/native'
 import React from 'react'
-import {useColorScheme} from 'react-native'
+import {StyleSheet, useColorScheme, View} from 'react-native'
 
 type ForumStatChipProps = {
   icon: React.ComponentProps<typeof MCI>['name']
@@ -14,9 +14,7 @@ type ForumStatChipProps = {
 
 export function ForumStatChip({icon, label, fg, bg}: ForumStatChipProps) {
   return (
-    <View
-      className="flex-row items-center rounded-full px-2.5 py-1"
-      style={{backgroundColor: bg}}>
+    <View style={[styles.chip, {backgroundColor: bg}]}>
       <MCI name={icon} size={12} color={fg} style={{marginRight: 4}} />
       <Text className="text-xs font-semibold" style={{color: fg}}>
         {label}
@@ -40,10 +38,12 @@ export function ForumIconBadge({
 }: ForumIconBadgeProps) {
   return (
     <View
-      className="items-center justify-center rounded-2xl"
       style={{
         width: size,
         height: size,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: bg,
       }}>
       <MCI name={icon} size={size * 0.5} color={fg} />
@@ -57,33 +57,32 @@ type ForumsHeroProps = {
 }
 
 export function ForumsHero({title, subtitle}: ForumsHeroProps) {
+  const {colors} = useTheme()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
+  const dividerColor = isDark
+    ? 'rgba(148, 163, 184, 0.2)'
+    : 'rgba(148, 163, 184, 0.25)'
 
   return (
     <View
-      className="mx-4 mb-2 mt-3 overflow-hidden rounded-2xl px-4 py-4"
       style={{
-        backgroundColor: isDark ? 'rgba(33, 150, 243, 0.22)' : '#E3F2FD',
-        borderWidth: 1,
-        borderColor: isDark ? 'rgba(33, 150, 243, 0.35)' : 'rgba(33, 150, 243, 0.25)',
+        paddingTop: 4,
+        paddingBottom: 16,
+        marginBottom: 4,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: dividerColor,
       }}>
-      <View className="flex-row items-center">
+      <View style={styles.heroRow}>
         <ForumIconBadge
           icon="forum-outline"
           fg="#1565C0"
           bg={isDark ? 'rgba(21, 101, 192, 0.35)' : 'rgba(21, 101, 192, 0.12)'}
           size={48}
         />
-        <View className="ml-3 flex-1">
-          <Text className="text-lg font-bold" style={{color: isDark ? '#90CAF9' : '#1565C0'}}>
-            {title}
-          </Text>
-          <Text
-            className="mt-0.5 text-sm"
-            style={{color: isDark ? 'rgba(144, 202, 249, 0.85)' : '#1976D2'}}>
-            {subtitle}
-          </Text>
+        <View style={styles.heroText}>
+          <Text style={[styles.heroTitle, {color: colors.text}]}>{title}</Text>
+          <Text style={[styles.heroSubtitle, {color: colors.text}]}>{subtitle}</Text>
         </View>
       </View>
     </View>
@@ -102,17 +101,22 @@ export function ForumSectionHeader({
   accentIndex,
 }: ForumSectionHeaderProps) {
   const accent = getForumAccent(accentIndex)
+  const colorScheme = useColorScheme()
+  const isDark = colorScheme === 'dark'
+  const dividerColor = isDark
+    ? 'rgba(148, 163, 184, 0.2)'
+    : 'rgba(148, 163, 184, 0.25)'
 
   return (
-    <View className="mb-3 mt-5 px-4">
-      <View className="flex-row items-center">
+    <View style={styles.sectionHeader}>
+      <View style={styles.sectionHeaderRow}>
         <ForumIconBadge
           icon="shape-outline"
           fg={accent.fg}
           bg={accent.bg}
           size={36}
         />
-        <View className="ml-3 flex-1">
+        <View style={styles.sectionHeaderText}>
           <Text className="text-base font-bold" style={{color: accent.fg}}>
             {title}
           </Text>
@@ -122,9 +126,53 @@ export function ForumSectionHeader({
         </View>
       </View>
       <View
-        className="mt-3 h-1 rounded-full"
-        style={{backgroundColor: accent.border}}
+        style={{
+          marginTop: 12,
+          height: StyleSheet.hairlineWidth,
+          backgroundColor: dividerColor,
+        }}
       />
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  heroText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 24,
+  },
+  heroSubtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.7,
+  },
+  sectionHeader: {
+    marginTop: 20,
+    marginBottom: 12,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sectionHeaderText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+})

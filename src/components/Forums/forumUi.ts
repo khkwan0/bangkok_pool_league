@@ -1,3 +1,5 @@
+import {StyleSheet} from 'react-native'
+
 export type ForumAccent = {
   fg: string
   bg: string
@@ -46,6 +48,22 @@ export const FORUM_ACCENTS: ForumAccent[] = [
 
 export function getForumAccent(index: number): ForumAccent {
   return FORUM_ACCENTS[index % FORUM_ACCENTS.length]!
+}
+
+export function forumListCardBorderColor(isDark: boolean, accentBorder?: string) {
+  return accentBorder ?? (isDark ? 'rgba(148, 163, 184, 0.25)' : 'rgba(148, 163, 184, 0.35)')
+}
+
+export function forumListCardStyle(
+  cardBackground: string,
+  isDark: boolean,
+  accentBorder?: string,
+) {
+  return {
+    backgroundColor: cardBackground,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: forumListCardBorderColor(isDark, accentBorder),
+  }
 }
 
 export const FORUM_STAT_COLORS = {

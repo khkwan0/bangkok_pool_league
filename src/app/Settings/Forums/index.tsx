@@ -6,9 +6,8 @@ import {
   ForumStatChip,
   ForumsHero,
 } from '@/components/Forums/ForumUiParts'
-import {FORUM_STAT_COLORS, getForumAccent} from '@/components/Forums/forumUi'
+import {FORUM_STAT_COLORS, forumListCardStyle, getForumAccent} from '@/components/Forums/forumUi'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {ThemedView as View} from '@/components/ThemedView'
 import {useForums} from '@/hooks/useForums'
 import type {ForumBoard, ForumCategoryWithForums} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -20,8 +19,9 @@ import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
-  SectionList,
+  ScrollView,
   useColorScheme,
+  View as RNView,
 } from 'react-native'
 
 type ForumSection = {
@@ -49,38 +49,29 @@ function ForumRow({
   return (
     <Pressable
       onPress={onPress}
-      className="mx-4 mb-3 overflow-hidden rounded-2xl"
-      style={{
-        backgroundColor: colors.card,
-        borderWidth: 1,
-        borderColor: accent.border,
-        shadowColor: accent.fg,
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: isDark ? 0.15 : 0.08,
-        shadowRadius: 6,
-        elevation: 2,
-      }}>
-      <View
-        className="absolute bottom-0 left-0 top-0 w-1.5"
+      className="mb-3 overflow-hidden rounded-xl"
+      style={forumListCardStyle(colors.card, isDark, accent.border)}>
+      <RNView
+        className="absolute bottom-0 left-0 top-0 w-0.5"
         style={{backgroundColor: accent.fg}}
       />
-      <View className="flex-row items-start px-4 py-3.5 pl-5">
+      <RNView className="flex-row items-start px-4 py-3.5 pl-5">
         <ForumIconBadge
           icon={forum.is_locked ? 'lock' : 'forum-outline'}
           fg={accent.fg}
           bg={accent.bg}
         />
-        <View className="ml-3 flex-1">
-          <View className="flex-row items-start justify-between">
+        <RNView className="ml-3 flex-1">
+          <RNView className="flex-row items-start justify-between">
             <Text className="flex-1 pr-2 text-base font-bold">{forum.name}</Text>
             <MCI name="chevron-right" size={22} color={accent.fg} />
-          </View>
+          </RNView>
           {forum.description ? (
             <Text className="mt-1 text-sm opacity-70" numberOfLines={2}>
               {forum.description}
             </Text>
           ) : null}
-          <View className="mt-3 flex-row flex-wrap gap-2">
+          <RNView className="mt-3 flex-row flex-wrap gap-2">
             <ForumStatChip
               icon="text-box-outline"
               label={t('forums_topics_count', {count: forum.topic_count})}
@@ -101,9 +92,9 @@ function ForumRow({
                 bg={FORUM_STAT_COLORS.activity.bg}
               />
             ) : null}
-          </View>
-        </View>
-      </View>
+          </RNView>
+        </RNView>
+      </RNView>
     </Pressable>
   )
 }
@@ -128,6 +119,7 @@ export default function Forums() {
   React.useEffect(() => {
     navigation.setOptions({
       title: t('forums'),
+      headerShadowVisible: false,
     })
   }, [navigation, t])
 
@@ -199,18 +191,28 @@ export default function Forums() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
+      <RNView
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.background,
+        }}>
         <ActivityIndicator size="large" color={colors.primary} />
-      </View>
+      </RNView>
     )
   }
 
   return (
-    <View className="flex-1">
-      <SectionList
-        sections={sections}
-        keyExtractor={item => String(item.id)}
-        stickySectionHeadersEnabled={false}
+    <>
+      <ScrollView
+        style={{flex: 1, backgroundColor: colors.background}}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: 16,
+          flexGrow: 1,
+        }}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -219,39 +221,45 @@ export default function Forums() {
               loadForums()
             }}
           />
-        }
-        contentContainerClassName="pb-4"
-        ListHeaderComponent={
-          <ForumsHero title={t('forums')} subtitle={t('forums_hero_subtitle')} />
-        }
-        ListEmptyComponent={
+        }>
+        <ForumsHero
+          title={t('forums')}
+          subtitle={t('forums_hero_subtitle')}
+        />
+
+        {sections.length === 0 ? (
           error ? (
-            <Text className="px-6 py-8 text-center opacity-70">{error}</Text>
+            <Text className="px-2 py-8 text-center opacity-70">{error}</Text>
           ) : (
-            <Text className="px-6 py-8 text-center opacity-70">
+            <Text className="px-2 py-8 text-center opacity-70">
               {t('forums_empty')}
             </Text>
           )
-        }
-        renderSectionHeader={({section}) => (
-          <ForumSectionHeader
-            title={section.title}
-            description={section.description}
-            accentIndex={section.categoryIndex}
-          />
+        ) : (
+          sections.map(section => {
+            const category = categories.find(c => c.name === section.title)
+            if (!category) return null
+
+            return (
+              <RNView key={section.title}>
+                <ForumSectionHeader
+                  title={section.title}
+                  description={section.description}
+                  accentIndex={section.categoryIndex}
+                />
+                {section.data.map((item, index) => (
+                  <ForumRow
+                    key={item.id}
+                    forum={item}
+                    accentIndex={section.categoryIndex + index}
+                    onPress={() => openForum(category.slug, item)}
+                  />
+                ))}
+              </RNView>
+            )
+          })
         )}
-        renderItem={({item, index, section}) => {
-          const category = categories.find(c => c.name === section.title)
-          if (!category) return null
-          return (
-            <ForumRow
-              forum={item}
-              accentIndex={section.categoryIndex + index}
-              onPress={() => openForum(category.slug, item)}
-            />
-          )
-        }}
-      />
+      </ScrollView>
 
       <JoinForumsModal
         visible={showJoinModal}
@@ -259,6 +267,6 @@ export default function Forums() {
         error={joinError}
         onJoin={handleJoin}
       />
-    </View>
+    </>
   )
 }

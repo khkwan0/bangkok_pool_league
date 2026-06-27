@@ -3,9 +3,8 @@ import {formatForumDate} from '@/components/Forums/formatForumDate'
 import {ForumIconBadge, ForumStatChip} from '@/components/Forums/ForumUiParts'
 import ForumPollResults from '@/components/Forums/ForumPollResults'
 import ForumPostReactions from '@/components/Forums/ForumPostReactions'
-import {FORUM_STAT_COLORS, getForumAccent} from '@/components/Forums/forumUi'
+import {FORUM_STAT_COLORS, forumListCardStyle, getForumAccent} from '@/components/Forums/forumUi'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {ThemedView as View} from '@/components/ThemedView'
 import type {
   ForumPost,
   ForumPostReactionState,
@@ -17,7 +16,7 @@ import {useTheme} from '@react-navigation/native'
 import {useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import {Pressable, StyleSheet, useColorScheme} from 'react-native'
+import {Pressable, StyleSheet, useColorScheme, View as RNView} from 'react-native'
 
 function authorInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -92,7 +91,7 @@ export function ForumPostCard({
   }
 
   const avatarContent = (
-    <View
+    <RNView
       className="h-11 w-11 items-center justify-center rounded-full"
       style={{
         backgroundColor: isOriginalPost
@@ -106,7 +105,7 @@ export function ForumPostCard({
           ? '?'
           : authorInitials(avatarName)}
       </Text>
-    </View>
+    </RNView>
   )
 
   const nameContent = (
@@ -117,26 +116,23 @@ export function ForumPostCard({
   )
 
   return (
-    <View
+    <RNView
       className="mb-3 overflow-hidden rounded-xl"
       style={{
-        backgroundColor: colors.card,
-        borderWidth: isOriginalPost ? StyleSheet.hairlineWidth : 1,
-        borderColor: isOriginalPost ? 'rgba(33, 150, 243, 0.2)' : accent.border,
-        shadowColor: accent.fg,
-        shadowOffset: {width: 0, height: isOriginalPost ? 0 : 2},
-        shadowOpacity: isOriginalPost ? 0 : isDark ? 0.12 : 0.07,
-        shadowRadius: isOriginalPost ? 0 : 5,
-        elevation: isOriginalPost ? 0 : 2,
+        ...forumListCardStyle(
+          colors.card,
+          isDark,
+          isOriginalPost ? 'rgba(33, 150, 243, 0.2)' : accent.border,
+        ),
       }}>
       {!isOriginalPost ? (
-        <View
+        <RNView
           className="absolute bottom-0 left-0 top-0 w-0.5"
           style={{backgroundColor: accent.fg}}
         />
       ) : null}
-      <View className={`px-4 py-3.5 ${isOriginalPost ? '' : 'pl-5'}`}>
-        <View className="flex-row items-start">
+      <RNView className={`px-4 py-3.5 ${isOriginalPost ? '' : 'pl-5'}`}>
+        <RNView className="flex-row items-start">
           {authorNavigable ? (
             <Pressable
               onPress={handleAuthorPress}
@@ -147,8 +143,8 @@ export function ForumPostCard({
           ) : (
             avatarContent
           )}
-          <View className="ml-3 flex-1">
-            <View className="flex-row flex-wrap items-center gap-2">
+          <RNView className="ml-3 flex-1">
+            <RNView className="flex-row flex-wrap items-center gap-2">
               {authorNavigable ? (
                 <Pressable
                   onPress={handleAuthorPress}
@@ -174,19 +170,19 @@ export function ForumPostCard({
                   bg={accent.bg}
                 />
               )}
-            </View>
+            </RNView>
             <Text className="mt-0.5 text-xs opacity-60">
               {formatForumDate(post.created_at, i18n.language)}
               {post.edited_at ? ` · ${t('forums_edited')}` : ''}
             </Text>
-          </View>
-        </View>
-        <View className="mt-3">
+          </RNView>
+        </RNView>
+        <RNView className="mt-3">
           <ChatMarkdown
             content={post.content}
             textColor={isDark ? '#f8fafc' : '#0f172a'}
           />
-        </View>
+        </RNView>
         {onReact && reactionIcons.length > 0 ? (
           <ForumPostReactions
             icons={reactionIcons}
@@ -196,8 +192,8 @@ export function ForumPostCard({
             error={reactionError}
           />
         ) : null}
-      </View>
-    </View>
+      </RNView>
+    </RNView>
   )
 }
 
@@ -213,25 +209,31 @@ export function ForumTopicHeader({detail, canReply}: ForumTopicHeaderProps) {
   const isDark = colorScheme === 'dark'
   const {topic, forum, poll} = detail
   const isLocked = (topic.is_locked || forum.is_locked) && !canReply
+  const headerIcon = topic.is_locked
+    ? 'lock'
+    : poll
+      ? 'poll'
+      : 'comment-text-multiple-outline'
   const dividerColor = isDark
     ? 'rgba(148, 163, 184, 0.2)'
     : 'rgba(148, 163, 184, 0.25)'
 
   return (
-    <View
+    <RNView
       className="mb-4 py-4"
       style={{
+        paddingLeft: 8,
         borderBottomWidth: StyleSheet.hairlineWidth,
         borderBottomColor: dividerColor,
       }}>
-      <View className="flex-row items-start">
+      <RNView className="flex-row items-start">
         <ForumIconBadge
-          icon={topic.is_locked ? 'lock' : 'comment-text-multiple-outline'}
+          icon={headerIcon}
           fg="#1565C0"
           bg={isDark ? 'rgba(21, 101, 192, 0.35)' : 'rgba(21, 101, 192, 0.12)'}
           size={48}
         />
-        <View className="ml-3 flex-1">
+        <RNView className="ml-3 flex-1">
           <Text
             className="text-lg font-bold leading-6"
             style={{color: colors.text}}>
@@ -243,9 +245,9 @@ export function ForumTopicHeader({detail, canReply}: ForumTopicHeaderProps) {
           <Text className="mt-0.5 text-xs opacity-60">
             {formatForumDate(topic.created_at, i18n.language)}
           </Text>
-        </View>
-      </View>
-      <View className="mt-3 flex-row flex-wrap gap-2">
+        </RNView>
+      </RNView>
+      <RNView className="mt-3 flex-row flex-wrap gap-2">
         <ForumStatChip
           icon="reply"
           label={t('forums_replies_count', {count: topic.reply_count})}
@@ -287,8 +289,8 @@ export function ForumTopicHeader({detail, canReply}: ForumTopicHeaderProps) {
             bg={FORUM_STAT_COLORS.locked.bg}
           />
         ) : null}
-      </View>
+      </RNView>
       {poll ? <ForumPollResults poll={poll} /> : null}
-    </View>
+    </RNView>
   )
 }

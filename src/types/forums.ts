@@ -44,6 +44,7 @@ export type ForumTopicListItem = {
   last_post_author_name: string | null
   author_name: string
   created_at: string
+  has_poll?: boolean
 }
 
 export type ForumPost = {
