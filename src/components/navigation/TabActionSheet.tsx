@@ -13,6 +13,7 @@ import {
 import {useRouter} from 'expo-router'
 import React from 'react'
 import {Pressable, useColorScheme} from 'react-native'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useTranslation} from 'react-i18next'
 
 type QuickActionItemProps = {
@@ -52,6 +53,7 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
   function TabActionSheet(_props, ref) {
     const colorScheme = useColorScheme() ?? 'light'
     const colors = Colors[colorScheme]
+    const insets = useSafeAreaInsets()
     const router = useRouter()
     const {t} = useTranslation()
     const {state} = useLeagueContext()
@@ -81,6 +83,7 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
       <BottomSheetModal
         ref={ref}
         snapPoints={snapPoints}
+        bottomInset={insets.bottom}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={{backgroundColor: colors.background}}
