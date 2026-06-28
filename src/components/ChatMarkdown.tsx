@@ -22,7 +22,29 @@ const markdownItInstance = MarkdownIt({
 })
 
 const SPAN_CLOSE_RE = /^<\/span>$/i
-const IMG_TAG_RE = /^<img\b/i
+const IMG_TAG_RE = /<img\b/i
+
+function renderForumImageHtml(
+  content: string,
+  nodeKey: string,
+  onImagePress: (fullUri: string) => void,
+): React.ReactNode {
+  if (!IMG_TAG_RE.test(content)) {
+    return null
+  }
+  const parsed = parseForumImageTag(content)
+  if (!parsed) {
+    return null
+  }
+  return (
+    <ForumPostImage
+      key={nodeKey}
+      displayUri={parsed.displayUrl}
+      fullUri={parsed.fullUrl}
+      onPress={onImagePress}
+    />
+  )
+}
 
 type MarkdownRule = (
   node: {key: string; content?: string; attributes?: {href?: string}},
@@ -47,23 +69,22 @@ function createColoredSpanRules(
       colorStack.length = 0
       return defaultRenderRules.body(node, children, parent, styles)
     },
+    html_block: node => {
+      if (!onImagePress) {
+        return null
+      }
+      return renderForumImageHtml(node.content?.trim() ?? '', node.key, onImagePress)
+    },
     html_inline: node => {
       const content = node.content?.trim() ?? ''
       if (SPAN_CLOSE_RE.test(content)) {
         colorStack.pop()
         return null
       }
-      if (IMG_TAG_RE.test(content)) {
-        const parsed = parseForumImageTag(content)
-        if (parsed && onImagePress) {
-          return (
-            <ForumPostImage
-              key={node.key}
-              displayUri={parsed.displayUrl}
-              fullUri={parsed.fullUrl}
-              onPress={onImagePress}
-            />
-          )
+      if (onImagePress) {
+        const image = renderForumImageHtml(content, node.key, onImagePress)
+        if (image) {
+          return image
         }
       }
       if (/^<span\b/i.test(content)) {
