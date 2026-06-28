@@ -280,7 +280,6 @@ export function useForums() {
 
   const uploadForumImage = async (
     originalUri: string,
-    displayUri: string,
   ): Promise<ForumImageUploadResult> => {
     try {
       const token = await AsyncStorage.getItem('jwt')
@@ -288,11 +287,6 @@ export function useForums() {
       data.append('original', {
         uri: originalUri,
         name: 'original.jpg',
-        type: 'image/jpeg',
-      } as unknown as Blob)
-      data.append('display', {
-        uri: displayUri,
-        name: 'display.jpg',
         type: 'image/jpeg',
       } as unknown as Blob)
       const apiDomain = apiUrl ?? config.apiUrl

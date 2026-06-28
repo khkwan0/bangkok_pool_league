@@ -18,7 +18,6 @@ import {
   ScrollView,
   Switch,
   useColorScheme,
-  View,
 } from 'react-native'
 
 function firstParam(value: string | string[] | undefined): string | undefined {

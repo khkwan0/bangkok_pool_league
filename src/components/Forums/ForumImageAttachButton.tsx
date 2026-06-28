@@ -1,8 +1,5 @@
 import {ThemedText as Text} from '@/components/ThemedText'
-import {
-  buildForumImageEmbed,
-  createForumDisplayImage,
-} from '@/lib/forumImage'
+import {buildForumImageEmbed} from '@/lib/forumImage'
 import {useForums} from '@/hooks/useForums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import * as ImagePicker from 'expo-image-picker'
@@ -48,8 +45,7 @@ export function ForumImageAttachButton({
 
       setUploading(true)
       const originalUri = result.assets[0].uri
-      const display = await createForumDisplayImage(originalUri)
-      const upload = await uploadForumImage(originalUri, display.uri)
+      const upload = await uploadForumImage(originalUri)
 
       if (upload.status === 'ok' && upload.display_url && upload.original_url) {
         onInsert(buildForumImageEmbed(upload.display_url, upload.original_url))
