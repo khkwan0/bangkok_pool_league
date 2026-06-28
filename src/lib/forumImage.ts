@@ -4,14 +4,47 @@ const IMG_TAG_RE = /<img\b[^>]*\/?>/gi
 const IMG_ATTR_RE = (name: string) =>
   new RegExp(`\\b${name}\\s*=\\s*["']([^"']*)["']`, 'i')
 
+function forumImagesOrigin(): string {
+  const base = config.forumImagesUrl ?? config.logoUrl
+  return base.replace(/\/forum_images\/?$/, '').replace(/\/$/, '')
+}
+
 export function resolveForumImageUrl(url: string): string {
   const trimmed = url.trim()
   if (!trimmed) return trimmed
   if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('data:')) {
     return trimmed
   }
+  if (trimmed.startsWith('/forum_images/')) {
+    return `${forumImagesOrigin()}${trimmed}`
+  }
+  if (trimmed.startsWith('forum_images/')) {
+    return `${forumImagesOrigin()}/${trimmed}`
+  }
   const base = config.forumImagesUrl ?? config.logoUrl
   return base + trimmed.replace(/^\//, '')
+}
+
+/** Web posts use display filenames ending in `_display.jpg`. */
+export function forumImageDisplayToOriginal(displaySrc: string): string | null {
+  if (!/_display\.jpg$/i.test(displaySrc)) {
+    return null
+  }
+  return displaySrc.replace(/_display\.jpg$/i, '_original.jpg')
+}
+
+export function resolveForumImageFullUrl(
+  displaySrc: string,
+  explicitFullSrc?: string | null,
+): string {
+  if (explicitFullSrc?.trim()) {
+    return resolveForumImageUrl(explicitFullSrc)
+  }
+  const original = forumImageDisplayToOriginal(displaySrc)
+  if (original) {
+    return resolveForumImageUrl(original)
+  }
+  return resolveForumImageUrl(displaySrc)
 }
 
 export function parseForumImageTag(tag: string): {
@@ -22,17 +55,25 @@ export function parseForumImageTag(tag: string): {
   if (!srcMatch?.[1]) return null
   const displayUrl = resolveForumImageUrl(srcMatch[1])
   const fullMatch = tag.match(IMG_ATTR_RE('data-full'))
-  const fullUrl = fullMatch?.[1]
-    ? resolveForumImageUrl(fullMatch[1])
-    : displayUrl
+  const fullUrl = resolveForumImageFullUrl(srcMatch[1], fullMatch?.[1])
   return {displayUrl, fullUrl}
+}
+
+function toForumImagePath(filename: string): string {
+  const trimmed = filename.trim()
+  if (trimmed.startsWith('/forum_images/')) {
+    return trimmed
+  }
+  return `/forum_images/${trimmed.replace(/^\//, '')}`
 }
 
 export function buildForumImageEmbed(
   displayFilename: string,
   originalFilename: string,
 ): string {
-  return `\n<img src="${displayFilename}" data-full="${originalFilename}" alt="Forum image" />\n`
+  const display = toForumImagePath(displayFilename)
+  const full = toForumImagePath(originalFilename)
+  return `\n<img src="${display}" data-full="${full}" alt="Forum image" />\n`
 }
 
 export function preserveForumImageTags(content: string): string {

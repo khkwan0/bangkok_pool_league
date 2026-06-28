@@ -210,7 +210,7 @@
   "forums_image_upload_failed": "อัปโหลดรูปภาพไม่สำเร็จ กรุณาลองอีกครั้ง",
   "forums_image_permission_title": "ต้องการสิทธิ์เข้าถึงรูปภาพ",
   "forums_image_permission_body": "อนุญาตการเข้าถึงคลังรูปภาพเพื่อแนบรูปภาพในโพสต์ของคุณ",
-  "forums_image_viewer_hint": "แตะด้านนอกเพื่อปิด",
+  "forums_image_viewer_hint": "บีบนิ้วเพื่อซูม ลากเพื่อเลื่อน แตะสองครั้งเพื่อรีเซ็ต",
   "forums_image_viewer_label": "รูปภาพในฟอรัม แตะเพื่อดูขนาดเต็ม",
   "frame": "กระดาน",
   "gallery": "ภาพถ่าย",

@@ -208,7 +208,7 @@
   "forums_image_upload_failed": "Could not upload image. Please try again.",
   "forums_image_permission_title": "Photo access needed",
   "forums_image_permission_body": "Allow photo library access to attach images to your post.",
-  "forums_image_viewer_hint": "Tap outside to close",
+  "forums_image_viewer_hint": "Pinch to zoom, drag to pan, double-tap to reset",
   "forums_image_viewer_label": "Forum image, tap to view full size",
   "frame": "Frame",
   "gallery": "Gallery",

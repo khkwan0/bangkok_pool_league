@@ -8,7 +8,7 @@ import {
   ForumImageViewer,
   ForumPostImage,
 } from '@/components/Forums/ForumImageViewer'
-import {parseForumImageTag, resolveForumImageUrl} from '@/lib/forumImage'
+import {parseForumImageTag, resolveForumImageFullUrl, resolveForumImageUrl} from '@/lib/forumImage'
 import {
   extractColorFromStyle,
   normalizeForumMarkdown,
@@ -428,11 +428,12 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
         const src = node.attributes?.src
         if (!src) return null
         const displayUri = resolveForumImageUrl(src)
+        const fullUri = resolveForumImageFullUrl(src)
         return (
           <ForumPostImage
             key={node.key}
             displayUri={displayUri}
-            fullUri={displayUri}
+            fullUri={fullUri}
             onPress={handleImagePress}
           />
         )
