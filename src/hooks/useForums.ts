@@ -1,4 +1,7 @@
 import {useNetwork} from '@/hooks/useNetwork'
+import {useLeagueContext} from '@/context/LeagueContext'
+import config from '@/config'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import type {
   ForumBoard,
   ForumCategoryWithForums,
@@ -14,6 +17,7 @@ import type {
   ForumPostReactionState,
   ForumReactionIcon,
   ForumSettings,
+  ForumImageUploadResult,
   FORUM_SETTINGS_DEFAULTS,
   Paginated,
 } from '@/types/forums'
@@ -24,6 +28,7 @@ function encodePath(...segments: string[]) {
 
 export function useForums() {
   const {Get, Post, Put, Patch} = useNetwork()
+  const {apiUrl} = useLeagueContext()
 
   const getForumSettings = async (): Promise<ForumSettings> => {
     const res = await Get('/forums/settings')
@@ -273,6 +278,49 @@ export function useForums() {
     }
   }
 
+  const uploadForumImage = async (
+    originalUri: string,
+    displayUri: string,
+  ): Promise<ForumImageUploadResult> => {
+    try {
+      const token = await AsyncStorage.getItem('jwt')
+      const data = new FormData()
+      data.append('original', {
+        uri: originalUri,
+        name: 'original.jpg',
+        type: 'image/jpeg',
+      } as unknown as Blob)
+      data.append('display', {
+        uri: displayUri,
+        name: 'display.jpg',
+        type: 'image/jpeg',
+      } as unknown as Blob)
+      const apiDomain = apiUrl ?? config.apiUrl
+      const res = await fetch(`${apiDomain}/forums/images`, {
+        method: 'POST',
+        body: data,
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      })
+      const json = await res.json()
+      if (json?.status === 'ok' && json.data) {
+        return {
+          status: 'ok',
+          original_url: json.data.original_url,
+          display_url: json.data.display_url,
+        }
+      }
+      return {
+        status: 'error',
+        error: json?.error ?? 'server_error',
+      }
+    } catch (e) {
+      console.error(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   return {
     getCategories,
     getForumSettings,
@@ -289,5 +337,6 @@ export function useForums() {
     addPostReaction,
     updatePost,
     updateTopic,
+    uploadForumImage,
   }
 }

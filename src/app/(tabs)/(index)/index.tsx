@@ -445,67 +445,7 @@ export default function UpcomingMatches(props: any) {
                     </Text>
                   </View>
                 )}
-              <Animated.View
-                style={{
-                  maxHeight: filterHeight.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, 200],
-                  }),
-                  opacity: filterHeight,
-                  overflow: 'hidden',
-                  backgroundColor:
-                    colorScheme === 'dark' ? '#1E1E1E' : '#FFFFFF',
-                  borderRadius: 8,
-                  marginHorizontal: 12,
-                  marginBottom: 4,
-                  shadowColor: '#000',
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
-                  },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 4,
-                  elevation: 4,
-                  borderWidth: 1,
-                  borderColor: colorScheme === 'dark' ? '#37003C' : '#E0E0E0',
-                }}>
-                {typeof user?.teams !== 'undefined' &&
-                  user.teams.length > 0 && (
-                    <View className="p-2 border-b border-gray-200 dark:border-gray-700">
-                      <BouncyCheckbox
-                        disabled={refreshing}
-                        text={t('show_mine_only')}
-                        textStyle={{
-                          textDecorationLine: 'none',
-                          fontSize: 16,
-                          fontWeight: '500',
-                          color: colorScheme === 'dark' ? '#ffffff' : '#37003C',
-                        }}
-                        isChecked={showMineOnly}
-                        onPress={() => setShowMineOnly(s => !s)}
-                        fillColor="#37003C"
-                        iconStyle={{borderRadius: 4}}
-                      />
-                    </View>
-                  )}
-                <View className="p-2">
-                  <BouncyCheckbox
-                    disabled={refreshing}
-                    text={t('show_postponed')}
-                    textStyle={{
-                      textDecorationLine: 'none',
-                      fontSize: 16,
-                      fontWeight: '500',
-                      color: colorScheme === 'dark' ? '#ffffff' : '#37003C',
-                    }}
-                    isChecked={showPostponed}
-                    onPress={() => HandleTogglePostponed()}
-                    fillColor="#37003C"
-                    iconStyle={{borderRadius: 4}}
-                  />
-                </View>
-              </Animated.View>
-              <View className="mx-4 my-2">
+              <View className="mx-4 mb-2">
                 <Pressable
                   accessibilityRole="button"
                   onPress={toggleFilters}
@@ -551,6 +491,75 @@ export default function UpcomingMatches(props: any) {
                   />
                 </Pressable>
               </View>
+              <Animated.View
+                style={{
+                  maxHeight: filterHeight.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 200],
+                  }),
+                  opacity: filterHeight,
+                  overflow: 'hidden',
+                  backgroundColor:
+                    colorScheme === 'dark' ? '#1E1E1E' : '#FFFFFF',
+                  borderRadius: 8,
+                  marginHorizontal: 12,
+                  marginBottom: 4,
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: filterHeight.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 0.15],
+                  }),
+                  shadowRadius: 4,
+                  elevation: filterHeight.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 4],
+                  }),
+                  borderWidth: filterHeight.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                  }),
+                  borderColor: colorScheme === 'dark' ? '#37003C' : '#E0E0E0',
+                }}>
+                {typeof user?.teams !== 'undefined' &&
+                  user.teams.length > 0 && (
+                    <View className="p-2 border-b border-gray-200 dark:border-gray-700">
+                      <BouncyCheckbox
+                        disabled={refreshing}
+                        text={t('show_mine_only')}
+                        textStyle={{
+                          textDecorationLine: 'none',
+                          fontSize: 16,
+                          fontWeight: '500',
+                          color: colorScheme === 'dark' ? '#ffffff' : '#37003C',
+                        }}
+                        isChecked={showMineOnly}
+                        onPress={() => setShowMineOnly(s => !s)}
+                        fillColor="#37003C"
+                        iconStyle={{borderRadius: 4}}
+                      />
+                    </View>
+                  )}
+                <View className="p-2">
+                  <BouncyCheckbox
+                    disabled={refreshing}
+                    text={t('show_postponed')}
+                    textStyle={{
+                      textDecorationLine: 'none',
+                      fontSize: 16,
+                      fontWeight: '500',
+                      color: colorScheme === 'dark' ? '#ffffff' : '#37003C',
+                    }}
+                    isChecked={showPostponed}
+                    onPress={() => HandleTogglePostponed()}
+                    fillColor="#37003C"
+                    iconStyle={{borderRadius: 4}}
+                  />
+                </View>
+              </Animated.View>
             </View>
             <View
               style={{height: '100%', overflow: 'hidden', marginHorizontal: 0}}>

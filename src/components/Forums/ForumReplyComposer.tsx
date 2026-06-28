@@ -1,6 +1,7 @@
 import Button from '@/components/Button'
 import TextInput from '@/components/TextInput'
 import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
+import {ForumImageAttachButton} from '@/components/Forums/ForumImageAttachButton'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -11,6 +12,7 @@ import {
   Pressable,
   useColorScheme,
   useWindowDimensions,
+  View,
 } from 'react-native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
@@ -167,6 +169,12 @@ export function ForumReplyComposer({
         {maxLength ? (
           <ForumCharCounter length={value.length} maxLength={maxLength} className="mt-1" />
         ) : null}
+        <View className="mt-2">
+          <ForumImageAttachButton
+            disabled={submitting}
+            onInsert={snippet => onChangeText(value ? `${value}${snippet}` : snippet.trim())}
+          />
+        </View>
       </View>
 
       <View className="px-4 pb-2">

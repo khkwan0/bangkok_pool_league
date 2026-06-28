@@ -18,6 +18,9 @@ function unwrapInlineHtml(html: string): string {
   )
   s = s.replace(/<code\b[^>]*>([\s\S]*?)<\/code>/gi, '`$1`')
 
+  // Keep forum image tags intact for inline HTML rendering.
+  s = s.replace(/<img\b[^>]*\/?>/gi, match => match)
+
   return s.trim()
 }
 
@@ -148,6 +151,9 @@ export function normalizeForumMarkdown(content: string): string {
   })
 
   text = text.replace(/<p\b[^>]*>([\s\S]*?)<\/p>/gi, (_, inner) => {
+    if (/<img\b/i.test(inner)) {
+      return `${inner.trim()}\n\n`
+    }
     const body = unwrapInlineHtml(inner)
     return body ? `${body}\n\n` : ''
   })

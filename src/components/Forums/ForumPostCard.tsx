@@ -1,6 +1,7 @@
 import Button from '@/components/Button'
 import TextInput from '@/components/TextInput'
 import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
+import {ForumImageAttachButton} from '@/components/Forums/ForumImageAttachButton'
 import {ChatMarkdown} from '@/components/ChatMarkdown'
 import {formatForumDate} from '@/components/Forums/formatForumDate'
 import {ForumIconBadge, ForumStatChip} from '@/components/Forums/ForumUiParts'
@@ -253,6 +254,16 @@ export function ForumPostCard({
                   className="mt-1"
                 />
               ) : null}
+              <RNView className="mt-2">
+                <ForumImageAttachButton
+                  disabled={editSubmitting}
+                  onInsert={snippet =>
+                    onEditChange?.(
+                      editContent ? `${editContent}${snippet}` : snippet.trim(),
+                    )
+                  }
+                />
+              </RNView>
               {editError ? (
                 <Text className="mt-2 text-sm text-red-600 dark:text-red-400">
                   {editError}

@@ -157,3 +157,10 @@ export type ForumTopicCreateResult = {
   error?: string
   max_length?: number
 }
+
+export type ForumImageUploadResult = {
+  status: 'ok' | 'error'
+  original_url?: string
+  display_url?: string
+  error?: string
+}

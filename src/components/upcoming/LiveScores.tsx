@@ -396,11 +396,9 @@ const LiveScores = React.memo(LiveScoresWithData)
 
 const styles = StyleSheet.create({
   container: {
-    height: 92,
     overflow: 'hidden',
   },
   clip: {
-    flex: 1,
     overflow: 'hidden',
   },
   row: {
@@ -411,13 +409,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   cardWrap: {
     marginRight: STRIP_GAP,
   },
   scoreCard: {
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     borderWidth: 1,
   },

@@ -3,6 +3,7 @@ import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
+import {ForumImageAttachButton} from '@/components/Forums/ForumImageAttachButton'
 import {useForumSettings, forumLengthErrorKey} from '@/hooks/useForumSettings'
 import {useForums} from '@/hooks/useForums'
 import type {ForumBoard} from '@/types/forums'
@@ -17,6 +18,7 @@ import {
   ScrollView,
   Switch,
   useColorScheme,
+  View,
 } from 'react-native'
 
 function firstParam(value: string | string[] | undefined): string | undefined {
@@ -244,6 +246,14 @@ export default function ForumNewTopic() {
           maxLength={forumSettings.opening_post_max_length}
           className="mt-1"
         />
+        <View className="mt-2">
+          <ForumImageAttachButton
+            disabled={submitting}
+            onInsert={snippet =>
+              setContent(prev => (prev ? `${prev}${snippet}` : snippet.trim()))
+            }
+          />
+        </View>
 
         <Pressable
           onPress={() => setIsAnonymous(prev => !prev)}

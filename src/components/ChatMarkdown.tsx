@@ -5,9 +5,15 @@ import Markdown, {
 import React from 'react'
 import {ScrollView, Text, View, useColorScheme} from 'react-native'
 import {
+  ForumImageViewer,
+  ForumPostImage,
+} from '@/components/Forums/ForumImageViewer'
+import {parseForumImageTag, resolveForumImageUrl} from '@/lib/forumImage'
+import {
   extractColorFromStyle,
   normalizeForumMarkdown,
 } from '@/components/forumMarkdownNormalize'
+import {preserveForumImageTags} from '@/lib/forumImage'
 
 const markdownItInstance = MarkdownIt({
   typographer: true,
@@ -16,6 +22,7 @@ const markdownItInstance = MarkdownIt({
 })
 
 const SPAN_CLOSE_RE = /^<\/span>$/i
+const IMG_TAG_RE = /^<img\b/i
 
 type MarkdownRule = (
   node: {key: string; content?: string; attributes?: {href?: string}},
@@ -25,7 +32,9 @@ type MarkdownRule = (
   ...rest: unknown[]
 ) => React.ReactNode
 
-function createColoredSpanRules(): Record<string, MarkdownRule> {
+function createColoredSpanRules(
+  onImagePress?: (fullUri: string) => void,
+): Record<string, MarkdownRule> {
   const colorStack: string[] = []
 
   const activeColorStyle = (): {color: string} | null => {
@@ -43,6 +52,19 @@ function createColoredSpanRules(): Record<string, MarkdownRule> {
       if (SPAN_CLOSE_RE.test(content)) {
         colorStack.pop()
         return null
+      }
+      if (IMG_TAG_RE.test(content)) {
+        const parsed = parseForumImageTag(content)
+        if (parsed && onImagePress) {
+          return (
+            <ForumPostImage
+              key={node.key}
+              displayUri={parsed.displayUrl}
+              fullUri={parsed.fullUrl}
+              onPress={onImagePress}
+            />
+          )
+        }
       }
       if (/^<span\b/i.test(content)) {
         const styleMatch = content.match(/\bstyle=["']([^"']*)["']/i)
@@ -149,8 +171,12 @@ type ChatMarkdownProps = {
 export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
+  const [viewerUri, setViewerUri] = React.useState<string | null>(null)
+  const handleImagePress = React.useCallback((fullUri: string) => {
+    setViewerUri(fullUri)
+  }, [])
   const normalizedContent = React.useMemo(
-    () => normalizeForumMarkdown(content),
+    () => preserveForumImageTags(normalizeForumMarkdown(content)),
     [content],
   )
   const borderColor = isDark ? '#374151' : '#d1d5db'
@@ -371,10 +397,28 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
   const renderRules = React.useMemo(
     () => ({
       ...defaultRenderRules,
-      ...createColoredSpanRules(),
+      ...createColoredSpanRules(handleImagePress),
+      image: (
+        node: {key: string; attributes?: {src?: string; alt?: string}},
+        _children: React.ReactNode,
+        _parent: unknown,
+        _styles: Record<string, object>,
+      ) => {
+        const src = node.attributes?.src
+        if (!src) return null
+        const displayUri = resolveForumImageUrl(src)
+        return (
+          <ForumPostImage
+            key={node.key}
+            displayUri={displayUri}
+            fullUri={displayUri}
+            onPress={handleImagePress}
+          />
+        )
+      },
       ...tableRules,
     }),
-    [tableRules],
+    [tableRules, handleImagePress],
   )
 
   if (!normalizedContent.trim()) {
@@ -382,12 +426,15 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
   }
 
   return (
-    <Markdown
-      markdownit={markdownItInstance}
-      style={markdownStyles}
-      rules={renderRules}
-      mergeStyle>
-      {normalizedContent}
-    </Markdown>
+    <>
+      <Markdown
+        markdownit={markdownItInstance}
+        style={markdownStyles}
+        rules={renderRules}
+        mergeStyle>
+        {normalizedContent}
+      </Markdown>
+      <ForumImageViewer uri={viewerUri} onClose={() => setViewerUri(null)} />
+    </>
   )
 }
