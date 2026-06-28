@@ -53,7 +53,7 @@ export default function PlayerStats() {
       </View>
     )
   } else if (playerInfo) {
-    return <PlayerStatistics playerInfo={playerInfo} />
+    return <PlayerStatistics playerInfo={playerInfo} zoomable />
   }
 }
 

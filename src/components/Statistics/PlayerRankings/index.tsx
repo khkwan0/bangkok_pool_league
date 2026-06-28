@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import Row from '@/components/Row'
 import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
@@ -8,7 +9,8 @@ import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContaine
 import {router, usePathname} from 'expo-router'
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {ActivityIndicator, FlatList, Pressable} from 'react-native'
+import {ActivityIndicator, Pressable} from 'react-native'
+import {FlatList} from 'react-native-gesture-handler'
 
 type PlayerRanking = {
   playerId: number
@@ -143,6 +145,7 @@ export default function PlayerRankings({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [minimumGames, setMinimumGames] = useState<string>('20')
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
   const listContentStyle = useTabListContentContainerStyle({paddingTop: 10})
 
   // Parse minimum games as number, default to 20 if invalid
@@ -248,8 +251,12 @@ export default function PlayerRankings({
 
   return (
     <View className="flex-1">
-      {/* Filter Input */}
-      <View className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <ZoomableView
+        scrollAware
+        onZoomChange={setScreenZoomed}
+        style={{flex: 1}}>
+        {/* Filter Input */}
+        <View className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <View className="flex-row items-center gap-3">
           <View className="flex-1">
             <Text className="font-bold text-sm mb-1">
@@ -285,18 +292,22 @@ export default function PlayerRankings({
             Try lowering the minimum games filter.
           </Text>
         </View>
-      ) : (
-        <FlatList
-          contentContainerStyle={listContentStyle}
-          data={filteredRankings}
-          renderItem={({item}) => (
-            <DivisionRankings data={item} minimumGames={minimumGamesNum} />
-          )}
-          keyExtractor={(item, index) =>
-            `division-${item.division_id || index}`
-          }
-        />
-      )}
+        ) : (
+          <FlatList
+            contentContainerStyle={listContentStyle}
+            data={filteredRankings}
+            scrollEnabled={!screenZoomed}
+            nestedScrollEnabled={false}
+            style={{flex: 1}}
+            renderItem={({item}) => (
+              <DivisionRankings data={item} minimumGames={minimumGamesNum} />
+            )}
+            keyExtractor={(item, index) =>
+              `division-${item.division_id || index}`
+            }
+          />
+        )}
+      </ZoomableView>
     </View>
   )
 }

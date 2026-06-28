@@ -1,11 +1,13 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import {useMatch} from '@/hooks'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useNavigation, usePathname, useRouter} from 'expo-router'
 import {formatBangkokDateMed} from '@/lib/bangkokTime'
 import React from 'react'
-import {FlatList, Pressable, useColorScheme} from 'react-native'
+import {Pressable, useColorScheme} from 'react-native'
+import {FlatList} from 'react-native-gesture-handler'
 
 type Frame = {
   frameId: number
@@ -139,8 +141,15 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
   )
 }
 
-export default function CompletedMatchDetails({matchId}: {matchId: number}) {
+export default function CompletedMatchDetails({
+  matchId,
+  zoomable = false,
+}: {
+  matchId: number
+  zoomable?: boolean
+}) {
   const matchHook = useMatch()
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
   const [matchDetails, setMatchDetails] = React.useState<MatchDetails | null>(
     null,
   )
@@ -200,7 +209,7 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
   const isAwayWinner =
     (matchMetadata?.away_frames ?? 0) > (matchMetadata?.home_frames ?? 0)
 
-  return (
+  const body = (
     <View className="flex-1 p-4">
       <View className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm mb-4">
         <View className="flex-row justify-between items-center mb-4">
@@ -302,10 +311,26 @@ export default function CompletedMatchDetails({matchId}: {matchId: number}) {
 
       <FlatList
         data={matchDetails}
+        scrollEnabled={!zoomable || !screenZoomed}
+        nestedScrollEnabled={false}
+        style={{flex: 1}}
         renderItem={({item, index}) => <FrameRow frame={item} index={index} />}
         ItemSeparatorComponent={() => <View className="h-4" />}
         keyExtractor={item => item.frameId.toString()}
       />
     </View>
   )
+
+  if (zoomable) {
+    return (
+      <ZoomableView
+        scrollAware
+        onZoomChange={setScreenZoomed}
+        style={{flex: 1}}>
+        {body}
+      </ZoomableView>
+    )
+  }
+
+  return body
 }

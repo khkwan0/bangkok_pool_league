@@ -1,6 +1,8 @@
 import React from 'react'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {Image, FlatList, View, Pressable} from 'react-native'
+import {Image, View, Pressable} from 'react-native'
+import {FlatList} from 'react-native-gesture-handler'
 import Row from '@/components/Row'
 import {useTeams} from '@/hooks'
 import config from '@/config'
@@ -109,6 +111,7 @@ export default function TeamInternal({teamId, teamName}: {teamId: number, teamNa
   const teams = useTeams()
   const [stats, setStats] = React.useState([])
   const [sortOption, setSortOption] = React.useState('points')
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
   const navigation = useNavigation()
 
   async function GetTeamInternalStats() {
@@ -138,14 +141,22 @@ export default function TeamInternal({teamId, teamName}: {teamId: number, teamNa
   }, [navigation, teamName])
 
   return (
-    <FlatList
-      style={{
-        paddingHorizontal: 20,
-        paddingTop: 20,
-      }}
-      data={stats}
-      ListHeaderComponent={<StatsHeader setSortOption={setSortOption} sortOption={sortOption} />}
-      renderItem={({item, index}) => <Stat item={item} index={index} />}
-    />
+    <ZoomableView
+      scrollAware
+      onZoomChange={setScreenZoomed}
+      style={{flex: 1}}>
+      <FlatList
+        style={{
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          flex: 1,
+        }}
+        data={stats}
+        scrollEnabled={!screenZoomed}
+        nestedScrollEnabled={false}
+        ListHeaderComponent={<StatsHeader setSortOption={setSortOption} sortOption={sortOption} />}
+        renderItem={({item, index}) => <Stat item={item} index={index} />}
+      />
+    </ZoomableView>
   )
 }

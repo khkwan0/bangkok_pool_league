@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import Button from '@/components/Button'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import PlayerStatistics from '@/components/PlayerStatistics'
 import { ThemedView as View } from '@/components/ThemedView'
 import { useLeagueContext } from '@/context/LeagueContext'
@@ -17,6 +18,7 @@ export default function StatisticsHome(props: any) {
   const [playerInfo, setPlayerInfo] = React.useState<PlayerInfo | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState('')
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
   const {t} = useTranslation()
   const {state} = useLeagueContext()
   const user = state.user
@@ -42,7 +44,11 @@ export default function StatisticsHome(props: any) {
 
   if (typeof user.id === 'undefined' || user.id === null || !playerInfo) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <ZoomableView
+        scrollAware
+        onZoomChange={setScreenZoomed}
+        style={{flex: 1}}>
+        <View className="flex-1 justify-center items-center">
         <View className="my-4">
           <Button
             onPress={() => router.push('/statistics/LeagueStandings')}
@@ -72,6 +78,7 @@ export default function StatisticsHome(props: any) {
           </Button>
         </View>
       </View>
+      </ZoomableView>
     )
   }
   return (
@@ -111,7 +118,11 @@ export default function StatisticsHome(props: any) {
             <ActivityIndicator size="large" />
           </View>
         ) : typeof user.id !== 'undefined' && user.id && playerInfo ? (
-          <PlayerStatistics playerInfo={playerInfo} path="/statistics" />
+          <PlayerStatistics
+            playerInfo={playerInfo}
+            path="/statistics"
+            zoomable
+          />
         ) : null}
       </View>
     </View>

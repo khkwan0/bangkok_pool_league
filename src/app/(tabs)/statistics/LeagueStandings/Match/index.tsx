@@ -5,5 +5,5 @@ export default function MatchPerformance() {
   const {params} = useLocalSearchParams()
   const {matchId} = JSON.parse(params as string)
 
-  return <Match matchId={matchId} />
+  return <Match matchId={matchId} zoomable />
 }

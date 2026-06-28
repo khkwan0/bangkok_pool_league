@@ -5,5 +5,5 @@ import CompleteMatchDetails from '@/components/Completed/CompletedMatchDetails'
 
 export default function MatchScreen() {
   const {matchId} = useLocalSearchParams()
-  return <CompleteMatchDetails matchId={Number(matchId)} />
+  return <CompleteMatchDetails matchId={Number(matchId)} zoomable />
 }

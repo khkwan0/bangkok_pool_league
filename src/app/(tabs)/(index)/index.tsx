@@ -1,4 +1,5 @@
 import Button from '@/components/Button'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import AdSpot from '@/components/upcoming/AdSpot'
@@ -25,7 +26,6 @@ import {
   ActivityIndicator,
   Animated,
   Dimensions,
-  FlatList,
   Linking,
   Platform,
   Pressable,
@@ -33,6 +33,7 @@ import {
   useColorScheme,
 } from 'react-native'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
+import {FlatList} from 'react-native-gesture-handler'
 
 interface ItemType {
   home_team_id: number
@@ -58,6 +59,7 @@ export default function UpcomingMatches(props: any) {
   const [showPostponed, setShowPostponed] = React.useState(false)
   const [seasonNumber, setSeasonNumber] = React.useState('')
   const [showFilters, setShowFilters] = React.useState(false)
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
   const filterHeight = React.useRef(new Animated.Value(0)).current
   const season = useSeason()
   const league = useLeague()
@@ -420,8 +422,12 @@ export default function UpcomingMatches(props: any) {
           </View>
         )}
         {!refreshing && (
-          <View className="flex-1">
-            <View>
+          <ZoomableView
+            scrollAware
+            onZoomChange={setScreenZoomed}
+            style={{flex: 1}}>
+            <View className="flex-1">
+              <View>
               {!user.id && (
                 <View className="my-4 mx-6">
                   <Button
@@ -581,7 +587,8 @@ export default function UpcomingMatches(props: any) {
                   snapToInterval={width}
                   decelerationRate="fast"
                   snapToAlignment="center"
-                  scrollEnabled={true}
+                  scrollEnabled={!screenZoomed}
+                  nestedScrollEnabled={false}
                   directionalLockEnabled={true}
                   alwaysBounceVertical={false}
                   onScrollBeginDrag={closeFilters}
@@ -609,7 +616,8 @@ export default function UpcomingMatches(props: any) {
                 />
               )}
             </View>
-          </View>
+            </View>
+          </ZoomableView>
         )}
         {needsUpdate && (
           <View className="px-2">

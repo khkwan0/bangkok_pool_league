@@ -1,6 +1,7 @@
 import {formatForumDate, topicSlug} from '@/components/Forums/formatForumDate'
 import {ForumIconBadge, ForumStatChip} from '@/components/Forums/ForumUiParts'
 import {FORUM_STAT_COLORS, forumListCardStyle, getForumAccent} from '@/components/Forums/forumUi'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -13,13 +14,13 @@ import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   RefreshControl,
   StyleSheet,
   useColorScheme,
   View as RNView,
 } from 'react-native'
+import {FlatList} from 'react-native-gesture-handler'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 function ForumNewTopicFab({onPress}: {onPress: () => void}) {
@@ -180,6 +181,7 @@ export default function ForumTopics() {
   const [refreshing, setRefreshing] = React.useState(false)
   const [loadingMore, setLoadingMore] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
 
   const loadPage = React.useCallback(
     async (pageNum: number, append = false) => {
@@ -267,70 +269,78 @@ export default function ForumTopics() {
     <>
       <Stack.Screen options={{title: headerTitle}} />
       <View className="flex-1">
-        {forum?.description || forum?.is_locked ? (
-          <RNView
-            className="mb-2 mt-3 px-4 py-3"
-            style={{
-              borderBottomWidth: StyleSheet.hairlineWidth,
-              borderBottomColor: isDark
-                ? 'rgba(148, 163, 184, 0.2)'
-                : 'rgba(148, 163, 184, 0.25)',
-            }}>
-            {forum.description ? (
-              <Text className="text-sm" style={{color: isDark ? '#90CAF9' : '#1565C0'}}>
-                {forum.description}
-              </Text>
-            ) : null}
-            {forum.is_locked ? (
-              <View className={forum.description ? 'mt-2' : undefined}>
-                <ForumStatChip
-                  icon="lock"
-                  label={t('forums_locked')}
-                  fg={FORUM_STAT_COLORS.locked.fg}
-                  bg={FORUM_STAT_COLORS.locked.bg}
-                />
-              </View>
-            ) : null}
-          </RNView>
-        ) : null}
+        <ZoomableView
+          scrollAware
+          onZoomChange={setScreenZoomed}
+          style={{flex: 1}}>
+          {forum?.description || forum?.is_locked ? (
+            <RNView
+              className="mb-2 mt-3 px-4 py-3"
+              style={{
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: isDark
+                  ? 'rgba(148, 163, 184, 0.2)'
+                  : 'rgba(148, 163, 184, 0.25)',
+              }}>
+              {forum.description ? (
+                <Text className="text-sm" style={{color: isDark ? '#90CAF9' : '#1565C0'}}>
+                  {forum.description}
+                </Text>
+              ) : null}
+              {forum.is_locked ? (
+                <View className={forum.description ? 'mt-2' : undefined}>
+                  <ForumStatChip
+                    icon="lock"
+                    label={t('forums_locked')}
+                    fg={FORUM_STAT_COLORS.locked.fg}
+                    bg={FORUM_STAT_COLORS.locked.bg}
+                  />
+                </View>
+              ) : null}
+            </RNView>
+          ) : null}
 
-        <FlatList
-          data={topics}
-          keyExtractor={item => String(item.id)}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 12,
-            paddingBottom: canCreateTopic ? insets.bottom + 88 : 12,
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => {
-                setRefreshing(true)
-                loadPage(1)
-              }}
-            />
-          }
-          onEndReached={loadMore}
-          onEndReachedThreshold={0.4}
-          ListEmptyComponent={
-            <Text className="px-2 py-8 text-center opacity-70">
-              {error ?? t('forums_no_topics')}
-            </Text>
-          }
-          ListFooterComponent={
-            loadingMore ? (
-              <ActivityIndicator className="py-4" color={colors.primary} />
-            ) : null
-          }
-          renderItem={({item, index}) => (
-            <TopicRow
-              topic={item}
-              accentIndex={index}
-              onPress={() => openTopic(item)}
-            />
-          )}
-        />
+          <FlatList
+            data={topics}
+            keyExtractor={item => String(item.id)}
+            scrollEnabled={!screenZoomed}
+            nestedScrollEnabled={false}
+            style={{flex: 1}}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 12,
+              paddingBottom: canCreateTopic ? insets.bottom + 88 : 12,
+            }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => {
+                  setRefreshing(true)
+                  loadPage(1)
+                }}
+              />
+            }
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.4}
+            ListEmptyComponent={
+              <Text className="px-2 py-8 text-center opacity-70">
+                {error ?? t('forums_no_topics')}
+              </Text>
+            }
+            ListFooterComponent={
+              loadingMore ? (
+                <ActivityIndicator className="py-4" color={colors.primary} />
+              ) : null
+            }
+            renderItem={({item, index}) => (
+              <TopicRow
+                topic={item}
+                accentIndex={index}
+                onPress={() => openTopic(item)}
+              />
+            )}
+          />
+        </ZoomableView>
         {canCreateTopic ? <ForumNewTopicFab onPress={openNewTopic} /> : null}
       </View>
     </>

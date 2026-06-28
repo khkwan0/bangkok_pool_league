@@ -7,6 +7,7 @@ import {
   ForumsHero,
 } from '@/components/Forums/ForumUiParts'
 import {FORUM_STAT_COLORS, forumListCardStyle, getForumAccent} from '@/components/Forums/forumUi'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useForums} from '@/hooks/useForums'
 import type {ForumBoard, ForumCategoryWithForums} from '@/types/forums'
@@ -19,10 +20,10 @@ import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
-  ScrollView,
   useColorScheme,
   View as RNView,
 } from 'react-native'
+import {ScrollView} from 'react-native-gesture-handler'
 
 type ForumSection = {
   title: string
@@ -115,6 +116,7 @@ export default function Forums() {
   const [showJoinModal, setShowJoinModal] = React.useState(false)
   const [joining, setJoining] = React.useState(false)
   const [joinError, setJoinError] = React.useState<string | null>(null)
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -205,61 +207,68 @@ export default function Forums() {
 
   return (
     <>
-      <ScrollView
-        style={{flex: 1, backgroundColor: colors.background}}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          flexGrow: 1,
-        }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true)
-              loadForums()
-            }}
+      <ZoomableView
+        scrollAware
+        onZoomChange={setScreenZoomed}
+        style={{flex: 1, backgroundColor: colors.background}}>
+        <ScrollView
+          scrollEnabled={!screenZoomed}
+          nestedScrollEnabled={false}
+          style={{flex: 1, backgroundColor: colors.background}}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: 16,
+            flexGrow: 1,
+          }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true)
+                loadForums()
+              }}
+            />
+          }>
+          <ForumsHero
+            title={t('forums')}
+            subtitle={t('forums_hero_subtitle')}
           />
-        }>
-        <ForumsHero
-          title={t('forums')}
-          subtitle={t('forums_hero_subtitle')}
-        />
 
-        {sections.length === 0 ? (
-          error ? (
-            <Text className="px-2 py-8 text-center opacity-70">{error}</Text>
-          ) : (
-            <Text className="px-2 py-8 text-center opacity-70">
-              {t('forums_empty')}
-            </Text>
-          )
-        ) : (
-          sections.map(section => {
-            const category = categories.find(c => c.name === section.title)
-            if (!category) return null
-
-            return (
-              <RNView key={section.title}>
-                <ForumSectionHeader
-                  title={section.title}
-                  description={section.description}
-                  accentIndex={section.categoryIndex}
-                />
-                {section.data.map((item, index) => (
-                  <ForumRow
-                    key={item.id}
-                    forum={item}
-                    accentIndex={section.categoryIndex + index}
-                    onPress={() => openForum(category.slug, item)}
-                  />
-                ))}
-              </RNView>
+          {sections.length === 0 ? (
+            error ? (
+              <Text className="px-2 py-8 text-center opacity-70">{error}</Text>
+            ) : (
+              <Text className="px-2 py-8 text-center opacity-70">
+                {t('forums_empty')}
+              </Text>
             )
-          })
-        )}
-      </ScrollView>
+          ) : (
+            sections.map(section => {
+              const category = categories.find(c => c.name === section.title)
+              if (!category) return null
+
+              return (
+                <RNView key={section.title}>
+                  <ForumSectionHeader
+                    title={section.title}
+                    description={section.description}
+                    accentIndex={section.categoryIndex}
+                  />
+                  {section.data.map((item, index) => (
+                    <ForumRow
+                      key={item.id}
+                      forum={item}
+                      accentIndex={section.categoryIndex + index}
+                      onPress={() => openForum(category.slug, item)}
+                    />
+                  ))}
+                </RNView>
+              )
+            })
+          )}
+        </ScrollView>
+      </ZoomableView>
 
       <JoinForumsModal
         visible={showJoinModal}

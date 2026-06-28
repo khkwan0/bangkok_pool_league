@@ -2,6 +2,7 @@
 import StatsDoubles from '@/components/PlayerStatistics/StatsDoubles'
 import StatsHeader from '@/components/PlayerStatistics/StatsHeader'
 import StatsMatchPerformance from '@/components/PlayerStatistics/StatsMatchPerformance'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import Row from '@/components/Row'
 import Stats from '@/components/Stats'
 import { ThemedText as Text } from '@/components/ThemedText'
@@ -11,7 +12,8 @@ import { useSeason } from '@/hooks/useSeason'
 import { useTabListContentContainerStyle } from '@/hooks/useTabListContentContainerStyle'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, RefreshControl, ScrollView } from 'react-native'
+import { Image, RefreshControl } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 
 interface PlayerInfo {
   player_id: number
@@ -28,11 +30,14 @@ interface PlayerInfo {
 export default function PlayerStatistics({
   playerInfo,
   path,
+  zoomable = false,
 }: {
   playerInfo: PlayerInfo
   path: string | undefined
+  zoomable?: boolean
 }) {
   const season = useSeason()
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
   const [stats, setStats] = useState<any>(null)
   const [doublesStats, setDoublesStats] = useState<any>(null)
   const [matchPerformance, setMatchPerformance] = useState<any>(null)
@@ -126,8 +131,11 @@ export default function PlayerStatistics({
     }
   }
 
-  return (
+  const content = (
     <ScrollView
+      scrollEnabled={!zoomable || !screenZoomed}
+      nestedScrollEnabled={false}
+      style={zoomable ? {flex: 1} : undefined}
       contentContainerStyle={listContentStyle}
       refreshControl={
         <RefreshControl
@@ -246,4 +254,17 @@ export default function PlayerStatistics({
       </View>
     </ScrollView>
   )
+
+  if (zoomable) {
+    return (
+      <ZoomableView
+        scrollAware
+        onZoomChange={setScreenZoomed}
+        style={{flex: 1}}>
+        {content}
+      </ZoomableView>
+    )
+  }
+
+  return content
 }

@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useNavigation} from '@react-navigation/native'
 import {useTranslation} from 'react-i18next'
@@ -6,7 +7,7 @@ import React from 'react'
 import {useLeague} from '@/hooks'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useState} from 'react'
-import {FlatList} from 'react-native'
+import {FlatList} from 'react-native-gesture-handler'
 import {ThemedText as Text} from '@/components/ThemedText'
 import Row from '@/components/Row'
 import {TouchableRipple} from 'react-native-paper'
@@ -126,6 +127,7 @@ export default function LeagueStandings() {
   const {t} = useTranslation()
   const league = useLeague()
   const [standings, setStandings] = useState<DivisionData[]>([])
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
   const listContentStyle = useTabListContentContainerStyle()
 
   React.useEffect(() => {
@@ -142,10 +144,18 @@ export default function LeagueStandings() {
   }, [])
 
   return (
-    <FlatList
-      contentContainerStyle={listContentStyle}
-      data={standings}
-      renderItem={({item}) => <DivisionStandings data={item} />}
-    />
+    <ZoomableView
+      scrollAware
+      onZoomChange={setScreenZoomed}
+      style={{flex: 1}}>
+      <FlatList
+        contentContainerStyle={listContentStyle}
+        data={standings}
+        scrollEnabled={!screenZoomed}
+        nestedScrollEnabled={false}
+        style={{flex: 1}}
+        renderItem={({item}) => <DivisionStandings data={item} />}
+      />
+    </ZoomableView>
   )
 }

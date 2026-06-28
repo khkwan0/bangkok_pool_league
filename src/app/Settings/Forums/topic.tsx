@@ -9,6 +9,7 @@ import {
   ForumReplyComposer,
   ForumReplyFab,
 } from '@/components/Forums/ForumReplyComposer'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -26,11 +27,11 @@ import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
-  FlatList,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
 } from 'react-native'
+import {FlatList} from 'react-native-gesture-handler'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 function firstParam(value: string | string[] | undefined): string | undefined {
@@ -48,6 +49,7 @@ export default function ForumTopic() {
   const router = useRouter()
   const {state} = useLeagueContext()
   const insets = useSafeAreaInsets()
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
   const params = useLocalSearchParams<{
     categorySlug: string
     forumSlug: string
@@ -517,21 +519,28 @@ export default function ForumTopic() {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={88}>
-        <FlatList
-          key={sortOrder}
-          data={posts}
-          extraData={{sortOrder, reactionsByPostId, reacting, reactionIcons}}
-          keyExtractor={item => String(item.id)}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 12,
-            paddingBottom: listBottomPadding,
-          }}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-          onEndReached={loadMore}
-          onEndReachedThreshold={0.4}
+        <ZoomableView
+          scrollAware
+          onZoomChange={setScreenZoomed}
+          style={{flex: 1}}>
+          <FlatList
+            key={sortOrder}
+            data={posts}
+            extraData={{sortOrder, reactionsByPostId, reacting, reactionIcons}}
+            keyExtractor={item => String(item.id)}
+            scrollEnabled={!screenZoomed}
+            nestedScrollEnabled={false}
+            style={{flex: 1}}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 12,
+              paddingBottom: listBottomPadding,
+            }}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+            }
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.4}
           ListHeaderComponent={
             <>
               <ForumTopicHeader detail={detail} canReply={canReply} />
@@ -575,7 +584,8 @@ export default function ForumTopic() {
             ) : null
           }
           renderItem={({item, index}) => renderPostCard(item, index)}
-        />
+          />
+        </ZoomableView>
 
         {canReply && replyOpen ? (
           <ForumReplyComposer

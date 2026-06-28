@@ -1,7 +1,9 @@
 import React from 'react'
 import {TeamStats, useLeague} from '@/hooks'
 import Button from '@/components/Button'
-import {ActivityIndicator, Pressable, ScrollView, View} from 'react-native'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
+import {ActivityIndicator, Pressable, View} from 'react-native'
+import {ScrollView} from 'react-native-gesture-handler'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as Card} from '@/components/ThemedView'
 import {useTranslation} from 'react-i18next'
@@ -134,6 +136,7 @@ const TeamStatistics = () => {
   const league = useLeague()
   const [stats, setStats] = React.useState<TeamStats>({})
   const [isLoading, setIsLoading] = React.useState(false)
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
   const navigation = useNavigation()
   const {t} = useTranslation()
 
@@ -173,12 +176,19 @@ const TeamStatistics = () => {
     )
   } else {
     return (
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-        }}>
+      <ZoomableView
+        scrollAware
+        onZoomChange={setScreenZoomed}
+        style={{flex: 1}}>
+        <ScrollView
+          scrollEnabled={!screenZoomed}
+          nestedScrollEnabled={false}
+          style={{flex: 1}}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+          }}>
         <View className="my-4">
           <Text type="subtitle" className="text-xl font-bold">
             {t('eight_ball')}
@@ -203,7 +213,8 @@ const TeamStatistics = () => {
               <TeamStanding key={'9b' + index} data={item} idx={index} />
             ))}
         </Card>
-      </ScrollView>
+        </ScrollView>
+      </ZoomableView>
     )
   }
 }

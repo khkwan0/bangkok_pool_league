@@ -2,10 +2,11 @@ import {
   Modal,
   View,
   Pressable,
-  FlatList,
   useColorScheme,
   ActivityIndicator,
 } from 'react-native'
+import {FlatList} from 'react-native-gesture-handler'
+import {ZoomableView} from '@/components/Forums/ZoomableView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import React from 'react'
 import {useNavigation} from '@react-navigation/native'
@@ -320,6 +321,7 @@ export default function PlayerStatistics(props: any) {
   const league = useLeague()
   const [showFilters, setShowFilters] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
+  const [screenZoomed, setScreenZoomed] = React.useState(false)
 
   const trie = React.useRef(new TrieSearch<any>('name'))
   const originalStats = React.useRef([])
@@ -373,9 +375,16 @@ export default function PlayerStatistics(props: any) {
       </Modal>
       <View className="flex-1 p-4 bg-gray-50 dark:bg-gray-950">
         <View className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden flex-1">
-          <FlatList
-            data={playerStats}
-            ListHeaderComponent={
+          <ZoomableView
+            scrollAware
+            onZoomChange={setScreenZoomed}
+            style={{flex: 1}}>
+            <FlatList
+              data={playerStats}
+              scrollEnabled={!screenZoomed}
+              nestedScrollEnabled={false}
+              style={{flex: 1}}
+              ListHeaderComponent={
               <StatsHeader
                 setShowFilters={setShowFilters}
                 showFilters={showFilters}
@@ -399,7 +408,8 @@ export default function PlayerStatistics(props: any) {
               item: PlayerStatsType
               index: number
             }) => <PlayerListing data={item} idx={index} />}
-          />
+            />
+          </ZoomableView>
         </View>
       </View>
     </>
