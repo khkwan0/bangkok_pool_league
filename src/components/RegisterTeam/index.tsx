@@ -106,7 +106,7 @@ export default function RegisterTeam() {
 
   return (
     <>
-      <ScrollView>
+      <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
         <View className="p-4">
           <ThemedView className="rounded-xl shadow-sm p-5 mb-4">
             <Text className="text-2xl font-bold mb-6 text-center">
@@ -181,7 +181,10 @@ export default function RegisterTeam() {
                     <Text className="text-gray-500 mt-2">{t('loading')}</Text>
                   </View>
                 ) : venues.length > 0 ? (
-                  <ScrollView className="max-h-[200px] border-t border-gray-200">
+                  <ScrollView
+                    className="max-h-[200px] border-t border-gray-200"
+                    nestedScrollEnabled
+                    keyboardShouldPersistTaps="handled">
                     {venues.map(venue => (
                       <TouchableOpacity
                         key={venue.id}

@@ -60,3 +60,4 @@ ios/sentry.properties
 
 .env.local
 bkkleague_backend
+*.code-workspace
