@@ -8,6 +8,7 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
+build/
 
 # Native
 .kotlin/
@@ -45,23 +46,21 @@ app-example
 
 GoogleService-Info.plist
 google-services.json
+firebase.google-services.json
 src/config.js
 .ios
 *.keystore
+*.jks
 *.working
 .yarn
 xxx*
 *xxx
-
-.env.local
+android/keystore.properties
 .env.sentry-build-plugin
 ios/sentry.properties
-
-.env.local
-
-.env.local
 bkkleague_backend
 *.code-workspace
 *.bak
 ios/
 android/
+private_keys/

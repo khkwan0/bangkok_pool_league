@@ -8,9 +8,9 @@ node <<'EOF'
 const fs = require('fs')
 const app = JSON.parse(fs.readFileSync('app.json', 'utf8'))
 const version = app.expo.version
-const build = Number(app.expo.ios.buildNumber)
+const build = Number(app.expo.android?.versionCode)
 if (!version || !Number.isFinite(build)) {
-  console.error('Missing expo.version or expo.ios.buildNumber in app.json')
+  console.error('Missing expo.version or expo.android.versionCode in app.json')
   process.exit(1)
 }
 const path = 'src/config.js'
@@ -21,28 +21,13 @@ fs.writeFileSync(path, config)
 console.log(`Updated src/config.js → version ${version}, build ${build}`)
 EOF
 
-echo "Unlocking login keychain for code signing…"
-security unlock-keychain ~/Library/Keychains/login.keychain-db
-
 echo "Running prebuild…"
-npx expo prebuild --platform ios
+npx expo prebuild --platform android
 
 # Cap parallelism so the build doesn't pin every core.
-# expo run:ios doesn't forward -jobs, so wrap xcodebuild on PATH.
+# expo run:android invokes ./gradlew directly, so limit via GRADLE_OPTS.
 MAX_CPUS="${MAX_CPUS:-4}"
-XCODEBUILD_BIN="$(command -v xcodebuild)"
-WRAP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/xcodebuild-wrap.XXXXXX")"
-cleanup_wrap() { rm -rf "$WRAP_DIR"; }
-trap cleanup_wrap EXIT
-cat > "$WRAP_DIR/xcodebuild" <<EOF
-#!/usr/bin/env bash
-exec "$XCODEBUILD_BIN" \\
-  -jobs "$MAX_CPUS" \\
-  -IDEBuildOperationMaxNumberOfConcurrentCompileTasks="$MAX_CPUS" \\
-  "\$@"
-EOF
-chmod +x "$WRAP_DIR/xcodebuild"
-export PATH="$WRAP_DIR:$PATH"
+export GRADLE_OPTS="${GRADLE_OPTS:+${GRADLE_OPTS} }-Dorg.gradle.workers.max=${MAX_CPUS}"
 
 echo "Building and installing on device (max ${MAX_CPUS} CPUs)…"
-npx expo run:ios --device "$@"
+npx expo run:android --device "$@"

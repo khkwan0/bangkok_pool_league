@@ -8,6 +8,9 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "deploy_ios": "bash ./scripts/deploy_ios.sh",
+    "deploy_android": "bash ./scripts/deploy_android.sh",
+    "archive_ios": "bash ./scripts/archive_ios.sh",
+    "archive_android": "bash ./scripts/archive_android.sh",
     "web": "expo start --web",
     "lint": "expo lint"
   },
@@ -77,6 +80,7 @@
     "eslint-config-expo": "~57.0.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "googleapis": "^164.1.0",
     "jest-expo": "~57.0.4",
     "prettier": "^3.6.2",
     "typescript": "~6.0.3"

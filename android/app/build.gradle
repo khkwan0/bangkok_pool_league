@@ -84,6 +84,13 @@ def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 apply from: new File(["node", "--print", "require('path').dirname(require.resolve('@sentry/react-native/package.json'))"].execute().text.trim(), "sentry.gradle")
 
 android {
+    // BPL_RELEASE_SIGNING
+    def bplKeystoreProperties = new Properties()
+    def bplKeystorePropertiesFile = rootProject.file('keystore.properties')
+    if (bplKeystorePropertiesFile.exists()) {
+        bplKeystoreProperties.load(new FileInputStream(bplKeystorePropertiesFile))
+    }
+
     ndkVersion rootProject.ext.ndkVersion
 
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -94,7 +101,7 @@ android {
         applicationId 'com.bangkok_pool_league'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 153
+        versionCode 154
         versionName "1.96"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
@@ -106,6 +113,15 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            // BPL_RELEASE_SIGNING_CONFIG
+            if (bplKeystorePropertiesFile.exists()) {
+                keyAlias bplKeystoreProperties['keyAlias']
+                keyPassword bplKeystoreProperties['keyPassword']
+                storeFile file(bplKeystoreProperties['storeFile'])
+                storePassword bplKeystoreProperties['storePassword']
+            }
+        }
     }
     buildTypes {
         debug {
@@ -114,7 +130,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig bplKeystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds

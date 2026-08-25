@@ -42,7 +42,7 @@
     "android": {
       "package": "com.bangkok_pool_league",
       "versionCode": 154,
-      "googleServicesFile": "./google-services.json",
+      "googleServicesFile": "./firebase.google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -70,6 +70,7 @@
       "bundler": "metro"
     },
     "plugins": [
+      "./plugins/withAndroidFirebaseNotificationManifest",
       "expo-router",
       [
         "@sentry/react-native/expo",
@@ -125,7 +126,7 @@
       "expo-status-bar",
       "./plugins/withIosMarketingVersion",
       "./plugins/withIosSignEmbeddedFrameworks",
-      "./plugins/withAndroidFirebaseNotificationManifest"
+      "./plugins/withAndroidReleaseSigning"
     ],
     "experiments": {
       "typedRoutes": true,
