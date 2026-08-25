@@ -1,10 +1,10 @@
+import AppSwitch from '@/components/AppSwitch'
 import {
   Appearance,
   Image,
   Platform,
   Pressable,
   ScrollView,
-  Switch,
   View,
 } from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
@@ -100,12 +100,7 @@ export default function Settings() {
             <Text className="text-sm opacity-75">Build {config.build}</Text>
             <View className="flex-row items-center space-x-4 gap-x-2 bg-gray-800/30 rounded-lg p-2">
               <Feather name="sun" color={colors.text} size={18} />
-              <Switch
-                value={isDark}
-                onValueChange={ToggleTheme}
-                trackColor={{false: colors.primary, true: colors.primary}}
-                thumbColor={colors.text}
-              />
+              <AppSwitch value={isDark} onValueChange={ToggleTheme} />
               <MCI name="weather-night" color={colors.text} size={18} />
             </View>
           </View>

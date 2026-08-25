@@ -1,8 +1,8 @@
 import {LeagueProvider} from '@/context/LeagueContext'
 import {MatchProvider} from '@/context/MatchContext'
 import '@/i18n'
-import {BottomSheetModalProvider} from '@gorhom/bottom-sheet'
-import notifee, {AndroidImportance} from '@notifee/react-native'
+import {ensureAppWideChannel} from '@/lib/notifications'
+import {BottomSheetModalProvider} from '@expo/ui/community/bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   AuthorizationStatus,
@@ -14,6 +14,7 @@ import {
 import {DarkTheme, DefaultTheme, ThemeProvider} from "expo-router/react-navigation"
 import * as Sentry from '@sentry/react-native'
 import {useFonts} from 'expo-font'
+import * as Notifications from 'expo-notifications'
 import {router, Stack} from 'expo-router'
 import {useEffect} from 'react'
 import {useTranslation} from 'react-i18next'
@@ -28,28 +29,28 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler'
 import {SafeAreaProvider} from 'react-native-safe-area-context'
 import '../../global.css'
 
+const sentryIntegrations: Parameters<typeof Sentry.init>[0]['integrations'] =
+  [Sentry.feedbackIntegration()]
+if (!__DEV__) {
+  sentryIntegrations.unshift(Sentry.mobileReplayIntegration())
+}
+
+Sentry.init({
+  dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
+  sendDefaultPii: true,
+  enableLogs: true,
+  // replaysSessionSampleRate: __DEV__ ? 0 : 0.1,
+  // replaysOnErrorSampleRate: __DEV__ ? 0 : 1.0,
+  replaysSessionSampleRate: 0,
+  replaysOnErrorSampleRate: 0,
+  integrations: sentryIntegrations,
+})
+
 function RootLayout() {
   const {t} = useTranslation()
   const colorScheme = useColorScheme()
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  })
-
-  const sentryIntegrations: Parameters<typeof Sentry.init>[0]['integrations'] =
-    [Sentry.feedbackIntegration()]
-  if (!__DEV__) {
-    sentryIntegrations.unshift(Sentry.mobileReplayIntegration())
-  }
-
-  Sentry.init({
-    dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
-    sendDefaultPii: true,
-    enableLogs: true,
-    // replaysSessionSampleRate: __DEV__ ? 0 : 0.1,
-    // replaysOnErrorSampleRate: __DEV__ ? 0 : 1.0,
-    replaysSessionSampleRate: 0,
-    replaysOnErrorSampleRate: 0,
-    integrations: sentryIntegrations,
   })
 
   async function RequestUserPermission() {
@@ -62,10 +63,18 @@ function RootLayout() {
       if (enabled) {
         console.log('Authorization status: ', authStatus)
       }
+      await Notifications.requestPermissionsAsync({
+        ios: {
+          allowAlert: true,
+          allowBadge: true,
+          allowSound: true,
+        },
+      })
     } else if (Platform.OS === 'android') {
-      PermissionsAndroid.request(
+      await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
       )
+      await Notifications.requestPermissionsAsync()
     }
   }
 
@@ -85,13 +94,7 @@ function RootLayout() {
   }, [])
 
   async function CreateChannel() {
-    await notifee.createChannel({
-      id: 'App Wide',
-      name: 'General',
-      vibration: true,
-      lights: true,
-      importance: AndroidImportance.HIGH,
-    })
+    await ensureAppWideChannel()
   }
 
   useEffect(() => {

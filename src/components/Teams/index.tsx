@@ -1,3 +1,4 @@
+import AppCheckbox from '@/components/AppCheckbox'
 import { ThemedText as Text } from '@/components/ThemedText'
 import { ThemedView as CardView } from '@/components/ThemedView'
 import { useLeagueContext } from '@/context/LeagueContext'
@@ -9,8 +10,6 @@ import { router } from 'expo-router'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, Pressable, View } from 'react-native'
-import BouncyCheckbox from 'react-native-bouncy-checkbox'
-
 type TeamType = {
   id: number
   name: string
@@ -100,13 +99,12 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
     }
   }
 
-  async function handleSetShowMineOnly() {
-    const newValue = !showMineOnly
+  async function handleSetShowMineOnly(value: boolean) {
     await AsyncStorage.setItem(
       'my_teams_only',
-      JSON.stringify({showMineOnly: newValue}),
+      JSON.stringify({showMineOnly: value}),
     )
-    setShowMineOnly(newValue)
+    setShowMineOnly(value)
   }
 
   async function loadShowMineOnly() {
@@ -144,11 +142,10 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
         ListHeaderComponent={
           typeof user.id !== 'undefined' ? (
             <View className="px-4 py-3 border-b border-slate-200">
-              <BouncyCheckbox
-                text={t('show_my_teams')}
-                textStyle={{textDecorationLine: 'none'}}
-                isChecked={showMineOnly}
-                onPress={handleSetShowMineOnly}
+              <AppCheckbox
+                label={t('show_my_teams')}
+                value={showMineOnly}
+                onValueChange={handleSetShowMineOnly}
               />
             </View>
           ) : null

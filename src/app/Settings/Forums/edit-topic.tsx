@@ -1,3 +1,4 @@
+import AppSwitch from '@/components/AppSwitch'
 import Button from '@/components/Button'
 import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
@@ -13,7 +14,6 @@ import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
   ScrollView,
-  Switch,
   useColorScheme,
 } from 'react-native'
 
@@ -168,14 +168,7 @@ export default function ForumEditTopic() {
           <Text className="text-sm font-semibold">{label}</Text>
           <Text className="mt-0.5 text-xs opacity-60">{hint}</Text>
         </View>
-        <Switch
-          value={value}
-          onValueChange={onValueChange}
-          trackColor={{
-            false: isDark ? '#475569' : '#cbd5e1',
-            true: isDark ? '#2563eb' : '#2196F3',
-          }}
-        />
+        <AppSwitch value={value} onValueChange={onValueChange} />
       </View>
     )
   }

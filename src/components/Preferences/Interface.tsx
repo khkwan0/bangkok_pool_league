@@ -1,5 +1,6 @@
+import AppSwitch from '@/components/AppSwitch'
 import React, {useEffect} from 'react'
-import {View, Switch, Text} from 'react-native'
+import {View, Text} from 'react-native'
 import {useTranslation} from 'react-i18next'
 import {useTheme} from "expo-router/react-navigation"
 import {useLeagueContext} from '../../context/LeagueContext'
@@ -79,11 +80,9 @@ const Interface = () => {
               : t('old_match_card_description')}
           </Text>
         </View>
-        <Switch
+        <AppSwitch
           value={state.isNewMatchCard}
           onValueChange={handleMatchCardToggle}
-          trackColor={{false: colors.border, true: colors.primary}}
-          thumbColor={colors.card}
         />
       </View>
 
@@ -109,11 +108,9 @@ const Interface = () => {
             {t('live_scores_description')}
           </Text>
         </View>
-        <Switch
-          value={state.showLiveScores ?? true} 
+        <AppSwitch
+          value={state.showLiveScores ?? true}
           onValueChange={handleLiveScoresToggle}
-          trackColor={{false: colors.border, true: colors.primary}}
-          thumbColor={colors.card}
         />
       </View>
 

@@ -1,5 +1,5 @@
+import AppSwitch from '@/components/AppSwitch'
 import {View} from 'react-native'
-import {Switch} from 'react-native-paper'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTheme} from "expo-router/react-navigation"
 import {useTranslation} from 'react-i18next'
@@ -30,7 +30,7 @@ export default function NotificationOptions() {
               color={colors.primary}
               style={{marginRight: 8}}
             />
-            <Switch
+            <AppSwitch
               value={user?.preferences?.enabledPushNotifications ?? true}
               onValueChange={async val => {
                 await account.SetPushNotifications(val)
@@ -59,7 +59,7 @@ export default function NotificationOptions() {
               }
               style={{marginRight: 8}}
             />
-            <Switch
+            <AppSwitch
               value={user?.preferences?.soundNotifications ?? true}
               onValueChange={async val => {
                 await account.SetSoundNotifications(val)

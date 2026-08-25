@@ -7,12 +7,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "bangkokpoolleague",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "appleTeamId": "2MXCL8R3KW",
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "buildNumber": "153",
+      "buildNumber": "154",
       "googleServicesFile": "./GoogleService-Info.plist",
       "usesAppleSignIn": true,
       "associatedDomains": [
@@ -21,22 +20,15 @@
       ],
       "entitlements": {
         "aps-environment": "production",
-        "com.apple.developer.applesignin": [
-          "Default"
-        ]
+        "com.apple.developer.applesignin": ["Default"]
       },
       "infoPlist": {
         "LSApplicationCategoryType": "public.app-category.sports",
-        "UIBackgroundModes": [
-          "fetch",
-          "remote-notification"
-        ],
+        "UIBackgroundModes": ["fetch", "remote-notification"],
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
-        "LSApplicationQueriesSchemes": [
-          "lineauth2"
-        ],
+        "LSApplicationQueriesSchemes": ["lineauth2"],
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
@@ -49,14 +41,13 @@
     },
     "android": {
       "package": "com.bangkok_pool_league",
-      "versionCode": 153,
+      "versionCode": 154,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.INTERNET",
@@ -105,16 +96,16 @@
         {
           "ios": {
             "useFrameworks": "static",
-            "forceStaticLinking": [
-              "RNFBApp",
-              "RNFBMessaging"
-            ]
-          },
-          "android": {
-            "extraMavenRepos": [
-              "../../node_modules/@notifee/react-native/android/libs"
-            ]
+            "forceStaticLinking": ["RNFBApp", "RNFBMessaging"]
           }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "General"
         }
       ],
       [
@@ -129,11 +120,12 @@
       "@react-native-firebase/messaging",
       "@xmartlabs/react-native-line",
       "expo-web-browser",
-      "@react-native-community/datetimepicker",
-      "@sentry/react-native",
       "expo-font",
       "expo-image",
-      "expo-status-bar"
+      "expo-status-bar",
+      "./plugins/withIosMarketingVersion",
+      "./plugins/withIosSignEmbeddedFrameworks",
+      "./plugins/withAndroidFirebaseNotificationManifest"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -8,7 +8,6 @@ import {t} from 'i18next'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useThemeColor} from '@/hooks/useThemeColor'
-import {userInteractionIntegration} from '@sentry/react-native'
 
 export default function ChoosePlayer(props: any) {
   const {params} = useLocalSearchParams()

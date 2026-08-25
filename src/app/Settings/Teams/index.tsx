@@ -8,7 +8,7 @@ import {useAccount, useLeague} from '@/hooks'
 import {useNavigation, useFocusEffect, useTheme} from 'expo-router/react-navigation'
 import {router} from 'expo-router'
 import {useTranslation} from 'react-i18next'
-import BouncyCheckbox from 'react-native-bouncy-checkbox'
+import AppCheckbox from '@/components/AppCheckbox'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useLeagueContext} from '@/context/LeagueContext'
 
@@ -164,11 +164,16 @@ export default function TeamsHome() {
           <View>
             {typeof user?.teams !== 'undefined' && user.teams.length > 0 && (
               <View className="my-10 px-10">
-                <BouncyCheckbox
-                  text={t('show_my_teams')}
-                  textStyle={{textDecorationLine: 'none'}}
-                  isChecked={showMineOnly}
-                  onPress={() => HandleSetShowMineOnly()}
+                <AppCheckbox
+                  label={t('show_my_teams')}
+                  value={showMineOnly}
+                  onValueChange={value => {
+                    AsyncStorage.setItem(
+                      'my_teams_only',
+                      JSON.stringify({showMineOnly: value}),
+                    )
+                    setShowMineOnly(value)
+                  }}
                 />
               </View>
             )}

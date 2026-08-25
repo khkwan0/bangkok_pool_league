@@ -1,9 +1,9 @@
+import AppSwitch from '@/components/AppSwitch'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTheme, useNavigation} from "expo-router/react-navigation"
 import {useTranslation} from 'react-i18next'
 import {
   Pressable,
-  Switch,
   TextInput,
   ScrollView,
   KeyboardAvoidingView,
@@ -239,7 +239,7 @@ export default function Preferences() {
                           color={colors.primary}
                           style={{marginRight: 8}}
                         />
-                        <Switch
+                        <AppSwitch
                           value={
                             user?.preferences?.enabledPushNotifications ?? true
                           }
@@ -270,7 +270,7 @@ export default function Preferences() {
                           }
                           style={{marginRight: 8}}
                         />
-                        <Switch
+                        <AppSwitch
                           value={user?.preferences?.soundNotifications ?? true}
                           onValueChange={async val => {
                             await account.SetSoundNotifications(val)

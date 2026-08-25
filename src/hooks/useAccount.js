@@ -1,7 +1,7 @@
 import config from '@/config'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useNetwork} from '@/hooks/useNetwork'
-import notifee, {AndroidImportance} from '@notifee/react-native'
+import {ensureUserChannels} from '@/lib/notifications'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {getMessaging, getToken} from '@react-native-firebase/messaging'
 import {Platform} from 'react-native'
@@ -23,38 +23,38 @@ export const useAccount = () => {
   // uses jwt
   const FetchUser = async () => {
     try {
-      if (
-        typeof user === 'undefined' ||
-        !user ||
-        typeof user?.id === 'undefined' ||
-        !user.id
-      ) {
-        const userData = await Get('/user')
+      let userData = user
+      if (!user?.id) {
+        userData = await Get('/user')
+        dispatch({type: 'SET_USER', payload: userData})
+      }
+
+      try {
         const messaging = getMessaging()
         const token = await getToken(messaging)
         await Post('/user/token', {token: token})
-        if (typeof userData.role_id !== 'undefined' && userData.role_id === 9) {
-          await notifee.createChannel({
-            id: 'Admin',
-            name: 'Admin',
-            vibration: true,
-            lights: true,
-            importance: AndroidImportance.HIGH,
-          })
-        }
-        await notifee.createChannel({
-          id: 'General',
-          name: 'General',
-          vibration: true,
-          lights: true,
-          importance: AndroidImportance.HIGH,
+        await ensureUserChannels({
+          includeAdmin: userData?.role_id === 9,
         })
-        dispatch({type: 'SET_USER', payload: userData})
-        return userData
+      } catch (tokenError) {
+        console.error('Error registering FCM token:', tokenError)
       }
+
+      return userData
     } catch (e) {
       console.log(e)
       console.log('no user')
+    }
+  }
+
+  const RefreshPushToken = async () => {
+    try {
+      const messaging = getMessaging()
+      const token = await getToken(messaging)
+      await Post('/user/token', {token: token})
+      return token
+    } catch (e) {
+      console.error('Error refreshing FCM token:', e)
     }
   }
 
@@ -349,8 +349,14 @@ export const useAccount = () => {
     try {
       const res = await Get('/message/unread/count')
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        if (typeof res.data !== 'undefined' && res.data) {
+        if (typeof res.data === 'number') {
           return res.data
+        }
+        if (typeof res.data !== 'undefined' && res.data !== null) {
+          const count = Number(res.data)
+          if (Number.isFinite(count)) {
+            return count
+          }
         }
       }
     } catch (e) {
@@ -504,6 +510,7 @@ export const useAccount = () => {
     MarkMessageAsRead,
     Register,
     Recover,
+    RefreshPushToken,
     SaveAvatar,
     SendMessage,
     SetFirstName,

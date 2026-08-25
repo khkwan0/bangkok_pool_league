@@ -2,9 +2,8 @@ import { ThemedText as Text } from '@/components/ThemedText'
 import { ThemedView as View } from '@/components/ThemedView'
 import { useLeagueContext } from '@/context/LeagueContext'
 import { useAccount } from '@/hooks/useAccount'
+import { setAppBadgeCount } from '@/lib/notifications'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import notifee from '@notifee/react-native'
-import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import { router } from 'expo-router'
 import {
   bangkokNowIso,
@@ -13,7 +12,7 @@ import {
 } from '@/lib/bangkokTime'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Platform, StyleSheet, TouchableOpacity } from 'react-native'
+import { Alert, StyleSheet, TouchableOpacity } from 'react-native'
 import { MessageCardProps } from './types'
 
 export default function MessageCard({message, showAll}: MessageCardProps) {
@@ -32,13 +31,7 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
           setIsRead(formatMessageCardDate(bangkokNowIso()))
           const count = await account.GetUnreadMessageCount()
           dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
-          if (Platform.OS === 'ios') {
-            PushNotificationIOS.setApplicationIconBadgeNumber(count)
-          } else if (Platform.OS === 'android') {
-            notifee.setBadgeCount(count).catch((e) => {
-              console.error('Error setting Android badge count:', e)
-            })
-          }
+          await setAppBadgeCount(count)
         }
       }
       router.push({
@@ -66,13 +59,7 @@ export default function MessageCard({message, showAll}: MessageCardProps) {
               setIsDeleted(true)
               const count = await account.GetUnreadMessageCount()
               dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
-              if (Platform.OS === 'ios') {
-                PushNotificationIOS.setApplicationIconBadgeNumber(count)
-              } else if (Platform.OS === 'android') {
-                notifee.setBadgeCount(count).catch((e) => {
-                  console.error('Error setting Android badge count:', e)
-                })
-              }
+              await setAppBadgeCount(count)
             }
           } catch (e) {
             console.log(e)

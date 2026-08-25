@@ -8,8 +8,7 @@ import { useAccount } from '@/hooks/useAccount'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { useLeague } from '@/hooks/useLeague'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import PushNotificationIOS from '@react-native-community/push-notification-ios'
-import notifee from '@notifee/react-native'
+import { setAppBadgeCount } from '@/lib/notifications'
 import { useNavigation } from "expo-router/react-navigation"
 import { useLocalSearchParams } from 'expo-router'
 import {
@@ -265,13 +264,7 @@ export default function MessagesThread() {
         })
 
         // Update badge immediately with expected count (useEffect will also update when state changes)
-        if (Platform.OS === 'android') {
-          notifee.setBadgeCount(expectedTotalUnread).then(() => {
-            console.log('Android badge count updated immediately to:', expectedTotalUnread)
-          }).catch((e) => {
-            console.error('Error setting Android badge count:', e)
-          })
-        }
+        await setAppBadgeCount(expectedTotalUnread)
 
         // Update messages state to reflect read status
         setMessages((prev) =>
@@ -291,15 +284,7 @@ export default function MessagesThread() {
 
   // Update badge whenever messageCount changes (ensures badge stays in sync after marking messages as read)
   useEffect(() => {
-    if (Platform.OS === 'ios') {
-      PushNotificationIOS.setApplicationIconBadgeNumber(state.messageCount)
-    } else if (Platform.OS === 'android') {
-      notifee.setBadgeCount(state.messageCount).then(() => {
-        console.log('Android badge count updated to:', state.messageCount)
-      }).catch((e) => {
-        console.error('Error setting Android badge count:', e)
-      })
-    }
+    setAppBadgeCount(state.messageCount)
   }, [state.messageCount])
 
   useEffect(() => {

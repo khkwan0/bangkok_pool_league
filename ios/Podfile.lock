@@ -1,4 +1,6 @@
 PODS:
+  - EXApplication (57.0.2):
+    - ExpoModulesCore
   - EXConstants (57.0.14):
     - ExpoModulesCore
   - Expo (57.0.16):
@@ -88,6 +90,8 @@ PODS:
     - ExpoModulesJSI
     - ExpoModulesWorklets
     - RNWorklets
+  - ExpoNotifications (57.0.14):
+    - ExpoModulesCore
   - ExpoRouter (57.0.16):
     - ExpoModulesCore
     - RNScreens
@@ -2172,30 +2176,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNCPushNotificationIOS (1.11.0):
-    - React-Core
-  - RNDateTimePicker (9.1.0):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
   - RNFBApp (23.4.0):
     - Firebase/CoreOnly (= 12.3.0)
     - React-Core
@@ -2227,11 +2207,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNNotifee (9.1.8):
-    - React-Core
-    - RNNotifee/NotifeeCore (= 9.1.8)
-  - RNNotifee/NotifeeCore (9.1.8):
-    - React-Core
   - RNReanimated (4.5.1):
     - hermes-engine
     - RCTRequired
@@ -2477,6 +2452,7 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
+  - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - Expo (from `../node_modules/expo`)
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
@@ -2496,6 +2472,7 @@ DEPENDENCIES:
   - ExpoModulesJSI (from `../node_modules/expo-modules-jsi/apple`)
   - ExpoModulesWorklets (from `../node_modules/expo-modules-core/ExpoModulesWorklets.podspec`)
   - ExpoModulesWorkletsAdapter (from `../node_modules/expo-modules-core`)
+  - ExpoNotifications (from `../node_modules/expo-notifications/ios`)
   - ExpoRouter (from `../node_modules/expo-router/ios`)
   - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - ExpoSymbols (from `../node_modules/expo-symbols/ios`)
@@ -2584,12 +2561,9 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
-  - "RNCPushNotificationIOS (from `../node_modules/@react-native-community/push-notification-ios`)"
-  - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
-  - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
@@ -2612,6 +2586,8 @@ SPEC REPOS:
     - Sentry
 
 EXTERNAL SOURCES:
+  EXApplication:
+    :path: "../node_modules/expo-application/ios"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
   Expo:
@@ -2650,6 +2626,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/expo-modules-core/ExpoModulesWorklets.podspec"
   ExpoModulesWorkletsAdapter:
     :path: "../node_modules/expo-modules-core"
+  ExpoNotifications:
+    :path: "../node_modules/expo-notifications/ios"
   ExpoRouter:
     :path: "../node_modules/expo-router/ios"
   ExpoSplashScreen:
@@ -2825,18 +2803,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-masked-view/masked-view"
   RNCPicker:
     :path: "../node_modules/@react-native-picker/picker"
-  RNCPushNotificationIOS:
-    :path: "../node_modules/@react-native-community/push-notification-ios"
-  RNDateTimePicker:
-    :path: "../node_modules/@react-native-community/datetimepicker"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBMessaging:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
-  RNNotifee:
-    :path: "../node_modules/@notifee/react-native"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -2849,6 +2821,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  EXApplication: bbd517d50878ca1d121fb3843392beb210181e28
   EXConstants: 0023ccf3213a49042510a7a63e58a911cea6be8d
   Expo: 6fce2cb86fc274361c8a41d9294d0b366a47eb82
   ExpoAsset: b8c66d7e07922d39f280e1a79b5f70ef8e238bbc
@@ -2868,6 +2841,7 @@ SPEC CHECKSUMS:
   ExpoModulesJSI: db6d555b92d5bbca8b78f716771a1b5b8d553726
   ExpoModulesWorklets: ba8252c1824dce38008bdbd1de28566c6591ab7b
   ExpoModulesWorkletsAdapter: d509544a1cfb3494bef239571d9374ede1d020cb
+  ExpoNotifications: 6c0393cf9fe8dd90e85dc51585aacbe93372b79b
   ExpoRouter: 72725c8d3c4d3413ba8ecb26e35d1668ef35b9ae
   ExpoSplashScreen: 6f422fd595600d78520c6b7dcf8a908fb8a7fec0
   ExpoSymbols: 0efd93edf0f825bf3c762582b0769dd3b296235c
@@ -2966,12 +2940,9 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: d90e523830fa7705f8c61632479abde871bc792f
   RNCMaskedView: 8069b4d4e23b3d28b4fcac70bf266be43ffc3d2e
   RNCPicker: a3921be99ae291e420e3e8940e5b2b53e572c543
-  RNCPushNotificationIOS: 6c4ca3388c7434e4a662b92e4dfeeee858e6f440
-  RNDateTimePicker: afe0288e6c7855994f7f2617b7b2c05799fea7f3
   RNFBApp: 8d27c7545e7e06d78974e204ff95f207a60a5cb2
   RNFBMessaging: 614675f78c9f357a1c7a3abeeda265afb6eff276
   RNGestureHandler: 7b07d9192bc65c6883fb37fdecc05dc6b61c814f
-  RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNReanimated: 28766837a1b96215c55c2be65b27b8903e31ef5d
   RNScreens: 82c8a2b21dfd8b06a627ad48a543a54c2fb97abf
   RNSentry: 4f0cf7953e18b7ff30a6524107bfff730a1b0d8d
@@ -2979,6 +2950,6 @@ SPEC CHECKSUMS:
   Sentry: d587a8fe91ca13503ecd69a1905f3e8a0fcf61be
   Yoga: 542a30dafe5b0f5f1d9f185ea7b2a3811ac54801
 
-PODFILE CHECKSUM: f497b5ae922c9162e2cdb98e6cd3aeab21aa9b4b
+PODFILE CHECKSUM: 392c21b05de2d13afb0c7a15f7a1fecdeea90e61
 
 COCOAPODS: 1.16.2

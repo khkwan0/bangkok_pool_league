@@ -1,3 +1,4 @@
+import AppCheckbox from '@/components/AppCheckbox'
 import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
@@ -9,14 +10,7 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount, useAd, useLeague, useSeason} from '@/hooks'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {MaterialIcons} from '@expo/vector-icons'
-import notifee from '@notifee/react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import PushNotificationIOS from '@react-native-community/push-notification-ios'
-import {
-  getMessaging,
-  onMessage,
-  setBackgroundMessageHandler,
-} from '@react-native-firebase/messaging'
 import {useTheme} from "expo-router/react-navigation"
 import {usePathname, useRouter} from 'expo-router'
 import React from 'react'
@@ -32,7 +26,6 @@ import {
   RefreshControl,
   useColorScheme,
 } from 'react-native'
-import BouncyCheckbox from 'react-native-bouncy-checkbox'
 
 interface ItemType {
   home_team_id: number
@@ -254,9 +247,6 @@ export default function UpcomingMatches(props: any) {
     }
   }, [showPostponed])
 
-  async function HandleTogglePostponed() {
-    setShowPostponed(s => !s)
-  }
 
   async function HandleGetPostponedOption() {
     try {
@@ -289,59 +279,6 @@ export default function UpcomingMatches(props: any) {
       return
     }
     HandleGetPostponedOption()
-  }, [])
-
-  React.useEffect(() => {
-    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
-      return
-    }
-    if (Platform.OS !== 'web') {
-      const messaging = getMessaging()
-      const unsubscribe = onMessage(messaging, async remoteMessage => {
-        try {
-          // Force badge update by fetching unread count from API
-          const count = await account.GetUnreadMessageCount()
-          if (typeof count === 'number') {
-            if (Platform.OS === 'ios') {
-              PushNotificationIOS.setApplicationIconBadgeNumber(count)
-            } else if (Platform.OS === 'android') {
-              await notifee.setBadgeCount(count)
-              console.log(
-                'Android badge updated from API (onMessage) to:',
-                count,
-              )
-            }
-            dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
-          }
-        } catch (e) {
-          console.error('Error updating badge on notification:', e)
-        }
-      })
-      return unsubscribe
-    }
-  }, [])
-
-  React.useEffect(() => {
-    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
-      return
-    }
-    if (Platform.OS !== 'web') {
-      const messaging = getMessaging()
-      setBackgroundMessageHandler(messaging, async remoteMessage => {
-        try {
-          const count = await account.GetUnreadMessageCount()
-          if (Platform.OS === 'ios') {
-            PushNotificationIOS.setApplicationIconBadgeNumber(count)
-          } else if (Platform.OS === 'android') {
-            await notifee.setBadgeCount(count)
-            console.log('Android badge updated in background to:', count)
-          }
-          dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
-        } catch (e) {
-          console.error('Error updating badge in background:', e)
-        }
-      })
-    }
   }, [])
 
   const renderItem = React.useCallback(
@@ -527,36 +464,20 @@ export default function UpcomingMatches(props: any) {
                 {typeof user?.teams !== 'undefined' &&
                   user.teams.length > 0 && (
                     <View className="p-2 border-b border-gray-200 dark:border-gray-700">
-                      <BouncyCheckbox
+                      <AppCheckbox
                         disabled={refreshing}
-                        text={t('show_mine_only')}
-                        textStyle={{
-                          textDecorationLine: 'none',
-                          fontSize: 16,
-                          fontWeight: '500',
-                          color: colorScheme === 'dark' ? '#ffffff' : '#37003C',
-                        }}
-                        isChecked={showMineOnly}
-                        onPress={() => setShowMineOnly(s => !s)}
-                        fillColor="#37003C"
-                        iconStyle={{borderRadius: 4}}
+                        label={t('show_mine_only')}
+                        value={showMineOnly}
+                        onValueChange={setShowMineOnly}
                       />
                     </View>
                   )}
                 <View className="p-2">
-                  <BouncyCheckbox
+                  <AppCheckbox
                     disabled={refreshing}
-                    text={t('show_postponed')}
-                    textStyle={{
-                      textDecorationLine: 'none',
-                      fontSize: 16,
-                      fontWeight: '500',
-                      color: colorScheme === 'dark' ? '#ffffff' : '#37003C',
-                    }}
-                    isChecked={showPostponed}
-                    onPress={() => HandleTogglePostponed()}
-                    fillColor="#37003C"
-                    iconStyle={{borderRadius: 4}}
+                    label={t('show_postponed')}
+                    value={showPostponed}
+                    onValueChange={setShowPostponed}
                   />
                 </View>
               </Animated.View>

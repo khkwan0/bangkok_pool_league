@@ -54,6 +54,7 @@ xxx*
 *xxx
 
 .env.local
+.env.sentry-build-plugin
 ios/sentry.properties
 
 .env.local
@@ -62,3 +63,5 @@ ios/sentry.properties
 bkkleague_backend
 *.code-workspace
 *.bak
+ios/
+android/

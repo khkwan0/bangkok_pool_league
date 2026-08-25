@@ -18,13 +18,13 @@ import {
   getProposingTeamShortName,
   parsePostponedProposal,
 } from '@/lib/postponedProposal'
+import DateTimePicker from '@expo/ui/community/datetime-picker'
 import {Ionicons} from '@expo/vector-icons'
 import {useNavigation} from "expo-router/react-navigation"
 import {router} from 'expo-router'
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {ActivityIndicator} from 'react-native'
-import DateTimePicker from 'react-native-modal-datetime-picker'
 
 export default function Postpone({matchInfo}: {matchInfo: any}) {
   const parsedMatchInfo =
@@ -62,7 +62,6 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
   const [loading, setLoading] = useState(false)
   const [dialogSubmitting, setDialogSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [wasCancelled, setWasCancelled] = useState(false)
   const {t} = useTranslation()
   const navigation = useNavigation()
 
@@ -141,18 +140,10 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
   function handleCancel() {
     setLoading(false)
     setShowDatePicker(false)
-    setWasCancelled(true)
-  }
-
-  function handleHide() {
-    if (!wasCancelled) {
-      setShowConfirmPostponeDate(true)
-    }
   }
 
   function handleOpenDatePicker() {
     setShowDatePicker(true)
-    setWasCancelled(false)
   }
 
   async function postponeIndefinitely() {
@@ -304,22 +295,23 @@ export default function Postpone({matchInfo}: {matchInfo: any}) {
         ) : null}
 
         {/* Date Picker */}
-        <DateTimePicker
-          isVisible={showDatePicker}
-          date={newDate ?? bangkokDefaultProposeTimeForPicker()}
-          minimumDate={bangkokMinimumPickerDate()}
-          mode="datetime"
-          is24Hour={false}
-          minuteInterval={30}
-          onHide={handleHide}
-          onCancel={handleCancel}
-          onConfirm={date => {
-            setNewDate(date)
-            setNewDateBangkokIso(pickerWallClockToBangkokIso(date))
-            setDateSelected(true)
-            setShowDatePicker(false)
-          }}
-        />
+        {showDatePicker ? (
+          <DateTimePicker
+            value={newDate ?? bangkokDefaultProposeTimeForPicker()}
+            minimumDate={bangkokMinimumPickerDate()}
+            mode="datetime"
+            is24Hour={false}
+            presentation="dialog"
+            onDismiss={handleCancel}
+            onValueChange={(_event, date) => {
+              setNewDate(date)
+              setNewDateBangkokIso(pickerWallClockToBangkokIso(date))
+              setDateSelected(true)
+              setShowDatePicker(false)
+              setShowConfirmPostponeDate(true)
+            }}
+          />
+        ) : null}
 
         {/* Confirmation Dialog */}
         <ConfirmDialog

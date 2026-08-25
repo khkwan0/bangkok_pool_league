@@ -4,12 +4,13 @@ import {
   TAB_FAB_RING_SIZE,
   TAB_FAB_SIZE,
 } from '@/components/navigation/tabBarMetrics'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {
   type BottomTabBarProps,
   type BottomTabNavigationOptions,
 } from "expo-router/js-tabs"
 import {PlatformPressable} from "expo-router/react-navigation"
-import {BottomSheetModal} from '@gorhom/bottom-sheet'
+import {BottomSheetModal} from '@expo/ui/community/bottom-sheet'
 import * as Haptics from 'expo-haptics'
 import React from 'react'
 import {
@@ -94,6 +95,9 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const sheetRef = React.useRef<BottomSheetModal>(null)
+  const {state: leagueState} = useLeagueContext()
+  const messageBadge =
+    leagueState.messageCount > 0 ? String(leagueState.messageCount) : undefined
 
   const fabAdjacentIndices = React.useMemo(() => {
     const visibleIndices = state.routes.reduce<number[]>((indices, route, index) => {
@@ -155,13 +159,24 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
       })
     }
 
+    const isMessagesTab = route.name === 'messages'
+    const optionsWithBadge: BottomTabNavigationOptions = isMessagesTab
+      ? {
+          ...options,
+          tabBarBadge: messageBadge,
+          tabBarBadgeStyle: messageBadge
+            ? {backgroundColor: '#ef4444'}
+            : undefined,
+        }
+      : options
+
     return (
       <TabBarItem
         key={route.key}
         route={route}
         index={index}
         isFocused={isFocused}
-        options={options}
+        options={optionsWithBadge}
         onPress={onPress}
         onLongPress={onLongPress}
         colors={colors}

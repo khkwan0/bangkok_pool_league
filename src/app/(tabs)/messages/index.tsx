@@ -3,13 +3,12 @@ import Messages from '@/components/Messages'
 import {Thread} from '@/components/Messages/types'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount} from '@/hooks/useAccount'
-import notifee from '@notifee/react-native'
-import PushNotificationIOS from '@react-native-community/push-notification-ios'
+import {setAppBadgeCount} from '@/lib/notifications'
 import {useFocusEffect, useNavigation} from "expo-router/react-navigation"
 import {router} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import {Alert, Platform} from 'react-native'
+import {Alert} from 'react-native'
 
 export default function MessagesScreen() {
   const account = useAccount()
@@ -49,13 +48,7 @@ export default function MessagesScreen() {
 
   // Update badge whenever messageCount changes
   React.useEffect(() => {
-    if (Platform.OS === 'ios') {
-      PushNotificationIOS.setApplicationIconBadgeNumber(state.messageCount)
-    } else if (Platform.OS === 'android') {
-      notifee.setBadgeCount(state.messageCount).catch(e => {
-        console.error('Error setting Android badge count:', e)
-      })
-    }
+    setAppBadgeCount(state.messageCount)
   }, [state.messageCount])
 
   // Initial fetch on mount if no cached data
@@ -151,13 +144,7 @@ export default function MessagesScreen() {
         if (count != null) {
           dispatch({type: 'SET_MESSAGE_COUNT', payload: count})
         }
-        if (Platform.OS === 'ios') {
-          PushNotificationIOS.setApplicationIconBadgeNumber(count ?? 0)
-        } else if (Platform.OS === 'android') {
-          notifee.setBadgeCount(count ?? 0).catch(e => {
-            console.error('Error setting Android badge count:', e)
-          })
-        }
+        await setAppBadgeCount(count ?? 0)
       }
     } catch (e) {
       console.error('handleThreadMarkAllRead', e)
@@ -165,13 +152,7 @@ export default function MessagesScreen() {
   }
 
   const updateBadgeFromCount = (count: number | null | undefined) => {
-    if (Platform.OS === 'ios') {
-      PushNotificationIOS.setApplicationIconBadgeNumber(count ?? 0)
-    } else if (Platform.OS === 'android') {
-      notifee.setBadgeCount(count ?? 0).catch(e => {
-        console.error('Error setting Android badge count:', e)
-      })
-    }
+    setAppBadgeCount(count ?? 0)
   }
 
   const handleMarkAllThreadsRead = async () => {

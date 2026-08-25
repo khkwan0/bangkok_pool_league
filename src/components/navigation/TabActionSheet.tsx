@@ -5,15 +5,12 @@ import config from '@/config.js'
 import {useLeagueContext} from '@/context/LeagueContext'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {
-  BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetView,
-  type BottomSheetBackdropProps,
-} from '@gorhom/bottom-sheet'
+} from '@expo/ui/community/bottom-sheet'
 import {useRouter} from 'expo-router'
 import React from 'react'
 import {Pressable, useColorScheme} from 'react-native'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useTranslation} from 'react-i18next'
 
 type QuickActionItemProps = {
@@ -53,24 +50,11 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
   function TabActionSheet(_props, ref) {
     const colorScheme = useColorScheme() ?? 'light'
     const colors = Colors[colorScheme]
-    const insets = useSafeAreaInsets()
     const router = useRouter()
     const {t} = useTranslation()
     const {state} = useLeagueContext()
     const user = state.user
     const snapPoints = React.useMemo(() => ['55%'], [])
-
-    const renderBackdrop = React.useCallback(
-      (props: BottomSheetBackdropProps) => (
-        <BottomSheetBackdrop
-          {...props}
-          disappearsOnIndex={-1}
-          appearsOnIndex={0}
-          opacity={0.5}
-        />
-      ),
-      [],
-    )
 
     const navigate = (url: string) => {
       if (ref && 'current' in ref) {
@@ -83,12 +67,9 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
       <BottomSheetModal
         ref={ref}
         snapPoints={snapPoints}
-        bottomInset={insets.bottom}
         enablePanDownToClose
-        backdropComponent={renderBackdrop}
-        backgroundStyle={{backgroundColor: colors.background}}
-        handleIndicatorStyle={{backgroundColor: colors.icon}}>
-        <BottomSheetView className="flex-1 px-5 pb-6">
+        backgroundStyle={{backgroundColor: colors.background}}>
+        <BottomSheetView style={{flex: 1, paddingHorizontal: 20, paddingBottom: 24}}>
           <View className="mb-4">
             <View className="flex-row items-center justify-between">
               <Text type="subtitle">Quick Actions</Text>

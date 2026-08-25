@@ -6,10 +6,9 @@ import React from 'react'
 import {useLeague} from '@/hooks'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useState} from 'react'
-import {FlatList} from 'react-native'
+import {FlatList, Pressable} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import Row from '@/components/Row'
-import {TouchableRipple} from 'react-native-paper'
 import {router, usePathname} from 'expo-router'
 import type {Match, Team, DivisionData} from '@/types'
 
@@ -21,7 +20,7 @@ function MatchData({match}: {match: Match}) {
         <Text>{match.home ? 'H' : 'A'}</Text>
       </View>
       <View style={{flex: 4}}>
-        <TouchableRipple
+        <Pressable
           onPress={() =>
             router.push({
               pathname: currentPath + '/Match',
@@ -33,7 +32,7 @@ function MatchData({match}: {match: Match}) {
           <Text type="default" className="py-2">
             {match.vs}
           </Text>
-        </TouchableRipple>
+        </Pressable>
       </View>
       <View style={{flex: 1}}>
         <Text>{typeof match.pts === 'number' ? match.pts.toString() : ''}</Text>
@@ -51,14 +50,14 @@ function TeamStandings({team, idx}: {team: Team; idx: number}) {
     <View className="px-4">
       <Row alignItems="center">
         <View style={{flex: 4}}>
-          <TouchableRipple onPress={() => setShowAll(s => !s)}>
+          <Pressable onPress={() => setShowAll(s => !s)}>
             <View className="py-2">
               <Text type="default" className="font-bold text-xl">
                 {idx}&nbsp;
                 {team.name}
               </Text>
             </View>
-          </TouchableRipple>
+          </Pressable>
         </View>
         <View style={{flex: 1}}>
           <Text>{team.played.toString()}</Text>
