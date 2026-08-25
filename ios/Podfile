@@ -26,6 +26,11 @@ platform :ios, podfile_properties['ios.deploymentTarget'] || '16.4'
 
 prepare_react_native_project!
 
+# Keep a single project path after the Expo 57 rename. On a case-insensitive
+# disk, listing both bangkokpoolleague.xcodeproj and BangkokPoolLeague.xcodeproj
+# makes Xcode build/sign the same target twice.
+project 'BangkokPoolLeague.xcodeproj'
+
 target 'BangkokPoolLeague' do
   use_expo_modules!
 
@@ -65,5 +70,31 @@ target 'BangkokPoolLeague' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+
+    installer.aggregate_targets.each do |aggregate_target|
+      aggregate_target.user_project.native_targets.each do |native_target|
+        native_target.build_configurations.each do |build_config|
+          # Xcode 16+ debug dylib signing fails on device with errSecInternalComponent.
+          build_config.build_settings['ENABLE_DEBUG_DYLIB'] = 'NO'
+        end
+      end
+      aggregate_target.user_project.save
+    end
+
+    workspace_path = File.join(__dir__, 'bangkokpoolleague.xcworkspace', 'contents.xcworkspacedata')
+    if File.exist?(workspace_path)
+      File.write(workspace_path, <<~XML)
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Workspace
+           version = "1.0">
+           <FileRef
+              location = "group:BangkokPoolLeague.xcodeproj">
+           </FileRef>
+           <FileRef
+              location = "group:Pods/Pods.xcodeproj">
+           </FileRef>
+        </Workspace>
+      XML
+    end
   end
 end

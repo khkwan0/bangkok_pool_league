@@ -24,7 +24,6 @@
     "@react-native-picker/picker": "2.11.4",
     "@sentry/react-native": "~7.11.0",
     "@types/jest": "29.5.14",
-    "@types/react": "~19.1.10",
     "@xmartlabs/react-native-line": "^6.0.1",
     "babel-preset-expo": "~57.0.0",
     "expo": "57",

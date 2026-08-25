@@ -115,6 +115,13 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             onPress={() => navigate('/Settings')}
           />
           <QuickActionItem
+            icon="robot-outline"
+            label={t('ai_assistant')}
+            iconColor="#9C27B0"
+            iconBackground="rgba(156, 39, 176, 0.15)"
+            onPress={() => navigate('/Settings/CueChat')}
+          />
+          <QuickActionItem
             icon="account-group"
             label={t('teams')}
             iconColor="#4CAF50"
@@ -134,13 +141,6 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             iconColor="#2196F3"
             iconBackground="rgba(33, 150, 243, 0.15)"
             onPress={() => navigate('/Settings/Forums')}
-          />
-          <QuickActionItem
-            icon="robot-outline"
-            label={t('ai_assistant')}
-            iconColor="#9C27B0"
-            iconBackground="rgba(156, 39, 176, 0.15)"
-            onPress={() => navigate('/Settings/CueChat')}
           />
         </BottomSheetView>
       </BottomSheetModal>
