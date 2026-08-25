@@ -105,11 +105,14 @@ keyAlias=${ANDROID_KEY_ALIAS}
 storeFile=${STORE_FILE_PATH}
 EOF
 
+# Cap CPU + JVM heaps so the Mac mini stays out of swap.
+# shellcheck source=android_gradle_limits.sh
+source "$(dirname "$0")/android_gradle_limits.sh"
+apply_android_gradle_limits
+
 echo "Building release AAB…"
 # Transient Sentry TLS/network errors should not fail the Play build.
 export SENTRY_ALLOW_FAILURE="${SENTRY_ALLOW_FAILURE:-true}"
-# Cap parallelism so the archive doesn't pin every core.
-MAX_CPUS="${MAX_CPUS:-4}"
 (
   cd android
   ./gradlew bundleRelease --max-workers="$MAX_CPUS" "$@"

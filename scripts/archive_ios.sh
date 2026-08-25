@@ -81,7 +81,7 @@ npx expo prebuild --platform ios
 
 mkdir -p "$(dirname "$ARCHIVE_PATH")" "$EXPORT_PATH" "$PRIVATE_KEYS_DIR"
 
-echo "Archiving Release build → ${ARCHIVE_PATH}…"
+echo "Archiving Release build (iPhone only) → ${ARCHIVE_PATH}…"
 # Transient Sentry TLS/network errors should not fail the App Store build.
 export SENTRY_ALLOW_FAILURE="${SENTRY_ALLOW_FAILURE:-true}"
 # Cap parallelism so the archive doesn't pin every core.
@@ -93,6 +93,7 @@ xcodebuild -workspace ios/BangkokPoolLeague.xcworkspace \
   -archivePath "$ARCHIVE_PATH" \
   -jobs "$MAX_CPUS" \
   -IDEBuildOperationMaxNumberOfConcurrentCompileTasks="$MAX_CPUS" \
+  TARGETED_DEVICE_FAMILY=1 \
   archive \
   "$@"
 

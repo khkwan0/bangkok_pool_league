@@ -11,7 +11,7 @@
       "appleTeamId": "2MXCL8R3KW",
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "buildNumber": "154",
+      "buildNumber": "155",
       "googleServicesFile": "./GoogleService-Info.plist",
       "usesAppleSignIn": true,
       "associatedDomains": [
