@@ -4,22 +4,32 @@ import { ThemedView as View } from '@/components/ThemedView'
 import { ThemedText as Text } from '@/components/ThemedText'
 import Divider from '@/components/Divider'
 import config from '@/config'
-import {useNavigation} from '@react-navigation/native'
 import LeagueHistory from '@/components/LeagueHistory'
 import {useTranslation} from 'react-i18next'
 import {useLeague} from '@/hooks'
 import { useLeagueContext } from '@/context/LeagueContext'
+import {router, useLocalSearchParams} from 'expo-router'
 
-export default function Player(props: object) { 
+export default function Player(props: {playerId?: string | number} = {}) { 
   const {state, dispatch} = useLeagueContext()
-  const navigation = useNavigation()
+  const params = useLocalSearchParams<{playerId?: string}>()
+  const playerIdParam = props.playerId ?? params.playerId
+  const playerId = Array.isArray(playerIdParam)
+    ? playerIdParam[0]
+    : playerIdParam
   const league = useLeague()
-  const [playerInfo, setPlayerInfo] = React.useState(null)
+  const [playerInfo, setPlayerInfo] = React.useState<any>(null)
   const [err, setErr] = React.useState('')
   const {t} = useTranslation()
 
   function HandleStatsPress() {
-    navigation.navigate('Player Statistics', {playerInfo: playerInfo})
+    if (!playerInfo?.player_id) {
+      return
+    }
+    router.push({
+      pathname: '/Settings/Players/Player',
+      params: {params: JSON.stringify({playerId: playerInfo.player_id})},
+    })
   }
   const user = state.user
 
@@ -46,9 +56,9 @@ export default function Player(props: object) {
 
   async function HandleGrantStatus(teamId, level = 0) {
     try {
-      const res = await league.GrantPrivilege(props.playerId, teamId, level)
+      const res = await league.GrantPrivilege(playerId, teamId, level)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        GetPlayerStatsInfo(props.playerId)
+        GetPlayerStatsInfo(playerId)
       } else {
         setErr(res.error)
       }
@@ -59,9 +69,9 @@ export default function Player(props: object) {
 
   async function HandleRemoveStatus(teamId) {
     try {
-      const res = await league.RevokePrivileges(props.playerId, teamId)
+      const res = await league.RevokePrivileges(playerId, teamId)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        GetPlayerStatsInfo(props.playerId)
+        GetPlayerStatsInfo(playerId)
       } else {
         setErr(res.error)
       }
@@ -71,8 +81,10 @@ export default function Player(props: object) {
   }
 
   React.useEffect(() => {
-    GetPlayerStatsInfo(props.playerId)
-  }, [props.playerId])
+    if (playerId) {
+      GetPlayerStatsInfo(playerId)
+    }
+  }, [playerId])
 
   if (playerInfo) {
     if (typeof playerInfo.pic === 'undefined' || !playerInfo.pic) {

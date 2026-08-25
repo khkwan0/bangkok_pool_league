@@ -1,13 +1,12 @@
-import {useLocalSearchParams} from 'expo-router'
+import { useLocalSearchParams, Link, router } from 'expo-router';
 import {useMatchContext} from '@/context/MatchContext'
 import {FlatList, Pressable} from 'react-native'
 import PlayerCard from '@/components/PlayerCard'
 import React from 'react'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {t} from 'i18next'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {Link, router} from 'expo-router'
 import {useThemeColor} from '@/hooks/useThemeColor'
 import {userInteractionIntegration} from '@sentry/react-native'
 

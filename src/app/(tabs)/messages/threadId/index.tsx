@@ -8,7 +8,7 @@ import { useAccount } from '@/hooks/useAccount'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { useLeague } from '@/hooks/useLeague'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from "expo-router/react-navigation"
 import { useLocalSearchParams } from 'expo-router'
 import {
   bangkokDayStart,

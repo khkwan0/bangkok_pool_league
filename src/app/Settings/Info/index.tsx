@@ -7,7 +7,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {Pressable, ScrollView} from 'react-native'
 import Row from '@/components/Row'
 import {useRouter} from 'expo-router'
-import {useTheme, useNavigation} from '@react-navigation/native'
+import {useTheme, useNavigation} from "expo-router/react-navigation"
 
 interface MenuItemProps {
   title: string

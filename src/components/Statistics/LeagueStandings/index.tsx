@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {ThemedView as View} from '@/components/ThemedView'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {useTranslation} from 'react-i18next'
 import React from 'react'
 import {useLeague} from '@/hooks'

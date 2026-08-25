@@ -1,5 +1,5 @@
 import React from 'react'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {useLocalSearchParams} from 'expo-router'
 import {useMatch} from '@/hooks'
 import {FlatList} from 'react-native'

@@ -1,7 +1,7 @@
 import {getForumAccent} from '@/components/Forums/forumUi'
 import {ThemedText as Text} from '@/components/ThemedText'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import React from 'react'
 import {StyleSheet, useColorScheme, View} from 'react-native'
 

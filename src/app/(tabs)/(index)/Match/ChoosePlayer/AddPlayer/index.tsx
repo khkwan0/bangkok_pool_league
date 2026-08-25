@@ -9,7 +9,7 @@ import PlayerCard from '@/components/PlayerCard'
 import {useLeague, useTeams} from '@/hooks'
 import {useTranslation} from 'react-i18next'
 import Row from '@/components/Row'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {router, useLocalSearchParams} from 'expo-router'
 import {useThemeColor} from '@/hooks/useThemeColor'
 import {useMatchContext} from '@/context/MatchContext'

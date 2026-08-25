@@ -8,7 +8,7 @@ import {
 } from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import React from 'react'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {useTranslation} from 'react-i18next'
 import {useLeague} from '@/hooks/useLeague'
 import {useLeagueContext} from '@/context/LeagueContext'

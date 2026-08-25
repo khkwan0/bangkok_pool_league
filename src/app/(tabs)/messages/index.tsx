@@ -5,7 +5,7 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount} from '@/hooks/useAccount'
 import notifee from '@notifee/react-native'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
-import {useFocusEffect, useNavigation} from '@react-navigation/native'
+import {useFocusEffect, useNavigation} from "expo-router/react-navigation"
 import {router} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'

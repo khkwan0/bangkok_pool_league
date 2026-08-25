@@ -6,7 +6,7 @@ import Row from '@/components/Row'
 import config from '@/config'
 import {router} from 'expo-router'
 import Button from '@/components/Button'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 
 interface PlayerDetailsProps {
   playerId: number

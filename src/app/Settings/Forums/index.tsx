@@ -11,7 +11,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {useForums} from '@/hooks/useForums'
 import type {ForumBoard, ForumCategoryWithForums} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useNavigation, useTheme} from '@react-navigation/native'
+import {useNavigation, useTheme} from "expo-router/react-navigation"
 import {useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'

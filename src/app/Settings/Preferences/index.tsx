@@ -2,10 +2,9 @@ import {Pressable, View} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTranslation} from 'react-i18next'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useTheme} from '@react-navigation/native'
-import {router} from 'expo-router'
+import {useTheme} from "expo-router/react-navigation"
+import { router, useNavigation } from 'expo-router';
 import React from 'react'
-import {useNavigation} from 'expo-router'
 import {useLeagueContext} from '@/context/LeagueContext'
 
 export default function Preferences() {

@@ -1,7 +1,7 @@
 import React from 'react'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {Pressable} from 'react-native'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useRouter} from 'expo-router'

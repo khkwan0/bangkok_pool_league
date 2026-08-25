@@ -4,7 +4,7 @@ import config from '@/config'
 import {LeagueContextType, useLeagueContext} from '@/context/LeagueContext'
 import {useLeague, useTeams} from '@/hooks'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useIsFocused, useNavigation} from '@react-navigation/native'
+import {useIsFocused, useNavigation} from "expo-router/react-navigation"
 import {useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'

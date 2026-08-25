@@ -10,7 +10,7 @@ import { useLeague } from '@/hooks/useLeague'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import notifee from '@notifee/react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from "expo-router/react-navigation"
 import { useLocalSearchParams } from 'expo-router'
 import {
   bangkokDayStart,

@@ -1,7 +1,7 @@
 import {View} from 'react-native'
 import {Switch} from 'react-native-paper'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import {useTranslation} from 'react-i18next'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import AntDesign from '@expo/vector-icons/AntDesign'

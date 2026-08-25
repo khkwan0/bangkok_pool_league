@@ -5,7 +5,7 @@ import TextInput from '@/components/TextInput'
 import {useTranslation} from 'react-i18next'
 import {useColorScheme} from 'react-native'
 import React from 'react'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {useLeague} from '@/hooks'
 import {useRouter, useLocalSearchParams} from 'expo-router'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'

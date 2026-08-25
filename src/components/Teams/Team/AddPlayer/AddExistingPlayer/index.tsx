@@ -4,7 +4,7 @@ import React from 'react'
 import {useTranslation} from 'react-i18next'
 import CustomTextInput from '@/components/TextInput'
 import {MaterialCommunityIcons} from '@expo/vector-icons'
-import {NavigationContainer, useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import PlayerCard from './playerCard'
 import {useLeague} from '@/hooks'
 import {router, useLocalSearchParams} from 'expo-router'

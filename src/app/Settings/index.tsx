@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {useTheme, useNavigation} from '@react-navigation/native'
+import {useTheme, useNavigation} from "expo-router/react-navigation"
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import config from '@/config.js'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'

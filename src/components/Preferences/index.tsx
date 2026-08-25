@@ -1,5 +1,5 @@
 import {ThemedText as Text} from '@/components/ThemedText'
-import {useTheme, useNavigation} from '@react-navigation/native'
+import {useTheme, useNavigation} from "expo-router/react-navigation"
 import {useTranslation} from 'react-i18next'
 import {
   Pressable,

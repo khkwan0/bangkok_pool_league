@@ -2,7 +2,7 @@ import React from 'react'
 import {View, Pressable} from 'react-native'
 import {ThemedView} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {useTranslation} from 'react-i18next'
 import {router, useLocalSearchParams, usePathname} from 'expo-router'
 

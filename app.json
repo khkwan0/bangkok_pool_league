@@ -1,34 +1,77 @@
 {
   "expo": {
-    "name": "bangkok_pool_league",
+    "name": "Bangkok Pool League",
     "slug": "bangkok_pool_league",
-    "version": "1.0.0",
+    "version": "1.96",
     "orientation": "portrait",
-    "icon": "./src/assets/images/icon.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "bangkokpoolleague",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "usesAppleSignIn": true,
-      "entitlements": {
-        "aps-environment": "production",
-        "com.apple.developer.applesignin": ["Default"]
-      },
+      "appleTeamId": "2MXCL8R3KW",
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "buildNumber": "153",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "usesAppleSignIn": true,
+      "associatedDomains": [
+        "webcredentials:bkkleague.com",
+        "applinks:bkkleague.com"
+      ],
+      "entitlements": {
+        "aps-environment": "production",
+        "com.apple.developer.applesignin": [
+          "Default"
+        ]
+      },
+      "infoPlist": {
+        "LSApplicationCategoryType": "public.app-category.sports",
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ],
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
+        "LSApplicationQueriesSchemes": [
+          "lineauth2"
+        ],
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "bangkokpoolleague",
+              "com.bangkok-pool-league"
+            ]
+          }
+        ]
+      }
     },
     "android": {
+      "package": "com.bangkok_pool_league",
+      "versionCode": 153,
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundImage": "./assets/images/android-icon-background.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.bangkok_pool_league",
-      "googleServicesFile": "./google-services.json"
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.CAMERA",
+        "com.google.android.gms.permission.AD_ID"
+      ]
+    },
+    "androidStatusBar": {
+      "backgroundColor": "#ffffff"
     },
     "web": {
       "output": "static",
@@ -48,7 +91,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./src/assets/images/splash-icon.png",
+          "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -62,14 +105,35 @@
         {
           "ios": {
             "useFrameworks": "static",
-            "forceStaticLinking": ["RNFBApp", "RNFBMessaging"]
+            "forceStaticLinking": [
+              "RNFBApp",
+              "RNFBMessaging"
+            ]
+          },
+          "android": {
+            "extraMavenRepos": [
+              "../../node_modules/@notifee/react-native/android/libs"
+            ]
           }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       "@xmartlabs/react-native-line",
-      "expo-web-browser"
+      "expo-web-browser",
+      "@react-native-community/datetimepicker",
+      "@sentry/react-native",
+      "expo-font",
+      "expo-image",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true,

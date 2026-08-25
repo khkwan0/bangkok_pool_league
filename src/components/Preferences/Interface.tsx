@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react'
 import {View, Switch, Text} from 'react-native'
 import {useTranslation} from 'react-i18next'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import {useLeagueContext} from '../../context/LeagueContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'

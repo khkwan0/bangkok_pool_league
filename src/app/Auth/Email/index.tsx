@@ -3,7 +3,7 @@ import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useAccount} from '@/hooks/useAccount'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {router, useLocalSearchParams} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'

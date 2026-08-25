@@ -6,7 +6,7 @@ import {useLeague} from '@/hooks'
 import {useTranslation} from 'react-i18next'
 import {useLocalSearchParams, useNavigation, router} from 'expo-router'
 import config from '@/config'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import {useLeagueContext} from '@/context/LeagueContext'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import Feather from '@expo/vector-icons/Feather'

@@ -109,9 +109,21 @@ export default function RegisterTeam() {
       <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
         <View className="p-4">
           <ThemedView className="rounded-xl shadow-sm p-5 mb-4">
-            <Text className="text-2xl font-bold mb-6 text-center">
+            <Text className="text-2xl font-bold mb-4 text-center">
               {t('register_team')}
             </Text>
+
+            <View className="mb-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex-row items-start">
+              <Ionicons
+                name="information-circle-outline"
+                size={22}
+                color="#b45309"
+                style={{marginTop: 1}}
+              />
+              <Text className="ml-2 flex-1">
+                {t('team_requires_admin_approval')}
+              </Text>
+            </View>
 
             <View className="mb-6">
               <Text className="mb-2 font-medium text-gray-700">

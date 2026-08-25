@@ -6,7 +6,7 @@ import FrameDetail from './components/FrameDetail'
 import {ThemedView as View} from '@/components/ThemedView'
 import MatchHeader from './components/MatchHeader'
 import {useTranslation} from 'react-i18next'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 
 const MatchDetails = props => {
   const {GetMatchDetails} = useMatch()

@@ -19,7 +19,7 @@ import {
   parsePostponedProposal,
 } from '@/lib/postponedProposal'
 import {Ionicons} from '@expo/vector-icons'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {router} from 'expo-router'
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'

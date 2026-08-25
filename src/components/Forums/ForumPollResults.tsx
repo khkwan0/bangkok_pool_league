@@ -1,7 +1,7 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import type {ForumPoll} from '@/types/forums'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {useColorScheme, StyleSheet} from 'react-native'

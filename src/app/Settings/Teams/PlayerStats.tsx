@@ -10,13 +10,15 @@ import StatsMatchPerformance from '@/components/PlayerStatistics/StatsMatchPerfo
 import config from '@/config'
 import {useSeason, useLeague} from '@/hooks'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {router, useLocalSearchParams} from 'expo-router'
 
-const PlayerStats = props => {
+const PlayerStats = () => {
   const season = useSeason()
   const league = useLeague()
   const insets = useSafeAreaInsets()
+  const params = useLocalSearchParams()
   const [playerInfo, setPlayerInfo] = React.useState(
-    props.route.params.playerInfo,
+    params.playerInfo ? JSON.parse(params.playerInfo as string) : null,
   )
   const [isLoading, setIsLoading] = React.useState(false)
   const [isDoubleStatsLoading, setIsDoubleStatsLoading] = React.useState(false)
@@ -129,7 +131,7 @@ const PlayerStats = props => {
           />
         </View>
         <View style={{flex: 2, alignItems: 'center'}}>
-          <Button onPress={() => props.navigation.goBack()}>
+          <Button onPress={() => router.back()}>
             {`${playerInfo.name} (${playerInfo.firstname} ${playerInfo.lastname})`}
           </Button>
           <Text>{playerInfo?.nationality?.en ?? ''}</Text>

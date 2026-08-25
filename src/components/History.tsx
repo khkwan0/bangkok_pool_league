@@ -2,7 +2,7 @@ import { ThemedText as Text } from '@/components/ThemedText'
 import { ThemedView as View } from '@/components/ThemedView'
 import { useMatchContext } from '@/context/MatchContext'
 import { useMatch } from '@/hooks'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from "expo-router/react-navigation"
 import { useLocalSearchParams } from 'expo-router'
 import {formatBangkokFromMillis} from '@/lib/bangkokTime'
 import React from 'react'

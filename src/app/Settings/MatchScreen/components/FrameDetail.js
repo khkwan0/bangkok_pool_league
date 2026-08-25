@@ -2,7 +2,7 @@ import React from 'react'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 
 const FrameDetails = props => {
   const {homePlayers, awayPlayers} = props.item.item

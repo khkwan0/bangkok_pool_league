@@ -6,7 +6,7 @@ import {useLeague} from '@/hooks'
 import {useTranslation} from 'react-i18next'
 import {router, useNavigation} from 'expo-router'
 import {useLeagueContext} from '@/context/LeagueContext'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import {Ionicons} from '@expo/vector-icons'
 
 type Team = {

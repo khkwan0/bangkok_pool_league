@@ -3,7 +3,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount} from '@/hooks'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Pressable, TextInput, View} from 'react-native'

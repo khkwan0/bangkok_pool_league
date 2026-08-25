@@ -3,7 +3,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import TextInput from '@/components/TextInput'
 import {useTranslation} from 'react-i18next'
 import React from 'react'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {useRouter} from 'expo-router'
 import {useAccount} from '@/hooks/useAccount'
 import {useLeagueContext} from '@/context/LeagueContext'

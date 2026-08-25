@@ -20,7 +20,7 @@ import type {
   ForumReactionIcon,
   ForumTopicDetail,
 } from '@/types/forums'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import {useLocalSearchParams, useRouter, Stack} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'

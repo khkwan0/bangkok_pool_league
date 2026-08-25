@@ -4,7 +4,7 @@ import { useLeagueContext } from '@/context/LeagueContext'
 import { useLeague } from '@/hooks'
 import { useTabListContentContainerStyle } from '@/hooks/useTabListContentContainerStyle'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useTheme } from '@react-navigation/native'
+import { useTheme } from "expo-router/react-navigation"
 import { router } from 'expo-router'
 import React from 'react'
 import { useTranslation } from 'react-i18next'

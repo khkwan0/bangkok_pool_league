@@ -5,7 +5,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import MatchHeader from '@/components/Completed/MatchHeader'
 import FrameDetail from '@/components/Completed/FrameDetail'
 import Divider from '@/components/Divider'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import {useColorScheme} from 'react-native'
 
 export default function Match({match}: {match: Match}) {

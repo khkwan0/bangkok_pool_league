@@ -16,7 +16,7 @@ import type {
   ForumTopicDetail,
 } from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import {useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'

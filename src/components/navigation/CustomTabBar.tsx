@@ -7,8 +7,8 @@ import {
 import {
   type BottomTabBarProps,
   type BottomTabNavigationOptions,
-} from '@react-navigation/bottom-tabs'
-import {PlatformPressable} from '@react-navigation/elements'
+} from "expo-router/js-tabs"
+import {PlatformPressable} from "expo-router/react-navigation"
 import {BottomSheetModal} from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
 import React from 'react'

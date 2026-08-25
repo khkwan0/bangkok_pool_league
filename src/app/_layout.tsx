@@ -11,7 +11,7 @@ import {
   onNotificationOpenedApp,
   requestPermission,
 } from '@react-native-firebase/messaging'
-import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native'
+import {DarkTheme, DefaultTheme, ThemeProvider} from "expo-router/react-navigation"
 import * as Sentry from '@sentry/react-native'
 import {useFonts} from 'expo-font'
 import {router, Stack} from 'expo-router'
@@ -19,7 +19,6 @@ import {useEffect} from 'react'
 import {useTranslation} from 'react-i18next'
 import {
   Appearance,
-  ColorSchemeName,
   Linking,
   PermissionsAndroid,
   Platform,
@@ -78,10 +77,8 @@ function RootLayout() {
     if (Platform.OS !== 'web') {
       ;(async () => {
         const savedColorScheme = await AsyncStorage.getItem('theme')
-        if (!savedColorScheme) {
-          Appearance.setColorScheme(null)
-        } else {
-          Appearance.setColorScheme(savedColorScheme as ColorSchemeName)
+        if (savedColorScheme === 'light' || savedColorScheme === 'dark') {
+          Appearance.setColorScheme(savedColorScheme)
         }
       })()
     }

@@ -4,9 +4,9 @@ import {
   AppleButton,
   appleAuth,
 } from '@invertase/react-native-apple-authentication'
-import {useNavigation} from '@react-navigation/native'
+import {useNavigation} from "expo-router/react-navigation"
 import Line from '@xmartlabs/react-native-line'
-import {router} from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router';
 import React, {useEffect} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Dimensions, Image, Pressable, ScrollView, View} from 'react-native'
@@ -14,7 +14,6 @@ import {Dimensions, Image, Pressable, ScrollView, View} from 'react-native'
 
 import config from '@/config'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import {useLocalSearchParams} from 'expo-router'
 import {Platform, useColorScheme} from 'react-native'
 interface StatusType {
   status: string

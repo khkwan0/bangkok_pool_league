@@ -12,7 +12,7 @@ import {
 } from '@/lib/cueChatSession'
 import {createSocketClient, loadSocketAuth} from '@/lib/socketAuth'
 import {Ionicons} from '@expo/vector-icons'
-import {useFocusEffect} from '@react-navigation/native'
+import {useFocusEffect} from "expo-router/react-navigation"
 import {Stack, usePathname, useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
@@ -78,7 +78,7 @@ function formatToolDisplayName(rawName: string): string {
     .replace(/_/g, ' ')
     .trim()
   if (!cleaned) return rawName
-  return cleaned.replace(/\b\w/g, char => char.toUpperCase())
+  return cleaned.replace(/\b\w/g, char => char.toUpperCase());
 }
 
 export default function CueChat() {

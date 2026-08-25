@@ -1,5 +1,5 @@
 import {useLeague} from '@/hooks'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import {router} from 'expo-router'
 import React from 'react'
 import {

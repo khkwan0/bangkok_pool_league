@@ -8,7 +8,7 @@ import {useForumSettings, forumLengthErrorKey} from '@/hooks/useForumSettings'
 import {useForums} from '@/hooks/useForums'
 import type {ForumBoard} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useTheme} from '@react-navigation/native'
+import {useTheme} from "expo-router/react-navigation"
 import {useLocalSearchParams, useRouter, Stack} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'

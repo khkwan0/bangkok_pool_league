@@ -3,7 +3,7 @@ import {Button, Image, Pressable, ScrollView, TextInput} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import TwoColumns from '@/components/TwoColumns'
-import {useNavigation, useTheme} from '@react-navigation/native'
+import {useNavigation, useTheme} from "expo-router/react-navigation"
 import config from '@/config'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useTranslation} from 'react-i18next'
@@ -471,8 +471,9 @@ const Team = props => {
                   <Pressable
                     className="py-2"
                     onPress={() =>
-                      navigation.navigate('Player', {
-                        playerId: captain.id,
+                      router.push({
+                        pathname: '/Settings/Player',
+                        params: {playerId: String(captain.id)},
                       })
                     }>
                     <View className="flex-row items-center">
@@ -505,8 +506,9 @@ const Team = props => {
                   <Pressable
                     py={5}
                     onPress={() =>
-                      navigation.navigate('Player', {
-                        playerId: assistant.id,
+                      router.push({
+                        pathname: '/Settings/Player',
+                        params: {playerId: String(assistant.id)},
                       })
                     }>
                     <View className="flex-row items-center">
@@ -548,8 +550,9 @@ const Team = props => {
                     <Pressable
                       className="p-5"
                       onPress={() =>
-                        navigation.navigate('Player', {
-                          playerId: player.id,
+                        router.push({
+                          pathname: '/Settings/Player',
+                          params: {playerId: String(player.id)},
                         })
                       }>
                       <Text className="text-lg">{player.nickname}</Text>
