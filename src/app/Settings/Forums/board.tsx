@@ -5,6 +5,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useForums} from '@/hooks/useForums'
+import {useTopicHasNewPosts} from '@/lib/forumActivity'
 import type {ForumBoard, ForumTopicListItem} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useTheme} from "expo-router/react-navigation"
@@ -66,6 +67,7 @@ function TopicRow({
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const accent = getForumAccent(accentIndex)
+  const hasNewPosts = useTopicHasNewPosts(topic.id, topic.last_post_at)
   const rowIcon = topic.is_locked
     ? 'lock'
     : topic.is_pinned
@@ -77,6 +79,7 @@ function TopicRow({
   return (
     <Pressable
       onPress={onPress}
+      accessibilityHint={hasNewPosts ? t('forums_new_posts') : undefined}
       className="mb-3 overflow-hidden rounded-xl"
       style={forumListCardStyle(
         colors.card,
@@ -92,14 +95,26 @@ function TopicRow({
         }}
       />
       <RNView className="flex-row items-start px-4 py-3.5 pl-5">
-        <ForumIconBadge
-          icon={rowIcon}
-          fg={topic.is_pinned ? FORUM_STAT_COLORS.pinned.fg : accent.fg}
-          bg={topic.is_pinned ? FORUM_STAT_COLORS.pinned.bg : accent.bg}
-        />
+        <RNView className="relative">
+          <ForumIconBadge
+            icon={rowIcon}
+            fg={topic.is_pinned ? FORUM_STAT_COLORS.pinned.fg : accent.fg}
+            bg={topic.is_pinned ? FORUM_STAT_COLORS.pinned.bg : accent.bg}
+          />
+          {hasNewPosts ? (
+            <RNView
+              className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-red-500"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            />
+          ) : null}
+        </RNView>
         <RNView className="ml-3 flex-1">
           <RNView className="flex-row items-start justify-between">
             <Text className="flex-1 pr-2 text-base font-bold">{topic.title}</Text>
+            {hasNewPosts ? (
+              <RNView className="mr-2 mt-1 h-2.5 w-2.5 rounded-full bg-red-500" />
+            ) : null}
             <MCI
               name="chevron-right"
               size={22}

@@ -35,6 +35,7 @@ interface LeagueState {
   messageThreads: Thread[]
   isNewMatchCard: boolean
   showLiveScores: boolean
+  showForumFabBadge: boolean
   refreshUpcoming: boolean
 }
 
@@ -61,6 +62,7 @@ const initialState: LeagueState = {
   season: 0,
   isNewMatchCard: false,
   showLiveScores: true,
+  showForumFabBadge: true,
   refreshUpcoming: false,
 }
 
@@ -215,6 +217,12 @@ const LeagueReducer = (state: any, action: any) => {
         showLiveScores: action.payload,
       }
     }
+    case 'SET_FORUM_FAB_BADGE': {
+      return {
+        ...state,
+        showForumFabBadge: action.payload,
+      }
+    }
     case 'SET_REFRESH_UPCOMING': {
       return {
         ...state,
@@ -287,8 +295,22 @@ export const LeagueProvider = ({children}: any) => {
         console.error(e)
       }
     }
+    const getShowForumFabBadge = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('show_forum_fab_badge')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (typeof parsed?.show === 'boolean') {
+            dispatch({type: 'SET_FORUM_FAB_BADGE', payload: parsed.show})
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
     getMatchCardDesign()
     getShowLiveScores()
+    getShowForumFabBadge()
   }, [])
 
   async function LogoutUser() {

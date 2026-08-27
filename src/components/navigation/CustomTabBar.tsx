@@ -5,6 +5,8 @@ import {
   TAB_FAB_SIZE,
 } from '@/components/navigation/tabBarMetrics'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {useForumActivitySync} from '@/hooks/useForumActivity'
+import {useHasNewForumPosts} from '@/lib/forumActivity'
 import {
   type BottomTabBarProps,
   type BottomTabNavigationOptions,
@@ -22,6 +24,7 @@ import {
   useColorScheme,
 } from 'react-native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {useTranslation} from 'react-i18next'
 
 type TabBarItemProps = {
   route: BottomTabBarProps['state']['routes'][number]
@@ -96,6 +99,11 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
   const colors = Colors[colorScheme]
   const sheetRef = React.useRef<BottomSheetModal>(null)
   const {state: leagueState} = useLeagueContext()
+  const {t} = useTranslation()
+  const {refreshForumActivity} = useForumActivitySync()
+  const hasNewForumPosts = useHasNewForumPosts()
+  const showForumFabBadge =
+    (leagueState.showForumFabBadge ?? true) && hasNewForumPosts
   const messageBadge =
     leagueState.messageCount > 0 ? String(leagueState.messageCount) : undefined
 
@@ -120,6 +128,7 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
     if (process.env.EXPO_OS === 'ios') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     }
+    refreshForumActivity()
     sheetRef.current?.present()
   }
 
@@ -210,7 +219,11 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
           pointerEvents="box-none">
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Open quick actions"
+            accessibilityLabel={
+              showForumFabBadge
+                ? t('forums_quick_actions_new_posts')
+                : t('quick_actions')
+            }
             onPress={openSheet}
             style={({pressed}) => [
               styles.fabButton,
@@ -232,6 +245,13 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
                 />
               </View>
             </View>
+            {showForumFabBadge ? (
+              <View
+                style={styles.fabBadge}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              />
+            ) : null}
           </Pressable>
         </View>
       </View>
@@ -291,14 +311,27 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     zIndex: 10,
+    overflow: 'visible',
   },
   fabButton: {
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
   },
   fabButtonPressed: {
     transform: [{scale: 0.94}],
     opacity: 0.92,
+  },
+  fabBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#ef4444',
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   fabRing: {
     width: TAB_FAB_RING_SIZE,

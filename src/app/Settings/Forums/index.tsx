@@ -9,9 +9,10 @@ import {
 import {FORUM_STAT_COLORS, forumListCardStyle, getForumAccent} from '@/components/Forums/forumUi'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useForums} from '@/hooks/useForums'
+import {latestForumPostAt, markForumsSeen} from '@/lib/forumActivity'
 import type {ForumBoard, ForumCategoryWithForums} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useNavigation, useTheme} from "expo-router/react-navigation"
+import {useFocusEffect, useNavigation, useTheme} from "expo-router/react-navigation"
 import {useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
@@ -136,6 +137,7 @@ export default function Forums() {
       }
 
       setCategories(data)
+      await markForumsSeen(latestForumPostAt(data))
       if (data.length === 0 && !registration.is_member) {
         setError(t('forums_empty'))
       }
@@ -151,6 +153,12 @@ export default function Forums() {
   React.useEffect(() => {
     loadForums()
   }, [loadForums])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      markForumsSeen()
+    }, []),
+  )
 
   const sections: ForumSection[] = React.useMemo(
     () =>

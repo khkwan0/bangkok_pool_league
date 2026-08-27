@@ -31,6 +31,14 @@ const Interface = () => {
         const {show} = JSON.parse(storedLiveScores)
         dispatch({type: 'SET_LIVE_SCORES', payload: show})
       }
+
+      const storedForumFabBadge = await AsyncStorage.getItem(
+        'show_forum_fab_badge',
+      )
+      if (storedForumFabBadge !== null) {
+        const {show} = JSON.parse(storedForumFabBadge)
+        dispatch({type: 'SET_FORUM_FAB_BADGE', payload: show})
+      }
     } catch (error) {
       console.error('Error loading preferences:', error)
     }
@@ -51,6 +59,18 @@ const Interface = () => {
       await AsyncStorage.setItem('show_live_scores', JSON.stringify({show: value}))
     } catch (error) {
       console.error('Error saving live scores preference:', error)
+    }
+  }
+
+  const handleForumFabBadgeToggle = async (value: boolean) => {
+    try {
+      dispatch({type: 'SET_FORUM_FAB_BADGE', payload: value})
+      await AsyncStorage.setItem(
+        'show_forum_fab_badge',
+        JSON.stringify({show: value}),
+      )
+    } catch (error) {
+      console.error('Error saving forum badge preference:', error)
     }
   }
 
@@ -111,6 +131,34 @@ const Interface = () => {
         <AppSwitch
           value={state.showLiveScores ?? true}
           onValueChange={handleLiveScoresToggle}
+        />
+      </View>
+
+      {/* Forum FAB badge Section */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 16,
+        }}>
+        <View style={{flex: 1, paddingRight: 12}}>
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: 'bold',
+              color: colors.text,
+              marginBottom: 4,
+            }}>
+            {t('forum_fab_badge')}
+          </Text>
+          <Text style={{color: colors.text, opacity: 0.7}}>
+            {t('forum_fab_badge_description')}
+          </Text>
+        </View>
+        <AppSwitch
+          value={state.showForumFabBadge ?? true}
+          onValueChange={handleForumFabBadgeToggle}
         />
       </View>
 

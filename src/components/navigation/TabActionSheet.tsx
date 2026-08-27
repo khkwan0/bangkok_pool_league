@@ -3,6 +3,7 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {Colors} from '@/constants/Colors'
 import config from '@/config.js'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {useHasNewForumPosts} from '@/lib/forumActivity'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {
   BottomSheetModal,
@@ -10,7 +11,7 @@ import {
 } from '@expo/ui/community/bottom-sheet'
 import {useRouter} from 'expo-router'
 import React from 'react'
-import {Pressable, useColorScheme} from 'react-native'
+import {Pressable, Text as RNText, useColorScheme, View as RNView} from 'react-native'
 import {useTranslation} from 'react-i18next'
 
 type QuickActionItemProps = {
@@ -19,6 +20,8 @@ type QuickActionItemProps = {
   iconColor: string
   iconBackground: string
   onPress: () => void
+  showBadge?: boolean
+  badgeLabel?: string
 }
 
 function QuickActionItem({
@@ -27,6 +30,8 @@ function QuickActionItem({
   iconColor,
   iconBackground,
   onPress,
+  showBadge,
+  badgeLabel,
 }: QuickActionItemProps) {
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
@@ -34,13 +39,28 @@ function QuickActionItem({
   return (
     <Pressable
       className="my-2 flex-row items-center rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-700"
+      accessibilityHint={showBadge ? badgeLabel : undefined}
       onPress={onPress}>
-      <View
-        className="mr-4 h-11 w-11 items-center justify-center rounded-full"
-        style={{backgroundColor: iconBackground}}>
-        <MCI name={icon} color={iconColor} size={24} />
-      </View>
+      <RNView className="relative mr-4">
+        <View
+          className="h-11 w-11 items-center justify-center rounded-full"
+          style={{backgroundColor: iconBackground}}>
+          <MCI name={icon} color={iconColor} size={24} />
+        </View>
+        {showBadge ? (
+          <RNView
+            className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-red-500"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+        ) : null}
+      </RNView>
       <Text className="flex-1 font-bold">{label}</Text>
+      {showBadge && badgeLabel ? (
+        <RNView className="mr-2 rounded-full bg-red-500 px-2 py-0.5">
+          <RNText className="text-xs font-bold text-white">{badgeLabel}</RNText>
+        </RNView>
+      ) : null}
       <MCI name="chevron-right" color={colors.icon} size={22} />
     </Pressable>
   )
@@ -54,6 +74,7 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
     const {t} = useTranslation()
     const {state} = useLeagueContext()
     const user = state.user
+    const hasNewForumPosts = useHasNewForumPosts()
     const snapPoints = React.useMemo(() => ['55%'], [])
 
     const navigate = (url: string) => {
@@ -85,6 +106,15 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             </Text>
           </View>
           <QuickActionItem
+            icon="forum-outline"
+            label={t('forums')}
+            iconColor="#2196F3"
+            iconBackground="rgba(33, 150, 243, 0.15)"
+            showBadge={hasNewForumPosts}
+            badgeLabel={t('forums_new_posts')}
+            onPress={() => navigate('/Settings/Forums')}
+          />
+          <QuickActionItem
             icon="cog"
             label={t('settings')}
             iconColor={colors.tint}
@@ -115,13 +145,6 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             iconColor="#FF9800"
             iconBackground="rgba(255, 152, 0, 0.15)"
             onPress={() => navigate('/Settings/Info')}
-          />
-          <QuickActionItem
-            icon="forum-outline"
-            label={t('forums')}
-            iconColor="#2196F3"
-            iconBackground="rgba(33, 150, 243, 0.15)"
-            onPress={() => navigate('/Settings/Forums')}
           />
         </BottomSheetView>
       </BottomSheetModal>

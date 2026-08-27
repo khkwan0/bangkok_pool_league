@@ -1,4 +1,4 @@
-import AppCheckbox from '@/components/AppCheckbox'
+import AppSwitch from '@/components/AppSwitch'
 import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
@@ -129,6 +129,9 @@ export default function UpcomingMatches(props: any) {
   async function AddAdSpots(_fixtures: any) {
     const originalFixtures = [..._fixtures]
     try {
+      if (_fixtures.length === 0) {
+        return _fixtures
+      }
       let frequency = 0
       const res = await adHook.GetFrequency()
       if (
@@ -463,19 +466,23 @@ export default function UpcomingMatches(props: any) {
                 }}>
                 {typeof user?.teams !== 'undefined' &&
                   user.teams.length > 0 && (
-                    <View className="p-2 border-b border-gray-200 dark:border-gray-700">
-                      <AppCheckbox
+                    <View className="flex-row items-center justify-between border-b border-gray-200 px-3 py-2.5 dark:border-gray-700">
+                      <Text className="mr-3 flex-1 text-base">
+                        {t('show_mine_only')}
+                      </Text>
+                      <AppSwitch
                         disabled={refreshing}
-                        label={t('show_mine_only')}
                         value={showMineOnly}
                         onValueChange={setShowMineOnly}
                       />
                     </View>
                   )}
-                <View className="p-2">
-                  <AppCheckbox
+                <View className="flex-row items-center justify-between px-3 py-2.5">
+                  <Text className="mr-3 flex-1 text-base">
+                    {t('show_postponed')}
+                  </Text>
+                  <AppSwitch
                     disabled={refreshing}
-                    label={t('show_postponed')}
                     value={showPostponed}
                     onValueChange={setShowPostponed}
                   />
@@ -493,9 +500,21 @@ export default function UpcomingMatches(props: any) {
                 </View>
               ) : (
                 <FlatList
-                  contentContainerStyle={listContentStyle}
+                  contentContainerStyle={[
+                    listContentStyle,
+                    fixtures.length === 0
+                      ? {
+                          flexGrow: 1,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          paddingHorizontal: 24,
+                        }
+                      : null,
+                  ]}
                   style={{flex: 1}}
-                  horizontal={state.isNewMatchCard ? true : false}
+                  horizontal={
+                    fixtures.length > 0 && state.isNewMatchCard ? true : false
+                  }
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}
                   pagingEnabled={true}
@@ -527,6 +546,17 @@ export default function UpcomingMatches(props: any) {
                   }}
                   data={fixtures}
                   renderItem={renderItem}
+                  ListEmptyComponent={
+                    refreshing ? null : (
+                      <View className="items-center px-6 py-10">
+                        <Text
+                          className="text-center text-base opacity-70"
+                          style={{maxWidth: 280}}>
+                          {t('no_matches_pass_filter')}
+                        </Text>
+                      </View>
+                    )
+                  }
                 />
               )}
             </View>

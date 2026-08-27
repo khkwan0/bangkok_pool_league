@@ -13,7 +13,7 @@ export default function CompletedLayout() {
         }}
       />
       <Stack.Screen
-        name="match/index"
+        name="Match/index"
         options={{headerRight: () => <SettingsButton />}}
       />
     </Stack>
