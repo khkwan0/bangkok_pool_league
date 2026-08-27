@@ -5,6 +5,7 @@ import {useEffect, useState, useSyncExternalStore} from 'react'
 export const FORUMS_LAST_SEEN_KEY = 'forums_last_seen_at'
 export const FORUMS_TOPIC_BASELINE_KEY = 'forums_topic_baseline'
 export const FORUMS_TOPIC_READS_KEY = 'forums_topic_reads'
+export const FORUMS_BOARD_READS_KEY = 'forums_board_reads'
 
 type Listener = () => void
 
@@ -17,7 +18,11 @@ let topicBaselineMemory: string | null = null
 let topicBaselineLoaded = false
 let topicReadsMemory: Record<string, string> = {}
 let topicReadsLoaded = false
+let boardReadsMemory: Record<string, string> = {}
+let boardReadsLoaded = false
 let topicActivityVersion = 0
+
+const FIRST_VISIT_LOOKBACK_MS = 30 * 24 * 60 * 60 * 1000
 
 const listeners = new Set<Listener>()
 const topicListeners = new Set<Listener>()
@@ -182,6 +187,32 @@ async function getTopicReads(): Promise<Record<string, string>> {
   }
 }
 
+async function getBoardReads(): Promise<Record<string, string>> {
+  if (boardReadsLoaded) {
+    return boardReadsMemory
+  }
+  try {
+    const raw = await AsyncStorage.getItem(FORUMS_BOARD_READS_KEY)
+    if (!boardReadsLoaded) {
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, string>
+        boardReadsMemory =
+          parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+            ? parsed
+            : {}
+      } else {
+        boardReadsMemory = {}
+      }
+      boardReadsLoaded = true
+    }
+    return boardReadsMemory
+  } catch {
+    boardReadsLoaded = true
+    boardReadsMemory = {}
+    return boardReadsMemory
+  }
+}
+
 function laterTimestamp(a: string, b: string | null | undefined): string {
   if (!b) {
     return a
@@ -204,12 +235,33 @@ export async function topicHasNewPosts(
   if (!lastPostAt) {
     return false
   }
+  await ensureForumUnreadBaseline()
   const [reads, baseline, lastSeen] = await Promise.all([
     getTopicReads(),
     getTopicBaseline(),
     getForumsLastSeenAt(),
   ])
   const threshold = reads[String(topicId)] ?? baseline ?? lastSeen
+  if (!threshold) {
+    return false
+  }
+  return isNewerForumActivity(lastPostAt, threshold)
+}
+
+export async function boardHasNewPosts(
+  boardId: number,
+  lastPostAt: string | null,
+): Promise<boolean> {
+  if (!lastPostAt) {
+    return false
+  }
+  await ensureForumUnreadBaseline()
+  const [reads, baseline, lastSeen] = await Promise.all([
+    getBoardReads(),
+    getTopicBaseline(),
+    getForumsLastSeenAt(),
+  ])
+  const threshold = reads[String(boardId)] ?? baseline ?? lastSeen
   if (!threshold) {
     return false
   }
@@ -239,6 +291,29 @@ export function useTopicHasNewPosts(
   return hasNew
 }
 
+export function useBoardHasNewPosts(
+  boardId: number,
+  lastPostAt: string | null,
+) {
+  const version = useTopicActivityVersion()
+  const [hasNew, setHasNew] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const next = await boardHasNewPosts(boardId, lastPostAt)
+      if (!cancelled) {
+        setHasNew(next)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [boardId, lastPostAt, version])
+
+  return hasNew
+}
+
 export async function markTopicSeen(
   topicId: number,
   lastPostAt?: string | null,
@@ -262,45 +337,87 @@ export async function markTopicSeen(
   emitTopicActivity()
 }
 
-export async function markForumsSeen(latestPostAt?: string | null) {
-  seenGeneration += 1
-  await getForumsLastSeenAt()
-  await getTopicBaseline()
-  const previous = lastSeenMemory
-  const now = new Date().toISOString()
-  const seenAt = laterTimestamp(laterTimestamp(now, latestPostAt), previous)
-
-  // Capture unread baseline once per visit from the prior lastSeen.
-  // Skip on follow-up calls in the same visit (previous ≈ seenAt already).
-  const previousMs = previous ? Date.parse(previous) : NaN
-  const seenMs = Date.parse(seenAt)
-  const shouldSetBaseline =
-    previous == null
-      ? !topicBaselineMemory
-      : !Number.isNaN(previousMs) &&
-        !Number.isNaN(seenMs) &&
-        previousMs < seenMs - 1000
-
-  if (shouldSetBaseline) {
-    const nextBaseline = previous ?? seenAt
-    topicBaselineMemory = nextBaseline
-    topicBaselineLoaded = true
-    try {
-      await AsyncStorage.setItem(FORUMS_TOPIC_BASELINE_KEY, nextBaseline)
-    } catch (e) {
-      console.error('Error saving forums topic baseline:', e)
-    }
+export async function markBoardSeen(
+  boardId: number,
+  lastPostAt?: string | null,
+) {
+  const reads = await getBoardReads()
+  const key = String(boardId)
+  const seenAt = laterTimestamp(
+    laterTimestamp(new Date().toISOString(), lastPostAt),
+    reads[key],
+  )
+  boardReadsMemory = {...reads, [key]: seenAt}
+  boardReadsLoaded = true
+  try {
+    await AsyncStorage.setItem(
+      FORUMS_BOARD_READS_KEY,
+      JSON.stringify(boardReadsMemory),
+    )
+  } catch (e) {
+    console.error('Error saving forum board reads:', e)
   }
+  emitTopicActivity()
+}
+
+/**
+ * Ensures board/topic "new" dots have a threshold without clearing the global badge.
+ * First visit uses a 30-day lookback so recent activity is still marked new.
+ */
+export async function ensureForumUnreadBaseline() {
+  await getTopicBaseline()
+  if (topicBaselineMemory) {
+    return
+  }
+  const lastSeen = await getForumsLastSeenAt()
+  if (lastSeen) {
+    return
+  }
+  const firstVisitBaseline = new Date(
+    Date.now() - FIRST_VISIT_LOOKBACK_MS,
+  ).toISOString()
+  topicBaselineMemory = firstVisitBaseline
+  topicBaselineLoaded = true
+  try {
+    await AsyncStorage.setItem(FORUMS_TOPIC_BASELINE_KEY, firstVisitBaseline)
+  } catch (e) {
+    console.error('Error saving forums topic baseline:', e)
+  }
+}
+
+/** Clears global + board + topic indicators until a newer post/reply appears. */
+export async function markAllForumsRead(latestPostAt?: string | null) {
+  seenGeneration += 1
+  await Promise.all([getForumsLastSeenAt(), getTopicBaseline(), getTopicReads(), getBoardReads()])
+  const now = new Date().toISOString()
+  const seenAt = laterTimestamp(now, latestPostAt)
 
   lastSeenMemory = seenAt
   lastSeenLoaded = true
+  topicBaselineMemory = seenAt
+  topicBaselineLoaded = true
+  topicReadsMemory = {}
+  topicReadsLoaded = true
+  boardReadsMemory = {}
+  boardReadsLoaded = true
   setHasNewForumPosts(false)
+
   try {
-    await AsyncStorage.setItem(FORUMS_LAST_SEEN_KEY, seenAt)
+    await AsyncStorage.multiSet([
+      [FORUMS_LAST_SEEN_KEY, seenAt],
+      [FORUMS_TOPIC_BASELINE_KEY, seenAt],
+      [FORUMS_TOPIC_READS_KEY, '{}'],
+      [FORUMS_BOARD_READS_KEY, '{}'],
+    ])
   } catch (e) {
-    console.error('Error saving forums last seen:', e)
+    console.error('Error saving forums mark-all-read state:', e)
   }
   emitTopicActivity()
+}
+
+/** @deprecated Use markAllForumsRead — kept for any lingering call sites. */
+export async function markForumsSeen(latestPostAt?: string | null) {
+  return markAllForumsRead(latestPostAt)
 }
 
 export async function refreshForumActivity(

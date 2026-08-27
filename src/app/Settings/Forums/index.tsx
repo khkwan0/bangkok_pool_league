@@ -9,10 +9,15 @@ import {
 import {FORUM_STAT_COLORS, forumListCardStyle, getForumAccent} from '@/components/Forums/forumUi'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useForums} from '@/hooks/useForums'
-import {latestForumPostAt, markForumsSeen} from '@/lib/forumActivity'
+import {
+  ensureForumUnreadBaseline,
+  latestForumPostAt,
+  markAllForumsRead,
+  useBoardHasNewPosts,
+} from '@/lib/forumActivity'
 import type {ForumBoard, ForumCategoryWithForums} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
-import {useFocusEffect, useNavigation, useTheme} from "expo-router/react-navigation"
+import {useNavigation, useTheme} from "expo-router/react-navigation"
 import {useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
@@ -46,10 +51,12 @@ function ForumRow({
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const accent = getForumAccent(accentIndex)
+  const hasNewPosts = useBoardHasNewPosts(forum.id, forum.last_post_at)
 
   return (
     <Pressable
       onPress={onPress}
+      accessibilityHint={hasNewPosts ? t('forums_new_posts') : undefined}
       className="mb-3 overflow-hidden rounded-xl"
       style={forumListCardStyle(colors.card, isDark, accent.border)}>
       <RNView
@@ -57,14 +64,26 @@ function ForumRow({
         style={{backgroundColor: accent.fg}}
       />
       <RNView className="flex-row items-start px-4 py-3.5 pl-5">
-        <ForumIconBadge
-          icon={forum.is_locked ? 'lock' : 'forum-outline'}
-          fg={accent.fg}
-          bg={accent.bg}
-        />
+        <RNView className="relative">
+          <ForumIconBadge
+            icon={forum.is_locked ? 'lock' : 'forum-outline'}
+            fg={accent.fg}
+            bg={accent.bg}
+          />
+          {hasNewPosts ? (
+            <RNView
+              className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-red-500"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            />
+          ) : null}
+        </RNView>
         <RNView className="ml-3 flex-1">
           <RNView className="flex-row items-start justify-between">
             <Text className="flex-1 pr-2 text-base font-bold">{forum.name}</Text>
+            {hasNewPosts ? (
+              <RNView className="mr-2 mt-1 h-2.5 w-2.5 rounded-full bg-red-500" />
+            ) : null}
             <MCI name="chevron-right" size={22} color={accent.fg} />
           </RNView>
           {forum.description ? (
@@ -105,6 +124,8 @@ export default function Forums() {
   const navigation = useNavigation()
   const router = useRouter()
   const {colors} = useTheme()
+  const colorScheme = useColorScheme()
+  const isDark = colorScheme === 'dark'
   const {getCategories, getRegistrationStatus, joinForums} = useForums()
 
   const [categories, setCategories] = React.useState<ForumCategoryWithForums[]>(
@@ -112,6 +133,7 @@ export default function Forums() {
   )
   const [loading, setLoading] = React.useState(true)
   const [refreshing, setRefreshing] = React.useState(false)
+  const [markingAllRead, setMarkingAllRead] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [showJoinModal, setShowJoinModal] = React.useState(false)
   const [joining, setJoining] = React.useState(false)
@@ -137,7 +159,7 @@ export default function Forums() {
       }
 
       setCategories(data)
-      await markForumsSeen(latestForumPostAt(data))
+      await ensureForumUnreadBaseline()
       if (data.length === 0 && !registration.is_member) {
         setError(t('forums_empty'))
       }
@@ -154,12 +176,6 @@ export default function Forums() {
     loadForums()
   }, [loadForums])
 
-  useFocusEffect(
-    React.useCallback(() => {
-      markForumsSeen()
-    }, []),
-  )
-
   const sections: ForumSection[] = React.useMemo(
     () =>
       categories.map((category, categoryIndex) => ({
@@ -170,6 +186,18 @@ export default function Forums() {
       })),
     [categories],
   )
+
+  async function handleMarkAllRead() {
+    if (markingAllRead) {
+      return
+    }
+    setMarkingAllRead(true)
+    try {
+      await markAllForumsRead(latestForumPostAt(categories))
+    } finally {
+      setMarkingAllRead(false)
+    }
+  }
 
   async function handleJoin() {
     try {
@@ -234,6 +262,39 @@ export default function Forums() {
           title={t('forums')}
           subtitle={t('forums_hero_subtitle')}
         />
+
+        {sections.length > 0 ? (
+          <Pressable
+            onPress={handleMarkAllRead}
+            disabled={markingAllRead}
+            accessibilityRole="button"
+            accessibilityLabel={t('mark_all_read')}
+            className="mb-4 flex-row items-center justify-center rounded-xl border px-4 py-2.5"
+            style={{
+              borderColor: isDark
+                ? 'rgba(148, 163, 184, 0.35)'
+                : 'rgba(148, 163, 184, 0.45)',
+              backgroundColor: isDark
+                ? 'rgba(148, 163, 184, 0.12)'
+                : 'rgba(148, 163, 184, 0.08)',
+              opacity: markingAllRead ? 0.6 : 1,
+            }}>
+            {markingAllRead ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <>
+                <MCI
+                  name="email-check-outline"
+                  size={18}
+                  color={colors.primary}
+                />
+                <Text className="ml-2 text-sm font-semibold">
+                  {t('mark_all_read')}
+                </Text>
+              </>
+            )}
+          </Pressable>
+        ) : null}
 
         {sections.length === 0 ? (
           error ? (

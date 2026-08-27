@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bangkok Pool League",
     "slug": "bangkok_pool_league",
-    "version": "1.96",
+    "version": "1.97",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "bangkokpoolleague",
@@ -11,7 +11,7 @@
       "appleTeamId": "2MXCL8R3KW",
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "buildNumber": "155",
+      "buildNumber": "156",
       "googleServicesFile": "./GoogleService-Info.plist",
       "usesAppleSignIn": true,
       "associatedDomains": [
@@ -23,6 +23,7 @@
         "com.apple.developer.applesignin": ["Default"]
       },
       "infoPlist": {
+        "CFBundleDisplayName": "Bangkok Pool League",
         "LSApplicationCategoryType": "public.app-category.sports",
         "UIBackgroundModes": ["fetch", "remote-notification"],
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
@@ -41,7 +42,7 @@
     },
     "android": {
       "package": "com.bangkok_pool_league",
-      "versionCode": 154,
+      "versionCode": 156,
       "googleServicesFile": "./firebase.google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
