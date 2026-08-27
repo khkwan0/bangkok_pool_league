@@ -18,11 +18,14 @@ export const useNetwork = () => {
           Authorization: 'Bearer ' + token,
         },
       })
+      const json = await res.json().catch(() => ({}))
       if (res.status === 200) {
-        const json = await res.json()
         return json
-      } else {
-        return {}
+      }
+      return {
+        status: json.status || 'error',
+        error: json.error || 'request_failed',
+        ...json,
       }
     } catch (e) {
       console.log('GET ' + endpoint, e)
@@ -100,7 +103,28 @@ export const useNetwork = () => {
     }
   }
 
-  const SocketSend = async (
+  const Delete = async function (endpoint) {
+    try {
+      const _endpoint =
+        typeof endpoint !== 'undefined' && endpoint[0] === '/'
+          ? endpoint.substring(1)
+          : endpoint
+      const apiDomain = apiUrl ?? config.apiUrl ?? 'localhost'
+      const token = await AsyncStorage.getItem('jwt')
+      const res = await fetch(apiDomain + '/' + _endpoint, {
+        method: 'DELETE',
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      })
+      const json = await res.json()
+      return json
+    } catch (e) {
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
+  const SocketSend = (
     type = '',
     matchId = 0,
     data = {},
@@ -109,7 +133,6 @@ export const useNetwork = () => {
     nickname,
     socket,
   ) => {
-    const token = await AsyncStorage.getItem('jwt')
     const user = {
       id: userId,
       nickname: nickname,
@@ -119,7 +142,6 @@ export const useNetwork = () => {
       matchId: matchId,
       timestamp: Date.now(),
       playerId: user.id ?? 0,
-      jwt: token ? token : '',
       nickname: user.nickname,
       dest: dest,
       data: {...data},
@@ -128,5 +150,5 @@ export const useNetwork = () => {
       socket.emit('matchupdate', toSend)
     }
   }
-  return {Get, Post, Put, Patch, SocketSend}
+  return {Get, Post, Put, Patch, Delete, SocketSend}
 }

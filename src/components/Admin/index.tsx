@@ -18,6 +18,11 @@ export default function Admin() {
   return (
     <View>
       <NavDest
+        icon="robot-outline"
+        text={t('admin_ai_agent')}
+        url="/Settings/Admin/AiAgent"
+      />
+      <NavDest
         icon="email"
         text="Login As Other User"
         url="/Settings/Admin/LoginAsOtherUser"

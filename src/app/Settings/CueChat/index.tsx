@@ -5,9 +5,22 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useNetwork} from '@/hooks/useNetwork'
+import {useThemeColor} from '@/hooks/useThemeColor'
+import {
+  ADMIN_AI_CHAT_THREADS_PATH,
+  MEMBER_AI_CHAT_THREADS_PATH,
+  chatMessagesToTurns,
+  formatThreadTime,
+  healDuplicateTurns,
+  sliceChatHistoryForLlm,
+  turnsToChatMessages,
+  type AiChatThreadSummary,
+  type AiChatTurn,
+} from '@/lib/aiChatThreads'
 import {
   getCueChatSession,
   setCueChatSession,
+  type AgentScope,
   type CueChatSessionMessage,
 } from '@/lib/cueChatSession'
 import {createSocketClient, loadSocketAuth} from '@/lib/socketAuth'
@@ -17,10 +30,12 @@ import {Stack, usePathname, useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
+  Alert,
   Animated,
   AppState,
   FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   View as RNView,
   ScrollView,
@@ -81,10 +96,21 @@ function formatToolDisplayName(rawName: string): string {
   return cleaned.replace(/\b\w/g, char => char.toUpperCase());
 }
 
-export default function CueChat() {
+export type {AgentScope}
+
+type CueChatProps = {
+  agentScope?: AgentScope
+}
+
+export default function CueChat({agentScope = 'member'}: CueChatProps) {
+  const isAdminChat = agentScope === 'admin'
+  const threadsApiBase = isAdminChat
+    ? ADMIN_AI_CHAT_THREADS_PATH
+    : MEMBER_AI_CHAT_THREADS_PATH
   const {t} = useTranslation()
   const router = useRouter()
   const pathname = usePathname()
+  const headerIconColor = useThemeColor({}, 'text')
   const [messages, setMessages] = React.useState<ChatMessage[]>([])
   const [inputText, setInputText] = React.useState('')
   const [agentActivity, setAgentActivity] =
@@ -92,16 +118,37 @@ export default function CueChat() {
   const [isStreaming, setIsStreaming] = React.useState(false)
   const [responseText, setResponseText] = React.useState('')
   const [reasoningText, setReasoningText] = React.useState('')
-  const [isLoadingHistory, setIsLoadingHistory] = React.useState(false)
   const [agentError, setAgentError] = React.useState<string | null>(null)
   const insets = useSafeAreaInsets()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const {state: leagueState, webSocketUrl}: any = useLeagueContext()
-  const {Get} = useNetwork()
+  const {Get, Post, Put, Delete} = useNetwork()
+  const getRef = React.useRef(Get)
+  const postRef = React.useRef(Post)
+  const putRef = React.useRef(Put)
+  const deleteRef = React.useRef(Delete)
+  React.useEffect(() => {
+    getRef.current = Get
+    postRef.current = Post
+    putRef.current = Put
+    deleteRef.current = Delete
+  }, [Get, Post, Put, Delete])
   const [connectionPhase, setConnectionPhase] =
     React.useState<ConnectionPhase>('initializing')
   const [socketError, setSocketError] = React.useState<string | null>(null)
+  const [threads, setThreads] = React.useState<AiChatThreadSummary[]>([])
+  const [activeThreadId, setActiveThreadId] = React.useState<number | null>(null)
+  const [threadsLoading, setThreadsLoading] = React.useState(false)
+  const [threadLoading, setThreadLoading] = React.useState(false)
+  const [historyOpen, setHistoryOpen] = React.useState(false)
+  const activeThreadIdRef = React.useRef<number | null>(null)
+  const persistThreadMessagesRef = React.useRef<
+    ((threadId: number, nextMessages: ChatMessage[]) => Promise<void>) | null
+  >(null)
+  const ensureThreadIdRef = React.useRef<
+    ((firstPrompt: string) => Promise<number | null>) | null
+  >(null)
   const flatListRef = React.useRef<FlatList>(null)
   const socketRef = React.useRef<ReturnType<typeof createSocketClient> | null>(
     null,
@@ -116,8 +163,11 @@ export default function CueChat() {
   isStreamingRef.current = isStreaming
   const messagesRef = React.useRef(messages)
   messagesRef.current = messages
-
   const isLoggedIn = Boolean(leagueState.user?.id)
+
+  React.useEffect(() => {
+    activeThreadIdRef.current = activeThreadId
+  }, [activeThreadId])
   const isConnected = connectionPhase === 'connected'
   const isConnecting =
     connectionPhase === 'initializing' || connectionPhase === 'connecting'
@@ -311,77 +361,6 @@ export default function CueChat() {
     }
   }
 
-  function getStreamingStatusLabel(): string {
-    const activityLabel = getAgentActivityLabel(agentActivity)
-    if (activityLabel) return activityLabel
-    if (reasoningText.trim() && !responseText.trim()) {
-      return t('ai_assistant_status_reasoning')
-    }
-    if (responseText.trim()) {
-      return t('ai_assistant_status_responding')
-    }
-    return t('ai_assistant_status_preparing')
-  }
-
-  function getStatusBarLabel(): string {
-    if (!isLoggedIn) {
-      return t('ai_assistant_status_login_required')
-    }
-    if (isLoadingHistory && !isConnected) {
-      return t('ai_assistant_status_connecting')
-    }
-    if (isStreaming) {
-      return getStreamingStatusLabel()
-    }
-    switch (connectionPhase) {
-      case 'initializing':
-        return t('ai_assistant_status_initializing')
-      case 'connecting':
-        return t('ai_assistant_status_connecting')
-      case 'connected':
-        return t('connected')
-      case 'disconnected':
-        return t('disconnected')
-      default:
-        return t('disconnected')
-    }
-  }
-
-  function getStatusBarColor(): string {
-    if (!isLoggedIn) return '#64748b'
-    if (isStreaming) return '#2563eb'
-    switch (connectionPhase) {
-      case 'initializing':
-      case 'connecting':
-        return '#ca8a04'
-      case 'connected':
-        return '#16a34a'
-      case 'disconnected':
-        return '#dc2626'
-      default:
-        return '#dc2626'
-    }
-  }
-
-  function getStatusBarIcon(): keyof typeof Ionicons.glyphMap {
-    if (!isLoggedIn) return 'log-in-outline'
-    if (agentActivity?.phase === 'reconnecting') return 'sync-outline'
-    if (isStreaming) {
-      return agentActivity?.phase === 'tool' ? 'search-outline' : 'hourglass-outline'
-    }
-    switch (connectionPhase) {
-      case 'initializing':
-      case 'connecting':
-        return 'sync-outline'
-      case 'connected':
-        return 'checkmark-circle'
-      case 'disconnected':
-        return 'close-circle'
-      default:
-        return 'close-circle'
-    }
-  }
-
   React.useEffect(() => {
     return () => {
       if (responseFlushRafRef.current != null) {
@@ -393,97 +372,230 @@ export default function CueChat() {
     }
   }, [])
 
-  React.useEffect(() => {
-    const playerId = leagueState.user?.id
-    if (!playerId || messages.length === 0) return
-    setCueChatSession(playerId, messages as CueChatSessionMessage[])
-  }, [messages, leagueState.user?.id])
-
-  // Load session cache or fetch server history on mount
-  React.useEffect(() => {
-    async function fetchChatHistory() {
-      const playerId = leagueState.user?.id
-      if (!playerId) {
-        return // Don't fetch if user is not authenticated
-      }
-
-      const cachedSession = getCueChatSession(playerId)
-      if (cachedSession.length > 0) {
-        setMessages(cachedSession as ChatMessage[])
-        setTimeout(() => {
-          flatListRef.current?.scrollToEnd({animated: false})
-        }, 100)
-        return
-      }
-
-      try {
-        setIsLoadingHistory(true)
-        const response = await Get('chat/history')
-
-        if (response && response.status === 'ok' && response.data) {
-          // Parse history messages and add to state
-          const historyMessages: ChatMessage[] = response.data.map(
-            (item: any) => {
-              const messageText =
-                item.message ||
-                item.data?.message ||
-                item.text ||
-                item.response ||
-                item.content ||
-                ''
-
-              const messagePlayerId =
-                item.playerId || item.userId || item.sender?.id || 0
-              // Check role field to determine if it's a user message (shown on right)
-              const isUserMessage =
-                item.role === 'user' || messagePlayerId === playerId
-
-              return {
-                id:
-                  item.id ||
-                  item.messageId ||
-                  `hist_${Date.now()}_${Math.random()}`,
-                message: messageText,
-                nickname:
-                  item.nickname ||
-                  item.user?.nickname ||
-                  item.sender?.nickname ||
-                  (isUserMessage ? 'You' : 'Response'),
-                playerId: messagePlayerId,
-                timestamp:
-                  item.timestamp || item.created_at || item.time || Date.now(),
-                rawData: item,
-                isUserMessage: isUserMessage,
-              }
-            },
-          )
-
-          // Sort by timestamp to ensure chronological order
-          historyMessages.sort((a, b) => a.timestamp - b.timestamp)
-
-          setMessages(historyMessages)
-          setCueChatSession(playerId, historyMessages)
-
-          // Scroll to bottom after loading history
-          setTimeout(() => {
-            flatListRef.current?.scrollToEnd({animated: false})
-          }, 100)
-        }
-      } catch (e) {
-        console.error('Error fetching chat history:', e)
-      } finally {
-        setIsLoadingHistory(false)
-      }
-    }
-
-    fetchChatHistory()
-  }, [leagueState.user?.id])
-
   function persistCueChatSession() {
     const playerId = leagueState.user?.id
     if (!playerId) return
-    setCueChatSession(playerId, messagesRef.current as CueChatSessionMessage[])
+    setCueChatSession(
+      playerId,
+      {
+        threadId: activeThreadIdRef.current,
+        messages: messagesRef.current as CueChatSessionMessage[],
+      },
+      agentScope,
+    )
   }
+
+  const refreshThreads = React.useCallback(async () => {
+    if (!leagueState.user?.id) return
+    try {
+      setThreadsLoading(true)
+      const response = await getRef.current(threadsApiBase)
+      if (response?.status === 'ok' && Array.isArray(response.data)) {
+        setThreads(response.data)
+        setAgentError(null)
+        return
+      }
+      const error = response?.error || 'request_failed'
+      console.error('Failed to load chat threads:', error)
+      setAgentError(error)
+    } catch (e) {
+      console.error('Failed to load chat threads:', e)
+    } finally {
+      setThreadsLoading(false)
+    }
+  }, [leagueState.user?.id, threadsApiBase])
+
+  const persistThreadMessages = React.useCallback(
+    async (threadId: number, nextMessages: ChatMessage[]) => {
+      if (!threadId || !leagueState.user?.id) return
+      try {
+        const turns = chatMessagesToTurns(nextMessages, leagueState.user.id)
+        const response = await putRef.current(
+          `${threadsApiBase}/${threadId}`,
+          {
+            messages: turns,
+            update_title: true,
+          },
+        )
+        if (response?.status !== 'ok') {
+          console.error('Failed to save chat thread:', response?.error)
+          return
+        }
+        await refreshThreads()
+      } catch (e) {
+        console.error('Failed to save chat thread:', e)
+      }
+    },
+    [leagueState.user, refreshThreads, threadsApiBase],
+  )
+
+  const ensureThreadId = React.useCallback(
+    async (firstPrompt: string): Promise<number | null> => {
+      if (activeThreadIdRef.current) return activeThreadIdRef.current
+      try {
+        const response = await postRef.current(threadsApiBase, {
+          title: firstPrompt,
+        })
+        if (response?.status !== 'ok' || !response?.data?.id) {
+          console.error('Failed to create chat thread:', response?.error)
+          return null
+        }
+        const id = response.data.id as number
+        setActiveThreadId(id)
+        activeThreadIdRef.current = id
+        await refreshThreads()
+        return id
+      } catch (e) {
+        console.error('Failed to create chat thread:', e)
+        return null
+      }
+    },
+    [refreshThreads, threadsApiBase],
+  )
+
+  React.useEffect(() => {
+    persistThreadMessagesRef.current = persistThreadMessages
+  }, [persistThreadMessages])
+
+  React.useEffect(() => {
+    ensureThreadIdRef.current = ensureThreadId
+  }, [ensureThreadId])
+
+  const startNewChat = React.useCallback(() => {
+    if (isStreamingRef.current) return
+    setActiveThreadId(null)
+    activeThreadIdRef.current = null
+    setMessages([])
+    messagesRef.current = []
+    setInputText('')
+    setResponseText('')
+    setReasoningText('')
+    setAgentError(null)
+    setHistoryOpen(false)
+    persistCueChatSession()
+  }, [leagueState.user?.id])
+
+  const loadThread = React.useCallback(
+    async (threadId: number) => {
+      if (isStreamingRef.current) return
+      const playerId = leagueState.user?.id
+      if (!playerId) return
+      try {
+        setThreadLoading(true)
+        setAgentError(null)
+        const response = await getRef.current(
+          `${threadsApiBase}/${threadId}`,
+        )
+        if (response?.status !== 'ok' || !response?.data) {
+          setAgentError(response?.error || 'Failed to load chat thread')
+          return
+        }
+        const rawTurns = (response.data.messages ?? []) as AiChatTurn[]
+        const turns = healDuplicateTurns(rawTurns)
+        const nextMessages = turnsToChatMessages(
+          turns,
+          playerId,
+          leagueState.user?.nickname ?? 'You',
+        ) as ChatMessage[]
+        setActiveThreadId(threadId)
+        activeThreadIdRef.current = threadId
+        setMessages(nextMessages)
+        setInputText('')
+        setResponseText('')
+        setReasoningText('')
+        setHistoryOpen(false)
+        setCueChatSession(
+          playerId,
+          {
+            threadId,
+            messages: nextMessages,
+          },
+          agentScope,
+        )
+        if (turns.length < rawTurns.length) {
+          void persistThreadMessagesRef.current?.(threadId, nextMessages)
+        }
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({animated: false})
+        }, 100)
+      } catch (e) {
+        console.error('Failed to load chat thread:', e)
+        setAgentError('Failed to load chat thread')
+      } finally {
+        setThreadLoading(false)
+      }
+    },
+    [leagueState.user?.id, leagueState.user?.nickname, threadsApiBase, agentScope],
+  )
+
+  const deleteThread = React.useCallback(
+    (threadId: number) => {
+      if (isStreamingRef.current) return
+      Alert.alert(
+        t('ai_assistant_delete_thread_title'),
+        t('ai_assistant_delete_thread_body'),
+        [
+          {text: t('cancel'), style: 'cancel'},
+          {
+            text: t('delete'),
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                const response = await deleteRef.current(
+                  `${threadsApiBase}/${threadId}`,
+                )
+                if (response?.status !== 'ok') {
+                  setAgentError(response?.error || 'Failed to delete chat thread')
+                  return
+                }
+                if (activeThreadIdRef.current === threadId) {
+                  startNewChat()
+                }
+                await refreshThreads()
+              } catch (e) {
+                console.error('Failed to delete chat thread:', e)
+                setAgentError('Failed to delete chat thread')
+              }
+            },
+          },
+        ],
+      )
+    },
+    [refreshThreads, startNewChat, t, threadsApiBase],
+  )
+
+  React.useEffect(() => {
+    const playerId = leagueState.user?.id
+    if (!playerId) {
+      setThreads([])
+      setActiveThreadId(null)
+      activeThreadIdRef.current = null
+      setMessages([])
+      return
+    }
+
+    const cachedSession = getCueChatSession(playerId, agentScope)
+    if (cachedSession?.messages?.length) {
+      setMessages(cachedSession.messages as ChatMessage[])
+      setActiveThreadId(cachedSession.threadId)
+      activeThreadIdRef.current = cachedSession.threadId
+    }
+
+    void refreshThreads()
+  }, [leagueState.user?.id, refreshThreads])
+
+  React.useEffect(() => {
+    const playerId = leagueState.user?.id
+    if (!playerId) return
+    setCueChatSession(
+      playerId,
+      {
+        threadId: activeThreadId,
+        messages: messages as CueChatSessionMessage[],
+      },
+      agentScope,
+    )
+  }, [messages, activeThreadId, leagueState.user?.id, agentScope])
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -498,9 +610,11 @@ export default function CueChat() {
       const socketUrl = webSocketUrl
       const playerId = leagueState.user?.id
       if (playerId) {
-        const cachedSession = getCueChatSession(playerId)
-        if (cachedSession.length > 0) {
-          setMessages(cachedSession as ChatMessage[])
+        const cachedSession = getCueChatSession(playerId, agentScope)
+        if (cachedSession?.messages?.length) {
+          setMessages(cachedSession.messages as ChatMessage[])
+          setActiveThreadId(cachedSession.threadId)
+          activeThreadIdRef.current = cachedSession.threadId
         }
       }
 
@@ -627,17 +741,26 @@ export default function CueChat() {
       }
 
       if (assistantReply) {
-        setMessages(prev => [
-          ...prev,
-          {
-            id: `assistant_${Date.now()}_${Math.random()}`,
-            message: assistantReply,
-            nickname: 'Response',
-            playerId: 0,
-            timestamp: Date.now(),
-            isUserMessage: false,
-          },
-        ])
+        const assistantMessage: ChatMessage = {
+          id: `assistant_${Date.now()}_${Math.random()}`,
+          message: assistantReply,
+          nickname: 'Response',
+          playerId: 0,
+          timestamp: Date.now(),
+          isUserMessage: false,
+        }
+        const nextMessages = [...messagesRef.current, assistantMessage]
+        messagesRef.current = nextMessages
+        setMessages(nextMessages)
+        const threadId = activeThreadIdRef.current
+        if (threadId) {
+          void persistThreadMessagesRef.current?.(threadId, nextMessages)
+        }
+      } else if (activeThreadIdRef.current) {
+        void persistThreadMessagesRef.current?.(
+          activeThreadIdRef.current,
+          messagesRef.current,
+        )
       }
 
       responseBufferRef.current = ''
@@ -645,6 +768,7 @@ export default function CueChat() {
       setResponseText('')
       setReasoningText('')
       setIsStreaming(false)
+      isStreamingRef.current = false
       clearAgentActivity()
       setAgentError(null)
     }
@@ -663,6 +787,7 @@ export default function CueChat() {
       setResponseText('')
       setReasoningText('')
       setIsStreaming(false)
+      isStreamingRef.current = false
       clearAgentActivity()
       const message =
         payload?.error || payload?.message || 'Agent request failed'
@@ -693,7 +818,7 @@ export default function CueChat() {
         persistCueChatSession()
         teardownSocket(activeSocket)
       }
-    }, [leagueState.user?.id]),
+    }, [leagueState.user?.id, agentScope]),
   )
 
   async function emitAgentRequest(
@@ -706,7 +831,7 @@ export default function CueChat() {
     const socket = socketRef.current
     if (!socket) return
 
-    const payload = {requestId, messages: agentMessages}
+    const payload = {requestId, agentScope, messages: agentMessages}
 
     const onAck = (ack?: {status?: string; error?: string}) => {
       if (ack?.status === 'error') {
@@ -715,6 +840,7 @@ export default function CueChat() {
         setResponseText('')
         setReasoningText('')
         setIsStreaming(false)
+        isStreamingRef.current = false
         clearAgentActivity()
         setAgentError(ack.error || 'Failed to start agent request')
         console.error(
@@ -759,21 +885,37 @@ export default function CueChat() {
         ? t('ai_assistant_input_disconnected')
         : isStreaming
           ? t('ai_assistant_input_responding')
-          : t('ai_assistant_message_placeholder')
+          : isAdminChat
+            ? t('admin_ai_agent_placeholder')
+            : t('ai_assistant_message_placeholder')
 
-  const suggestionKeys = [
-    'ai_assistant_suggestion_1',
-    'ai_assistant_suggestion_2',
-    'ai_assistant_suggestion_3',
-    'ai_assistant_suggestion_4',
-  ] as const
+  const suggestionKeys = (
+    isAdminChat
+      ? [
+          'admin_ai_agent_suggestion_1',
+          'admin_ai_agent_suggestion_2',
+          'admin_ai_agent_suggestion_3',
+          'admin_ai_agent_suggestion_4',
+        ]
+      : [
+          'ai_assistant_suggestion_1',
+          'ai_assistant_suggestion_2',
+          'ai_assistant_suggestion_3',
+          'ai_assistant_suggestion_4',
+        ]
+  ) as const
+
+  const screenTitle = isAdminChat ? t('admin_ai_agent') : t('ai_assistant')
+  const readyMessage = isAdminChat
+    ? t('admin_ai_agent_ready_message')
+    : t('ai_assistant_ready_message')
 
   const showReadyPrompt =
     isLoggedIn &&
     isConnected &&
     !isConnecting &&
     !isStreaming &&
-    !isLoadingHistory &&
+    !threadLoading &&
     messages.length === 0
 
   async function SendMessage(overrideText?: string) {
@@ -781,24 +923,37 @@ export default function CueChat() {
     if (!messageText) return
     if (!overrideText && !canSend) return
     if (overrideText && !isInputEnabled) return
+    if (isStreamingRef.current) return
     const currentUserId = leagueState.user.id ?? 0
     const currentNickname = leagueState.user.nickname ?? 'You'
 
-    const historyTurns = messages
-      .filter(item => item.message.trim())
-      .map(item => ({
-        role: (item.isUserMessage || item.playerId === currentUserId
-          ? 'user'
-          : 'assistant') as 'user' | 'assistant',
-        content: item.message,
-      }))
+    isStreamingRef.current = true
+    setIsStreaming(true)
+
+    if (!activeThreadIdRef.current) {
+      const threadId = await ensureThreadId(messageText)
+      if (!threadId) {
+        isStreamingRef.current = false
+        setIsStreaming(false)
+        setAgentError('Failed to create chat thread')
+        return
+      }
+    }
+
+    const historyTurns = sliceChatHistoryForLlm(
+      chatMessagesToTurns(messages, currentUserId),
+    )
 
     const agentMessages = [
       {
         role: 'system' as const,
-        content: currentUserId
-          ? `You are assisting BKK League player_id=${currentUserId}. Personalize recommendations to this player's context, match planning needs, and likely league workflows.`
-          : 'You are assisting a BKK League player. Personalize recommendations to match planning, team coordination, and league workflows.',
+        content: isAdminChat
+          ? `You are assisting a BKK League site admin${
+              currentUserId ? ` (player_id=${currentUserId})` : ''
+            }. Help them operate the league via the admin web interface (menu paths, tabs, forms) and, when they ask you to perform actions, via available admin tools.`
+          : currentUserId
+            ? `You are assisting BKK League player_id=${currentUserId}. Personalize recommendations to this player's context, match planning needs, and likely league workflows.`
+            : 'You are assisting a BKK League player. Personalize recommendations to match planning, team coordination, and league workflows.',
       },
       ...historyTurns,
       {role: 'user' as const, content: messageText},
@@ -821,9 +976,7 @@ export default function CueChat() {
     setReasoningText('')
     setAgentError(null)
     setAgentActivity({phase: 'sending'})
-    setIsStreaming(true)
 
-    // Add user message to chat immediately (right side)
     const userMessage: ChatMessage = {
       id: `user_${Date.now()}_${Math.random()}`,
       message: messageText,
@@ -832,8 +985,9 @@ export default function CueChat() {
       timestamp: Date.now(),
       isUserMessage: true,
     }
-
-    setMessages(prev => [...prev, userMessage])
+    const nextMessages = [...messagesRef.current, userMessage]
+    messagesRef.current = nextMessages
+    setMessages(nextMessages)
     if (!overrideText) {
       setInputText('')
     }
@@ -852,6 +1006,7 @@ export default function CueChat() {
       setResponseText('')
       setReasoningText('')
       setIsStreaming(false)
+      isStreamingRef.current = false
       clearAgentActivity()
     }
   }
@@ -961,50 +1116,6 @@ export default function CueChat() {
           </View>
         </View>
       </View>
-    )
-  }
-
-  const shouldSpinStatusIcon =
-    isConnecting ||
-    isStreaming ||
-    agentActivity?.phase === 'reconnecting'
-
-  const StatusBarIcon = ({
-    name,
-    spin,
-  }: {
-    name: keyof typeof Ionicons.glyphMap
-    spin: boolean
-  }) => {
-    const rotation = React.useRef(new Animated.Value(0)).current
-
-    React.useEffect(() => {
-      if (!spin) {
-        rotation.stopAnimation()
-        rotation.setValue(0)
-        return
-      }
-
-      const animation = Animated.loop(
-        Animated.timing(rotation, {
-          toValue: 1,
-          duration: 900,
-          useNativeDriver: true,
-        }),
-      )
-      animation.start()
-      return () => animation.stop()
-    }, [spin, rotation])
-
-    const rotate = rotation.interpolate({
-      inputRange: [0, 1],
-      outputRange: ['0deg', '360deg'],
-    })
-
-    return (
-      <Animated.View style={{marginRight: 8, transform: [{rotate}]}}>
-        <Ionicons name={name} size={16} color="white" />
-      </Animated.View>
     )
   }
 
@@ -1243,10 +1354,10 @@ export default function CueChat() {
             marginBottom: 6,
             fontWeight: '600',
           }}>
-          {t('ai_assistant')}
+          {t(isAdminChat ? 'admin_ai_agent' : 'ai_assistant')}
         </Text>
         <Text style={{color: apiTextColor, fontSize: 16, lineHeight: 22}}>
-          {t('ai_assistant_ready_message')}
+          {readyMessage}
         </Text>
       </RNView>
       <Text
@@ -1330,7 +1441,7 @@ export default function CueChat() {
     if (showReadyPrompt) {
       return renderReadyPrompt()
     }
-    if (isLoadingHistory) {
+    if (threadLoading) {
       return (
         <View className="flex-1 justify-center items-center py-8">
           <Text className="opacity-60">
@@ -1364,33 +1475,208 @@ export default function CueChat() {
     )
   }
 
+  if (isAdminChat && Number(leagueState.user?.role_id) !== 9) {
+    return (
+      <>
+        <Stack.Screen options={{title: t('admin_ai_agent')}} />
+        <View className="flex-1 justify-center items-center px-6">
+          <Text style={{textAlign: 'center'}}>
+            {t('admin_ai_agent_unauthorized')}
+          </Text>
+        </View>
+      </>
+    )
+  }
+
   return (
     <>
-      <Stack.Screen options={{title: t('ai_assistant')}} />
+      <Stack.Screen
+        options={{
+          title: screenTitle,
+          headerRight: () => (
+              <RNView style={{flexDirection: 'row', alignItems: 'center', gap: 12, marginRight: 4}}>
+                {isLoggedIn ? (
+                  <>
+                    <TouchableOpacity
+                      onPress={startNewChat}
+                      disabled={isStreaming}
+                      hitSlop={8}
+                      accessibilityLabel={t('ai_assistant_new_chat')}>
+                      <Ionicons
+                        name="create-outline"
+                        size={24}
+                        color={headerIconColor}
+                        style={{opacity: isStreaming ? 0.4 : 1}}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setHistoryOpen(true)
+                        void refreshThreads()
+                      }}
+                      disabled={isStreaming}
+                      hitSlop={8}
+                      accessibilityLabel={t('ai_assistant_chat_history')}>
+                      <Ionicons
+                        name="time-outline"
+                        size={24}
+                        color={headerIconColor}
+                        style={{opacity: isStreaming ? 0.4 : 1}}
+                      />
+                    </TouchableOpacity>
+                  </>
+                ) : null}
+                <RNView
+                  accessibilityRole="image"
+                  accessibilityLabel={
+                    isConnected ? t('connected') : t('disconnected')
+                  }
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: isConnected ? '#16a34a' : '#dc2626',
+                  }}
+                />
+              </RNView>
+            ),
+        }}
+      />
+      <Modal
+        visible={historyOpen}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setHistoryOpen(false)}>
+        <View
+          className="flex-1"
+          style={{paddingTop: insets.top, paddingBottom: insets.bottom}}>
+          <RNView
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderBottomWidth: 1,
+              borderBottomColor: isDark ? '#334155' : '#e2e8f0',
+            }}>
+            <Text style={{fontSize: 18, fontWeight: '700'}}>
+              {t('ai_assistant_chat_history')}
+            </Text>
+            <RNView style={{flexDirection: 'row', alignItems: 'center', gap: 16}}>
+              <TouchableOpacity
+                onPress={startNewChat}
+                disabled={isStreaming}
+                hitSlop={8}>
+                <Text
+                  style={{
+                    color: '#2563eb',
+                    fontWeight: '600',
+                    opacity: isStreaming ? 0.4 : 1,
+                  }}>
+                  {t('ai_assistant_new_chat')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setHistoryOpen(false)}
+                hitSlop={8}>
+                <Ionicons name="close" size={24} color={headerIconColor} />
+              </TouchableOpacity>
+            </RNView>
+          </RNView>
+          {threadsLoading ? (
+            <View className="flex-1 justify-center items-center">
+              <Text className="opacity-60">{t('ai_assistant_input_connecting')}</Text>
+            </View>
+          ) : agentError ? (
+            <View className="flex-1 justify-center items-center px-8">
+              <Text
+                style={{
+                  textAlign: 'center',
+                  color: isDark ? '#fecaca' : '#b91c1c',
+                }}>
+                {agentError}
+              </Text>
+            </View>
+          ) : threads.length === 0 ? (
+            <View className="flex-1 justify-center items-center px-8">
+              <Text className="opacity-60" style={{textAlign: 'center'}}>
+                {t('ai_assistant_no_saved_chats')}
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={threads}
+              keyExtractor={item => String(item.id)}
+              contentContainerStyle={{paddingVertical: 8}}
+              renderItem={({item}) => {
+                const isActive = item.id === activeThreadId
+                return (
+                  <RNView
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginHorizontal: 12,
+                      marginVertical: 4,
+                      borderRadius: 10,
+                      backgroundColor: isActive
+                        ? isDark
+                          ? '#1e3a5f'
+                          : '#eff6ff'
+                        : 'transparent',
+                    }}>
+                    <TouchableOpacity
+                      style={{flex: 1, paddingHorizontal: 12, paddingVertical: 12}}
+                      onPress={() => void loadThread(item.id)}
+                      disabled={isStreaming || threadLoading}>
+                      <Text
+                        numberOfLines={1}
+                        style={{
+                          fontSize: 15,
+                          fontWeight: '600',
+                          color: isActive
+                            ? isDark
+                              ? '#bfdbfe'
+                              : '#1e40af'
+                            : undefined,
+                        }}>
+                        {item.title}
+                      </Text>
+                      <Text
+                        style={{
+                          marginTop: 4,
+                          fontSize: 12,
+                          opacity: 0.6,
+                        }}>
+                        {formatThreadTime(item.updated_at)}
+                        {item.message_count > 0
+                          ? ` · ${item.message_count} ${t('ai_assistant_msgs')}`
+                          : ''}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => deleteThread(item.id)}
+                      disabled={isStreaming}
+                      hitSlop={8}
+                      style={{paddingHorizontal: 12, paddingVertical: 12}}>
+                      <Ionicons
+                        name="close"
+                        size={18}
+                        color={isDark ? '#94a3b8' : '#64748b'}
+                      />
+                    </TouchableOpacity>
+                  </RNView>
+                )
+              }}
+            />
+          )}
+        </View>
+      </Modal>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
         <View className="flex-1">
-          {/* Connection Status Bar */}
-          <View
-            style={{
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: getStatusBarColor(),
-            }}>
-            <StatusBarIcon
-              name={getStatusBarIcon()}
-              spin={shouldSpinStatusIcon}
-            />
-            <Text style={{color: '#ffffff', fontSize: 12}}>
-              {getStatusBarLabel()}
-            </Text>
-          </View>
-
           {displayError ? (
             <View
               style={{

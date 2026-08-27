@@ -1,0 +1,13 @@
+---
+description: Mobile talks to Next.js web API, not Fastify api/
+alwaysApply: true
+---
+
+# Backend API (bkkleague_backend)
+
+The mobile app’s live backend is the **Next.js web app**, not Fastify.
+
+- HTTP: `web/src/app/api/**/route.ts` in `bkkleague_backend` (nginx `/api` → Next.js)
+- Sockets: `web/server.ts` (`agent` / `agent:*` for CueChat)
+- Chat history: Postgres member threads (`/api/ai-agent/chat-threads`), not Redis `/chat/history`
+- `bkkleague_backend/api/` (Fastify) is **reference only** — do not add or wire mobile features to it

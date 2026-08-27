@@ -1,6 +1,5 @@
 import { FrameType, MatchInfoDataType } from '@/components/Match/types'
 import { useMatch, useTeams } from '@/hooks'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import React, { createContext, useContext, useReducer } from 'react'
 import { io } from 'socket.io-client'
 import { useLeagueContext } from './LeagueContext'
@@ -505,20 +504,18 @@ export const MatchProvider = (props: any) => {
     }
   }
 
-  async function SocketSend(
+  function SocketSend(
     type = '',
     data = {},
     dest = '',
     userId = 0,
     nickname = '',
   ) {
-    const token = await AsyncStorage.getItem('jwt')
     const toSend = {
       type: type,
       matchId: state.matchInfo.match_id,
       timestamp: Date.now(),
       playerId: leagueState.user.id ?? 0,
-      jwt: token ?? 'notoken',
       nickname: leagueState.user.nickname ?? '',
       dest: dest,
       data: {...data},
