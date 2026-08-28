@@ -11,7 +11,7 @@
       "appleTeamId": "2MXCL8R3KW",
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "buildNumber": "156",
+      "buildNumber": "157",
       "googleServicesFile": "./GoogleService-Info.plist",
       "usesAppleSignIn": true,
       "associatedDomains": [
@@ -42,7 +42,7 @@
     },
     "android": {
       "package": "com.bangkok_pool_league",
-      "versionCode": 156,
+      "versionCode": 157,
       "googleServicesFile": "./firebase.google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
@@ -63,7 +63,11 @@
       ]
     },
     "androidStatusBar": {
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F5F5F5"
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#F5F5F5",
+      "barStyle": "dark-content"
     },
     "web": {
       "output": "static",
@@ -73,6 +77,12 @@
     "plugins": [
       "./plugins/withAndroidFirebaseNotificationManifest",
       "expo-router",
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false
+        }
+      ],
       [
         "@sentry/react-native/expo",
         {

@@ -1,5 +1,6 @@
 import {LeagueProvider} from '@/context/LeagueContext'
 import {MatchProvider} from '@/context/MatchContext'
+import {SystemNavigationBar} from '@/components/SystemNavigationBar'
 import '@/i18n'
 import {ensureAppWideChannel} from '@/lib/notifications'
 import {BottomSheetModalProvider} from '@expo/ui/community/bottom-sheet'
@@ -228,6 +229,7 @@ function RootLayout() {
         <BottomSheetModalProvider>
           <ThemeProvider
             value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <SystemNavigationBar />
             <LeagueProvider>
               <MatchProvider>
                 <Stack>
