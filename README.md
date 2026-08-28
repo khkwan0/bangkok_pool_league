@@ -10,7 +10,16 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Create local config
+
+   ```bash
+   cp src/config.example.js src/config.js
+   cp .env.example .env.local
+   ```
+
+   Edit `src/config.js` for your API host and third-party IDs. Set Sentry, Apple team ID, and signing vars in `.env.local`. See [Configuration](#configuration) below.
+
+3. Start the app
 
    ```bash
    npx expo start
@@ -24,6 +33,70 @@ In the output, you'll find options to open the app in a
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+## Configuration
+
+Runtime settings live in **`src/config.js`**, which is **gitignored**. New clones should copy the example:
+
+```bash
+cp src/config.example.js src/config.js
+```
+
+Import it anywhere as `@/config` or `@/config.js`.
+
+### Environment variables (`.env.local`)
+
+Copy `.env.example` → `.env.local` (gitignored). Expo loads it for **`app.config.js`** at prebuild time and inlines **`EXPO_PUBLIC_*`** into the JS bundle.
+
+| Variable | Purpose |
+|----------|---------|
+| `EXPO_PUBLIC_SENTRY_DSN` | Sentry DSN in `src/app/_layout.tsx` (optional; app runs without it) |
+| `SENTRY_ORG` | Sentry org for `@sentry/react-native/expo` plugin |
+| `SENTRY_PROJECT` | Sentry project for the plugin |
+| `APPLE_TEAM_ID` | Apple Developer team ID (`app.config.js` + `archive_ios` export) |
+
+`app.config.js` merges these into `app.json` — Sentry plugin and `ios.appleTeamId` are not hardcoded in the repo.
+
+Release-build credentials (`ASC_*`, `ANDROID_*`, `PLAY_*`) are also documented in `.env.example` and [Release builds](#release-builds).
+
+### File layout (`src/config.js`)
+
+| Export / field | Purpose |
+|----------------|---------|
+| `domain` | API hostname (no scheme), used for some Socket.IO connections |
+| `webSocketDomain` | Socket.IO hostname (no scheme) |
+| `profilePicturesUrl` | Host + path prefix for player avatars |
+| `apiUrl` | REST API base, e.g. `https://bkkleague.com/api` |
+| `webSocketUrl` | Socket.IO origin, e.g. `https://bkkleague.com` |
+| `logoUrl` | Base URL for team/venue logos |
+| `profileUrl` | Base URL for profile pictures |
+| `forumImagesUrl` | Optional; forum post images (defaults to `logoUrl`) |
+| `ONESIGNAL_APP_ID` | OneSignal push notification app ID |
+| `line.channelId` | LINE Login channel ID |
+| `version` | User-facing app version string |
+| `build` | Native build number shown in Settings |
+
+### Version sync
+
+Deploy and archive scripts update `version` and `build` in `src/config.js` from **`app.json`** before each build:
+
+- iOS: `expo.version`, `expo.ios.buildNumber`
+- Android: `expo.version`, `expo.android.versionCode`
+
+Bump those in `app.json` before store releases; do not rely on hand-editing `config.js` for production builds.
+
+### Overrides at runtime
+
+`LeagueContext` can persist a custom API URL in AsyncStorage (`api_domain`) for admin/staging testing. Defaults always come from `src/config.js`.
+
+### Related files (also gitignored)
+
+| File | Purpose |
+|------|---------|
+| `.env.local` | Sentry, Apple team ID, signing, and store-upload credentials |
+| `.env.example` | Template for `.env.local` |
+| `GoogleService-Info.plist` | Firebase iOS config (referenced in `app.json`) |
+| `firebase.google-services.json` | Firebase Android config (referenced in `app.json`) |
 
 ## Android wireless debugging (Wi-Fi)
 

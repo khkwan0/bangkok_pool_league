@@ -30,22 +30,26 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler'
 import {SafeAreaProvider} from 'react-native-safe-area-context'
 import '../../global.css'
 
+const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN
+
 const sentryIntegrations: Parameters<typeof Sentry.init>[0]['integrations'] =
   [Sentry.feedbackIntegration()]
-if (!__DEV__) {
+if (!__DEV__ && sentryDsn) {
   sentryIntegrations.unshift(Sentry.mobileReplayIntegration())
 }
 
-Sentry.init({
-  dsn: 'https://16db053ee26e7ad79d1bf8941ec890ba@o4507715036053504.ingest.us.sentry.io/4507715037757440',
-  sendDefaultPii: true,
-  enableLogs: true,
-  // replaysSessionSampleRate: __DEV__ ? 0 : 0.1,
-  // replaysOnErrorSampleRate: __DEV__ ? 0 : 1.0,
-  replaysSessionSampleRate: 0,
-  replaysOnErrorSampleRate: 0,
-  integrations: sentryIntegrations,
-})
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    sendDefaultPii: true,
+    enableLogs: true,
+    // replaysSessionSampleRate: __DEV__ ? 0 : 0.1,
+    // replaysOnErrorSampleRate: __DEV__ ? 0 : 1.0,
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 0,
+    integrations: sentryIntegrations,
+  })
+}
 
 function RootLayout() {
   const {t} = useTranslation()
@@ -250,4 +254,4 @@ function RootLayout() {
   )
 }
 
-export default Sentry.wrap(RootLayout)
+export default sentryDsn ? Sentry.wrap(RootLayout) : RootLayout

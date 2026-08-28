@@ -8,7 +8,6 @@
     "scheme": "bangkokpoolleague",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "appleTeamId": "2MXCL8R3KW",
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
       "buildNumber": "157",
@@ -81,14 +80,6 @@
         "expo-navigation-bar",
         {
           "enforceContrast": false
-        }
-      ],
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "organization": "nitrox-studios",
-          "project": "bangkok-pool-league"
         }
       ],
       [

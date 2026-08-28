@@ -104,6 +104,20 @@ if [ "$ARCHIVE_ONLY" = "1" ]; then
   exit 0
 fi
 
+if [ -z "${APPLE_TEAM_ID:-}" ]; then
+  cat >&2 <<'MSG'
+Missing APPLE_TEAM_ID for IPA export.
+
+Set in .env.local (or your environment):
+
+  APPLE_TEAM_ID=XXXXXXXXXX
+MSG
+  exit 1
+fi
+
+/usr/libexec/PlistBuddy -c "Add :teamID string ${APPLE_TEAM_ID}" "$EXPORT_OPTIONS" 2>/dev/null \
+  || /usr/libexec/PlistBuddy -c "Set :teamID ${APPLE_TEAM_ID}" "$EXPORT_OPTIONS"
+
 echo "Exporting IPA → ${EXPORT_PATH}…"
 xcodebuild -exportArchive \
   -archivePath "$ARCHIVE_PATH" \
