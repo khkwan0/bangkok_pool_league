@@ -6,15 +6,10 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount} from '@/hooks/useAccount'
 import {useAnnouncements} from '@/hooks/useAnnouncements'
 import i18n from '@/i18n'
+import {syncAnnouncementUnreadFromList} from '@/lib/announcementUnread'
 import {
-  refreshAnnouncementUnread,
-  setHasUnreadAnnouncements,
-} from '@/lib/announcementUnread'
-import {
-  findNewestUnreadAnnouncementForDialog,
+  findLatestAnnouncementForDialog,
   getLocalAnnouncementReads,
-  hasAnyUnreadAnnouncement,
-  isAnnouncementRecentForDialog,
   isAnnouncementUnreadMerged,
 } from '@/lib/announcementReads'
 import {
@@ -30,6 +25,7 @@ import {
   onMessage,
   onTokenRefresh,
 } from '@react-native-firebase/messaging'
+import * as Notifications from 'expo-notifications'
 import {Tabs} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
@@ -39,7 +35,7 @@ export default function TabLayout() {
   const {t} = useTranslation()
   const {state, dispatch} = useLeagueContext()
   const account = useAccount()
-  const {getUnread, markRead, hasUnread, syncReads, getAnnouncements, getAnnouncement} =
+  const {markRead, syncReads, getAnnouncements, getAnnouncement} =
     useAnnouncements()
   const [isMounted, setIsMounted] = React.useState(false)
   const [showLanguageOption, setShowLanguageOption] = React.useState(false)
@@ -52,13 +48,17 @@ export default function TabLayout() {
   } | null>(null)
   const [showAnnouncementDialog, setShowAnnouncementDialog] = React.useState(false)
   const [markingAnnouncementRead, setMarkingAnnouncementRead] = React.useState(false)
+  const announcementCheckGenerationRef = React.useRef(0)
+  const announcementCheckInFlightRef = React.useRef(false)
+  const announcementCheckPendingRef = React.useRef(false)
+  const suppressedAnnouncementIdsRef = React.useRef<Set<number>>(new Set())
+  const visibleAnnouncementIdRef = React.useRef<number | null>(null)
+  const announcementDialogPresentedThisSessionRef = React.useRef(false)
   const hasFetchedThreads = React.useRef(false)
   const accountRef = React.useRef(account)
   const dispatchRef = React.useRef(dispatch)
   const announcementsRef = React.useRef({
-    getUnread,
     markRead,
-    hasUnread,
     syncReads,
     getAnnouncements,
     getAnnouncement,
@@ -68,30 +68,112 @@ export default function TabLayout() {
     accountRef.current = account
     dispatchRef.current = dispatch
     announcementsRef.current = {
-      getUnread,
       markRead,
-      hasUnread,
       syncReads,
       getAnnouncements,
       getAnnouncement,
     }
   })
 
-  const checkUnreadAnnouncements = React.useCallback(async () => {
+  React.useEffect(() => {
+    visibleAnnouncementIdRef.current = showAnnouncementDialog
+      ? (unreadAnnouncement?.id ?? null)
+      : null
+  }, [showAnnouncementDialog, unreadAnnouncement?.id])
+
+  const checkUnreadAnnouncements = React.useCallback(async (options?: {
+    presentDialog?: boolean
+  }) => {
+    const presentDialog = options?.presentDialog !== false
+    if (announcementCheckInFlightRef.current) {
+      announcementCheckPendingRef.current = true
+      return
+    }
+    announcementCheckInFlightRef.current = true
+    const generation = ++announcementCheckGenerationRef.current
+
     try {
-      if (state.user?.id) {
-        await announcementsRef.current.syncReads()
-        const announcement = await announcementsRef.current.getUnread()
-        await refreshAnnouncementUnread(announcementsRef.current.hasUnread)
+      const jwt = await AsyncStorage.getItem('jwt')
+      if (jwt?.trim() && !state.user?.id) {
+        return
+      }
+
+      const applyAnnouncement = (
+        announcement: {
+          id: number
+          title: string
+          content: string
+          created_at: string
+          modified_at: string
+          read_at?: string | null
+        } | null,
+        localReads: Awaited<ReturnType<typeof getLocalAnnouncementReads>>,
+      ) => {
+        if (generation !== announcementCheckGenerationRef.current) {
+          return
+        }
         if (
+          presentDialog &&
           announcement &&
-          isAnnouncementRecentForDialog(announcement.modified_at)
+          !announcementDialogPresentedThisSessionRef.current &&
+          isAnnouncementUnreadMerged(announcement, localReads) &&
+          !suppressedAnnouncementIdsRef.current.has(announcement.id) &&
+          visibleAnnouncementIdRef.current !== announcement.id
         ) {
+          announcementDialogPresentedThisSessionRef.current = true
           setUnreadAnnouncement(announcement)
           setShowAnnouncementDialog(true)
-        } else {
-          setUnreadAnnouncement(null)
-          setShowAnnouncementDialog(false)
+          if (Platform.OS !== 'web') {
+            void Notifications.dismissAllNotificationsAsync()
+          }
+        } else if (
+          !presentDialog ||
+          !announcement ||
+          !isAnnouncementUnreadMerged(announcement, localReads) ||
+          suppressedAnnouncementIdsRef.current.has(announcement.id)
+        ) {
+          if (visibleAnnouncementIdRef.current == null) {
+            setUnreadAnnouncement(null)
+            setShowAnnouncementDialog(false)
+          }
+        }
+      }
+
+      const resolveDialogAnnouncement = async (
+        items: {
+          id: number
+          modified_at: string
+          read_at?: string | null
+        }[],
+        localReads: Awaited<ReturnType<typeof getLocalAnnouncementReads>>,
+      ) => {
+        const latestListItem = findLatestAnnouncementForDialog(items, localReads)
+        if (!latestListItem) {
+          applyAnnouncement(null, localReads)
+          return
+        }
+        const announcement = await announcementsRef.current.getAnnouncement(
+          latestListItem.id,
+        )
+        applyAnnouncement(announcement, localReads)
+      }
+
+      if (state.user?.id) {
+        await announcementsRef.current.syncReads()
+        if (generation !== announcementCheckGenerationRef.current) {
+          return
+        }
+        const [localReads, result] = await Promise.all([
+          getLocalAnnouncementReads(),
+          announcementsRef.current.getAnnouncements(1, 50),
+        ])
+        if (generation !== announcementCheckGenerationRef.current) {
+          return
+        }
+        const items = result.items ?? []
+        syncAnnouncementUnreadFromList(items, localReads)
+        if (presentDialog) {
+          await resolveDialogAnnouncement(items, localReads)
         }
         return
       }
@@ -100,35 +182,44 @@ export default function TabLayout() {
         getLocalAnnouncementReads(),
         announcementsRef.current.getAnnouncements(1, 50),
       ])
+      if (generation !== announcementCheckGenerationRef.current) {
+        return
+      }
       const items = result.items ?? []
-      setHasUnreadAnnouncements(hasAnyUnreadAnnouncement(items, localReads))
+      syncAnnouncementUnreadFromList(items, localReads)
 
-      const newestListItem = findNewestUnreadAnnouncementForDialog(
-        items,
-        localReads,
-      )
-      if (!newestListItem) {
-        setUnreadAnnouncement(null)
-        setShowAnnouncementDialog(false)
+      if (!presentDialog) {
         return
       }
 
-      const announcement = await announcementsRef.current.getAnnouncement(
-        newestListItem.id,
-      )
-      if (
-        announcement &&
-        isAnnouncementRecentForDialog(announcement.modified_at) &&
-        isAnnouncementUnreadMerged(announcement, localReads)
-      ) {
-        setUnreadAnnouncement(announcement)
-        setShowAnnouncementDialog(true)
-      } else {
-        setUnreadAnnouncement(null)
-        setShowAnnouncementDialog(false)
-      }
+      await resolveDialogAnnouncement(items, localReads)
     } catch (e) {
       console.error('Error checking unread announcements:', e)
+    } finally {
+      announcementCheckInFlightRef.current = false
+      if (announcementCheckPendingRef.current) {
+        announcementCheckPendingRef.current = false
+        void checkUnreadAnnouncements()
+      }
+    }
+  }, [state.user?.id])
+
+  const refreshAnnouncementBadge = React.useCallback(async () => {
+    try {
+      const jwt = await AsyncStorage.getItem('jwt')
+      if (jwt?.trim() && !state.user?.id) {
+        return
+      }
+      if (state.user?.id) {
+        await announcementsRef.current.syncReads()
+      }
+      const [localReads, result] = await Promise.all([
+        getLocalAnnouncementReads(),
+        announcementsRef.current.getAnnouncements(1, 50),
+      ])
+      syncAnnouncementUnreadFromList(result.items ?? [], localReads)
+    } catch (e) {
+      console.error('Error refreshing announcement badge:', e)
     }
   }, [state.user?.id])
 
@@ -136,12 +227,16 @@ export default function TabLayout() {
     if (!unreadAnnouncement || markingAnnouncementRead) {
       return
     }
+    const dismissedId = unreadAnnouncement.id
     setMarkingAnnouncementRead(true)
+    announcementCheckGenerationRef.current += 1
+    suppressedAnnouncementIdsRef.current.add(dismissedId)
+    visibleAnnouncementIdRef.current = null
     try {
-      await announcementsRef.current.markRead(unreadAnnouncement.id)
+      await announcementsRef.current.markRead(dismissedId)
       setShowAnnouncementDialog(false)
       setUnreadAnnouncement(null)
-      await checkUnreadAnnouncements()
+      await refreshAnnouncementBadge()
     } catch (e) {
       console.error('Error marking announcement read:', e)
     } finally {
@@ -211,13 +306,13 @@ export default function TabLayout() {
     syncUnreadFromServer,
   ])
 
-  // Check for unread announcements on startup and when login state changes
+  // Check for unread announcements after language is chosen and auth is ready
   React.useEffect(() => {
-    if (!isMounted) {
+    if (!isMounted || showLanguageOption) {
       return
     }
     checkUnreadAnnouncements()
-  }, [isMounted, state.user?.id, checkUnreadAnnouncements])
+  }, [isMounted, showLanguageOption, state.user?.id, checkUnreadAnnouncements])
 
   // Keep app icon badge in sync with in-app unread count
   React.useEffect(() => {
@@ -234,12 +329,19 @@ export default function TabLayout() {
         if (state.user?.id) {
           syncUnreadFromServer()
         }
-        checkUnreadAnnouncements()
+        if (!showLanguageOption) {
+          checkUnreadAnnouncements()
+        }
       }
     })
 
     return () => subscription.remove()
-  }, [state.user?.id, syncUnreadFromServer, checkUnreadAnnouncements])
+  }, [
+    state.user?.id,
+    showLanguageOption,
+    syncUnreadFromServer,
+    checkUnreadAnnouncements,
+  ])
 
   // Keep FCM token fresh and listen for foreground pushes (stable listener)
   React.useEffect(() => {
@@ -269,12 +371,12 @@ export default function TabLayout() {
     const unsubscribeMessage = onMessage(messaging, async remoteMessage => {
       console.log('Notification received in foreground:', remoteMessage?.data)
       try {
-        await presentRemoteNotification(remoteMessage)
-
         if (isAnnouncementRemoteMessage(remoteMessage)) {
           await checkUnreadAnnouncements()
           return
         }
+
+        await presentRemoteNotification(remoteMessage)
 
         if (!state.user?.id) {
           return
@@ -314,23 +416,21 @@ export default function TabLayout() {
   if (!isMounted) {
     return null
   }
-  if (showLanguageOption) {
-    return (
-      <View className="flex-1 justify-center mx-4">
-        <LanguageOption handleLanguageOption={handleLanguageOption} />
-      </View>
-    )
-  }
 
   return (
     <>
       <AnnouncementDialog
         announcement={unreadAnnouncement}
-        visible={showAnnouncementDialog}
+        visible={showAnnouncementDialog && !showLanguageOption}
         submitting={markingAnnouncementRead}
         onDismiss={handleAnnouncementDismiss}
       />
-      <Tabs tabBar={props => <CustomTabBar {...props} />}>
+      {showLanguageOption ? (
+        <View className="flex-1 justify-center mx-4">
+          <LanguageOption handleLanguageOption={handleLanguageOption} />
+        </View>
+      ) : (
+        <Tabs tabBar={props => <CustomTabBar {...props} />}>
       <Tabs.Screen
         name="(index)"
         options={{
@@ -393,6 +493,7 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+      )}
     </>
   )
 }

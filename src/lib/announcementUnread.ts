@@ -1,4 +1,14 @@
+import {
+  type AnnouncementReadMap,
+  hasLatestUnreadAnnouncement,
+} from '@/lib/announcementReads'
 import {useSyncExternalStore} from 'react'
+
+type AnnouncementListItem = {
+  id: number
+  modified_at: string
+  read_at?: string | null
+}
 
 type Listener = () => void
 
@@ -38,6 +48,13 @@ export function useHasUnreadAnnouncements() {
     getHasUnreadAnnouncements,
     () => false,
   )
+}
+
+export function syncAnnouncementUnreadFromList(
+  items: AnnouncementListItem[],
+  localReads: AnnouncementReadMap,
+) {
+  setHasUnreadAnnouncements(hasLatestUnreadAnnouncement(items, localReads))
 }
 
 export async function refreshAnnouncementUnread(

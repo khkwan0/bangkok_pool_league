@@ -2,12 +2,21 @@ import * as Notifications from 'expo-notifications'
 import {Platform} from 'react-native'
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
+  handleNotification: async notification => {
+    const data = notification.request.content.data
+    const isAnnouncement =
+      data != null &&
+      typeof data === 'object' &&
+      'type' in data &&
+      data.type === 'announcement'
+
+    return {
+      shouldShowBanner: !isAnnouncement,
+      shouldShowList: !isAnnouncement,
+      shouldPlaySound: !isAnnouncement,
+      shouldSetBadge: true,
+    }
+  },
 })
 
 const CHANNELS = [

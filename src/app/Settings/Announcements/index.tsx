@@ -5,10 +5,9 @@ import {useAnnouncements} from '@/hooks/useAnnouncements'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {
   getLocalAnnouncementReads,
-  hasAnyUnreadAnnouncement,
   isAnnouncementUnreadMerged,
 } from '@/lib/announcementReads'
-import {refreshAnnouncementUnread, setHasUnreadAnnouncements} from '@/lib/announcementUnread'
+import {syncAnnouncementUnreadFromList} from '@/lib/announcementUnread'
 import type {AnnouncementListItem} from '@/types/announcements'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useNavigation, useTheme} from 'expo-router/react-navigation'
@@ -29,7 +28,7 @@ export default function AnnouncementsScreen() {
   const router = useRouter()
   const {colors} = useTheme()
   const {state} = useLeagueContext()
-  const {getAnnouncements, hasUnread, syncReads} = useAnnouncements()
+  const {getAnnouncements, syncReads} = useAnnouncements()
   const [items, setItems] = React.useState<AnnouncementListItem[]>([])
   const [localReads, setLocalReads] = React.useState<Record<string, string>>({})
   const [loading, setLoading] = React.useState(true)
@@ -57,13 +56,7 @@ export default function AnnouncementsScreen() {
       } else {
         setItems(result.items)
       }
-      if (state.user?.id) {
-        await refreshAnnouncementUnread(hasUnread)
-      } else {
-        setHasUnreadAnnouncements(
-          hasAnyUnreadAnnouncement(result.items ?? [], reads),
-        )
-      }
+      syncAnnouncementUnreadFromList(result.items ?? [], reads)
     } catch (e) {
       console.error(e)
       setError(t('announcements_load_error'))
@@ -72,7 +65,7 @@ export default function AnnouncementsScreen() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [getAnnouncements, hasUnread, state.user?.id, syncReads, t])
+  }, [getAnnouncements, state.user?.id, syncReads, t])
 
   React.useEffect(() => {
     loadAnnouncements()

@@ -9,10 +9,7 @@ import {
   getLocalAnnouncementReads,
   isAnnouncementUnreadMerged,
 } from '@/lib/announcementReads'
-import {
-  refreshAnnouncementUnread,
-  setHasUnreadAnnouncements,
-} from '@/lib/announcementUnread'
+import {syncAnnouncementUnreadFromList} from '@/lib/announcementUnread'
 import type {Announcement} from '@/types/announcements'
 import {useLocalSearchParams, useNavigation} from 'expo-router'
 import React from 'react'
@@ -29,8 +26,8 @@ export default function AnnouncementDetailScreen() {
   const navigation = useNavigation()
   const params = useLocalSearchParams<{id: string}>()
   const id = parseInt(firstParam(params.id) ?? '', 10)
-  const {getAnnouncement, markRead, hasUnread} = useAnnouncements()
-  const {apiUrl, state} = useLeagueContext()
+  const {getAnnouncement, getAnnouncements, markRead} = useAnnouncements()
+  const {apiUrl} = useLeagueContext()
   const colorScheme = useColorScheme()
   const textColor = colorScheme === 'dark' ? '#e5e7eb' : '#111827'
   const [announcement, setAnnouncement] = React.useState<Announcement | null>(null)
@@ -57,10 +54,11 @@ export default function AnnouncementDetailScreen() {
           const unread = isAnnouncementUnreadMerged(data, localReads)
           if (unread) {
             await markRead(id)
-            setHasUnreadAnnouncements(false)
-            if (state.user?.id) {
-              await refreshAnnouncementUnread(hasUnread)
-            }
+            const [result, reads] = await Promise.all([
+              getAnnouncements(1, 50),
+              getLocalAnnouncementReads(),
+            ])
+            syncAnnouncementUnreadFromList(result.items ?? [], reads)
           }
         }
       } catch (e) {
@@ -75,7 +73,7 @@ export default function AnnouncementDetailScreen() {
     return () => {
       cancelled = true
     }
-  }, [id, getAnnouncement, markRead, hasUnread, navigation, state.user?.id, t])
+  }, [id, getAnnouncement, getAnnouncements, markRead, navigation, t])
 
   const content = React.useMemo(() => {
     if (!announcement?.content) {

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const ANNOUNCEMENT_READS_KEY = 'announcement_reads'
 
-/** Pop-up dialog only shows unread announcements newer than this. */
+/** Announcements older than this are never treated as unread. */
 export const ANNOUNCEMENT_DIALOG_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000
 
 export type AnnouncementReadMap = Record<string, string>
@@ -66,7 +66,7 @@ export function isAnnouncementUnread(
   return modMs > readMs
 }
 
-export function isAnnouncementRecentForDialog(
+export function isAnnouncementWithinUnreadWindow(
   modifiedAt: string | null | undefined,
 ): boolean {
   if (!modifiedAt) {
@@ -77,6 +77,13 @@ export function isAnnouncementRecentForDialog(
     return false
   }
   return Date.now() - modifiedMs < ANNOUNCEMENT_DIALOG_MAX_AGE_MS
+}
+
+/** @deprecated Use isAnnouncementWithinUnreadWindow */
+export function isAnnouncementRecentForDialog(
+  modifiedAt: string | null | undefined,
+): boolean {
+  return isAnnouncementWithinUnreadWindow(modifiedAt)
 }
 
 export async function getLocalAnnouncementReads(): Promise<AnnouncementReadMap> {
@@ -119,6 +126,9 @@ export function isAnnouncementUnreadMerged(
   announcement: AnnouncementTimestamps,
   localReads: AnnouncementReadMap,
 ): boolean {
+  if (!isAnnouncementWithinUnreadWindow(announcement.modified_at)) {
+    return false
+  }
   const readAt = getMergedReadAt(
     announcement.id,
     localReads,
@@ -127,18 +137,28 @@ export function isAnnouncementUnreadMerged(
   return isAnnouncementUnread(announcement.modified_at, readAt)
 }
 
+export function findLatestAnnouncementForDialog<
+  T extends AnnouncementTimestamps,
+>(announcements: T[], localReads: AnnouncementReadMap): T | null {
+  const latest = announcements[0]
+  if (!latest || !isAnnouncementUnreadMerged(latest, localReads)) {
+    return null
+  }
+  return latest
+}
+
+/** @deprecated Use findLatestAnnouncementForDialog */
 export function findNewestUnreadAnnouncementForDialog<
   T extends AnnouncementTimestamps,
 >(announcements: T[], localReads: AnnouncementReadMap): T | null {
-  for (const item of announcements) {
-    if (
-      isAnnouncementRecentForDialog(item.modified_at) &&
-      isAnnouncementUnreadMerged(item, localReads)
-    ) {
-      return item
-    }
-  }
-  return null
+  return findLatestAnnouncementForDialog(announcements, localReads)
+}
+
+export function hasLatestUnreadAnnouncement<T extends AnnouncementTimestamps>(
+  announcements: T[],
+  localReads: AnnouncementReadMap,
+): boolean {
+  return findLatestAnnouncementForDialog(announcements, localReads) != null
 }
 
 export function findNewestUnreadAnnouncement<T extends AnnouncementTimestamps>(
