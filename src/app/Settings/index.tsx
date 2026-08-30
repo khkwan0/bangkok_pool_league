@@ -159,6 +159,13 @@ export default function Settings() {
           text={t('teams')}
           url={'/Settings/Teams'}
         />
+        {user.id ? (
+          <NavDest
+            icon="bullhorn-outline"
+            text={t('announcements')}
+            url={'/Settings/Announcements'}
+          />
+        ) : null}
         <NavDest
           icon="chart-areaspline-variant"
           text={t('statistics')}

@@ -1,9 +1,15 @@
+import AnnouncementDialog from '@/components/Announcements/AnnouncementDialog'
 import LanguageOption from '@/components/LanguageOption'
 import {CustomTabBar} from '@/components/navigation/CustomTabBar'
 import {TabBarIcon} from '@/components/navigation/TabBarIcon'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useAccount} from '@/hooks/useAccount'
+import {useAnnouncements} from '@/hooks/useAnnouncements'
 import i18n from '@/i18n'
+import {
+  refreshAnnouncementUnread,
+  setHasUnreadAnnouncements,
+} from '@/lib/announcementUnread'
 import {
   applyBadgeFromRemoteMessage,
   getBadgeFromRemoteMessage,
@@ -25,16 +31,68 @@ export default function TabLayout() {
   const {t} = useTranslation()
   const {state, dispatch} = useLeagueContext()
   const account = useAccount()
+  const {getUnread, markRead, hasUnread} = useAnnouncements()
   const [isMounted, setIsMounted] = React.useState(false)
   const [showLanguageOption, setShowLanguageOption] = React.useState(false)
+  const [unreadAnnouncement, setUnreadAnnouncement] = React.useState<{
+    id: number
+    title: string
+    content: string
+    created_at: string
+    modified_at: string
+  } | null>(null)
+  const [showAnnouncementDialog, setShowAnnouncementDialog] = React.useState(false)
+  const [markingAnnouncementRead, setMarkingAnnouncementRead] = React.useState(false)
   const hasFetchedThreads = React.useRef(false)
   const accountRef = React.useRef(account)
   const dispatchRef = React.useRef(dispatch)
+  const announcementsRef = React.useRef({getUnread, markRead, hasUnread})
 
   React.useEffect(() => {
     accountRef.current = account
     dispatchRef.current = dispatch
-  }, [account, dispatch])
+    announcementsRef.current = {getUnread, markRead, hasUnread}
+  }, [account, dispatch, getUnread, markRead, hasUnread])
+
+  const checkUnreadAnnouncements = React.useCallback(async () => {
+    if (!state.user?.id) {
+      setUnreadAnnouncement(null)
+      setShowAnnouncementDialog(false)
+      setHasUnreadAnnouncements(false)
+      return
+    }
+    try {
+      const announcement = await announcementsRef.current.getUnread()
+      await refreshAnnouncementUnread(announcementsRef.current.hasUnread)
+      if (announcement) {
+        setUnreadAnnouncement(announcement)
+        setShowAnnouncementDialog(true)
+      } else {
+        setUnreadAnnouncement(null)
+        setShowAnnouncementDialog(false)
+      }
+    } catch (e) {
+      console.error('Error checking unread announcements:', e)
+    }
+  }, [state.user?.id])
+
+  async function handleAnnouncementDismiss() {
+    if (!unreadAnnouncement || markingAnnouncementRead) {
+      return
+    }
+    setMarkingAnnouncementRead(true)
+    try {
+      await announcementsRef.current.markRead(unreadAnnouncement.id)
+      setShowAnnouncementDialog(false)
+      setUnreadAnnouncement(null)
+      setHasUnreadAnnouncements(false)
+      await refreshAnnouncementUnread(announcementsRef.current.hasUnread)
+    } catch (e) {
+      console.error('Error marking announcement read:', e)
+    } finally {
+      setMarkingAnnouncementRead(false)
+    }
+  }
 
   const syncUnreadFromServer = React.useCallback(async () => {
     try {
@@ -98,6 +156,14 @@ export default function TabLayout() {
     syncUnreadFromServer,
   ])
 
+  // Check for unread announcements when user is logged in
+  React.useEffect(() => {
+    if (!isMounted || !state.user?.id) {
+      return
+    }
+    checkUnreadAnnouncements()
+  }, [isMounted, state.user?.id, checkUnreadAnnouncements])
+
   // Keep app icon badge in sync with in-app unread count
   React.useEffect(() => {
     if (!isMounted || Platform.OS === 'web') {
@@ -115,11 +181,12 @@ export default function TabLayout() {
     const subscription = AppState.addEventListener('change', nextState => {
       if (nextState === 'active') {
         syncUnreadFromServer()
+        checkUnreadAnnouncements()
       }
     })
 
     return () => subscription.remove()
-  }, [state.user?.id, syncUnreadFromServer])
+  }, [state.user?.id, syncUnreadFromServer, checkUnreadAnnouncements])
 
   // Keep FCM token fresh and listen for foreground pushes (stable listener)
   React.useEffect(() => {
@@ -190,7 +257,14 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs tabBar={props => <CustomTabBar {...props} />}>
+    <>
+      <AnnouncementDialog
+        announcement={unreadAnnouncement}
+        visible={showAnnouncementDialog}
+        submitting={markingAnnouncementRead}
+        onDismiss={handleAnnouncementDismiss}
+      />
+      <Tabs tabBar={props => <CustomTabBar {...props} />}>
       <Tabs.Screen
         name="(index)"
         options={{
@@ -253,5 +327,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </>
   )
 }

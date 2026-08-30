@@ -4,6 +4,7 @@ import {Colors} from '@/constants/Colors'
 import config from '@/config.js'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useHasNewForumPosts} from '@/lib/forumActivity'
+import {useHasUnreadAnnouncements} from '@/lib/announcementUnread'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {
   BottomSheetModal,
@@ -75,6 +76,7 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
     const {state} = useLeagueContext()
     const user = state.user
     const hasNewForumPosts = useHasNewForumPosts()
+    const hasUnreadAnnouncements = useHasUnreadAnnouncements()
     const snapPoints = React.useMemo(() => ['55%'], [])
 
     const navigate = (url: string) => {
@@ -105,6 +107,15 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
                 : '—'}
             </Text>
           </View>
+          <QuickActionItem
+            icon="bullhorn-outline"
+            label={t('announcements')}
+            iconColor="#FF9800"
+            iconBackground="rgba(255, 152, 0, 0.15)"
+            showBadge={hasUnreadAnnouncements}
+            badgeLabel={t('announcements_new')}
+            onPress={() => navigate('/Settings/Announcements')}
+          />
           <QuickActionItem
             icon="forum-outline"
             label={t('forums')}

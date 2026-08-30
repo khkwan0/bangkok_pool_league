@@ -18,6 +18,11 @@ export default function Admin() {
   return (
     <View>
       <NavDest
+        icon="bullhorn-outline"
+        text={t('announcements')}
+        url="/Settings/Admin/Announcements"
+      />
+      <NavDest
         icon="robot-outline"
         text={t('admin_ai_agent')}
         url="/Settings/Admin/AiAgent"
