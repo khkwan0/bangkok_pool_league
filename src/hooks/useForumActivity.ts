@@ -2,6 +2,7 @@ import {useNetwork} from '@/hooks/useNetwork'
 import {
   latestForumPostAt,
   refreshForumActivity,
+  syncGlobalForumBadge,
 } from '@/lib/forumActivity'
 import type {ForumCategoryWithForums} from '@/types/forums'
 import React from 'react'
@@ -26,6 +27,16 @@ export function useForumActivitySync() {
   getRef.current = Get
 
   const refresh = React.useCallback(async () => {
+    try {
+      const forums = await getRef.current('/forums')
+      if (forums?.status === 'ok' && Array.isArray(forums.data)) {
+        await syncGlobalForumBadge(forums.data)
+        return
+      }
+    } catch (e) {
+      console.error('Error syncing global forum badge:', e)
+    }
+
     await refreshForumActivity(async () => {
       const activity = await getRef.current('/forums/activity')
       const fromActivity = activityFromResponse(activity)

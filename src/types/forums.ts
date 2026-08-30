@@ -16,6 +16,7 @@ export type ForumBoard = {
   display_order: number
   is_active: boolean
   is_locked: boolean
+  contributes_to_global_badge?: boolean
   topic_count: number
   post_count: number
   last_post_at: string | null

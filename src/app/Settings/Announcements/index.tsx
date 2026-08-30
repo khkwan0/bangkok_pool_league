@@ -4,8 +4,11 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {useAnnouncements} from '@/hooks/useAnnouncements'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {
-  refreshAnnouncementUnread,
-} from '@/lib/announcementUnread'
+  getLocalAnnouncementReads,
+  hasAnyUnreadAnnouncement,
+  isAnnouncementUnreadMerged,
+} from '@/lib/announcementReads'
+import {refreshAnnouncementUnread, setHasUnreadAnnouncements} from '@/lib/announcementUnread'
 import type {AnnouncementListItem} from '@/types/announcements'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useNavigation, useTheme} from 'expo-router/react-navigation'
@@ -26,8 +29,9 @@ export default function AnnouncementsScreen() {
   const router = useRouter()
   const {colors} = useTheme()
   const {state} = useLeagueContext()
-  const {getAnnouncements, hasUnread} = useAnnouncements()
+  const {getAnnouncements, hasUnread, syncReads} = useAnnouncements()
   const [items, setItems] = React.useState<AnnouncementListItem[]>([])
+  const [localReads, setLocalReads] = React.useState<Record<string, string>>({})
   const [loading, setLoading] = React.useState(true)
   const [refreshing, setRefreshing] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -36,41 +40,50 @@ export default function AnnouncementsScreen() {
     navigation.setOptions({title: t('announcements')})
   }, [navigation, t])
 
-  const load = React.useCallback(async () => {
-    if (!state.user?.id) {
-      setItems([])
-      setLoading(false)
-      return
-    }
+  const loadAnnouncements = React.useCallback(async () => {
     try {
       setError(null)
-      const result = await getAnnouncements(1, 50)
-      setItems(result.items)
-      await refreshAnnouncementUnread(hasUnread)
+      if (state.user?.id) {
+        await syncReads()
+      }
+      const [result, reads] = await Promise.all([
+        getAnnouncements(1, 50),
+        getLocalAnnouncementReads(),
+      ])
+      setLocalReads(reads)
+      if (result.error) {
+        setError(t('announcements_load_error'))
+        setItems([])
+      } else {
+        setItems(result.items)
+      }
+      if (state.user?.id) {
+        await refreshAnnouncementUnread(hasUnread)
+      } else {
+        setHasUnreadAnnouncements(
+          hasAnyUnreadAnnouncement(result.items ?? [], reads),
+        )
+      }
     } catch (e) {
       console.error(e)
       setError(t('announcements_load_error'))
+      setItems([])
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [state.user?.id, getAnnouncements, hasUnread, t])
+  }, [getAnnouncements, hasUnread, state.user?.id, syncReads, t])
 
   React.useEffect(() => {
-    load()
-  }, [load])
+    loadAnnouncements()
+  }, [loadAnnouncements])
 
   function handleRefresh() {
+    if (refreshing) {
+      return
+    }
     setRefreshing(true)
-    load()
-  }
-
-  if (!state.user?.id) {
-    return (
-      <View className="flex-1 items-center justify-center px-6">
-        <Text className="text-center opacity-70">{t('forums_login_required')}</Text>
-      </View>
-    )
+    void loadAnnouncements()
   }
 
   if (loading) {
@@ -84,20 +97,28 @@ export default function AnnouncementsScreen() {
   return (
     <ScrollView
       className="flex-1 px-4 pt-2"
+      contentContainerStyle={{flexGrow: 1}}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          tintColor={colors.primary}
+          colors={[colors.primary]}
+        />
       }>
       {error ? (
-        <Text className="mb-4 text-red-500">{error}</Text>
-      ) : null}
-      {items.length === 0 ? (
-        <View className="items-center py-12">
+        <View className="flex-1 items-center justify-center px-6 py-12">
+          <MCI name="alert-circle-outline" size={48} color={colors.text} style={{opacity: 0.35}} />
+          <Text className="mt-4 text-center text-red-500">{error}</Text>
+        </View>
+      ) : items.length === 0 ? (
+        <View className="flex-1 items-center justify-center py-12">
           <MCI name="bullhorn-outline" size={48} color={colors.text} style={{opacity: 0.35}} />
           <Text className="mt-4 text-center opacity-60">{t('announcements_empty')}</Text>
         </View>
       ) : (
         items.map(item => {
-          const isUnread = !item.read_at
+          const isUnread = isAnnouncementUnreadMerged(item, localReads)
           return (
             <Pressable
               key={item.id}

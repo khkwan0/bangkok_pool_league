@@ -13,7 +13,10 @@ import {
   Pressable,
   ScrollView,
   useColorScheme,
+  useWindowDimensions,
 } from 'react-native'
+
+const DIALOG_FOOTER_HEIGHT = 76
 
 type AnnouncementDialogProps = {
   announcement: Announcement | null
@@ -31,11 +34,16 @@ export default function AnnouncementDialog({
   const {t} = useTranslation()
   const {apiUrl} = useLeagueContext()
   const colorScheme = useColorScheme()
+  const {height: windowHeight} = useWindowDimensions()
   const textColor = colorScheme === 'dark' ? '#e5e7eb' : '#111827'
+  const scrollMaxHeight = Math.max(
+    120,
+    windowHeight * 0.85 - DIALOG_FOOTER_HEIGHT,
+  )
 
   const content = React.useMemo(() => {
-    if (!announcement?.content || !apiUrl) {
-      return announcement?.content ?? ''
+    if (!announcement?.content) {
+      return ''
     }
     return resolveAnnouncementContent(announcement.content, apiUrl)
   }, [announcement?.content, apiUrl])
@@ -45,7 +53,15 @@ export default function AnnouncementDialog({
   }
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={() => {
+        if (!submitting) {
+          onDismiss()
+        }
+      }}>
       <Pressable
         className="flex-1 justify-center bg-black/60 px-4 py-8"
         onPress={() => {
@@ -53,11 +69,18 @@ export default function AnnouncementDialog({
             onDismiss()
           }
         }}>
-        <Pressable onPress={e => e.stopPropagation()}>
-          <View className="max-h-[85%] overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+        <Pressable className="w-full" onPress={() => {}}>
+          <View className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
             <ScrollView
-              className="px-5 pt-5"
-              contentContainerStyle={{paddingBottom: 16}}>
+              style={{maxHeight: scrollMaxHeight}}
+              contentContainerStyle={{
+                paddingHorizontal: 20,
+                paddingTop: 20,
+                paddingBottom: 16,
+                flexGrow: 0,
+              }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator>
               <Text type="subtitle" className="mb-2">
                 {announcement.title}
               </Text>

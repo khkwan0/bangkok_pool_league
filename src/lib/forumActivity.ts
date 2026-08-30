@@ -106,6 +106,27 @@ export function latestForumPostAt(
   return latest
 }
 
+export function forumsForGlobalBadge(
+  categories: ForumCategoryWithForums[],
+): ForumCategoryWithForums['forums'] {
+  return categories.flatMap(category =>
+    (category.forums ?? []).filter(forum => forum.contributes_to_global_badge),
+  )
+}
+
+export function latestForumPostAtForGlobalBadge(
+  categories: ForumCategoryWithForums[],
+): string | null {
+  return latestForumPostAt(
+    categories.map(category => ({
+      ...category,
+      forums: (category.forums ?? []).filter(
+        forum => forum.contributes_to_global_badge,
+      ),
+    })),
+  )
+}
+
 export function isNewerForumActivity(
   latestPostAt: string | null,
   lastSeenAt: string | null,
@@ -337,6 +358,23 @@ export async function markTopicSeen(
   emitTopicActivity()
 }
 
+export async function syncBoardSeenFromTopics(
+  boardId: number,
+  boardLastPostAt: string | null,
+  topics: Array<{id: number; last_post_at: string | null}>,
+) {
+  if (!boardLastPostAt || topics.length === 0) {
+    return
+  }
+  const unread = await Promise.all(
+    topics.map(topic => topicHasNewPosts(topic.id, topic.last_post_at)),
+  )
+  if (unread.some(Boolean)) {
+    return
+  }
+  await markBoardSeen(boardId, boardLastPostAt)
+}
+
 export async function markBoardSeen(
   boardId: number,
   lastPostAt?: string | null,
@@ -358,6 +396,40 @@ export async function markBoardSeen(
     console.error('Error saving forum board reads:', e)
   }
   emitTopicActivity()
+}
+
+/**
+ * Keeps the FAB / quick-action badge in sync with per-board read state.
+ * Clears the global indicator once every board has no unread posts.
+ */
+export async function syncGlobalForumBadge(
+  categories: ForumCategoryWithForums[],
+) {
+  const forums = forumsForGlobalBadge(categories)
+  if (forums.length === 0) {
+    setHasNewForumPosts(false)
+    return
+  }
+
+  const unreadByBoard = await Promise.all(
+    forums.map(forum => boardHasNewPosts(forum.id, forum.last_post_at)),
+  )
+  if (unreadByBoard.some(Boolean)) {
+    setHasNewForumPosts(true)
+    return
+  }
+
+  const latestPostAt = latestForumPostAtForGlobalBadge(categories)
+  const seenAt = laterTimestamp(new Date().toISOString(), latestPostAt)
+  lastSeenMemory = seenAt
+  lastSeenLoaded = true
+  setHasNewForumPosts(false)
+
+  try {
+    await AsyncStorage.setItem(FORUMS_LAST_SEEN_KEY, seenAt)
+  } catch (e) {
+    console.error('Error saving global forum read state:', e)
+  }
 }
 
 /**

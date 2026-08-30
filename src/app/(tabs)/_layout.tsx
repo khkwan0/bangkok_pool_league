@@ -11,8 +11,16 @@ import {
   setHasUnreadAnnouncements,
 } from '@/lib/announcementUnread'
 import {
+  findNewestUnreadAnnouncementForDialog,
+  getLocalAnnouncementReads,
+  hasAnyUnreadAnnouncement,
+  isAnnouncementRecentForDialog,
+  isAnnouncementUnreadMerged,
+} from '@/lib/announcementReads'
+import {
   applyBadgeFromRemoteMessage,
   getBadgeFromRemoteMessage,
+  isAnnouncementRemoteMessage,
   presentRemoteNotification,
   setAppBadgeCount,
 } from '@/lib/notifications'
@@ -31,7 +39,8 @@ export default function TabLayout() {
   const {t} = useTranslation()
   const {state, dispatch} = useLeagueContext()
   const account = useAccount()
-  const {getUnread, markRead, hasUnread} = useAnnouncements()
+  const {getUnread, markRead, hasUnread, syncReads, getAnnouncements, getAnnouncement} =
+    useAnnouncements()
   const [isMounted, setIsMounted] = React.useState(false)
   const [showLanguageOption, setShowLanguageOption] = React.useState(false)
   const [unreadAnnouncement, setUnreadAnnouncement] = React.useState<{
@@ -46,25 +55,72 @@ export default function TabLayout() {
   const hasFetchedThreads = React.useRef(false)
   const accountRef = React.useRef(account)
   const dispatchRef = React.useRef(dispatch)
-  const announcementsRef = React.useRef({getUnread, markRead, hasUnread})
+  const announcementsRef = React.useRef({
+    getUnread,
+    markRead,
+    hasUnread,
+    syncReads,
+    getAnnouncements,
+    getAnnouncement,
+  })
 
   React.useEffect(() => {
     accountRef.current = account
     dispatchRef.current = dispatch
-    announcementsRef.current = {getUnread, markRead, hasUnread}
-  }, [account, dispatch, getUnread, markRead, hasUnread])
+    announcementsRef.current = {
+      getUnread,
+      markRead,
+      hasUnread,
+      syncReads,
+      getAnnouncements,
+      getAnnouncement,
+    }
+  })
 
   const checkUnreadAnnouncements = React.useCallback(async () => {
-    if (!state.user?.id) {
-      setUnreadAnnouncement(null)
-      setShowAnnouncementDialog(false)
-      setHasUnreadAnnouncements(false)
-      return
-    }
     try {
-      const announcement = await announcementsRef.current.getUnread()
-      await refreshAnnouncementUnread(announcementsRef.current.hasUnread)
-      if (announcement) {
+      if (state.user?.id) {
+        await announcementsRef.current.syncReads()
+        const announcement = await announcementsRef.current.getUnread()
+        await refreshAnnouncementUnread(announcementsRef.current.hasUnread)
+        if (
+          announcement &&
+          isAnnouncementRecentForDialog(announcement.modified_at)
+        ) {
+          setUnreadAnnouncement(announcement)
+          setShowAnnouncementDialog(true)
+        } else {
+          setUnreadAnnouncement(null)
+          setShowAnnouncementDialog(false)
+        }
+        return
+      }
+
+      const [localReads, result] = await Promise.all([
+        getLocalAnnouncementReads(),
+        announcementsRef.current.getAnnouncements(1, 50),
+      ])
+      const items = result.items ?? []
+      setHasUnreadAnnouncements(hasAnyUnreadAnnouncement(items, localReads))
+
+      const newestListItem = findNewestUnreadAnnouncementForDialog(
+        items,
+        localReads,
+      )
+      if (!newestListItem) {
+        setUnreadAnnouncement(null)
+        setShowAnnouncementDialog(false)
+        return
+      }
+
+      const announcement = await announcementsRef.current.getAnnouncement(
+        newestListItem.id,
+      )
+      if (
+        announcement &&
+        isAnnouncementRecentForDialog(announcement.modified_at) &&
+        isAnnouncementUnreadMerged(announcement, localReads)
+      ) {
         setUnreadAnnouncement(announcement)
         setShowAnnouncementDialog(true)
       } else {
@@ -85,8 +141,7 @@ export default function TabLayout() {
       await announcementsRef.current.markRead(unreadAnnouncement.id)
       setShowAnnouncementDialog(false)
       setUnreadAnnouncement(null)
-      setHasUnreadAnnouncements(false)
-      await refreshAnnouncementUnread(announcementsRef.current.hasUnread)
+      await checkUnreadAnnouncements()
     } catch (e) {
       console.error('Error marking announcement read:', e)
     } finally {
@@ -156,9 +211,9 @@ export default function TabLayout() {
     syncUnreadFromServer,
   ])
 
-  // Check for unread announcements when user is logged in
+  // Check for unread announcements on startup and when login state changes
   React.useEffect(() => {
-    if (!isMounted || !state.user?.id) {
+    if (!isMounted) {
       return
     }
     checkUnreadAnnouncements()
@@ -172,15 +227,13 @@ export default function TabLayout() {
     setAppBadgeCount(state.messageCount)
   }, [state.messageCount, isMounted])
 
-  // Refresh unread count whenever the app returns to foreground
+  // Refresh unread whenever the app returns to foreground
   React.useEffect(() => {
-    if (!state.user?.id) {
-      return
-    }
-
     const subscription = AppState.addEventListener('change', nextState => {
       if (nextState === 'active') {
-        syncUnreadFromServer()
+        if (state.user?.id) {
+          syncUnreadFromServer()
+        }
         checkUnreadAnnouncements()
       }
     })
@@ -190,13 +243,16 @@ export default function TabLayout() {
 
   // Keep FCM token fresh and listen for foreground pushes (stable listener)
   React.useEffect(() => {
-    if (Platform.OS === 'web' || !state.user?.id) {
+    if (Platform.OS === 'web') {
       return
     }
 
     const messaging = getMessaging()
 
     const unsubscribeToken = onTokenRefresh(messaging, async () => {
+      if (!state.user?.id) {
+        return
+      }
       try {
         await accountRef.current.RefreshPushToken()
       } catch (e) {
@@ -204,15 +260,25 @@ export default function TabLayout() {
       }
     })
 
-    // Force-register current token on mount
-    accountRef.current.RefreshPushToken().catch((e: unknown) => {
-      console.error('Error ensuring FCM token:', e)
-    })
+    if (state.user?.id) {
+      accountRef.current.RefreshPushToken().catch((e: unknown) => {
+        console.error('Error ensuring FCM token:', e)
+      })
+    }
 
     const unsubscribeMessage = onMessage(messaging, async remoteMessage => {
       console.log('Notification received in foreground:', remoteMessage?.data)
       try {
         await presentRemoteNotification(remoteMessage)
+
+        if (isAnnouncementRemoteMessage(remoteMessage)) {
+          await checkUnreadAnnouncements()
+          return
+        }
+
+        if (!state.user?.id) {
+          return
+        }
 
         // Optimistic UI update from payload badge so the tab updates immediately
         const payloadBadge = getBadgeFromRemoteMessage(remoteMessage)
@@ -233,7 +299,7 @@ export default function TabLayout() {
       unsubscribeMessage()
       unsubscribeToken()
     }
-  }, [state.user?.id, syncUnreadFromServer])
+  }, [state.user?.id, syncUnreadFromServer, checkUnreadAnnouncements])
 
   async function handleLanguageOption(lang: string) {
     try {

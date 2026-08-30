@@ -12,8 +12,19 @@ import {
 } from '@expo/ui/community/bottom-sheet'
 import {useRouter} from 'expo-router'
 import React from 'react'
-import {Pressable, Text as RNText, useColorScheme, View as RNView} from 'react-native'
+import {
+  Platform,
+  Pressable,
+  Text as RNText,
+  useColorScheme,
+  useWindowDimensions,
+  View as RNView,
+} from 'react-native'
 import {useTranslation} from 'react-i18next'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
+
+/** iOS onDismiss can fire before the sheet animation finishes (expo/expo#48389). */
+const SHEET_DISMISS_NAV_DELAY_MS = Platform.OS === 'ios' ? 300 : 0
 
 type QuickActionItemProps = {
   icon: React.ComponentProps<typeof MCI>['name']
@@ -74,16 +85,62 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
     const router = useRouter()
     const {t} = useTranslation()
     const {state} = useLeagueContext()
+    const insets = useSafeAreaInsets()
+    const {height: windowHeight} = useWindowDimensions()
     const user = state.user
     const hasNewForumPosts = useHasNewForumPosts()
     const hasUnreadAnnouncements = useHasUnreadAnnouncements()
-    const snapPoints = React.useMemo(() => ['55%'], [])
+    // 6 rows + header; 55% was clipping the last item on iOS.
+    const snapPoints = React.useMemo(() => {
+      const estimatedContentHeight = 560 + Math.max(insets.bottom, 16)
+      const minOpenRatio = 0.72
+      const ratio = Math.min(
+        0.88,
+        Math.max(minOpenRatio, estimatedContentHeight / windowHeight),
+      )
+      return [`${Math.round(ratio * 100)}%`]
+    }, [insets.bottom, windowHeight])
+    const pendingRouteRef = React.useRef<string | null>(null)
+    const navTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+      null,
+    )
+
+    React.useEffect(() => {
+      return () => {
+        if (navTimeoutRef.current) {
+          clearTimeout(navTimeoutRef.current)
+        }
+      }
+    }, [])
 
     const navigate = (url: string) => {
-      if (ref && 'current' in ref) {
-        ref.current?.dismiss()
+      pendingRouteRef.current = url
+      if (ref && 'current' in ref && ref.current) {
+        ref.current.dismiss()
+        return
       }
+      pendingRouteRef.current = null
       router.push(url as any)
+    }
+
+    const handleSheetDismiss = () => {
+      const url = pendingRouteRef.current
+      pendingRouteRef.current = null
+      if (!url) {
+        return
+      }
+      if (navTimeoutRef.current) {
+        clearTimeout(navTimeoutRef.current)
+      }
+      const go = () => {
+        navTimeoutRef.current = null
+        router.push(url as any)
+      }
+      if (SHEET_DISMISS_NAV_DELAY_MS > 0) {
+        navTimeoutRef.current = setTimeout(go, SHEET_DISMISS_NAV_DELAY_MS)
+      } else {
+        go()
+      }
     }
 
     return (
@@ -91,8 +148,14 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
         ref={ref}
         snapPoints={snapPoints}
         enablePanDownToClose
+        onDismiss={handleSheetDismiss}
         backgroundStyle={{backgroundColor: colors.background}}>
-        <BottomSheetView style={{flex: 1, paddingHorizontal: 20, paddingBottom: 24}}>
+        <BottomSheetView
+          style={{
+            flex: 1,
+            paddingHorizontal: 20,
+            paddingBottom: Math.max(insets.bottom, 16) + 16,
+          }}>
           <View className="mb-4">
             <View className="flex-row items-center justify-between">
               <Text type="subtitle">Quick Actions</Text>
@@ -126,6 +189,13 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             onPress={() => navigate('/Settings/Forums')}
           />
           <QuickActionItem
+            icon="robot-outline"
+            label={t('ai_assistant')}
+            iconColor="#9C27B0"
+            iconBackground="rgba(156, 39, 176, 0.15)"
+            onPress={() => navigate('/Settings/CueChat')}
+          />
+          <QuickActionItem
             icon="cog"
             label={t('settings')}
             iconColor={colors.tint}
@@ -135,13 +205,6 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
                 : 'rgba(10, 126, 164, 0.12)'
             }
             onPress={() => navigate('/Settings')}
-          />
-          <QuickActionItem
-            icon="robot-outline"
-            label={t('ai_assistant')}
-            iconColor="#9C27B0"
-            iconBackground="rgba(156, 39, 176, 0.15)"
-            onPress={() => navigate('/Settings/CueChat')}
           />
           <QuickActionItem
             icon="account-group"

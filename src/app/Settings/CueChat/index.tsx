@@ -111,6 +111,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
   const router = useRouter()
   const pathname = usePathname()
   const headerIconColor = useThemeColor({}, 'text')
+  const themeBackgroundColor = useThemeColor({}, 'background')
   const [messages, setMessages] = React.useState<ChatMessage[]>([])
   const [inputText, setInputText] = React.useState('')
   const [agentActivity, setAgentActivity] =
@@ -122,6 +123,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
   const insets = useSafeAreaInsets()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
+  const themeMutedTextColor = isDark ? '#9ca3af' : '#6b7280'
   const {state: leagueState, webSocketUrl}: any = useLeagueContext()
   const {Get, Post, Put, Delete} = useNetwork()
   const getRef = React.useRef(Get)
@@ -1549,7 +1551,11 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
         onRequestClose={() => setHistoryOpen(false)}>
         <View
           className="flex-1"
-          style={{paddingTop: insets.top, paddingBottom: insets.bottom}}>
+          style={{
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            backgroundColor: themeBackgroundColor,
+          }}>
           <RNView
             style={{
               flexDirection: 'row',
@@ -1560,7 +1566,12 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
               borderBottomWidth: 1,
               borderBottomColor: isDark ? '#334155' : '#e2e8f0',
             }}>
-            <Text style={{fontSize: 18, fontWeight: '700'}}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '700',
+                color: headerIconColor,
+              }}>
               {t('ai_assistant_chat_history')}
             </Text>
             <RNView style={{flexDirection: 'row', alignItems: 'center', gap: 16}}>
@@ -1586,7 +1597,9 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
           </RNView>
           {threadsLoading ? (
             <View className="flex-1 justify-center items-center">
-              <Text className="opacity-60">{t('ai_assistant_input_connecting')}</Text>
+              <Text style={{color: themeMutedTextColor}}>
+                {t('ai_assistant_input_connecting')}
+              </Text>
             </View>
           ) : agentError ? (
             <View className="flex-1 justify-center items-center px-8">
@@ -1600,7 +1613,11 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
             </View>
           ) : threads.length === 0 ? (
             <View className="flex-1 justify-center items-center px-8">
-              <Text className="opacity-60" style={{textAlign: 'center'}}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  color: themeMutedTextColor,
+                }}>
                 {t('ai_assistant_no_saved_chats')}
               </Text>
             </View>
@@ -1638,7 +1655,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
                             ? isDark
                               ? '#bfdbfe'
                               : '#1e40af'
-                            : undefined,
+                            : headerIconColor,
                         }}>
                         {item.title}
                       </Text>
@@ -1646,7 +1663,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
                         style={{
                           marginTop: 4,
                           fontSize: 12,
-                          opacity: 0.6,
+                          color: themeMutedTextColor,
                         }}>
                         {formatThreadTime(item.updated_at)}
                         {item.message_count > 0

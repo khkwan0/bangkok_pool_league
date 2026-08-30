@@ -5,11 +5,16 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useForums} from '@/hooks/useForums'
-import {useTopicHasNewPosts} from '@/lib/forumActivity'
+import {
+  syncBoardSeenFromTopics,
+  syncGlobalForumBadge,
+  useTopicActivityVersion,
+  useTopicHasNewPosts,
+} from '@/lib/forumActivity'
 import type {ForumBoard, ForumTopicListItem} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useTheme} from "expo-router/react-navigation"
-import {useLocalSearchParams, useRouter, Stack} from 'expo-router'
+import {useFocusEffect, useLocalSearchParams, useRouter, Stack} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
@@ -181,7 +186,7 @@ export default function ForumTopics() {
     forumSlug: string
     forumName?: string
   }>()
-  const {getTopics} = useForums()
+  const {getTopics, getCategories} = useForums()
 
   const cat = firstParam(params.categorySlug)
   const forumKey = firstParam(params.forumSlug)
@@ -195,6 +200,43 @@ export default function ForumTopics() {
   const [refreshing, setRefreshing] = React.useState(false)
   const [loadingMore, setLoadingMore] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const topicActivityVersion = useTopicActivityVersion()
+  const forumRef = React.useRef(forum)
+  const topicsRef = React.useRef(topics)
+  forumRef.current = forum
+  topicsRef.current = topics
+
+  const syncBoardReadState = React.useCallback(async () => {
+    const currentForum = forumRef.current
+    const currentTopics = topicsRef.current
+    if (!currentForum?.id || currentTopics.length === 0) {
+      return
+    }
+    await syncBoardSeenFromTopics(
+      currentForum.id,
+      currentForum.last_post_at,
+      currentTopics,
+    )
+    try {
+      const categories = await getCategories()
+      await syncGlobalForumBadge(categories)
+    } catch (e) {
+      console.error('Error syncing global forum badge:', e)
+    }
+  }, [getCategories])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      void syncBoardReadState()
+      return () => {
+        void syncBoardReadState()
+      }
+    }, [syncBoardReadState]),
+  )
+
+  React.useEffect(() => {
+    void syncBoardReadState()
+  }, [topicActivityVersion, topics, syncBoardReadState])
 
   const loadPage = React.useCallback(
     async (pageNum: number, append = false) => {

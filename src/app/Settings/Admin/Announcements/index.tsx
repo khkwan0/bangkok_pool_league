@@ -41,7 +41,33 @@ export default function AdminAnnouncementsScreen() {
     }
   }, [state.user?.role_id, router])
 
-  const load = React.useCallback(async () => {
+  React.useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      try {
+        const result = await adminGetAnnouncements(1, 50)
+        if (!cancelled) {
+          setItems(result.items)
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+          setRefreshing(false)
+        }
+      }
+    }
+
+    load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [adminGetAnnouncements])
+
+  const reload = React.useCallback(async () => {
     try {
       const result = await adminGetAnnouncements(1, 50)
       setItems(result.items)
@@ -52,10 +78,6 @@ export default function AdminAnnouncementsScreen() {
       setRefreshing(false)
     }
   }, [adminGetAnnouncements])
-
-  React.useEffect(() => {
-    load()
-  }, [load])
 
   function confirmDelete(item: AdminAnnouncementListItem) {
     Alert.alert(t('announcements_delete_confirm'), item.title, [
@@ -68,7 +90,7 @@ export default function AdminAnnouncementsScreen() {
           const res = await adminDelete(item.id)
           setBusyId(null)
           if (res.status === 'ok') {
-            load()
+            reload()
           } else {
             Alert.alert(t('something_went_wrong'))
           }
@@ -82,7 +104,7 @@ export default function AdminAnnouncementsScreen() {
     const res = await adminRestore(id)
     setBusyId(null)
     if (res.status === 'ok') {
-      load()
+      reload()
     } else {
       Alert.alert(t('something_went_wrong'))
     }
@@ -102,7 +124,7 @@ export default function AdminAnnouncementsScreen() {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={() => {
           setRefreshing(true)
-          load()
+          reload()
         }} />
       }>
       <Button

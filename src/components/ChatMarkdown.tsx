@@ -2,6 +2,7 @@ import Markdown, {
   MarkdownIt,
   renderRules as defaultRenderRules,
 } from 'react-native-markdown-display'
+import {useFocusEffect} from 'expo-router'
 import React from 'react'
 import {ScrollView, Text, View, useColorScheme} from 'react-native'
 import {
@@ -9,6 +10,11 @@ import {
   ForumPostImage,
 } from '@/components/Forums/ForumImageViewer'
 import {parseForumImageTag, resolveForumImageFullUrl, resolveForumImageUrl} from '@/lib/forumImage'
+import {
+  isAnnouncementImageUrl,
+  resolveAnnouncementImageUrl,
+} from '@/lib/announcementContent'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {
   extractColorFromStyle,
   normalizeForumMarkdown,
@@ -192,10 +198,28 @@ type ChatMarkdownProps = {
 export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
+  const {apiUrl} = useLeagueContext()
   const [viewerUri, setViewerUri] = React.useState<string | null>(null)
   const handleImagePress = React.useCallback((fullUri: string) => {
     setViewerUri(fullUri)
   }, [])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        setViewerUri(null)
+      }
+    }, []),
+  )
+  const resolveImageUrl = React.useCallback(
+    (src: string) => {
+      if (isAnnouncementImageUrl(src)) {
+        return resolveAnnouncementImageUrl(src, apiUrl)
+      }
+      return resolveForumImageUrl(src)
+    },
+    [apiUrl],
+  )
   const normalizedContent = React.useMemo(
     () => preserveForumImageTags(normalizeForumMarkdown(content)),
     [content],
@@ -232,8 +256,8 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
   const markdownStyles = React.useMemo(
     () => ({
       body: {color: textColor},
-      text: {fontSize: 15, lineHeight: 21},
-      textgroup: {},
+      text: {color: textColor, fontSize: 15, lineHeight: 21},
+      textgroup: {color: textColor},
       paragraph: {
         marginTop: 2,
         marginBottom: 2,
@@ -241,8 +265,8 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
         flexWrap: 'wrap' as const,
         width: '100%',
       },
-      strong: {fontWeight: '700' as const},
-      em: {fontStyle: 'italic' as const},
+      strong: {color: textColor, fontWeight: '700' as const},
+      em: {color: textColor, fontStyle: 'italic' as const},
       link: {color: isDark ? '#93c5fd' : '#2563eb'},
       bullet_list: {marginVertical: 4},
       ordered_list: {marginVertical: 4},
@@ -427,8 +451,10 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
       ) => {
         const src = node.attributes?.src
         if (!src) return null
-        const displayUri = resolveForumImageUrl(src)
-        const fullUri = resolveForumImageFullUrl(src)
+        const displayUri = resolveImageUrl(src)
+        const fullUri = isAnnouncementImageUrl(src)
+          ? displayUri
+          : resolveForumImageFullUrl(src)
         return (
           <ForumPostImage
             key={node.key}
@@ -440,7 +466,7 @@ export function ChatMarkdown({content, textColor}: ChatMarkdownProps) {
       },
       ...tableRules,
     }),
-    [tableRules, handleImagePress],
+    [tableRules, handleImagePress, resolveImageUrl],
   )
 
   if (!normalizedContent.trim()) {

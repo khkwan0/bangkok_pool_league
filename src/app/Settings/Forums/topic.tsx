@@ -14,6 +14,7 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useForumSettings, forumLengthErrorKey} from '@/hooks/useForumSettings'
 import {useForums} from '@/hooks/useForums'
+import {markTopicSeen} from '@/lib/forumActivity'
 import type {
   ForumPost,
   ForumPostReactionState,
@@ -212,6 +213,11 @@ export default function ForumTopic() {
     setSortOrder('asc')
     loadTopic()
   }, [cat, forumKey, topicKey])
+
+  React.useEffect(() => {
+    if (!detail?.topic?.id) return
+    void markTopicSeen(detail.topic.id, detail.topic.last_post_at)
+  }, [detail?.topic?.id, detail?.topic.last_post_at])
 
   React.useEffect(() => {
     if (!detail || !cat || !forumKey || !topicKey) return

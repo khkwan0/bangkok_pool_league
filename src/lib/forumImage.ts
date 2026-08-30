@@ -1,4 +1,8 @@
 import config from '@/config'
+import {
+  isAnnouncementImageUrl,
+  resolveAnnouncementImageUrl,
+} from '@/lib/announcementContent'
 
 const IMG_TAG_RE = /<img\b[^>]*\/?>/gi
 const IMG_ATTR_RE = (name: string) =>
@@ -13,7 +17,13 @@ export function resolveForumImageUrl(url: string): string {
   const trimmed = url.trim()
   if (!trimmed) return trimmed
   if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('data:')) {
+    if (isAnnouncementImageUrl(trimmed)) {
+      return resolveAnnouncementImageUrl(trimmed)
+    }
     return trimmed
+  }
+  if (isAnnouncementImageUrl(trimmed)) {
+    return resolveAnnouncementImageUrl(trimmed)
   }
   if (trimmed.startsWith('/forum_images/')) {
     return `${forumImagesOrigin()}${trimmed}`

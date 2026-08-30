@@ -13,12 +13,13 @@ import {
   ensureForumUnreadBaseline,
   latestForumPostAt,
   markAllForumsRead,
+  syncGlobalForumBadge,
   useBoardHasNewPosts,
 } from '@/lib/forumActivity'
 import type {ForumBoard, ForumCategoryWithForums} from '@/types/forums'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useNavigation, useTheme} from "expo-router/react-navigation"
-import {useRouter} from 'expo-router'
+import {useFocusEffect, useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
@@ -160,6 +161,7 @@ export default function Forums() {
 
       setCategories(data)
       await ensureForumUnreadBaseline()
+      await syncGlobalForumBadge(data)
       if (data.length === 0 && !registration.is_member) {
         setError(t('forums_empty'))
       }
@@ -175,6 +177,15 @@ export default function Forums() {
   React.useEffect(() => {
     loadForums()
   }, [loadForums])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (categories.length === 0) {
+        return
+      }
+      void syncGlobalForumBadge(categories)
+    }, [categories]),
+  )
 
   const sections: ForumSection[] = React.useMemo(
     () =>

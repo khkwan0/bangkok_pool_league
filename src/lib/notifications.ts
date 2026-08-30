@@ -88,6 +88,12 @@ export function getBadgeFromRemoteMessage(remoteMessage: {
   return parseBadge(remoteMessage?.notification?.android?.count)
 }
 
+export function isAnnouncementRemoteMessage(remoteMessage: {
+  data?: Record<string, unknown> | null
+}): boolean {
+  return remoteMessage?.data?.type === 'announcement'
+}
+
 export async function applyBadgeFromRemoteMessage(remoteMessage: {
   data?: Record<string, unknown> | null
   notification?: {android?: {count?: number | string} | null} | null

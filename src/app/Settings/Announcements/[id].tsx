@@ -6,6 +6,10 @@ import {useAnnouncements} from '@/hooks/useAnnouncements'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {resolveAnnouncementContent} from '@/lib/announcementContent'
 import {
+  getLocalAnnouncementReads,
+  isAnnouncementUnreadMerged,
+} from '@/lib/announcementReads'
+import {
   refreshAnnouncementUnread,
   setHasUnreadAnnouncements,
 } from '@/lib/announcementUnread'
@@ -26,7 +30,7 @@ export default function AnnouncementDetailScreen() {
   const params = useLocalSearchParams<{id: string}>()
   const id = parseInt(firstParam(params.id) ?? '', 10)
   const {getAnnouncement, markRead, hasUnread} = useAnnouncements()
-  const {apiUrl} = useLeagueContext()
+  const {apiUrl, state} = useLeagueContext()
   const colorScheme = useColorScheme()
   const textColor = colorScheme === 'dark' ? '#e5e7eb' : '#111827'
   const [announcement, setAnnouncement] = React.useState<Announcement | null>(null)
@@ -37,27 +41,45 @@ export default function AnnouncementDetailScreen() {
       setLoading(false)
       return
     }
+
+    let cancelled = false
+
     ;(async () => {
       try {
         const data = await getAnnouncement(id)
+        if (cancelled) {
+          return
+        }
         setAnnouncement(data)
         navigation.setOptions({title: data?.title ?? t('announcement')})
-        if (data && !data.read_at) {
-          await markRead(id)
-          setHasUnreadAnnouncements(false)
-          await refreshAnnouncementUnread(hasUnread)
+        if (data) {
+          const localReads = await getLocalAnnouncementReads()
+          const unread = isAnnouncementUnreadMerged(data, localReads)
+          if (unread) {
+            await markRead(id)
+            setHasUnreadAnnouncements(false)
+            if (state.user?.id) {
+              await refreshAnnouncementUnread(hasUnread)
+            }
+          }
         }
       } catch (e) {
         console.error(e)
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     })()
-  }, [id, getAnnouncement, markRead, hasUnread, navigation, t])
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, getAnnouncement, markRead, hasUnread, navigation, state.user?.id, t])
 
   const content = React.useMemo(() => {
-    if (!announcement?.content || !apiUrl) {
-      return announcement?.content ?? ''
+    if (!announcement?.content) {
+      return ''
     }
     return resolveAnnouncementContent(announcement.content, apiUrl)
   }, [announcement?.content, apiUrl])
