@@ -8,7 +8,6 @@ import {useForums} from '@/hooks/useForums'
 import {
   syncBoardSeenFromTopics,
   syncGlobalForumBadge,
-  useTopicActivityVersion,
   useTopicHasNewPosts,
 } from '@/lib/forumActivity'
 import type {ForumBoard, ForumTopicListItem} from '@/types/forums'
@@ -200,7 +199,6 @@ export default function ForumTopics() {
   const [refreshing, setRefreshing] = React.useState(false)
   const [loadingMore, setLoadingMore] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
-  const topicActivityVersion = useTopicActivityVersion()
   const forumRef = React.useRef(forum)
   const topicsRef = React.useRef(topics)
   forumRef.current = forum
@@ -236,7 +234,7 @@ export default function ForumTopics() {
 
   React.useEffect(() => {
     void syncBoardReadState()
-  }, [topicActivityVersion, topics, syncBoardReadState])
+  }, [topics, syncBoardReadState])
 
   const loadPage = React.useCallback(
     async (pageNum: number, append = false) => {

@@ -73,19 +73,31 @@ fs.writeFileSync(path, config)
 console.log(`Updated src/config.js → version ${version}, build ${build}`)
 EOF
 
-echo "Unlocking login keychain for code signing…"
-security unlock-keychain ~/Library/Keychains/login.keychain-db
+# shellcheck disable=SC1091
+source "$(dirname "$0")/unlock_signing_keychain.sh"
+prepare_signing_keychain_if_needed
 
 echo "Running prebuild…"
 npx expo prebuild --platform ios
 
 mkdir -p "$(dirname "$ARCHIVE_PATH")" "$EXPORT_PATH" "$PRIVATE_KEYS_DIR"
 
+echo "Stopping stale Xcode build services…"
+killall XCBBuildService 2>/dev/null || true
+
+if [ "${CLEAN_DERIVED_DATA:-0}" = "1" ]; then
+  echo "Cleaning DerivedData for BangkokPoolLeague…"
+  rm -rf "${HOME}/Library/Developer/Xcode/DerivedData/"*BangkokPoolLeague* 2>/dev/null || true
+fi
+
+# Cap parallelism so the archive doesn't pin every core (override with MAX_CPUS).
+MAX_CPUS="${MAX_CPUS:-4}"
+ARCHIVE_LOG="${ARCHIVE_LOG:-${EXPORT_PATH}/archive-xcodebuild.log}"
+
 echo "Archiving Release build (iPhone only) → ${ARCHIVE_PATH}…"
+echo "Logging to ${ARCHIVE_LOG} (MAX_CPUS=${MAX_CPUS})…"
 # Transient Sentry TLS/network errors should not fail the App Store build.
 export SENTRY_ALLOW_FAILURE="${SENTRY_ALLOW_FAILURE:-true}"
-# Cap parallelism so the archive doesn't pin every core.
-MAX_CPUS="${MAX_CPUS:-4}"
 xcodebuild -workspace ios/BangkokPoolLeague.xcworkspace \
   -scheme BangkokPoolLeague \
   -configuration Release \
@@ -93,9 +105,11 @@ xcodebuild -workspace ios/BangkokPoolLeague.xcworkspace \
   -archivePath "$ARCHIVE_PATH" \
   -jobs "$MAX_CPUS" \
   -IDEBuildOperationMaxNumberOfConcurrentCompileTasks="$MAX_CPUS" \
+  COMPILER_INDEX_STORE_ENABLE=NO \
   TARGETED_DEVICE_FAMILY=1 \
   archive \
-  "$@"
+  "$@" \
+  2>&1 | tee "$ARCHIVE_LOG"
 
 echo "Archive ready: ${ARCHIVE_PATH}"
 
@@ -104,42 +118,5 @@ if [ "$ARCHIVE_ONLY" = "1" ]; then
   exit 0
 fi
 
-if [ -z "${APPLE_TEAM_ID:-}" ]; then
-  cat >&2 <<'MSG'
-Missing APPLE_TEAM_ID for IPA export.
-
-Set in .env.local (or your environment):
-
-  APPLE_TEAM_ID=XXXXXXXXXX
-MSG
-  exit 1
-fi
-
-/usr/libexec/PlistBuddy -c "Add :teamID string ${APPLE_TEAM_ID}" "$EXPORT_OPTIONS" 2>/dev/null \
-  || /usr/libexec/PlistBuddy -c "Set :teamID ${APPLE_TEAM_ID}" "$EXPORT_OPTIONS"
-
 echo "Exporting IPA → ${EXPORT_PATH}…"
-xcodebuild -exportArchive \
-  -archivePath "$ARCHIVE_PATH" \
-  -exportPath "$EXPORT_PATH" \
-  -exportOptionsPlist "$EXPORT_OPTIONS" \
-  -allowProvisioningUpdates
-
-IPA_PATH="$(find "$EXPORT_PATH" -maxdepth 1 -name '*.ipa' | head -n 1)"
-if [ -z "$IPA_PATH" ]; then
-  echo "error: No .ipa found in ${EXPORT_PATH}" >&2
-  exit 1
-fi
-
-echo "Uploading ${IPA_PATH} to App Store Connect…"
-# Prefer project private_keys/ so AuthKey_*.p8 next to the repo works with altool
-export API_PRIVATE_KEYS_DIR
-API_PRIVATE_KEYS_DIR="$(cd "$PRIVATE_KEYS_DIR" && pwd)"
-
-xcrun altool --upload-app \
-  -f "$IPA_PATH" \
-  -t ios \
-  --apiKey "$ASC_KEY_ID" \
-  --apiIssuer "$ASC_ISSUER_ID"
-
-echo "Upload complete. Processing will appear in App Store Connect / TestFlight shortly."
+UPLOAD=1 exec "$(dirname "$0")/export_ios.sh"

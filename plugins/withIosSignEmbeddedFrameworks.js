@@ -10,7 +10,12 @@ fi
 
 IDENTITY="\${EXPANDED_CODE_SIGN_IDENTITY:-}"
 if [ -z "\$IDENTITY" ] || [ "\$IDENTITY" = "-" ]; then
-  IDENTITY=\$(security find-identity -v -p codesigning | awk -F'"' '/Apple Development|iPhone Developer/{print \$2; exit}')
+  if [ "\${CONFIGURATION:-}" = "Release" ]; then
+    IDENTITY=\$(security find-identity -v -p codesigning | awk -F'"' '/Apple Distribution|iPhone Distribution/{print \$2; exit}')
+  fi
+  if [ -z "\$IDENTITY" ]; then
+    IDENTITY=\$(security find-identity -v -p codesigning | awk -F'"' '/Apple Development|iPhone Developer/{print \$2; exit}')
+  fi
 fi
 
 if [ -z "\$IDENTITY" ]; then

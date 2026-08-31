@@ -211,7 +211,14 @@ ARCHIVE_ONLY=1 npm run archive_ios
 ARCHIVE_PATH=build/MyApp.xcarchive EXPORT_PATH=build npm run archive_ios
 ```
 
-**Optional env vars:** `ARCHIVE_PATH`, `EXPORT_PATH`, `EXPORT_OPTIONS`, `PRIVATE_KEYS_DIR`, `MAX_CPUS`, `SENTRY_ALLOW_FAILURE` (default `true`).
+**Optional env vars:** `ARCHIVE_PATH`, `EXPORT_PATH`, `EXPORT_OPTIONS`, `PRIVATE_KEYS_DIR`, `MAX_CPUS` (default `4`), `CLEAN_DERIVED_DATA=1`, `ARCHIVE_LOG`, `SENTRY_ALLOW_FAILURE` (default `true`).
+
+**If archive hangs or crashes:** stop the run (`Ctrl+C`), clear stale build state, then retry:
+
+```bash
+killall xcodebuild XCBBuildService 2>/dev/null || true
+CLEAN_DERIVED_DATA=1 npm run archive_ios
+```
 
 #### Android archive (`npm run archive_android`)
 

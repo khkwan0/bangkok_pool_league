@@ -345,6 +345,9 @@ export async function markTopicSeen(
     laterTimestamp(new Date().toISOString(), lastPostAt),
     reads[key],
   )
+  if (reads[key] === seenAt) {
+    return
+  }
   topicReadsMemory = {...reads, [key]: seenAt}
   topicReadsLoaded = true
   try {
@@ -385,6 +388,9 @@ export async function markBoardSeen(
     laterTimestamp(new Date().toISOString(), lastPostAt),
     reads[key],
   )
+  if (reads[key] === seenAt) {
+    return
+  }
   boardReadsMemory = {...reads, [key]: seenAt}
   boardReadsLoaded = true
   try {

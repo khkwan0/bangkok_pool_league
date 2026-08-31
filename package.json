@@ -10,6 +10,8 @@
     "deploy_ios": "bash ./scripts/deploy_ios.sh",
     "deploy_android": "bash ./scripts/deploy_android.sh",
     "archive_ios": "bash ./scripts/archive_ios.sh",
+    "export_ios": "bash ./scripts/export_ios.sh",
+    "unlock_signing_keychain": "bash ./scripts/unlock_signing_keychain.sh",
     "archive_android": "bash ./scripts/archive_android.sh",
     "web": "expo start --web",
     "lint": "expo lint"

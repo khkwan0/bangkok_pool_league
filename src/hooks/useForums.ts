@@ -2,10 +2,10 @@ import {useNetwork} from '@/hooks/useNetwork'
 import {useLeagueContext} from '@/context/LeagueContext'
 import config from '@/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import {useCallback, useRef} from 'react'
 import type {
   ForumBoard,
   ForumCategoryWithForums,
-  ForumPost,
   ForumPostSortOrder,
   ForumTopicDetail,
   ForumTopicListItem,
@@ -18,9 +18,9 @@ import type {
   ForumReactionIcon,
   ForumSettings,
   ForumImageUploadResult,
-  FORUM_SETTINGS_DEFAULTS,
   Paginated,
 } from '@/types/forums'
+import {FORUM_SETTINGS_DEFAULTS} from '@/types/forums'
 
 function encodePath(...segments: string[]) {
   return segments.map(s => encodeURIComponent(s)).join('/')
@@ -29,9 +29,19 @@ function encodePath(...segments: string[]) {
 export function useForums() {
   const {Get, Post, Put, Patch} = useNetwork()
   const {apiUrl} = useLeagueContext()
+  const getRef = useRef(Get)
+  const postRef = useRef(Post)
+  const putRef = useRef(Put)
+  const patchRef = useRef(Patch)
+  const apiUrlRef = useRef(apiUrl)
+  getRef.current = Get
+  postRef.current = Post
+  putRef.current = Put
+  patchRef.current = Patch
+  apiUrlRef.current = apiUrl
 
-  const getForumSettings = async (): Promise<ForumSettings> => {
-    const res = await Get('/forums/settings')
+  const getForumSettings = useCallback(async (): Promise<ForumSettings> => {
+    const res = await getRef.current('/forums/settings')
     if (res?.status === 'ok' && res.data) {
       return {
         opening_post_max_length: Number(res.data.opening_post_max_length),
@@ -40,21 +50,21 @@ export function useForums() {
       }
     }
     return FORUM_SETTINGS_DEFAULTS
-  }
+  }, [])
 
-  const getCategories = async (): Promise<ForumCategoryWithForums[]> => {
-    const res = await Get('/forums')
+  const getCategories = useCallback(async (): Promise<ForumCategoryWithForums[]> => {
+    const res = await getRef.current('/forums')
     if (res?.status === 'ok' && Array.isArray(res.data)) {
       return res.data
     }
     return []
-  }
+  }, [])
 
-  const getForum = async (
+  const getForum = useCallback(async (
     categorySlug: string,
     forumSlug: string,
   ): Promise<ForumBoard | null> => {
-    const res = await Get(`/forums/${encodePath(categorySlug, forumSlug)}`)
+    const res = await getRef.current(`/forums/${encodePath(categorySlug, forumSlug)}`)
     if (res?.status === 'ok' && res.data) {
       return {
         ...res.data,
@@ -63,14 +73,14 @@ export function useForums() {
       }
     }
     return null
-  }
+  }, [])
 
-  const getTopics = async (
+  const getTopics = useCallback(async (
     categorySlug: string,
     forumSlug: string,
     page = 1,
   ): Promise<Paginated<ForumTopicListItem> & {forum: ForumBoard}> => {
-    const res = await Get(
+    const res = await getRef.current(
       `/forums/${encodePath(categorySlug, forumSlug)}/topics?page=${page}`,
     )
     if (res?.status === 'ok' && res.data) {
@@ -84,14 +94,14 @@ export function useForums() {
       total: 0,
       total_pages: 1,
     }
-  }
+  }, [])
 
-  const getTopic = async (
+  const getTopic = useCallback(async (
     categorySlug: string,
     forumSlug: string,
     topicSlug: string,
   ): Promise<ForumTopicDetail | null> => {
-    const res = await Get(
+    const res = await getRef.current(
       `/forums/${encodePath(categorySlug, forumSlug)}/topics/${encodeURIComponent(topicSlug)}`,
     )
     if (res?.status === 'ok' && res.data) {
@@ -105,16 +115,16 @@ export function useForums() {
       }
     }
     return null
-  }
+  }, [])
 
-  const getPosts = async (
+  const getPosts = useCallback(async (
     categorySlug: string,
     forumSlug: string,
     topicSlug: string,
     page = 1,
     sort: ForumPostSortOrder = 'asc',
   ): Promise<ForumPostsPage> => {
-    const res = await Get(
+    const res = await getRef.current(
       `/forums/${encodePath(categorySlug, forumSlug)}/topics/${encodeURIComponent(topicSlug)}/posts?page=${page}&sort=${sort}`,
     )
     if (res?.status === 'ok' && res.data) {
@@ -135,43 +145,43 @@ export function useForums() {
       total: 0,
       total_pages: 1,
     }
-  }
+  }, [])
 
-  const getRegistrationStatus = async (): Promise<{
+  const getRegistrationStatus = useCallback(async (): Promise<{
     authenticated: boolean
     is_member: boolean
   }> => {
-    const res = await Get('/forums/register')
+    const res = await getRef.current('/forums/register')
     return {
       authenticated: Boolean(res?.authenticated),
       is_member: Boolean(res?.is_member),
     }
-  }
+  }, [])
 
-  const joinForums = async (): Promise<boolean> => {
-    const res = await Post('/forums/register', {})
+  const joinForums = useCallback(async (): Promise<boolean> => {
+    const res = await postRef.current('/forums/register', {})
     return res?.status === 'ok'
-  }
+  }, [])
 
-  const createReply = async (
+  const createReply = useCallback(async (
     categorySlug: string,
     forumSlug: string,
     topicSlug: string,
     content: string,
     isAnonymous = false,
   ) => {
-    return Post(
+    return postRef.current(
       `/forums/${encodePath(categorySlug, forumSlug)}/topics/${encodeURIComponent(topicSlug)}/posts`,
       {content, is_anonymous: isAnonymous},
     )
-  }
+  }, [])
 
-  const createTopic = async (
+  const createTopic = useCallback(async (
     categorySlug: string,
     forumSlug: string,
     input: ForumTopicCreateInput,
   ): Promise<ForumTopicCreateResult> => {
-    const res = await Post(
+    const res = await postRef.current(
       `/forums/${encodePath(categorySlug, forumSlug)}/topics`,
       {
         title: input.title.trim(),
@@ -194,17 +204,17 @@ export function useForums() {
       error: res?.error ?? 'server_error',
       max_length: res?.max_length,
     }
-  }
+  }, [])
 
-  const getReactionIcons = async (): Promise<ForumReactionIcon[]> => {
-    const res = await Get('/forums/reaction-icons')
+  const getReactionIcons = useCallback(async (): Promise<ForumReactionIcon[]> => {
+    const res = await getRef.current('/forums/reaction-icons')
     if (Array.isArray(res?.data)) {
       return res.data
     }
     return []
-  }
+  }, [])
 
-  const getPostReactions = async (
+  const getPostReactions = useCallback(async (
     postIds: number[],
   ): Promise<{
     reaction_icons: ForumReactionIcon[]
@@ -213,7 +223,7 @@ export function useForums() {
     if (postIds.length === 0) {
       return {reaction_icons: [], reactions_by_post_id: {}}
     }
-    const res = await Get(
+    const res = await getRef.current(
       `/forums/posts/reactions?post_ids=${postIds.join(',')}`,
     )
     if (res?.status === 'ok' && res.data) {
@@ -223,31 +233,31 @@ export function useForums() {
       }
     }
     return {reaction_icons: [], reactions_by_post_id: {}}
-  }
+  }, [])
 
-  const addPostReaction = async (
+  const addPostReaction = useCallback(async (
     postId: number,
     iconId: number,
   ): Promise<
     ForumPostReactionState | {status: 'error'; error: string}
   > => {
-    const res = await Post(`/forums/posts/${postId}/reactions`, {
+    const res = await postRef.current(`/forums/posts/${postId}/reactions`, {
       icon_id: iconId,
     })
     if (res?.status === 'ok' && res.reactions) {
       return res.reactions as ForumPostReactionState
     }
     return {status: 'error', error: res?.error ?? 'server_error'}
-  }
+  }, [])
 
-  const updatePost = async (
+  const updatePost = useCallback(async (
     postId: number,
     content: string,
   ): Promise<
     | {status: 'ok'; edited_at: string}
     | {status: 'error'; error: string; max_length?: number}
   > => {
-    const res = await Put(`/forums/posts/${postId}`, {content: content.trim()})
+    const res = await putRef.current(`/forums/posts/${postId}`, {content: content.trim()})
     if (res?.status === 'ok' && res.edited_at) {
       return {status: 'ok', edited_at: res.edited_at}
     }
@@ -256,15 +266,15 @@ export function useForums() {
       error: res?.error ?? 'server_error',
       max_length: res?.max_length,
     }
-  }
+  }, [])
 
-  const updateTopic = async (
+  const updateTopic = useCallback(async (
     categorySlug: string,
     forumSlug: string,
     topicSlug: string,
     updates: ForumTopicUpdate,
   ): Promise<ForumTopicPatchResult> => {
-    const res = await Patch(
+    const res = await patchRef.current(
       `/forums/${encodePath(categorySlug, forumSlug)}/topics/${encodeURIComponent(topicSlug)}`,
       updates,
     )
@@ -276,9 +286,9 @@ export function useForums() {
       error: res?.error ?? 'server_error',
       max_length: res?.max_length,
     }
-  }
+  }, [])
 
-  const uploadForumImage = async (
+  const uploadForumImage = useCallback(async (
     originalUri: string,
   ): Promise<ForumImageUploadResult> => {
     try {
@@ -289,7 +299,7 @@ export function useForums() {
         name: 'original.jpg',
         type: 'image/jpeg',
       } as unknown as Blob)
-      const apiDomain = apiUrl ?? config.apiUrl
+      const apiDomain = apiUrlRef.current ?? config.apiUrl
       const res = await fetch(`${apiDomain}/forums/images`, {
         method: 'POST',
         body: data,
@@ -313,7 +323,7 @@ export function useForums() {
       console.error(e)
       return {status: 'error', error: 'server_error'}
     }
-  }
+  }, [])
 
   return {
     getCategories,
