@@ -7,15 +7,26 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useNetwork} from '@/hooks/useNetwork'
 import {useThemeColor} from '@/hooks/useThemeColor'
 import {
+  ADMIN_AI_CAPABILITIES_PATH,
+  ADMIN_AI_CHAT_IMAGES_PATH,
   ADMIN_AI_CHAT_THREADS_PATH,
+  AI_CHAT_IMAGE_MAX_PER_TURN,
+  MEMBER_AI_CAPABILITIES_PATH,
+  MEMBER_AI_CHAT_IMAGES_PATH,
   MEMBER_AI_CHAT_THREADS_PATH,
+  absoluteSiteUrl,
   chatMessagesToTurns,
+  displayTextFromAiChatContent,
   formatThreadTime,
   healDuplicateTurns,
+  imagesFromAiChatContent,
+  serializeAiChatVisionContent,
   sliceChatHistoryForLlm,
+  turnToLlmContent,
   turnsToChatMessages,
   type AiChatThreadSummary,
   type AiChatTurn,
+  type LlmContentPart,
 } from '@/lib/aiChatThreads'
 import {
   getCueChatSession,
@@ -24,16 +35,23 @@ import {
   type CueChatSessionMessage,
 } from '@/lib/cueChatSession'
 import {createSocketClient, loadSocketAuth} from '@/lib/socketAuth'
+import config from '@/config'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import {Ionicons} from '@expo/vector-icons'
+import {File} from 'expo-file-system'
+import {manipulateAsync, SaveFormat} from 'expo-image-manipulator'
+import * as ImagePicker from 'expo-image-picker'
 import {useFocusEffect} from "expo-router/react-navigation"
 import {Stack, usePathname, useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
+  ActivityIndicator,
   Alert,
   Animated,
   AppState,
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -124,7 +142,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const themeMutedTextColor = isDark ? '#9ca3af' : '#6b7280'
-  const {state: leagueState, webSocketUrl}: any = useLeagueContext()
+  const {state: leagueState, webSocketUrl, apiUrl}: any = useLeagueContext()
   const {Get, Post, Put, Delete} = useNetwork()
   const getRef = React.useRef(Get)
   const postRef = React.useRef(Post)
@@ -136,6 +154,114 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
     putRef.current = Put
     deleteRef.current = Delete
   }, [Get, Post, Put, Delete])
+  const [visionEnabled, setVisionEnabled] = React.useState(false)
+  const [pendingImageUris, setPendingImageUris] = React.useState<string[]>([])
+  const [uploadingImages, setUploadingImages] = React.useState(false)
+
+  React.useEffect(() => {
+    const capabilitiesPath = isAdminChat
+      ? ADMIN_AI_CAPABILITIES_PATH
+      : MEMBER_AI_CAPABILITIES_PATH
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await getRef.current(`/${capabilitiesPath}`)
+        if (!cancelled && res?.status === 'ok') {
+          setVisionEnabled(Boolean(res.vision_enabled))
+        }
+      } catch {
+        // leave vision off
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [isAdminChat, leagueState.user?.id])
+
+  const pickImages = React.useCallback(async () => {
+    if (!visionEnabled || isStreaming || uploadingImages) return
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
+      if (!permission.granted) {
+        Alert.alert(
+          t('forums_image_permission_title'),
+          t('forums_image_permission_body'),
+        )
+        return
+      }
+      const room = AI_CHAT_IMAGE_MAX_PER_TURN - pendingImageUris.length
+      if (room <= 0) return
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.85,
+        allowsMultipleSelection: true,
+        selectionLimit: room,
+        // Prefer JPEG-compatible assets on iOS (avoid raw HEIC when possible).
+        preferredAssetRepresentationMode:
+          ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+      })
+      if (result.canceled || !result.assets?.length) return
+      const uris = result.assets
+        .map(a => a.uri)
+        .filter((u): u is string => Boolean(u))
+        .slice(0, room)
+      setPendingImageUris(prev =>
+        [...prev, ...uris].slice(0, AI_CHAT_IMAGE_MAX_PER_TURN),
+      )
+    } catch (e) {
+      console.error(e)
+      Alert.alert(t('forums_image_upload_failed'))
+    }
+  }, [
+    isStreaming,
+    pendingImageUris.length,
+    t,
+    uploadingImages,
+    visionEnabled,
+  ])
+
+  const uploadPendingImages = React.useCallback(async (): Promise<string[]> => {
+    if (pendingImageUris.length === 0) return []
+    const uploadPath = isAdminChat
+      ? ADMIN_AI_CHAT_IMAGES_PATH
+      : MEMBER_AI_CHAT_IMAGES_PATH
+    const token = await AsyncStorage.getItem('jwt')
+    const apiDomain = apiUrl ?? config.apiUrl
+    const urls: string[] = []
+    for (const uri of pendingImageUris) {
+      // iPhone HEIC often fails server-side sharp on Alpine — convert to JPEG first.
+      const jpeg = await manipulateAsync(uri, [], {
+        compress: 0.85,
+        format: SaveFormat.JPEG,
+      })
+      // Expo winter fetch rejects RN `{uri,name,type}` FormData parts.
+      // `File` from expo-file-system implements Blob and is supported.
+      const file = new File(jpeg.uri)
+      const data = new FormData()
+      data.append('file', file)
+      const res = await fetch(`${apiDomain}/${uploadPath}`, {
+        method: 'POST',
+        body: data,
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      })
+      let json: {status?: string; url?: string; error?: string} = {}
+      try {
+        json = await res.json()
+      } catch {
+        throw new Error('server_error')
+      }
+      if (json?.status !== 'ok' || typeof json.url !== 'string') {
+        throw new Error(
+          typeof json?.error === 'string' ? json.error : 'image_upload_failed',
+        )
+      }
+      urls.push(json.url)
+    }
+    return urls
+  }, [apiUrl, isAdminChat, pendingImageUris])
+
   const [connectionPhase, setConnectionPhase] =
     React.useState<ConnectionPhase>('initializing')
   const [socketError, setSocketError] = React.useState<string | null>(null)
@@ -470,6 +596,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
     setMessages([])
     messagesRef.current = []
     setInputText('')
+    setPendingImageUris([])
     setResponseText('')
     setReasoningText('')
     setAgentError(null)
@@ -503,6 +630,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
         activeThreadIdRef.current = threadId
         setMessages(nextMessages)
         setInputText('')
+        setPendingImageUris([])
         setResponseText('')
         setReasoningText('')
         setHistoryOpen(false)
@@ -827,7 +955,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
     requestId: string,
     agentMessages: Array<{
       role: 'system' | 'user' | 'assistant'
-      content: string
+      content: string | LlmContentPart[]
     }>,
   ) {
     const socket = socketRef.current
@@ -877,8 +1005,11 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
   }
 
   const isInputEnabled =
-    isLoggedIn && isConnected && !isStreaming && !isConnecting
-  const canSend = isInputEnabled && Boolean(inputText.trim())
+    isLoggedIn && isConnected && !isStreaming && !isConnecting && !uploadingImages
+  const canSend =
+    isInputEnabled &&
+    (Boolean(inputText.trim()) ||
+      (visionEnabled && pendingImageUris.length > 0))
   const inputPlaceholder = !isLoggedIn
     ? t('ai_assistant_input_login_required')
     : isConnecting
@@ -922,18 +1053,23 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
 
   async function SendMessage(overrideText?: string) {
     const messageText = (overrideText ?? inputText).trim()
-    if (!messageText) return
+    const hasImages =
+      !overrideText && visionEnabled && pendingImageUris.length > 0
+    if (!messageText && !hasImages) return
     if (!overrideText && !canSend) return
     if (overrideText && !isInputEnabled) return
     if (isStreamingRef.current) return
     const currentUserId = leagueState.user.id ?? 0
     const currentNickname = leagueState.user.nickname ?? 'You'
+    const siteApiUrl = apiUrl ?? config.apiUrl
 
     isStreamingRef.current = true
     setIsStreaming(true)
 
+    const titleSeed = messageText || 'Image message'
+
     if (!activeThreadIdRef.current) {
-      const threadId = await ensureThreadId(messageText)
+      const threadId = await ensureThreadId(titleSeed)
       if (!threadId) {
         isStreamingRef.current = false
         setIsStreaming(false)
@@ -941,6 +1077,37 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
         return
       }
     }
+
+    let imageUrls: string[] = []
+    if (hasImages) {
+      try {
+        setUploadingImages(true)
+        imageUrls = await uploadPendingImages()
+      } catch (e) {
+        isStreamingRef.current = false
+        setIsStreaming(false)
+        setUploadingImages(false)
+        setAgentError(
+          e instanceof Error
+            ? e.message === 'server_error'
+              ? t('server_error')
+              : e.message
+            : 'Failed to upload images',
+        )
+        return
+      } finally {
+        setUploadingImages(false)
+      }
+    }
+
+    const storedContent =
+      imageUrls.length > 0
+        ? serializeAiChatVisionContent(messageText, imageUrls)
+        : messageText
+    const llmUserContent =
+      imageUrls.length > 0
+        ? turnToLlmContent(storedContent, true, siteApiUrl)
+        : messageText
 
     const historyTurns = sliceChatHistoryForLlm(
       chatMessagesToTurns(messages, currentUserId),
@@ -957,8 +1124,11 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
             ? `You are assisting BKK League player_id=${currentUserId}. Personalize recommendations to this player's context, match planning needs, and likely league workflows.`
             : 'You are assisting a BKK League player. Personalize recommendations to match planning, team coordination, and league workflows.',
       },
-      ...historyTurns,
-      {role: 'user' as const, content: messageText},
+      ...historyTurns.map(turn => ({
+        role: turn.role,
+        content: turnToLlmContent(turn.content, visionEnabled, siteApiUrl),
+      })),
+      {role: 'user' as const, content: llmUserContent},
     ]
 
     const requestId = `ai-${Date.now()}`
@@ -981,7 +1151,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
 
     const userMessage: ChatMessage = {
       id: `user_${Date.now()}_${Math.random()}`,
-      message: messageText,
+      message: storedContent,
       nickname: currentNickname,
       playerId: currentUserId,
       timestamp: Date.now(),
@@ -992,6 +1162,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
     setMessages(nextMessages)
     if (!overrideText) {
       setInputText('')
+      setPendingImageUris([])
     }
 
     // Scroll to bottom
@@ -1021,6 +1192,13 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
   const renderMessage = ({item}: {item: ChatMessage}) => {
     const isUserMessage =
       item.isUserMessage || item.playerId === leagueState.user.id
+    const displayText = isUserMessage
+      ? displayTextFromAiChatContent(item.message)
+      : item.message
+    const turnImages = isUserMessage
+      ? imagesFromAiChatContent(item.message)
+      : []
+    const siteApiUrl = apiUrl ?? config.apiUrl
     const hasTable = !isUserMessage && markdownContainsTable(item.message)
     // Handle timestamp - convert to milliseconds if needed
     const timestamp =
@@ -1059,14 +1237,40 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
             </Text>
           )}
           {isUserMessage ? (
-            <Text
-              style={{
-                color: '#ffffff',
-                fontSize: 16,
-                marginBottom: 16,
-              }}>
-              {item.message}
-            </Text>
+            <>
+              {displayText ? (
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    fontSize: 16,
+                    marginBottom: turnImages.length > 0 ? 8 : 16,
+                  }}>
+                  {displayText}
+                </Text>
+              ) : null}
+              {turnImages.length > 0 ? (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    gap: 6,
+                    marginBottom: 16,
+                  }}>
+                  {turnImages.map(url => (
+                    <Image
+                      key={url}
+                      source={{uri: absoluteSiteUrl(url, siteApiUrl)}}
+                      style={{
+                        width: 96,
+                        height: 96,
+                        borderRadius: 8,
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                      }}
+                    />
+                  ))}
+                </View>
+              ) : null}
+            </>
           ) : (
             <RNView style={{marginBottom: 16}}>
               <ChatMarkdown content={item.message} textColor={apiTextColor} />
@@ -1738,7 +1942,77 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
                 paddingBottom: insets.bottom,
                 backgroundColor: 'transparent',
               }}>
+              {visionEnabled && pendingImageUris.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{
+                    paddingHorizontal: 16,
+                    paddingTop: 8,
+                    gap: 8,
+                  }}>
+                  {pendingImageUris.map(uri => (
+                    <View key={uri} style={{position: 'relative'}}>
+                      <Image
+                        source={{uri}}
+                        style={{
+                          width: 64,
+                          height: 64,
+                          borderRadius: 8,
+                          backgroundColor: isDark ? '#334155' : '#e2e8f0',
+                        }}
+                      />
+                      <TouchableOpacity
+                        onPress={() =>
+                          setPendingImageUris(prev =>
+                            prev.filter(u => u !== uri),
+                          )
+                        }
+                        disabled={!isInputEnabled}
+                        style={{
+                          position: 'absolute',
+                          top: -4,
+                          right: -4,
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          borderRadius: 10,
+                          width: 20,
+                          height: 20,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Ionicons name="close" size={12} color="#fff" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : null}
               <View className="flex-row items-center px-4 py-2 gap-2">
+                {visionEnabled ? (
+                  <TouchableOpacity
+                    onPress={() => void pickImages()}
+                    disabled={
+                      !isInputEnabled ||
+                      pendingImageUris.length >= AI_CHAT_IMAGE_MAX_PER_TURN
+                    }
+                    className="rounded-full p-3 bg-gray-200 dark:bg-gray-700"
+                    style={{
+                      opacity:
+                        !isInputEnabled ||
+                        pendingImageUris.length >= AI_CHAT_IMAGE_MAX_PER_TURN
+                          ? 0.5
+                          : 1,
+                    }}>
+                    {uploadingImages ? (
+                      <ActivityIndicator size="small" color="#3b82f6" />
+                    ) : (
+                      <Ionicons
+                        name="image-outline"
+                        size={20}
+                        color={isDark ? '#93c5fd' : '#2563eb'}
+                      />
+                    )}
+                  </TouchableOpacity>
+                ) : null}
                 <View style={{flex: 1, justifyContent: 'center'}}>
                   <TextInput
                     placeholder={inputPlaceholder}
