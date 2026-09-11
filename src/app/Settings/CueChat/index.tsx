@@ -21,12 +21,9 @@ import {
   healDuplicateTurns,
   imagesFromAiChatContent,
   serializeAiChatVisionContent,
-  sliceChatHistoryForLlm,
-  turnToLlmContent,
   turnsToChatMessages,
   type AiChatThreadSummary,
   type AiChatTurn,
-  type LlmContentPart,
 } from '@/lib/aiChatThreads'
 import {
   getCueChatSession,
@@ -277,6 +274,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
   const ensureThreadIdRef = React.useRef<
     ((firstPrompt: string) => Promise<number | null>) | null
   >(null)
+  const refreshThreadsRef = React.useRef<(() => Promise<void>) | null>(null)
   const flatListRef = React.useRef<FlatList>(null)
   const socketRef = React.useRef<ReturnType<typeof createSocketClient> | null>(
     null,
@@ -532,6 +530,10 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
       setThreadsLoading(false)
     }
   }, [leagueState.user?.id, threadsApiBase])
+
+  React.useEffect(() => {
+    refreshThreadsRef.current = refreshThreads
+  }, [refreshThreads])
 
   const persistThreadMessages = React.useCallback(
     async (threadId: number, nextMessages: ChatMessage[]) => {
@@ -857,11 +859,19 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
 
     const handleAgentDone = (payload: {
       requestId?: string
+      threadId?: number
       response?: {content?: string}
     }) => {
       if (!isCurrentRequest(payload?.requestId)) return
 
       flushAllPendingStreamTokens()
+
+      const serverThreadId =
+        typeof payload?.threadId === 'number' ? payload.threadId : null
+      if (serverThreadId && !activeThreadIdRef.current) {
+        setActiveThreadId(serverThreadId)
+        activeThreadIdRef.current = serverThreadId
+      }
 
       let assistantReply = responseBufferRef.current.trim()
       if (!assistantReply) {
@@ -882,16 +892,9 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
         const nextMessages = [...messagesRef.current, assistantMessage]
         messagesRef.current = nextMessages
         setMessages(nextMessages)
-        const threadId = activeThreadIdRef.current
-        if (threadId) {
-          void persistThreadMessagesRef.current?.(threadId, nextMessages)
-        }
-      } else if (activeThreadIdRef.current) {
-        void persistThreadMessagesRef.current?.(
-          activeThreadIdRef.current,
-          messagesRef.current,
-        )
       }
+
+      void refreshThreadsRef.current?.()
 
       responseBufferRef.current = ''
       activeRequestIdRef.current = null
@@ -951,19 +954,34 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
     }, [leagueState.user?.id, agentScope]),
   )
 
-  async function emitAgentRequest(
-    requestId: string,
-    agentMessages: Array<{
-      role: 'system' | 'user' | 'assistant'
-      content: string | LlmContentPart[]
-    }>,
-  ) {
+  async function emitAgentRequest(params: {
+    requestId: string
+    prompt: string
+    images?: string[]
+    threadId?: number | null
+  }) {
     const socket = socketRef.current
     if (!socket) return
 
-    const payload = {requestId, agentScope, messages: agentMessages}
+    const payload = {
+      requestId: params.requestId,
+      agentScope,
+      threadId: params.threadId ?? undefined,
+      prompt: params.prompt,
+      images:
+        params.images && params.images.length > 0 ? params.images : undefined,
+    }
 
-    const onAck = (ack?: {status?: string; error?: string}) => {
+    const onAck = (ack?: {
+      status?: string
+      error?: string
+      threadId?: number
+    }) => {
+      if (typeof ack?.threadId === 'number' && !activeThreadIdRef.current) {
+        setActiveThreadId(ack.threadId)
+        activeThreadIdRef.current = ack.threadId
+        void refreshThreadsRef.current?.()
+      }
       if (ack?.status === 'error') {
         activeRequestIdRef.current = null
         responseBufferRef.current = ''
@@ -1061,22 +1079,9 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
     if (isStreamingRef.current) return
     const currentUserId = leagueState.user.id ?? 0
     const currentNickname = leagueState.user.nickname ?? 'You'
-    const siteApiUrl = apiUrl ?? config.apiUrl
 
     isStreamingRef.current = true
     setIsStreaming(true)
-
-    const titleSeed = messageText || 'Image message'
-
-    if (!activeThreadIdRef.current) {
-      const threadId = await ensureThreadId(titleSeed)
-      if (!threadId) {
-        isStreamingRef.current = false
-        setIsStreaming(false)
-        setAgentError('Failed to create chat thread')
-        return
-      }
-    }
 
     let imageUrls: string[] = []
     if (hasImages) {
@@ -1104,32 +1109,6 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
       imageUrls.length > 0
         ? serializeAiChatVisionContent(messageText, imageUrls)
         : messageText
-    const llmUserContent =
-      imageUrls.length > 0
-        ? turnToLlmContent(storedContent, true, siteApiUrl)
-        : messageText
-
-    const historyTurns = sliceChatHistoryForLlm(
-      chatMessagesToTurns(messages, currentUserId),
-    )
-
-    const agentMessages = [
-      {
-        role: 'system' as const,
-        content: isAdminChat
-          ? `You are assisting a BKK League site admin${
-              currentUserId ? ` (player_id=${currentUserId})` : ''
-            }. Help them operate the league via the admin web interface (menu paths, tabs, forms) and, when they ask you to perform actions, via available admin tools.`
-          : currentUserId
-            ? `You are assisting BKK League player_id=${currentUserId}. Personalize recommendations to this player's context, match planning needs, and likely league workflows.`
-            : 'You are assisting a BKK League player. Personalize recommendations to match planning, team coordination, and league workflows.',
-      },
-      ...historyTurns.map(turn => ({
-        role: turn.role,
-        content: turnToLlmContent(turn.content, visionEnabled, siteApiUrl),
-      })),
-      {role: 'user' as const, content: llmUserContent},
-    ]
 
     const requestId = `ai-${Date.now()}`
     activeRequestIdRef.current = requestId
@@ -1171,7 +1150,12 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
     }, 100)
 
     try {
-      emitAgentRequest(requestId, agentMessages)
+      emitAgentRequest({
+        requestId,
+        prompt: messageText,
+        images: imageUrls,
+        threadId: activeThreadIdRef.current,
+      })
     } catch (e) {
       console.error('Error sending message:', e)
       activeRequestIdRef.current = null
