@@ -53,7 +53,6 @@ export default function TabLayout() {
   const announcementCheckPendingRef = React.useRef(false)
   const suppressedAnnouncementIdsRef = React.useRef<Set<number>>(new Set())
   const visibleAnnouncementIdRef = React.useRef<number | null>(null)
-  const announcementDialogPresentedThisSessionRef = React.useRef(false)
   const hasFetchedThreads = React.useRef(false)
   const accountRef = React.useRef(account)
   const dispatchRef = React.useRef(dispatch)
@@ -115,12 +114,10 @@ export default function TabLayout() {
         if (
           presentDialog &&
           announcement &&
-          !announcementDialogPresentedThisSessionRef.current &&
           isAnnouncementUnreadMerged(announcement, localReads) &&
           !suppressedAnnouncementIdsRef.current.has(announcement.id) &&
           visibleAnnouncementIdRef.current !== announcement.id
         ) {
-          announcementDialogPresentedThisSessionRef.current = true
           setUnreadAnnouncement(announcement)
           setShowAnnouncementDialog(true)
           if (Platform.OS !== 'web') {
