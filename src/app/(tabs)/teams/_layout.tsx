@@ -13,6 +13,14 @@ export default function TeamsLayout() {
         name="index"
         options={{headerShown: true, title: t('teams')}}
       />
+      <Stack.Screen
+        name="mini-leagues/index"
+        options={{headerShown: true, title: 'Mini Leagues'}}
+      />
+      <Stack.Screen
+        name="mini-leagues/[id]/index"
+        options={{headerShown: true, title: 'Mini League'}}
+      />
     </Stack>
   )
 }

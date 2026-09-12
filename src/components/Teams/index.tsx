@@ -142,6 +142,16 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
         ListHeaderComponent={
           typeof user.id !== 'undefined' ? (
             <View className="px-4 py-3 border-b border-slate-200">
+              <Pressable
+                onPress={() => router.push('/teams/mini-leagues')}
+                className="mb-3 p-3 rounded-xl bg-pink-500/15">
+                <Text className="font-semibold text-pink-700 dark:text-pink-300">
+                  Mini Leagues
+                </Text>
+                <Text className="text-sm opacity-70 mt-1">
+                  Create ad hoc matches with separate stats
+                </Text>
+              </Pressable>
               <AppCheckbox
                 label={t('show_my_teams')}
                 value={showMineOnly}

@@ -214,6 +214,13 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             onPress={() => navigate('/teams')}
           />
           <QuickActionItem
+            icon="trophy-outline"
+            label="Mini Leagues"
+            iconColor="#E91E63"
+            iconBackground="rgba(233, 30, 99, 0.15)"
+            onPress={() => navigate('/teams/mini-leagues')}
+          />
+          <QuickActionItem
             icon="information-outline"
             label={t('info_and_guides')}
             iconColor="#FF9800"
