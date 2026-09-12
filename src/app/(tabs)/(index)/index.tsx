@@ -6,7 +6,9 @@ import AdSpot from '@/components/upcoming/AdSpot'
 import LiveScores from '@/components/upcoming/LiveScores'
 import MatchCard from '@/components/upcoming/MatchCard'
 import MatchCardOld from '@/components/upcoming/MatchCardOld'
+import {MiniLeagueHome} from '@/components/mini-leagues/MiniLeagueHome'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isMiniCompetition} from '@/types/competition'
 import {useAccount, useAd, useLeague, useSeason} from '@/hooks'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {MaterialIcons} from '@expo/vector-icons'
@@ -328,6 +330,10 @@ export default function UpcomingMatches(props: any) {
       }).start()
       setShowFilters(false)
     }
+  }
+
+  if (isMounted && isMiniCompetition(state.competition)) {
+    return <MiniLeagueHome miniLeagueId={state.competition.id} />
   }
 
   if (isMounted && DEBUG_MINIMAL_MATCHES_SCREEN) {

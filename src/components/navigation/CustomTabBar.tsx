@@ -1,4 +1,5 @@
 import {Colors} from '@/constants/Colors'
+import {CompetitionModeBanner} from '@/components/navigation/CompetitionModeBanner'
 import {TabActionSheet} from '@/components/navigation/TabActionSheet'
 import {
   TAB_FAB_RING_SIZE,
@@ -7,6 +8,10 @@ import {
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useForumActivitySync} from '@/hooks/useForumActivity'
 import {useHasNewForumPosts} from '@/lib/forumActivity'
+import {
+  NON_CANONICAL_ACCENT,
+  isCanonicalCompetition,
+} from '@/types/competition'
 import {
   type BottomTabBarProps,
   type BottomTabNavigationOptions,
@@ -106,6 +111,10 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
     (leagueState.showForumFabBadge ?? true) && hasNewForumPosts
   const messageBadge =
     leagueState.messageCount > 0 ? String(leagueState.messageCount) : undefined
+  const canonical = isCanonicalCompetition(leagueState.competition)
+  const fabBorderColor = canonical
+    ? colors.buttonBackground
+    : NON_CANONICAL_ACCENT
 
   const fabAdjacentIndices = React.useMemo(() => {
     const visibleIndices = state.routes.reduce<number[]>((indices, route, index) => {
@@ -196,13 +205,19 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
 
   return (
     <>
+      <CompetitionModeBanner />
       <View
         style={[
           styles.container,
           {
             paddingBottom: insets.bottom,
             backgroundColor: colors.background,
-            borderTopColor: colorScheme === 'dark' ? '#333' : '#e5e5e5',
+            borderTopColor: canonical
+              ? colorScheme === 'dark'
+                ? '#333'
+                : '#e5e5e5'
+              : NON_CANONICAL_ACCENT,
+            borderTopWidth: canonical ? StyleSheet.hairlineWidth : 2,
           },
         ]}>
         {state.routes.map((route, index) => {
@@ -233,7 +248,7 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
               style={[
                 styles.fabRing,
                 {
-                  borderColor: colors.buttonBackground,
+                  borderColor: fabBorderColor,
                   backgroundColor: '#fff',
                 },
               ]}>

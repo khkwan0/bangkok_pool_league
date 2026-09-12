@@ -21,6 +21,26 @@ export default function TeamsLayout() {
         name="mini-leagues/[id]/index"
         options={{headerShown: true, title: 'Mini League'}}
       />
+      <Stack.Screen
+        name="mini-leagues/[id]/players"
+        options={{headerShown: true, title: 'Players'}}
+      />
+      <Stack.Screen
+        name="mini-leagues/[id]/teams"
+        options={{headerShown: true, title: 'Teams'}}
+      />
+      <Stack.Screen
+        name="mini-leagues/[id]/create-match"
+        options={{headerShown: true, title: 'Create match'}}
+      />
+      <Stack.Screen
+        name="mini-leagues/[id]/copy"
+        options={{headerShown: true, title: 'Add from league'}}
+      />
+      <Stack.Screen
+        name="mini-leagues/[id]/settings"
+        options={{headerShown: true, title: 'Settings'}}
+      />
     </Stack>
   )
 }

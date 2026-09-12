@@ -84,15 +84,16 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
     const colors = Colors[colorScheme]
     const router = useRouter()
     const {t} = useTranslation()
-    const {state} = useLeagueContext()
+    const {state, openCompetitionPicker} = useLeagueContext()
     const insets = useSafeAreaInsets()
     const {height: windowHeight} = useWindowDimensions()
     const user = state.user
     const hasNewForumPosts = useHasNewForumPosts()
     const hasUnreadAnnouncements = useHasUnreadAnnouncements()
-    // 6 rows + header; 55% was clipping the last item on iOS.
+    const competition = state.competition
+    // 7 rows + header; 55% was clipping the last item on iOS.
     const snapPoints = React.useMemo(() => {
-      const estimatedContentHeight = 560 + Math.max(insets.bottom, 16)
+      const estimatedContentHeight = 620 + Math.max(insets.bottom, 16)
       const minOpenRatio = 0.72
       const ratio = Math.min(
         0.88,
@@ -211,14 +212,31 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             label={t('teams')}
             iconColor="#4CAF50"
             iconBackground="rgba(76, 175, 80, 0.15)"
-            onPress={() => navigate('/teams')}
+            onPress={() => {
+              if (competition.type === 'mini') {
+                navigate(`/teams/mini-leagues/${competition.id}`)
+              } else {
+                navigate('/teams')
+              }
+            }}
           />
           <QuickActionItem
             icon="trophy-outline"
-            label="Mini Leagues"
+            label="Switch competition…"
             iconColor="#E91E63"
             iconBackground="rgba(233, 30, 99, 0.15)"
-            onPress={() => navigate('/teams/mini-leagues')}
+            onPress={() => {
+              pendingRouteRef.current = null
+              if (ref && 'current' in ref && ref.current) {
+                ref.current.dismiss()
+              }
+              const open = () => openCompetitionPicker()
+              if (SHEET_DISMISS_NAV_DELAY_MS > 0) {
+                setTimeout(open, SHEET_DISMISS_NAV_DELAY_MS)
+              } else {
+                open()
+              }
+            }}
           />
           <QuickActionItem
             icon="information-outline"

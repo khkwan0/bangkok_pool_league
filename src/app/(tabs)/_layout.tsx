@@ -1,5 +1,7 @@
 import AnnouncementDialog from '@/components/Announcements/AnnouncementDialog'
 import LanguageOption from '@/components/LanguageOption'
+import {CompetitionPickerModal} from '@/components/navigation/CompetitionPickerModal'
+import {CompetitionValidator} from '@/components/navigation/CompetitionValidator'
 import {CustomTabBar} from '@/components/navigation/CustomTabBar'
 import {TabBarIcon} from '@/components/navigation/TabBarIcon'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -416,6 +418,8 @@ export default function TabLayout() {
 
   return (
     <>
+      <CompetitionValidator />
+      <CompetitionPickerModal />
       <AnnouncementDialog
         announcement={unreadAnnouncement}
         visible={showAnnouncementDialog && !showLanguageOption}

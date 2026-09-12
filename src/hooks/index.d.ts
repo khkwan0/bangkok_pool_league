@@ -47,7 +47,9 @@ export interface League {
     playerId: number,
     teamId: number,
   ): Promise<{status: string}>
-  GetLiveScores(): Promise<{status: string; data: Match[]}>
+  GetLiveScores(
+    miniLeagueId?: number | null,
+  ): Promise<{status: string; data: Match[]}>
 }
 
 export interface Match {

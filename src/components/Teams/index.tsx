@@ -149,7 +149,7 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
                   Mini Leagues
                 </Text>
                 <Text className="text-sm opacity-70 mt-1">
-                  Create ad hoc matches with separate stats
+                  Manage mini leagues, or switch competition from the Home header
                 </Text>
               </Pressable>
               <AppCheckbox

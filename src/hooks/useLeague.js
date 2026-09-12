@@ -455,9 +455,13 @@ export const useLeague = () => {
     }
   }
 
-  const GetLiveScores = async () => {
+  const GetLiveScores = async (miniLeagueId = null) => {
     try {
-      const res = await Get('/scores/live')
+      const query =
+        miniLeagueId != null && Number(miniLeagueId) > 0
+          ? `/scores/live?mini_league_id=${Number(miniLeagueId)}`
+          : '/scores/live'
+      const res = await Get(query)
       return res
     } catch (e) {
       console.log(e)

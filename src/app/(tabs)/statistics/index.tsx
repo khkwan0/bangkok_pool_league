@@ -1,16 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import Button from '@/components/Button'
 import PlayerStatistics from '@/components/PlayerStatistics'
-import { ThemedView as View } from '@/components/ThemedView'
-import { useLeagueContext } from '@/context/LeagueContext'
-import { useLeague } from '@/hooks/useLeague'
-import type { PlayerInfo } from '@/types/player'
-import { Ionicons } from '@expo/vector-icons'
-import { useTheme } from "expo-router/react-navigation"
-import { router } from 'expo-router'
+import {ThemedView as View} from '@/components/ThemedView'
+import {MiniLeagueStats} from '@/components/mini-leagues/MiniLeagueStats'
+import {useLeagueContext} from '@/context/LeagueContext'
+import {useLeague} from '@/hooks/useLeague'
+import {isMiniCompetition} from '@/types/competition'
+import type {PlayerInfo} from '@/types/player'
+import {Ionicons} from '@expo/vector-icons'
+import {useTheme} from 'expo-router/react-navigation'
+import {router} from 'expo-router'
 import React from 'react'
-import { useTranslation } from 'react-i18next'
-import { ActivityIndicator } from 'react-native'
+import {useTranslation} from 'react-i18next'
+import {ActivityIndicator} from 'react-native'
 
 export default function StatisticsHome(props: any) {
   const league = useLeague()
@@ -35,10 +37,14 @@ export default function StatisticsHome(props: any) {
         setIsLoading(false)
       }
     }
-    if (user) {
+    if (user && !isMiniCompetition(state.competition)) {
       fetchPlayerInfo(user)
     }
-  }, [user])
+  }, [user, state.competition])
+
+  if (isMiniCompetition(state.competition)) {
+    return <MiniLeagueStats miniLeagueId={state.competition.id} />
+  }
 
   if (typeof user.id === 'undefined' || user.id === null || !playerInfo) {
     return (

@@ -1,5 +1,5 @@
 import {Stack} from 'expo-router'
-import {t} from 'i18next'
+import {CompetitionSwitcher} from '@/components/navigation/CompetitionSwitcher'
 import {SettingsButton} from '@/components/navigation/SettingsButton'
 
 export default function CompletedLayout() {
@@ -8,7 +8,7 @@ export default function CompletedLayout() {
       <Stack.Screen
         name="index"
         options={{
-          headerTitle: t('Completed'),
+          headerTitle: () => <CompetitionSwitcher />,
           headerRight: () => <SettingsButton />,
         }}
       />

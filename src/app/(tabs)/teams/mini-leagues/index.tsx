@@ -1,6 +1,7 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import Button from '@/components/Button'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useTheme} from 'expo-router/react-navigation'
@@ -17,6 +18,7 @@ import {
 
 export default function MiniLeaguesScreen() {
   const api = useMiniLeagues()
+  const {setCompetition} = useLeagueContext()
   const {colors} = useTheme()
   const [items, setItems] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -55,6 +57,11 @@ export default function MiniLeaguesScreen() {
       const res = await api.create(trimmed)
       if (res?.status === 'ok' && res.data?.id) {
         setName('')
+        await setCompetition({
+          type: 'mini',
+          id: Number(res.data.id),
+          name: res.data.name || trimmed,
+        })
         router.push({
           pathname: './[id]',
           params: {id: String(res.data.id)},
@@ -71,6 +78,14 @@ export default function MiniLeaguesScreen() {
     const res = await api.respondInvite(id, action)
     if (res?.status === 'ok') {
       await load()
+      if (action === 'accept') {
+        const row = items.find(i => i.id === id)
+        await setCompetition({
+          type: 'mini',
+          id,
+          name: row?.name || 'Mini league',
+        })
+      }
     } else {
       Alert.alert('Error', res?.error || 'Request failed')
     }
@@ -89,7 +104,7 @@ export default function MiniLeaguesScreen() {
       <View className="px-4 pt-4 pb-2">
         <Text className="text-base mb-2 opacity-80">
           Create a mini league for ad hoc matches. Stats stay separate from the
-          main league.
+          main league. Switch competition from the Home header anytime.
         </Text>
         <TextInput
           value={name}
@@ -126,12 +141,19 @@ export default function MiniLeaguesScreen() {
         }
         renderItem={({item}) => (
           <Pressable
-            onPress={() =>
+            onPress={async () => {
+              if (item.member_status === 'active') {
+                await setCompetition({
+                  type: 'mini',
+                  id: item.id,
+                  name: item.name,
+                })
+              }
               router.push({
                 pathname: './[id]',
                 params: {id: String(item.id)},
               })
-            }
+            }}
             className="mx-4 my-2 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
             <Text className="text-base font-semibold">{item.name}</Text>
             <Text className="text-sm opacity-70 mt-1">

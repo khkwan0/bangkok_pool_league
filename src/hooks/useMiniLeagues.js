@@ -28,13 +28,23 @@ export const useMiniLeagues = () => {
   const copy = async (id, payload) => Post(`/mini-leagues/${id}/copy`, payload)
 
   const listTeams = async id => Get(`/mini-leagues/${id}/teams`)
+  const createTeam = async (id, payload) =>
+    Post(`/mini-leagues/${id}/teams`, payload)
   const listMatchFormats = async id => Get(`/mini-leagues/${id}/match-formats`)
+  const createMatchFormat = async (id, payload) =>
+    Post(`/mini-leagues/${id}/match-formats`, payload)
   const listMatches = async id => Get(`/mini-leagues/${id}/matches`)
   const createMatch = async (id, payload) =>
     Post(`/mini-leagues/${id}/matches`, payload)
 
   const standings = async id => Get(`/mini-leagues/${id}/standings`)
   const playerStats = async id => Get(`/mini-leagues/${id}/player-stats`)
+
+  const listSeasons = async id => Get(`/mini-leagues/${id}/seasons`)
+  const createSeason = async (id, payload) =>
+    Post(`/mini-leagues/${id}/seasons`, payload)
+  const updateSeason = async (id, payload) =>
+    Patch(`/mini-leagues/${id}/seasons`, payload)
 
   return {
     list,
@@ -50,10 +60,15 @@ export const useMiniLeagues = () => {
     browseCanonical,
     copy,
     listTeams,
+    createTeam,
     listMatchFormats,
+    createMatchFormat,
     listMatches,
     createMatch,
     standings,
     playerStats,
+    listSeasons,
+    createSeason,
+    updateSeason,
   }
 }

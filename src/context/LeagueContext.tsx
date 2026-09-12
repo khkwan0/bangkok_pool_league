@@ -1,6 +1,21 @@
 import config from '@/config'
+import {Thread} from '@/components/Messages/types'
+import {
+  CANONICAL_COMPETITION,
+  COMPETITION_STORAGE_KEY,
+  parseStoredCompetition,
+  type Competition,
+} from '@/types/competition'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {createContext, useContext, useEffect, useReducer, useState} from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from 'react'
+
 interface User {
   id?: number
   role_id?: number
@@ -26,8 +41,6 @@ interface User {
   }
 }
 
-import {Thread} from '@/components/Messages/types'
-
 interface LeagueState {
   user: User
   season: number
@@ -37,6 +50,8 @@ interface LeagueState {
   showLiveScores: boolean
   showForumFabBadge: boolean
   refreshUpcoming: boolean
+  competition: Competition
+  competitionPickerOpen: boolean
 }
 
 export interface LeagueContextType {
@@ -45,6 +60,9 @@ export interface LeagueContextType {
   LogoutUser: () => void
   RefreshUpcoming: () => void
   StopRefreshUpcoming: () => void
+  setCompetition: (competition: Competition) => Promise<void>
+  openCompetitionPicker: () => void
+  closeCompetitionPicker: () => void
   apiUrl: string
   setApiUrl: (apiUrl: string) => Promise<void>
   resetApiUrl: () => Promise<void>
@@ -64,6 +82,8 @@ const initialState: LeagueState = {
   showLiveScores: true,
   showForumFabBadge: true,
   refreshUpcoming: false,
+  competition: CANONICAL_COMPETITION,
+  competitionPickerOpen: false,
 }
 
 const LeagueReducer = (state: any, action: any) => {
@@ -229,6 +249,18 @@ const LeagueReducer = (state: any, action: any) => {
         refreshUpcoming: action.payload,
       }
     }
+    case 'SET_COMPETITION': {
+      return {
+        ...state,
+        competition: action.payload as Competition,
+      }
+    }
+    case 'SET_COMPETITION_PICKER_OPEN': {
+      return {
+        ...state,
+        competitionPickerOpen: Boolean(action.payload),
+      }
+    }
     default:
       return state
   }
@@ -313,10 +345,30 @@ export const LeagueProvider = ({children}: any) => {
     getShowForumFabBadge()
   }, [])
 
+  useEffect(() => {
+    const loadCompetition = async () => {
+      try {
+        const raw = await AsyncStorage.getItem(COMPETITION_STORAGE_KEY)
+        dispatch({
+          type: 'SET_COMPETITION',
+          payload: parseStoredCompetition(raw),
+        })
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    loadCompetition()
+  }, [])
+
   async function LogoutUser() {
     try {
       await AsyncStorage.removeItem('jwt')
       dispatch({type: 'DEL_USER'})
+      dispatch({type: 'SET_COMPETITION', payload: CANONICAL_COMPETITION})
+      await AsyncStorage.setItem(
+        COMPETITION_STORAGE_KEY,
+        JSON.stringify(CANONICAL_COMPETITION),
+      )
     } catch (e) {
       console.error(e)
     }
@@ -329,6 +381,26 @@ export const LeagueProvider = ({children}: any) => {
   function StopRefreshUpcoming() {
     dispatch({type: 'SET_REFRESH_UPCOMING', payload: false})
   }
+
+  const setCompetition = useCallback(async (competition: Competition) => {
+    dispatch({type: 'SET_COMPETITION', payload: competition})
+    try {
+      await AsyncStorage.setItem(
+        COMPETITION_STORAGE_KEY,
+        JSON.stringify(competition),
+      )
+    } catch (e) {
+      console.error('Failed to save competition:', e)
+    }
+  }, [])
+
+  const openCompetitionPicker = useCallback(() => {
+    dispatch({type: 'SET_COMPETITION_PICKER_OPEN', payload: true})
+  }, [])
+
+  const closeCompetitionPicker = useCallback(() => {
+    dispatch({type: 'SET_COMPETITION_PICKER_OPEN', payload: false})
+  }, [])
 
   async function setApiUrl(newApiUrl: string) {
     try {
@@ -373,6 +445,9 @@ export const LeagueProvider = ({children}: any) => {
         LogoutUser,
         RefreshUpcoming,
         StopRefreshUpcoming,
+        setCompetition,
+        openCompetitionPicker,
+        closeCompetitionPicker,
         apiUrl,
         setApiUrl,
         resetApiUrl,
