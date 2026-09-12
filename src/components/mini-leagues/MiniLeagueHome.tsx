@@ -1,13 +1,19 @@
 import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {MiniMatchCard} from '@/components/mini-leagues/MiniMatchCard'
 import LiveScores from '@/components/upcoming/LiveScores'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useLeague} from '@/hooks'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
-import {formatBangkokDateMed} from '@/lib/bangkokTime'
-import {useTheme} from 'expo-router/react-navigation'
+import {useThemeColor} from '@/hooks/useThemeColor'
+import {
+  NON_CANONICAL_ACCENT,
+  NON_CANONICAL_ACCENT_SOFT,
+  NON_CANONICAL_ACCENT_SOFT_DARK,
+} from '@/types/competition'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {router} from 'expo-router'
 import React from 'react'
 import {
@@ -15,6 +21,8 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
+  View as RNView,
+  useColorScheme,
 } from 'react-native'
 
 function matchInfoFromResponse(res: unknown): Record<string, unknown> | null {
@@ -37,6 +45,7 @@ type MiniMatch = {
   away_team_name?: string
   home_frames?: number | null
   away_frames?: number | null
+  round?: number | null
 }
 
 export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
@@ -44,7 +53,9 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
   const apiRef = React.useRef(api)
   apiRef.current = api
   const league = useLeague()
-  const {colors} = useTheme()
+  const screenBg = useThemeColor({}, 'background')
+  const colorScheme = useColorScheme()
+  const isDark = colorScheme === 'dark'
   const {state, StopRefreshUpcoming, apiUrl} = useLeagueContext()
   const [matches, setMatches] = React.useState<MiniMatch[]>([])
   const [mini, setMini] = React.useState<any>(null)
@@ -52,7 +63,10 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
   const [refreshing, setRefreshing] = React.useState(false)
   const [openingId, setOpeningId] = React.useState<number | null>(null)
   const listContentStyle = useTabListContentContainerStyle({
-    backgroundColor: colors.background,
+    backgroundColor: screenBg,
+    flexGrow: 1,
+    paddingTop: 4,
+    paddingBottom: 24,
   })
 
   const load = React.useCallback(async () => {
@@ -108,74 +122,170 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center">
-        <ActivityIndicator />
+        <ActivityIndicator color={NON_CANONICAL_ACCENT} />
       </View>
     )
   }
 
+  const soft = isDark
+    ? NON_CANONICAL_ACCENT_SOFT_DARK
+    : NON_CANONICAL_ACCENT_SOFT
+
   return (
-    <View className="flex-1">
+    <View className="flex-1" style={{backgroundColor: screenBg}}>
       {(typeof state.showLiveScores === 'undefined' || state.showLiveScores) && (
         <LiveScores />
       )}
-      <View className="px-4 pt-3 pb-2 flex-row items-center justify-between">
-        <View className="flex-1 pr-2">
-          <Text className="text-sm opacity-70">
-            {mini?.is_admin ? 'Admin' : 'Member'} · upcoming matches
-          </Text>
-        </View>
-        {mini?.is_admin ? (
-          <Button
-            small
-            onPress={() =>
-              router.push({
-                pathname: '/teams/mini-leagues/[id]/create-match',
-                params: {id: String(miniLeagueId)},
-              })
-            }>
-            <Text className="text-white">New match</Text>
-          </Button>
-        ) : null}
-      </View>
-      <View className="px-4 pb-2 flex-row flex-wrap gap-2">
-        <Pressable
-          onPress={() =>
-            router.push({
-              pathname: '/teams/mini-leagues/[id]',
-              params: {id: String(miniLeagueId)},
-            })
-          }>
-          <Text style={{color: colors.primary, fontWeight: '600'}}>
-            Manage
-          </Text>
-        </Pressable>
-      </View>
+      <RNView
+        style={{
+          marginHorizontal: 8,
+          marginTop: 12,
+          marginBottom: 10,
+          paddingVertical: 18,
+          paddingHorizontal: 18,
+          borderRadius: 16,
+          backgroundColor: soft,
+          borderWidth: 1,
+          borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
+        }}>
+        <RNView
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+          }}>
+          <RNView style={{flex: 1, minWidth: 0, paddingRight: 4}}>
+            <Text
+              style={{
+                color: NON_CANONICAL_ACCENT,
+                fontSize: 11,
+                fontWeight: '800',
+                letterSpacing: 0.8,
+              }}>
+              UPCOMING
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={{fontSize: 16, fontWeight: '800', marginTop: 4}}>
+              {matches.length} open match{matches.length === 1 ? '' : 'es'}
+            </Text>
+            <Text style={{fontSize: 12, opacity: 0.65, marginTop: 4}}>
+              {mini?.is_admin ? 'Admin' : 'Member'}
+            </Text>
+          </RNView>
+          <RNView
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              paddingLeft: 4,
+            }}>
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: '/teams/mini-leagues/[id]',
+                  params: {id: String(miniLeagueId)},
+                })
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Manage mini league"
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#fff',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
+              }}>
+              <MCI name="cog-outline" size={22} color={NON_CANONICAL_ACCENT} />
+            </Pressable>
+            {mini?.is_admin ? (
+              <Button
+                small
+                onPress={() =>
+                  router.push({
+                    pathname: '/teams/mini-leagues/[id]/create-match',
+                    params: {id: String(miniLeagueId)},
+                  })
+                }>
+                <Text className="text-white">New</Text>
+              </Button>
+            ) : null}
+          </RNView>
+        </RNView>
+      </RNView>
+
       <FlatList
         data={matches}
         keyExtractor={item => String(item.id)}
+        style={{flex: 1, backgroundColor: screenBg}}
         contentContainerStyle={listContentStyle}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={NON_CANONICAL_ACCENT}
+            colors={[NON_CANONICAL_ACCENT]}
+          />
         }
         ListEmptyComponent={
-          <Text className="text-center opacity-60 mt-10 px-4">
-            No open matches in this mini league.
-          </Text>
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginTop: 24,
+              paddingVertical: 36,
+              paddingHorizontal: 20,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderStyle: 'dashed',
+              borderColor: isDark ? '#444' : '#CBD5E1',
+              alignItems: 'center',
+            }}>
+            <MCI
+              name="billiards-rack"
+              size={36}
+              color={NON_CANONICAL_ACCENT}
+              style={{opacity: 0.8, marginBottom: 10}}
+            />
+            <Text style={{fontWeight: '700', fontSize: 16, textAlign: 'center'}}>
+              No open matches
+            </Text>
+            <Text
+              style={{
+                opacity: 0.6,
+                textAlign: 'center',
+                marginTop: 6,
+                lineHeight: 20,
+              }}>
+              {mini?.is_admin
+                ? 'Create a match to get started.'
+                : 'Ask an admin to schedule the next match.'}
+            </Text>
+            {mini?.is_admin ? (
+              <View style={{marginTop: 16}}>
+                <Button
+                  small
+                  onPress={() =>
+                    router.push({
+                      pathname: '/teams/mini-leagues/[id]/create-match',
+                      params: {id: String(miniLeagueId)},
+                    })
+                  }>
+                  <Text className="text-white">Create match</Text>
+                </Button>
+              </View>
+            ) : null}
+          </View>
         }
         renderItem={({item}) => (
-          <Pressable
+          <MiniMatchCard
+            item={item}
+            opening={openingId === item.id}
             onPress={() => openMatch(item.id)}
-            disabled={openingId === item.id}
-            className="mx-4 my-2 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-            <Text className="font-semibold">
-              {item.home_team_name || 'Home'} vs{' '}
-              {item.away_team_name || 'Away'}
-            </Text>
-            <Text className="text-sm opacity-70 mt-1">
-              {formatBangkokDateMed(item.date)} · #{item.id}
-              {openingId === item.id ? ' · opening…' : ''}
-            </Text>
-          </Pressable>
+          />
         )}
       />
     </View>

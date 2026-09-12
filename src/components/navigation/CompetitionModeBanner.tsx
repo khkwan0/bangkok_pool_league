@@ -30,7 +30,7 @@ export function CompetitionModeBanner() {
     <Pressable
       onPress={openCompetitionPicker}
       accessibilityRole="button"
-      accessibilityLabel={`${modeLabel} mode: ${name}. Tap to switch competition`}
+      accessibilityLabel={`${modeLabel} mode: ${name}. Tap to change league`}
       style={{
         backgroundColor: NON_CANONICAL_ACCENT,
         paddingHorizontal: 14,
@@ -50,7 +50,7 @@ export function CompetitionModeBanner() {
             fontWeight: '800',
             letterSpacing: 1,
           }}>
-          {modeLabel} MODE
+          VIEWING MINI LEAGUE
         </Text>
         <Text
           numberOfLines={1}
@@ -59,7 +59,7 @@ export function CompetitionModeBanner() {
         </Text>
       </View>
       <Text style={{color: '#fff', fontSize: 12, fontWeight: '600', opacity: 0.95}}>
-        Switch
+        Change
       </Text>
       <MCI name="swap-horizontal" size={20} color="#fff" />
     </Pressable>

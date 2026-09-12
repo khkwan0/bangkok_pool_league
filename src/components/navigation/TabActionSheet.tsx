@@ -222,7 +222,7 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
           />
           <QuickActionItem
             icon="trophy-outline"
-            label="Switch competition…"
+            label="Change league…"
             iconColor="#E91E63"
             iconBackground="rgba(233, 30, 99, 0.15)"
             onPress={() => {

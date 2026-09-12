@@ -1,12 +1,12 @@
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {validateCompetition} from '@/lib/competitionValidation'
-import {CANONICAL_COMPETITION} from '@/types/competition'
 import React from 'react'
 
 /**
- * Re-validates persisted mini competition when the signed-in user changes.
- * Renders nothing; mount once under the tab shell.
+ * Re-validates persisted mini competition once the signed-in user is known.
+ * Does not clear mode while auth/user is still loading — that was wiping
+ * persisted mini mode on every cold start.
  */
 export function CompetitionValidator() {
   const {state, setCompetition, apiUrl} = useLeagueContext()
@@ -15,24 +15,27 @@ export function CompetitionValidator() {
   apiRef.current = api
   const userId = state.user?.id
   const competition = state.competition
+  const competitionKey =
+    competition.type === 'mini'
+      ? `mini:${competition.id}`
+      : competition.type === 'tournament'
+        ? `tournament:${competition.id}`
+        : 'canonical'
 
   React.useEffect(() => {
     let cancelled = false
+
     async function run() {
-      if (!userId) {
-        if (competition.type !== 'canonical') {
-          await setCompetition(CANONICAL_COMPETITION)
-        }
-        return
-      }
+      // Wait for user — never treat "not loaded yet" as logged out.
+      if (!userId) return
       if (competition.type !== 'mini') return
+
       const res = await apiRef.current.list()
       if (cancelled) return
-      const list =
-        res?.status === 'ok' && Array.isArray(res.data) ? res.data : []
-      // If the list call failed (wrong host / unauthorized), don't wipe selection
-      if (res?.status !== 'ok') return
-      const next = validateCompetition(competition, list)
+      // Network/auth failure: keep persisted selection
+      if (res?.status !== 'ok' || !Array.isArray(res.data)) return
+
+      const next = validateCompetition(competition, res.data)
       if (
         next.type !== competition.type ||
         (next.type === 'mini' &&
@@ -42,16 +45,12 @@ export function CompetitionValidator() {
         await setCompetition(next)
       }
     }
+
     run()
     return () => {
       cancelled = true
     }
-  }, [
-    userId,
-    competition,
-    setCompetition,
-    apiUrl,
-  ])
+  }, [userId, competitionKey, setCompetition, apiUrl])
 
   return null
 }

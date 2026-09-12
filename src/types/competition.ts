@@ -11,7 +11,7 @@ export const COMPETITION_STORAGE_KEY = 'competition_v1'
 export const NON_CANONICAL_ACCENT = '#C2185B'
 export const NON_CANONICAL_ACCENT_SOFT = '#FCE4EC'
 export const NON_CANONICAL_ACCENT_DARK = '#4A0D2A'
-export const NON_CANONICAL_ACCENT_SOFT_DARK = '#3B1024'
+export const NON_CANONICAL_ACCENT_SOFT_DARK = '#5C1A3A'
 
 export function isCanonicalCompetition(competition: Competition): boolean {
   return competition.type === 'canonical'
