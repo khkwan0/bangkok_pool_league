@@ -3,6 +3,10 @@ import Button from '@/components/Button'
 import PlayerStatistics from '@/components/PlayerStatistics'
 import {ThemedView as View} from '@/components/ThemedView'
 import {MiniLeagueStats} from '@/components/mini-leagues/MiniLeagueStats'
+import {
+  MiniSeasonChips,
+  useMiniSeasonSelection,
+} from '@/components/mini-leagues/MiniSeasonChips'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useLeague} from '@/hooks/useLeague'
 import {isMiniCompetition} from '@/types/competition'
@@ -12,7 +16,23 @@ import {useTheme} from 'expo-router/react-navigation'
 import {router} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import {ActivityIndicator} from 'react-native'
+import {ActivityIndicator, View as RNView} from 'react-native'
+
+function MiniStatsWithSeason({miniLeagueId}: {miniLeagueId: number}) {
+  const {seasons, seasonId, setSeasonId} = useMiniSeasonSelection(miniLeagueId)
+  return (
+    <RNView className="flex-1">
+      <RNView className="px-4 pt-3">
+        <MiniSeasonChips
+          seasons={seasons}
+          seasonId={seasonId}
+          onSelect={setSeasonId}
+        />
+      </RNView>
+      <MiniLeagueStats miniLeagueId={miniLeagueId} seasonId={seasonId} />
+    </RNView>
+  )
+}
 
 export default function StatisticsHome(props: any) {
   const league = useLeague()
@@ -43,7 +63,7 @@ export default function StatisticsHome(props: any) {
   }, [user, state.competition])
 
   if (isMiniCompetition(state.competition)) {
-    return <MiniLeagueStats miniLeagueId={state.competition.id} />
+    return <MiniStatsWithSeason miniLeagueId={state.competition.id} />
   }
 
   if (typeof user.id === 'undefined' || user.id === null || !playerInfo) {

@@ -3,6 +3,7 @@ import {MatchInfoDataType} from '@/components/Match/types'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatch} from '@/hooks/useMatch'
+import {useTeams} from '@/hooks/useTeams'
 import {Ionicons, MaterialIcons} from '@expo/vector-icons'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {LinearGradient} from 'expo-linear-gradient'
@@ -57,6 +58,7 @@ export default function MatchCard({
   const {t} = useTranslation()
   const {state} = useLeagueContext()
   const match = useMatch()
+  const teams = useTeams()
   const user = state.user
   const [matchInfo, setMatchInfo] = React.useState<MatchInfoDataType | null>(
     null,
@@ -113,32 +115,91 @@ export default function MatchCard({
   }, [propsMatchInfo])
 
   React.useEffect(() => {
-    if (
-      isMounted &&
-      matchInfo &&
-      typeof user?.teams !== 'undefined' &&
-      user.teams.length > 0
-    ) {
-      let i = 0
-      let found = false
-      while (i < user.teams.length && !found) {
-        if (user.teams[i].id === matchInfo.home_team_id) {
-          const _matchInfo = {...matchInfo}
-          _matchInfo.team_role_id = user.teams[i].team_role_id
-          _matchInfo.player_team_id = matchInfo.home_team_id
-          setMatchInfo({..._matchInfo})
-          found = true
-        } else if (user.teams[i].id === matchInfo.away_team_id) {
-          const _matchInfo = {...matchInfo}
-          _matchInfo.team_role_id = user.teams[i].team_role_id
-          _matchInfo.player_team_id = matchInfo.away_team_id
-          setMatchInfo({..._matchInfo})
-          found = true
+    if (!isMounted || !matchInfo || !user?.id) return
+
+    let cancelled = false
+
+    async function resolveMembership() {
+      // Prefer canonical user.teams (fast path).
+      if (Array.isArray(user.teams) && user.teams.length > 0) {
+        for (const team of user.teams) {
+          if (team.id === matchInfo!.home_team_id) {
+            if (!cancelled) {
+              setMatchInfo({
+                ...matchInfo!,
+                team_role_id: team.team_role_id,
+                player_team_id: matchInfo!.home_team_id,
+              })
+            }
+            return
+          }
+          if (team.id === matchInfo!.away_team_id) {
+            if (!cancelled) {
+              setMatchInfo({
+                ...matchInfo!,
+                team_role_id: team.team_role_id,
+                player_team_id: matchInfo!.away_team_id,
+              })
+            }
+            return
+          }
         }
-        i++
+      }
+
+      // Fallback: look up roster for home/away (covers mini team copies).
+      const homeId = Number(matchInfo!.home_team_id)
+      const awayId = Number(matchInfo!.away_team_id)
+      if (!homeId || !awayId) return
+
+      const [homeRes, awayRes] = await Promise.all([
+        teams.GetPlayers(homeId, true),
+        teams.GetPlayers(awayId, true),
+      ])
+      if (cancelled) return
+
+      const homePlayers = Array.isArray(homeRes?.data)
+        ? homeRes.data
+        : Array.isArray(homeRes)
+          ? homeRes
+          : []
+      const awayPlayers = Array.isArray(awayRes?.data)
+        ? awayRes.data
+        : Array.isArray(awayRes)
+          ? awayRes
+          : []
+
+      const uid = Number(user.id)
+      const onHome = homePlayers.find(
+        (p: {playerId?: number; id?: number; player_id?: number}) =>
+          Number(p.playerId ?? p.player_id ?? p.id) === uid,
+      )
+      if (onHome) {
+        setMatchInfo({
+          ...matchInfo!,
+          team_role_id: Number(onHome.team_role_id ?? 0),
+          player_team_id: homeId,
+        })
+        return
+      }
+      const onAway = awayPlayers.find(
+        (p: {playerId?: number; id?: number; player_id?: number}) =>
+          Number(p.playerId ?? p.player_id ?? p.id) === uid,
+      )
+      if (onAway) {
+        setMatchInfo({
+          ...matchInfo!,
+          team_role_id: Number(onAway.team_role_id ?? 0),
+          player_team_id: awayId,
+        })
       }
     }
-  }, [isMounted])
+
+    resolveMembership()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted, user?.id, matchInfo?.home_team_id, matchInfo?.away_team_id])
 
   function ShowLocation(lat: number | undefined, long: number | undefined) {
     if (typeof lat === 'number' && typeof long === 'number') {
@@ -298,6 +359,23 @@ export default function MatchCard({
                   }}>
                   {formatMatchDate(getMatchDisplayDate(matchInfo))}
                 </Text>
+                {Number((matchInfo as any).tournament_id) > 0 ? (
+                  <Text
+                    style={{
+                      marginTop: 4,
+                      fontSize: width * 0.035,
+                      textAlign: 'center',
+                      color: '#FDE68A',
+                      fontWeight: '700',
+                      textTransform: 'uppercase',
+                      letterSpacing: 1,
+                    }}>
+                    Cup
+                    {(matchInfo as any).division_name
+                      ? ` · ${(matchInfo as any).division_name}`
+                      : ''}
+                  </Text>
+                ) : null}
                 {postponedProposal?.newDate && (
                   <Text
                     style={{
@@ -722,7 +800,7 @@ export default function MatchCard({
                         {t('propose_new_date')}
                       </Text>
                     </Button>
-                  ) : user.id && user.teams.length > 0 ? (
+                  ) : user.id && matchInfo.player_team_id ? (
                     <>
                       <View
                         style={{

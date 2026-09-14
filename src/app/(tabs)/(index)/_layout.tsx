@@ -20,6 +20,20 @@ export default function MatchLayout() {
         name="PostponeScreen/index"
         options={{headerRight: () => <SettingsButton />}}
       />
+      <Stack.Screen
+        name="cups/index"
+        options={{
+          title: 'Cups',
+          headerRight: () => <SettingsButton />,
+        }}
+      />
+      <Stack.Screen
+        name="cups/[id]"
+        options={{
+          title: 'Cup bracket',
+          headerRight: () => <SettingsButton />,
+        }}
+      />
     </Stack>
   )
 }

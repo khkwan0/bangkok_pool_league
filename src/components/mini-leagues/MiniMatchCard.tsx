@@ -24,6 +24,7 @@ export type MiniMatchCardItem = {
   home_frames?: number | null
   away_frames?: number | null
   round?: number | null
+  tournament_id?: number | null
 }
 
 type Props = {
@@ -96,7 +97,20 @@ export function MiniMatchCard({item, onPress, opening}: Props) {
                 {dateLabel}
               </Text>
             </View>
-            <Text style={[styles.matchId, {color: muted}]}>#{item.id}</Text>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+              {Number(item.tournament_id) > 0 ? (
+                <Text
+                  style={{
+                    color: NON_CANONICAL_ACCENT,
+                    fontWeight: '700',
+                    fontSize: 11,
+                    textTransform: 'uppercase',
+                  }}>
+                  Cup
+                </Text>
+              ) : null}
+              <Text style={[styles.matchId, {color: muted}]}>#{item.id}</Text>
+            </View>
           </View>
 
           <View style={styles.teamsRow}>

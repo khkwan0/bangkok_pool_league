@@ -383,6 +383,27 @@ export default function UpcomingMatches(props: any) {
               )}
               {(typeof state.showLiveScores === 'undefined' ||
                 state.showLiveScores) && <LiveScores />}
+              <View className="mx-4 mb-2 mt-1">
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.push('/(tabs)/(index)/cups')}
+                  className="flex-row items-center justify-center py-2.5 px-4 rounded-lg"
+                  style={{
+                    backgroundColor:
+                      colorScheme === 'dark' ? '#2A2A2A' : '#FFFFFF',
+                    borderWidth: 1,
+                    borderColor:
+                      colorScheme === 'dark' ? '#444' : '#E2E8F0',
+                  }}>
+                  <MaterialIcons
+                    name="emoji-events"
+                    size={20}
+                    style={{marginRight: 8}}
+                    color={colorScheme === 'dark' ? '#FDE68A' : '#B45309'}
+                  />
+                  <Text style={{fontWeight: '600'}}>Cups & tournaments</Text>
+                </Pressable>
+              </View>
               {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
                 user.id && (
                   <View className="my-2 mx-2">

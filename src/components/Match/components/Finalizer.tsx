@@ -40,6 +40,18 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
   const homeStyle = `bg-red-400 dark:bg-red-600 mx-4 p-4 items-center rounded-lg`
   const awayStyle = `bg-blue-400 dark:bg-blue-600 mx-4 p-4 item-center rounded-lg`
 
+  function canActForTeam(teamId: number): boolean {
+    const userId = state.user?.id
+    if (state.user?.role_id === 9) return true
+    if (userId == null || !teamId) return false
+    const roster = matchState.teams?.[teamId]
+    if (!roster) return false
+    return (
+      Object.prototype.hasOwnProperty.call(roster, String(userId)) ||
+      Object.prototype.hasOwnProperty.call(roster, userId)
+    )
+  }
+
   async function CanFinalize(side: string) {
     let validCount = 0
     let frameCount = 0
@@ -80,26 +92,16 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
       if (await CanFinalize(side)) {
-        if (
-          (state.user.teams?.some(
-            (team: {id: number}) => team.id === matchState.matchInfo.home_team_id,
-          ) ||
-            state.user.role_id === 9) &&
+        const sideTeamId =
           side === 'home'
-        ) {
-          setHomeLoading(true)
-          FinalizeMatch(side, matchState.matchInfo.home_team_id)
-        } else if (
-          (state.user.teams?.some(
-            (team: {id: number}) => team.id === matchState.matchInfo.away_team_id,
-          ) ||
-            state.user.role_id === 9) &&
-          side === 'away'
-        ) {
-          setAwayLoading(true)
-          FinalizeMatch(side, matchState.matchInfo.away_team_id)
+            ? matchState.matchInfo.home_team_id
+            : matchState.matchInfo.away_team_id
+        if (canActForTeam(sideTeamId) && (side === 'home' || side === 'away')) {
+          if (side === 'home') setHomeLoading(true)
+          else setAwayLoading(true)
+          FinalizeMatch(side, sideTeamId)
         } else {
-          Alert.alert(t('error'), t('not_on_team') + ' ' + side + ' ' + matchInfo.home_team_id + ' ' + JSON.stringify(state.user.teams))
+          Alert.alert(t('error'), t('not_on_team') + ' ' + side)
         }
       } else {
         Alert.alert(t('error'), t('match_not_finalizable'))
@@ -115,24 +117,12 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
 
   function Unfinalize(side: string) {
     try {
-      if (
-        (state.user.teams?.some(
-          (team: {id: number}) => team.id === matchInfo.home_team_id,
-        ) ||
-          state.user.role_id === 9) &&
-        side === 'home'
-      ) {
-        setHomeLoading(true)
-        UnfinalizeMatch(side, matchInfo.home_team_id)
-      } else if (
-        (state.user.teams?.some(
-          (team: {id: number}) => team.id === matchInfo.away_team_id,
-        ) ||
-          state.user.role_id === 9) &&
-        side === 'away'
-      ) {
-        setAwayLoading(true)
-        UnfinalizeMatch(side, matchInfo.away_team_id)
+      const sideTeamId =
+        side === 'home' ? matchInfo.home_team_id : matchInfo.away_team_id
+      if (canActForTeam(sideTeamId) && (side === 'home' || side === 'away')) {
+        if (side === 'home') setHomeLoading(true)
+        else setAwayLoading(true)
+        UnfinalizeMatch(side, sideTeamId)
       }
     } catch (e) {
       console.log(e)

@@ -30,15 +30,36 @@ export const useMiniLeagues = () => {
   const listTeams = async id => Get(`/mini-leagues/${id}/teams`)
   const createTeam = async (id, payload) =>
     Post(`/mini-leagues/${id}/teams`, payload)
+  const listTeamRoster = async (id, teamId) =>
+    Get(`/mini-leagues/${id}/teams/${teamId}`)
+  const addTeamPlayer = async (id, teamId, playerId) =>
+    Post(`/mini-leagues/${id}/teams/${teamId}`, {player_id: playerId})
+  const removeTeamPlayer = async (id, teamId, playerId) =>
+    Delete(`/mini-leagues/${id}/teams/${teamId}`, {player_id: playerId})
   const listMatchFormats = async id => Get(`/mini-leagues/${id}/match-formats`)
   const createMatchFormat = async (id, payload) =>
     Post(`/mini-leagues/${id}/match-formats`, payload)
-  const listMatches = async id => Get(`/mini-leagues/${id}/matches`)
+  const listMatches = async (id, opts) => {
+    const params = new URLSearchParams()
+    if (opts?.season_id) params.set('season_id', String(opts.season_id))
+    const qs = params.toString()
+    return Get(`/mini-leagues/${id}/matches${qs ? `?${qs}` : ''}`)
+  }
   const createMatch = async (id, payload) =>
     Post(`/mini-leagues/${id}/matches`, payload)
 
-  const standings = async id => Get(`/mini-leagues/${id}/standings`)
-  const playerStats = async id => Get(`/mini-leagues/${id}/player-stats`)
+  const standings = async (id, opts) => {
+    const params = new URLSearchParams()
+    if (opts?.season_id) params.set('season_id', String(opts.season_id))
+    const qs = params.toString()
+    return Get(`/mini-leagues/${id}/standings${qs ? `?${qs}` : ''}`)
+  }
+  const playerStats = async (id, opts) => {
+    const params = new URLSearchParams()
+    if (opts?.season_id) params.set('season_id', String(opts.season_id))
+    const qs = params.toString()
+    return Get(`/mini-leagues/${id}/player-stats${qs ? `?${qs}` : ''}`)
+  }
 
   const listSeasons = async id => Get(`/mini-leagues/${id}/seasons`)
   const createSeason = async (id, payload) =>
@@ -61,6 +82,9 @@ export const useMiniLeagues = () => {
     copy,
     listTeams,
     createTeam,
+    listTeamRoster,
+    addTeamPlayer,
+    removeTeamPlayer,
     listMatchFormats,
     createMatchFormat,
     listMatches,

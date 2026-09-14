@@ -30,6 +30,10 @@ export default function TeamsLayout() {
         options={{headerShown: true, title: 'Teams'}}
       />
       <Stack.Screen
+        name="mini-leagues/[id]/team/[teamId]"
+        options={{headerShown: true, title: 'Team roster'}}
+      />
+      <Stack.Screen
         name="mini-leagues/[id]/create-match"
         options={{headerShown: true, title: 'Create match'}}
       />

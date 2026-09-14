@@ -13,7 +13,10 @@ import {
   NON_CANONICAL_ACCENT_SOFT,
   NON_CANONICAL_ACCENT_SOFT_DARK,
 } from '@/types/competition'
-import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {
+  MiniSeasonChips,
+  useMiniSeasonSelection,
+} from '@/components/mini-leagues/MiniSeasonChips'
 import {router} from 'expo-router'
 import React from 'react'
 import {
@@ -46,6 +49,7 @@ type MiniMatch = {
   home_frames?: number | null
   away_frames?: number | null
   round?: number | null
+  tournament_id?: number | null
 }
 
 export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
@@ -68,11 +72,16 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
     paddingTop: 4,
     paddingBottom: 24,
   })
+  const {seasons, seasonId, setSeasonId} = useMiniSeasonSelection(miniLeagueId)
 
   const load = React.useCallback(async () => {
+    const opts =
+      seasonId != null && Number(seasonId) > 0
+        ? {season_id: Number(seasonId)}
+        : undefined
     const [m, mt] = await Promise.all([
       apiRef.current.get(miniLeagueId),
-      apiRef.current.listMatches(miniLeagueId),
+      apiRef.current.listMatches(miniLeagueId, opts),
     ])
     if (m?.status === 'ok') setMini(m.data)
     if (mt?.status === 'ok') {
@@ -83,7 +92,7 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
           .sort((a, b) => String(a.date).localeCompare(String(b.date))),
       )
     }
-  }, [miniLeagueId, apiUrl])
+  }, [miniLeagueId, apiUrl, seasonId])
 
   React.useEffect(() => {
     setLoading(true)
@@ -136,6 +145,29 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
       {(typeof state.showLiveScores === 'undefined' || state.showLiveScores) && (
         <LiveScores />
       )}
+      <RNView style={{paddingHorizontal: 12, paddingTop: 8}}>
+        <Pressable
+          onPress={() => router.push('/(tabs)/(index)/cups')}
+          style={{
+            paddingVertical: 10,
+            paddingHorizontal: 14,
+            borderRadius: 12,
+            backgroundColor: soft,
+            borderWidth: 1,
+            borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
+            marginBottom: 8,
+            alignItems: 'center',
+          }}>
+          <Text style={{fontWeight: '700', color: NON_CANONICAL_ACCENT}}>
+            Cups & tournaments
+          </Text>
+        </Pressable>
+        <MiniSeasonChips
+          seasons={seasons}
+          seasonId={seasonId}
+          onSelect={setSeasonId}
+        />
+      </RNView>
       <RNView
         style={{
           marginHorizontal: 8,

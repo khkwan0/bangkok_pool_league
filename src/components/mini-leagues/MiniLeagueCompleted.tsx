@@ -1,6 +1,10 @@
 import CompletedMatch from '@/components/Completed/CompletedMatch'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {
+  MiniSeasonChips,
+  useMiniSeasonSelection,
+} from '@/components/mini-leagues/MiniSeasonChips'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import React from 'react'
@@ -22,11 +26,16 @@ export function MiniLeagueCompleted({miniLeagueId}: {miniLeagueId: number}) {
   const [refreshing, setRefreshing] = React.useState(false)
   const [isMounted, setIsMounted] = React.useState(false)
   const listContentStyle = useTabListContentContainerStyle()
+  const {seasons, seasonId, setSeasonId} = useMiniSeasonSelection(miniLeagueId)
 
   const load = React.useCallback(async () => {
     setRefreshing(true)
     try {
-      const res = await api.listMatches(miniLeagueId)
+      const opts =
+        seasonId != null && Number(seasonId) > 0
+          ? {season_id: Number(seasonId)}
+          : undefined
+      const res = await api.listMatches(miniLeagueId, opts)
       if (res?.status === 'ok') {
         const completed = (res.data || [])
           .filter((m: any) => Number(m.status_id) === 3)
@@ -48,7 +57,7 @@ export function MiniLeagueCompleted({miniLeagueId}: {miniLeagueId: number}) {
       setIsMounted(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [miniLeagueId])
+  }, [miniLeagueId, seasonId])
 
   React.useEffect(() => {
     load()
@@ -64,6 +73,15 @@ export function MiniLeagueCompleted({miniLeagueId}: {miniLeagueId: number}) {
         <FlatList
           data={matches}
           keyExtractor={item => item.match_id.toString()}
+          ListHeaderComponent={
+            <View className="px-4 pt-2">
+              <MiniSeasonChips
+                seasons={seasons}
+                seasonId={seasonId}
+                onSelect={setSeasonId}
+              />
+            </View>
+          }
           renderItem={({item}) => (
             <View className="bg-white mx-4 mb-4 rounded-xl shadow-sm overflow-hidden">
               <CompletedMatch item={item} />

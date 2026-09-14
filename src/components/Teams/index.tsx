@@ -1,9 +1,11 @@
 import AppCheckbox from '@/components/AppCheckbox'
 import { ThemedText as Text } from '@/components/ThemedText'
 import { ThemedView as CardView } from '@/components/ThemedView'
+import { MiniLeagueTeamsPanel } from '@/components/mini-leagues/MiniLeagueTeamsPanel'
 import { useLeagueContext } from '@/context/LeagueContext'
 import { useLeague } from '@/hooks'
 import { useTabListContentContainerStyle } from '@/hooks/useTabListContentContainerStyle'
+import { isMiniCompetition } from '@/types/competition'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTheme } from "expo-router/react-navigation"
 import { router } from 'expo-router'
@@ -77,6 +79,10 @@ export default function TeamList({fromTabs = false}: {fromTabs?: boolean}) {
   const userTeams = React.useMemo(() => {
     return user?.teams?.map((team: {id: number}) => team.id) || []
   }, [user?.teams])
+
+  if (isMiniCompetition(state.competition)) {
+    return <MiniLeagueTeamsPanel miniLeagueId={state.competition.id} />
+  }
 
   async function getTeams() {
     try {

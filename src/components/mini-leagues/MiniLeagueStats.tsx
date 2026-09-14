@@ -2,10 +2,17 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
+import {router} from 'expo-router'
 import React from 'react'
-import {ActivityIndicator, ScrollView} from 'react-native'
+import {ActivityIndicator, Pressable, ScrollView} from 'react-native'
 
-export function MiniLeagueStats({miniLeagueId}: {miniLeagueId: number}) {
+export function MiniLeagueStats({
+  miniLeagueId,
+  seasonId,
+}: {
+  miniLeagueId: number
+  seasonId?: number | null
+}) {
   const api = useMiniLeagues()
   const {colors} = useTheme()
   const [standings, setStandings] = React.useState<any[]>([])
@@ -16,9 +23,13 @@ export function MiniLeagueStats({miniLeagueId}: {miniLeagueId: number}) {
     let cancelled = false
     async function load() {
       setLoading(true)
+      const opts =
+        seasonId != null && Number(seasonId) > 0
+          ? {season_id: Number(seasonId)}
+          : undefined
       const [s, p] = await Promise.all([
-        api.standings(miniLeagueId),
-        api.playerStats(miniLeagueId),
+        api.standings(miniLeagueId, opts),
+        api.playerStats(miniLeagueId, opts),
       ])
       if (cancelled) return
       if (s?.status === 'ok') setStandings(s.data || [])
@@ -29,7 +40,7 @@ export function MiniLeagueStats({miniLeagueId}: {miniLeagueId: number}) {
     return () => {
       cancelled = true
     }
-  }, [miniLeagueId])
+  }, [miniLeagueId, seasonId])
 
   if (loading) {
     return (
@@ -66,9 +77,23 @@ export function MiniLeagueStats({miniLeagueId}: {miniLeagueId: number}) {
         <Text className="opacity-60">No player stats yet.</Text>
       ) : (
         playerStats.map(p => (
-          <Text key={p.player_id} className="py-2">
-            {p.nickname}: {p.won}/{p.played} ({p.winp}%)
-          </Text>
+          <Pressable
+            key={p.player_id}
+            className="py-2 border-b border-black/10 dark:border-white/10"
+            onPress={() =>
+              router.push({
+                pathname: '/statistics/PlayerStatistics/Player',
+                params: {
+                  params: JSON.stringify({playerId: Number(p.player_id)}),
+                },
+              })
+            }>
+            <Text className="font-medium">{p.nickname}</Text>
+            <Text className="opacity-70 text-sm">
+              {p.won}W / {Math.max(0, Number(p.played) - Number(p.won))}L ·{' '}
+              {p.played} played · {p.winp}%
+            </Text>
+          </Pressable>
         ))
       )}
     </ScrollView>
