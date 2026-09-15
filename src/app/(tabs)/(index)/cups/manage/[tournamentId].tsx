@@ -1,8 +1,11 @@
-import BracketTree, {type BracketSlotRef} from '@/components/cups/BracketTree'
+import BracketTree from '@/components/cups/BracketTree'
 // TEMP: remove with fakeBracketPreview.ts
 import {
   USE_FAKE_32_BRACKET,
+  assignFakeRound1Slot,
   buildFake32PlayerStages,
+  clearFakeRound1Slot,
+  listFakeUnplaced,
   swapFakeRound1Slots,
 } from '@/components/cups/fakeBracketPreview'
 import Button from '@/components/Button'
@@ -40,6 +43,77 @@ type PlayerHit = {
   nickname: string
   firstname: string
   lastname: string
+}
+
+type UnplacedItem = {
+  entry_id: number
+  display_name: string
+  seed?: number
+}
+
+function UnplacedTray({
+  items,
+  selectedId,
+  onSelect,
+  isDark,
+}: {
+  items: UnplacedItem[]
+  selectedId: number | null
+  onSelect: (id: number) => void
+  isDark: boolean
+}) {
+  return (
+    <View style={{marginTop: 12, marginBottom: 8}}>
+      <Text style={{fontSize: 13, fontWeight: '700', marginBottom: 6}}>
+        Unplaced ({items.length})
+      </Text>
+      {items.length === 0 ? (
+        <Text style={{fontSize: 12, opacity: 0.55}}>
+          All entries are placed in round 1.
+        </Text>
+      ) : (
+        <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8}}>
+          {items.map(item => {
+            const selected = selectedId === item.entry_id
+            return (
+              <Pressable
+                key={item.entry_id}
+                onPress={() => onSelect(item.entry_id)}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 8,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: selected
+                    ? isDark
+                      ? '#60a5fa'
+                      : '#2563eb'
+                    : isDark
+                      ? '#333'
+                      : '#e2e8f0',
+                  backgroundColor: selected
+                    ? isDark
+                      ? '#1e3a5f'
+                      : '#dbeafe'
+                    : isDark
+                      ? '#1f1f1f'
+                      : '#fff',
+                }}>
+                <Text style={{fontWeight: '600', fontSize: 13}}>
+                  {item.display_name}
+                </Text>
+              </Pressable>
+            )
+          })}
+        </View>
+      )}
+      {selectedId ? (
+        <Text style={{marginTop: 6, fontSize: 12, opacity: 0.6}}>
+          Tap an empty round-1 slot to place this player.
+        </Text>
+      ) : null}
+    </View>
+  )
 }
 
 export default function CupsManageDetailScreen() {
@@ -83,11 +157,22 @@ export default function CupsManageDetailScreen() {
   const [playersLoaded, setPlayersLoaded] = React.useState(false)
   const [draftStages, setDraftStages] = React.useState<any[]>([])
   const [hasDraft, setHasDraft] = React.useState(false)
+  const [unplaced, setUnplaced] = React.useState<
+    Array<{entry_id: number; display_name: string; seed?: number}>
+  >([])
+  const [selectedUnplacedId, setSelectedUnplacedId] = React.useState<
+    number | null
+  >(null)
   const [fakeStages, setFakeStages] = React.useState(() =>
     buildFake32PlayerStages(),
   )
   const pageScrollRef = React.useRef<ScrollView>(null)
   const pageScrollOffsetRef = React.useRef(0)
+
+  const fakeUnplaced = React.useMemo(
+    () => listFakeUnplaced(fakeStages),
+    [fakeStages],
+  )
 
   const miniId = scope.type === 'mini' ? scope.id : 0
   const scopeType = scope.type
@@ -126,9 +211,12 @@ export default function CupsManageDetailScreen() {
     ) {
       setDraftStages(draftRes.stages)
       setHasDraft(true)
+      setUnplaced(Array.isArray(draftRes.unplaced) ? draftRes.unplaced : [])
     } else {
       setDraftStages([])
       setHasDraft(false)
+      setUnplaced([])
+      setSelectedUnplacedId(null)
     }
     const raw = Array.isArray(playersRes)
       ? playersRes
@@ -288,6 +376,10 @@ export default function CupsManageDetailScreen() {
                   setDraftStages(res.stages)
                   setHasDraft(true)
                 }
+                setUnplaced(
+                  Array.isArray(res.unplaced) ? res.unplaced : [],
+                )
+                setSelectedUnplacedId(null)
                 Alert.alert(
                   'Draft ready',
                   `Preview built (${res.match_count ?? 0} matches). Review then lock in.`,
@@ -320,6 +412,8 @@ export default function CupsManageDetailScreen() {
               if (res?.status === 'ok') {
                 setHasDraft(false)
                 setDraftStages([])
+                setUnplaced([])
+                setSelectedUnplacedId(null)
                 Alert.alert(
                   'Locked',
                   `Bracket locked (${res.match_count ?? 0} matches)`,
@@ -350,6 +444,8 @@ export default function CupsManageDetailScreen() {
             if (res?.status === 'ok') {
               setHasDraft(false)
               setDraftStages([])
+              setUnplaced([])
+              setSelectedUnplacedId(null)
               await load()
             } else {
               Alert.alert('Error', res?.error || 'Discard failed')
@@ -552,13 +648,33 @@ export default function CupsManageDetailScreen() {
             }}>
             FAKE 32-player bracket — delete fakeBracketPreview.ts when done
           </Text>
+          <UnplacedTray
+            items={fakeUnplaced}
+            selectedId={selectedUnplacedId}
+            isDark={isDark}
+            onSelect={id =>
+              setSelectedUnplacedId(prev => (prev === id ? null : id))
+            }
+          />
           <BracketTree
             stages={fakeStages}
             editableRound1
             verticalScrollRef={pageScrollRef}
             verticalScrollOffsetRef={pageScrollOffsetRef}
+            selectedUnplacedEntryId={selectedUnplacedId}
             onSwapRound1Slots={(from, to) => {
               setFakeStages(prev => swapFakeRound1Slots(prev, from, to))
+            }}
+            onClearRound1Slot={slot => {
+              setFakeStages(prev => clearFakeRound1Slot(prev, slot))
+              setSelectedUnplacedId(null)
+            }}
+            onAssignRound1Slot={slot => {
+              if (!selectedUnplacedId) return
+              setFakeStages(prev =>
+                assignFakeRound1Slot(prev, slot, selectedUnplacedId),
+              )
+              setSelectedUnplacedId(null)
             }}
           />
         </View>
@@ -568,15 +684,24 @@ export default function CupsManageDetailScreen() {
             Draft bracket preview
           </Text>
           <Text style={{marginTop: 4, fontSize: 12, opacity: 0.6}}>
-            Preview only — matches are not created until you lock in. Drag
-            round-1 players to rearrange.
+            Preview only — × clears a slot (player goes to Unplaced). Select
+            Unplaced then tap an empty slot to place.
           </Text>
+          <UnplacedTray
+            items={unplaced}
+            selectedId={selectedUnplacedId}
+            isDark={isDark}
+            onSelect={id =>
+              setSelectedUnplacedId(prev => (prev === id ? null : id))
+            }
+          />
           <BracketTree
             stages={draftStages}
             editableRound1
             verticalScrollRef={pageScrollRef}
             verticalScrollOffsetRef={pageScrollOffsetRef}
-            onSwapRound1Slots={async (from: BracketSlotRef, to: BracketSlotRef) => {
+            selectedUnplacedEntryId={selectedUnplacedId}
+            onSwapRound1Slots={async (from, to) => {
               const res = await api.adminSwapBracketDraftSlots(
                 scope,
                 tournamentId,
@@ -585,8 +710,42 @@ export default function CupsManageDetailScreen() {
               )
               if (res?.status === 'ok' && Array.isArray(res.stages)) {
                 setDraftStages(res.stages)
+                setUnplaced(Array.isArray(res.unplaced) ? res.unplaced : [])
               } else {
                 Alert.alert('Swap failed', res?.error || 'Could not update draft')
+              }
+            }}
+            onClearRound1Slot={async slot => {
+              const res = await api.adminClearBracketDraftSlot(
+                scope,
+                tournamentId,
+                slot,
+              )
+              if (res?.status === 'ok' && Array.isArray(res.stages)) {
+                setDraftStages(res.stages)
+                setUnplaced(Array.isArray(res.unplaced) ? res.unplaced : [])
+                setSelectedUnplacedId(null)
+              } else {
+                Alert.alert('Clear failed', res?.error || 'Could not clear slot')
+              }
+            }}
+            onAssignRound1Slot={async slot => {
+              if (!selectedUnplacedId) return
+              const res = await api.adminAssignBracketDraftSlot(
+                scope,
+                tournamentId,
+                slot,
+                selectedUnplacedId,
+              )
+              if (res?.status === 'ok' && Array.isArray(res.stages)) {
+                setDraftStages(res.stages)
+                setUnplaced(Array.isArray(res.unplaced) ? res.unplaced : [])
+                setSelectedUnplacedId(null)
+              } else {
+                Alert.alert(
+                  'Place failed',
+                  res?.error || 'Could not place player',
+                )
               }
             }}
           />

@@ -58,6 +58,10 @@ type Props = {
   /** Enable R1 player drag-swap (draft preview). */
   editableRound1?: boolean
   onSwapRound1Slots?: (from: BracketSlotRef, to: BracketSlotRef) => void
+  onClearRound1Slot?: (slot: BracketSlotRef) => void
+  /** When set, tapping an empty R1 slot assigns this entry. */
+  selectedUnplacedEntryId?: number | null
+  onAssignRound1Slot?: (slot: BracketSlotRef) => void
   /** Parent vertical ScrollView — used for edge auto-scroll while dragging. */
   verticalScrollRef?: React.RefObject<ScrollView | null>
   /** Current vertical contentOffset.y of that ScrollView. */
@@ -112,6 +116,13 @@ type DragCtx = {
 
 const DragContext = React.createContext<DragCtx | null>(null)
 
+type EditCtx = {
+  onClearRound1Slot?: (slot: BracketSlotRef) => void
+  selectedUnplacedEntryId?: number | null
+  onAssignRound1Slot?: (slot: BracketSlotRef) => void
+}
+const EditContext = React.createContext<EditCtx>({})
+
 function slotKey(ref: BracketSlotRef) {
   return `${ref.temp_id}:${ref.slot}`
 }
@@ -148,11 +159,18 @@ function PlayerSlot({
   editable: boolean
 }) {
   const drag = React.useContext(DragContext)
+  const edit = React.useContext(EditContext)
   const viewRef = React.useRef<View>(null)
-  const label =
-    side === 'home'
-      ? match.home_display || 'TBD / BYE'
-      : match.away_display || 'TBD / BYE'
+  const entryId =
+    side === 'home' ? match.home_entry_id ?? null : match.away_entry_id ?? null
+  const isEmpty = entryId == null
+  const label = isEmpty
+    ? edit.selectedUnplacedEntryId
+      ? 'Tap to place'
+      : 'Empty / BYE'
+    : side === 'home'
+      ? match.home_display || `Entry #${entryId}`
+      : match.away_display || `Entry #${entryId}`
   const tempId = match.temp_id
   const slotRef: BracketSlotRef | null = tempId
     ? {temp_id: tempId, slot: side}
@@ -161,17 +179,18 @@ function PlayerSlot({
   const selected = slotRef && drag ? sameSlot(drag.selected, slotRef) : false
   const hovered = slotRef && drag ? drag.hoverKey === key : false
   const isSource = !!(drag?.draggingKey && drag.draggingKey === key)
+  const assignReady = !!(isEmpty && edit.selectedUnplacedEntryId && slotRef)
 
   const dragActionsRef = React.useRef(drag)
   dragActionsRef.current = drag
   const activeSV = useSharedValue(0)
 
   React.useEffect(() => {
-    if (!editable || !tempId || !drag) return
+    if (!editable || !tempId || !drag || isEmpty) return
     const entryRef: BracketSlotRef = {temp_id: tempId, slot: side}
     drag.registerSlot({key, ref: entryRef, label, viewRef})
     return () => drag.unregisterSlot(key)
-  }, [editable, key, label, drag, tempId, side])
+  }, [editable, key, label, drag, tempId, side, isEmpty])
 
   const beginDragJS = React.useCallback(
     (r: BracketSlotRef, x: number, y: number) => {
@@ -187,7 +206,7 @@ function PlayerSlot({
   }, [])
 
   const pan = React.useMemo(() => {
-    if (!editable || !tempId) return Gesture.Pan().enabled(false)
+    if (!editable || !tempId || isEmpty) return Gesture.Pan().enabled(false)
     const captured: BracketSlotRef = {temp_id: tempId, slot: side}
     return Gesture.Pan()
       .activateAfterLongPress(160)
@@ -209,6 +228,7 @@ function PlayerSlot({
     editable,
     tempId,
     side,
+    isEmpty,
     activeSV,
     beginDragJS,
     moveDragJS,
@@ -245,68 +265,114 @@ function PlayerSlot({
     )
   }
 
+  const row = (
+    <Animated.View
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+          minHeight: 30,
+          paddingVertical: 3,
+          paddingHorizontal: 4,
+          borderRadius: 6,
+          backgroundColor: assignReady
+            ? isDark
+              ? '#14532d'
+              : '#dcfce7'
+            : hovered
+              ? isDark
+                ? '#1e3a5f'
+                : '#dbeafe'
+              : selected
+                ? isDark
+                  ? '#3b2f1a'
+                  : '#fef3c7'
+                : isDark
+                  ? '#262626'
+                  : '#f8fafc',
+          borderWidth: 1,
+          borderColor: assignReady
+            ? isDark
+              ? '#4ade80'
+              : '#16a34a'
+            : hovered
+              ? isDark
+                ? '#60a5fa'
+                : '#3b82f6'
+              : selected
+                ? isDark
+                  ? '#fbbf24'
+                  : '#d97706'
+                : isDark
+                  ? '#333'
+                  : '#e2e8f0',
+          borderStyle: isEmpty ? 'dashed' : 'solid',
+          opacity: isSource ? 0.35 : 1,
+        },
+        placeholderStyle,
+      ]}>
+      {!isEmpty ? (
+        <Pressable
+          onPress={() => drag.toggleSelect(slotRef)}
+          hitSlop={6}
+          style={{
+            width: 22,
+            height: 22,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 4,
+            backgroundColor: isDark ? '#334155' : '#e2e8f0',
+          }}>
+          <Text style={{fontSize: 12, opacity: 0.7, fontWeight: '800'}}>
+            ☰
+          </Text>
+        </Pressable>
+      ) : null}
+      <Text
+        style={{
+          flex: 1,
+          fontWeight: isEmpty ? '500' : '600',
+          fontSize: 13,
+          opacity: isEmpty ? 0.55 : 1,
+          fontStyle: isEmpty ? 'italic' : 'normal',
+        }}
+        numberOfLines={1}>
+        {label}
+      </Text>
+      {!isEmpty && edit.onClearRound1Slot ? (
+        <Pressable
+          onPress={() => edit.onClearRound1Slot?.(slotRef)}
+          hitSlop={8}
+          style={{
+            width: 22,
+            height: 22,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 4,
+            backgroundColor: isDark ? '#7f1d1d' : '#fee2e2',
+          }}>
+          <Text style={{fontSize: 14, fontWeight: '800', color: isDark ? '#fecaca' : '#b91c1c'}}>
+            ×
+          </Text>
+        </Pressable>
+      ) : null}
+    </Animated.View>
+  )
+
   return (
     <View ref={viewRef} collapsable={false}>
-      <GestureDetector gesture={pan}>
-        <Animated.View
-          style={[
-            {
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              minHeight: 30,
-              paddingVertical: 3,
-              paddingHorizontal: 4,
-              borderRadius: 6,
-              backgroundColor: hovered
-                ? isDark
-                  ? '#1e3a5f'
-                  : '#dbeafe'
-                : selected
-                  ? isDark
-                    ? '#3b2f1a'
-                    : '#fef3c7'
-                  : isDark
-                    ? '#262626'
-                    : '#f8fafc',
-              borderWidth: 1,
-              borderColor: hovered
-                ? isDark
-                  ? '#60a5fa'
-                  : '#3b82f6'
-                : selected
-                  ? isDark
-                    ? '#fbbf24'
-                    : '#d97706'
-                  : isDark
-                    ? '#333'
-                    : '#e2e8f0',
-              opacity: isSource ? 0.35 : 1,
-            },
-            placeholderStyle,
-          ]}>
-          <Pressable
-            onPress={() => drag.toggleSelect(slotRef)}
-            hitSlop={6}
-            style={{
-              width: 22,
-              height: 22,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 4,
-              backgroundColor: isDark ? '#334155' : '#e2e8f0',
-            }}>
-            <Text style={{fontSize: 12, opacity: 0.7, fontWeight: '800'}}>
-              ☰
-            </Text>
-          </Pressable>
-          <Text
-            style={{flex: 1, fontWeight: '600', fontSize: 13}}
-            numberOfLines={1}>
-            {label}
-          </Text>
-        </Animated.View>
-      </GestureDetector>
+      {isEmpty ? (
+        <Pressable
+          onPress={() => {
+            if (assignReady) edit.onAssignRound1Slot?.(slotRef)
+          }}
+          disabled={!assignReady}>
+          {row}
+        </Pressable>
+      ) : (
+        <GestureDetector gesture={pan}>{row}</GestureDetector>
+      )}
     </View>
   )
 }
@@ -584,6 +650,9 @@ export default function BracketTree({
   openingId,
   editableRound1,
   onSwapRound1Slots,
+  onClearRound1Slot,
+  selectedUnplacedEntryId,
+  onAssignRound1Slot,
   verticalScrollRef,
   verticalScrollOffsetRef,
 }: Props) {
@@ -811,8 +880,9 @@ export default function BracketTree({
             fontSize: 12,
             opacity: 0.65,
           }}>
-          Round 1: long-press a player and drop on another to swap. Hold near
-          the screen edge to auto-scroll.
+          Round 1: long-press to drag-swap, × to clear (moves to Unplaced).
+          Select an unplaced player then tap an empty slot to place them. Hold
+          near the screen edge to auto-scroll.
         </Text>
       ) : null}
       {stages.map(stage => {
@@ -883,6 +953,12 @@ export default function BracketTree({
 
   if (!editableRound1) return tree
 
+  const editCtx: EditCtx = {
+    onClearRound1Slot,
+    selectedUnplacedEntryId,
+    onAssignRound1Slot,
+  }
+
   const chip =
     overlay != null ? (
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -920,22 +996,24 @@ export default function BracketTree({
     ) : null
 
   return (
-    <DragContext.Provider value={dragCtx}>
-      {tree}
-      {overlay ? (
-        Platform.OS === 'ios' ? (
-          <FullWindowOverlay>{chip}</FullWindowOverlay>
-        ) : (
-          <Modal
-            transparent
-            visible
-            animationType="none"
-            statusBarTranslucent
-            onRequestClose={() => {}}>
-            {chip}
-          </Modal>
-        )
-      ) : null}
-    </DragContext.Provider>
+    <EditContext.Provider value={editCtx}>
+      <DragContext.Provider value={dragCtx}>
+        {tree}
+        {overlay ? (
+          Platform.OS === 'ios' ? (
+            <FullWindowOverlay>{chip}</FullWindowOverlay>
+          ) : (
+            <Modal
+              transparent
+              visible
+              animationType="none"
+              statusBarTranslucent
+              onRequestClose={() => {}}>
+              {chip}
+            </Modal>
+          )
+        ) : null}
+      </DragContext.Provider>
+    </EditContext.Provider>
   )
 }
