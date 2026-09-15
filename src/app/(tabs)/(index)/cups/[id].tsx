@@ -2,11 +2,6 @@ import BracketTree, {
   type BracketTreeMatch,
   type BracketTreeStage,
 } from '@/components/cups/BracketTree'
-// TEMP: remove fakeBracketPreview import + USE_FAKE override when done testing
-import {
-  USE_FAKE_32_BRACKET,
-  buildFake32PlayerStages,
-} from '@/components/cups/fakeBracketPreview'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeague} from '@/hooks'
@@ -187,15 +182,8 @@ export default function CupBracketScreen() {
   }
 
   const isDraftOpen = status === 'draft' && openSignup
-  // TEMP: remove with fakeBracketPreview.ts
-  const displayStages = USE_FAKE_32_BRACKET
-    ? buildFake32PlayerStages()
-    : stages
   const showEmpty =
-    !USE_FAKE_32_BRACKET &&
-    !isDraftOpen &&
-    stages.length === 0 &&
-    completed.length === 0
+    !isDraftOpen && stages.length === 0 && completed.length === 0
 
   return (
     <ScrollView
@@ -208,21 +196,6 @@ export default function CupBracketScreen() {
         {(status || 'unknown').replace(/_/g, ' ')}
         {entryCount != null ? ` · ${entryCount} entries` : ''}
       </Text>
-
-      {USE_FAKE_32_BRACKET ? (
-        <Text
-          style={{
-            marginTop: 10,
-            padding: 10,
-            borderRadius: 8,
-            backgroundColor: isDark ? '#422006' : '#fef3c7',
-            color: isDark ? '#fcd34d' : '#92400e',
-            fontSize: 12,
-            fontWeight: '600',
-          }}>
-          FAKE 32-player bracket preview — delete fakeBracketPreview.ts when done
-        </Text>
-      ) : null}
 
       {isDraftOpen ? (
         <View
@@ -271,8 +244,8 @@ export default function CupBracketScreen() {
       ) : null}
 
       <BracketTree
-        stages={displayStages}
-        onMatchPress={USE_FAKE_32_BRACKET ? undefined : openMatch}
+        stages={stages}
+        onMatchPress={openMatch}
         openingId={openingId}
       />
 

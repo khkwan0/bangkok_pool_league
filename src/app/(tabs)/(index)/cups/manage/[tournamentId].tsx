@@ -1,13 +1,4 @@
 import BracketTree from '@/components/cups/BracketTree'
-// TEMP: remove with fakeBracketPreview.ts
-import {
-  USE_FAKE_32_BRACKET,
-  assignFakeRound1Slot,
-  buildFake32PlayerStages,
-  clearFakeRound1Slot,
-  listFakeUnplaced,
-  swapFakeRound1Slots,
-} from '@/components/cups/fakeBracketPreview'
 import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
@@ -163,16 +154,8 @@ export default function CupsManageDetailScreen() {
   const [selectedUnplacedId, setSelectedUnplacedId] = React.useState<
     number | null
   >(null)
-  const [fakeStages, setFakeStages] = React.useState(() =>
-    buildFake32PlayerStages(),
-  )
   const pageScrollRef = React.useRef<ScrollView>(null)
   const pageScrollOffsetRef = React.useRef(0)
-
-  const fakeUnplaced = React.useMemo(
-    () => listFakeUnplaced(fakeStages),
-    [fakeStages],
-  )
 
   const miniId = scope.type === 'mini' ? scope.id : 0
   const scopeType = scope.type
@@ -333,16 +316,21 @@ export default function CupsManageDetailScreen() {
   }
 
   async function toggleOpenSignup(value: boolean) {
+    const previous = Boolean(tournament?.open_signup)
+    // Optimistic: controlled Switch snaps back if we wait for the API.
+    setTournament((t: any) => (t ? {...t, open_signup: value} : t))
     setBusy(true)
     try {
       const res = await api.adminUpdate(scope, tournamentId, {
         open_signup: value,
       })
-      if (res?.status === 'ok') {
-        setTournament((t: any) => (t ? {...t, open_signup: value} : t))
-      } else {
+      if (res?.status !== 'ok') {
+        setTournament((t: any) => (t ? {...t, open_signup: previous} : t))
         Alert.alert('Error', res?.error || 'Could not update signup setting')
       }
+    } catch {
+      setTournament((t: any) => (t ? {...t, open_signup: previous} : t))
+      Alert.alert('Error', 'Could not update signup setting')
     } finally {
       setBusy(false)
     }
@@ -634,51 +622,7 @@ export default function CupsManageDetailScreen() {
         )}
       </View>
 
-      {USE_FAKE_32_BRACKET ? (
-        <View style={{marginTop: 20}}>
-          <Text
-            style={{
-              padding: 10,
-              borderRadius: 8,
-              backgroundColor: isDark ? '#422006' : '#fef3c7',
-              color: isDark ? '#fcd34d' : '#92400e',
-              fontSize: 12,
-              fontWeight: '600',
-              marginBottom: 8,
-            }}>
-            FAKE 32-player bracket — delete fakeBracketPreview.ts when done
-          </Text>
-          <UnplacedTray
-            items={fakeUnplaced}
-            selectedId={selectedUnplacedId}
-            isDark={isDark}
-            onSelect={id =>
-              setSelectedUnplacedId(prev => (prev === id ? null : id))
-            }
-          />
-          <BracketTree
-            stages={fakeStages}
-            editableRound1
-            verticalScrollRef={pageScrollRef}
-            verticalScrollOffsetRef={pageScrollOffsetRef}
-            selectedUnplacedEntryId={selectedUnplacedId}
-            onSwapRound1Slots={(from, to) => {
-              setFakeStages(prev => swapFakeRound1Slots(prev, from, to))
-            }}
-            onClearRound1Slot={slot => {
-              setFakeStages(prev => clearFakeRound1Slot(prev, slot))
-              setSelectedUnplacedId(null)
-            }}
-            onAssignRound1Slot={slot => {
-              if (!selectedUnplacedId) return
-              setFakeStages(prev =>
-                assignFakeRound1Slot(prev, slot, selectedUnplacedId),
-              )
-              setSelectedUnplacedId(null)
-            }}
-          />
-        </View>
-      ) : hasDraft && draftStages.length > 0 ? (
+      {hasDraft && draftStages.length > 0 ? (
         <View style={{marginTop: 20}}>
           <Text style={{fontSize: 17, fontWeight: '700'}}>
             Draft bracket preview
