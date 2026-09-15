@@ -19,5 +19,8 @@ export function useTournaments() {
 
   const getBracket = async (id: number) => Get(`/tournaments/${id}/bracket`)
 
-  return {list, getBracket}
+  const getCompletedMatches = async (id: number) =>
+    Get(`/tournaments/${id}/matches?status=completed`)
+
+  return {list, getBracket, getCompletedMatches}
 }

@@ -6,7 +6,6 @@ import {
   Alert,
   Text,
   View,
-  StyleSheet,
 } from 'react-native'
 import {useTranslation} from 'react-i18next'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -14,18 +13,12 @@ import {useMatchContext} from '@/context/MatchContext'
 import React from 'react'
 import {LinearGradient} from 'expo-linear-gradient'
 import * as Haptics from 'expo-haptics'
+import {
+  frameHasRequiredPlayers,
+  isMatchCompleteByMode,
+  parseMatchFormat,
+} from '@/lib/matchFormat'
 
-function FinalizedButton() {
-  return (
-    <LinearGradient
-      colors={['gold', 'white', 'gold']}
-      start={{x: 0, y: 0}}
-      end={{x: 1, y: 0}}
-      style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text>Finalized</Text>
-    </LinearGradient>
-  )
-}
 export default function Finalizer({matchInfo}: {matchInfo: any}) {
   const colorScheme = useColorScheme()
   const {
@@ -52,46 +45,51 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
     )
   }
 
-  async function CanFinalize(side: string) {
-    let validCount = 0
+  function CanFinalize(_side: string) {
+    const homeId = Number(matchState.matchInfo?.home_team_id ?? 0)
+    const awayId = Number(matchState.matchInfo?.away_team_id ?? 0)
+    const format = parseMatchFormat(
+      matchState.matchInfo?.format ?? matchInfo?.format,
+    )
+    const mode = format?.mode ?? 'full_play'
+
+    let homeWins = 0
+    let awayWins = 0
     let frameCount = 0
+    let validCount = 0
+    let decidedValid = 0
+    let decidedCount = 0
+
     matchState.frameData.forEach((frame: any) => {
-      if (frame.frameNumber !== -1) {
-        frameCount++
-        // singles
-        if (
-          typeof frame.type === 'string' &&
-          frame.type[frame.type.length - 1] === 's'
-        ) {
-          if (
-            frame.awayPlayerIds.length === 1 &&
-            frame.homePlayerIds.length === 1 &&
-            frame.winner > 0
-          ) {
-            validCount++
-          } else {
-            // console.log(frame.frameNumber, frame.type)
-          }
-        } else if (
-          typeof frame.type === 'string' &&
-          frame.type[frame.type.length - 1] === 'd'
-        ) {
-          if (
-            frame.awayPlayerIds.length === 2 &&
-            frame.homePlayerIds.length === 2 &&
-            frame.winner > 0
-          ) {
-            validCount++
-          }
+      if (frame.frameNumber === -1 || frame.type === 'section') return
+      frameCount++
+      const winner = Number(frame.winner ?? 0)
+      if (winner > 0) {
+        decidedCount++
+        if (frameHasRequiredPlayers(frame)) {
+          decidedValid++
+          if (winner === homeId) homeWins++
+          else if (winner === awayId) awayWins++
         }
       }
+      if (frameHasRequiredPlayers(frame)) {
+        validCount++
+      }
     })
-    return validCount === frameCount
+
+    if (mode === 'race_to' || mode === 'best_of') {
+      if (homeWins === awayWins) return false
+      if (!isMatchCompleteByMode(format, homeWins, awayWins)) return false
+      return decidedCount > 0 && decidedValid === decidedCount
+    }
+
+    return frameCount > 0 && validCount === frameCount
   }
+
   async function HandleFinalize(side: string) {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-      if (await CanFinalize(side)) {
+      if (CanFinalize(side)) {
         const sideTeamId =
           side === 'home'
             ? matchState.matchInfo.home_team_id
