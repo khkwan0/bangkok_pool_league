@@ -13,26 +13,37 @@ type SeasonRow = {
 
 export function useMiniSeasonSelection(miniLeagueId: number) {
   const api = useMiniLeagues()
+  const apiRef = React.useRef(api)
+  apiRef.current = api
   const [seasons, setSeasons] = React.useState<SeasonRow[]>([])
   const [seasonId, setSeasonId] = React.useState<number | null>(null)
+  const [ready, setReady] = React.useState(false)
 
   React.useEffect(() => {
     let cancelled = false
+    setReady(false)
+    setSeasonId(null)
     async function load() {
-      const res = await api.listSeasons(miniLeagueId)
-      if (cancelled || res?.status !== 'ok') return
-      const rows: SeasonRow[] = res.data || []
-      setSeasons(rows)
-      const active = rows.find(s => s.is_active) || rows[0]
-      if (active?.id) setSeasonId(Number(active.id))
+      const res = await apiRef.current.listSeasons(miniLeagueId)
+      if (cancelled) return
+      if (res?.status === 'ok') {
+        const rows: SeasonRow[] = res.data || []
+        setSeasons(rows)
+        const active = rows.find(s => s.is_active) || rows[0]
+        setSeasonId(active?.id ? Number(active.id) : null)
+      } else {
+        setSeasons([])
+        setSeasonId(null)
+      }
+      if (!cancelled) setReady(true)
     }
     load()
     return () => {
       cancelled = true
     }
-  }, [api, miniLeagueId])
+  }, [miniLeagueId])
 
-  return {seasons, seasonId, setSeasonId}
+  return {seasons, seasonId, setSeasonId, ready}
 }
 
 export function MiniSeasonChips({

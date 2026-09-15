@@ -41,6 +41,44 @@ export function parseMatchFormat(raw: unknown): DivisionFormatLite | null {
   }
 }
 
+export type FormatSubsection = {
+  frames: number
+  type: string
+  mfpp: number
+}
+
+/**
+ * Normalize match format from API (string JSON, array, or already-parsed object)
+ * into the subsection list used to build the scoresheet.
+ */
+export function resolveFormatSubsections(raw: unknown): FormatSubsection[] {
+  try {
+    let parsed: unknown = raw
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim()
+      if (!trimmed || trimmed === '[]' || trimmed === 'null') return []
+      parsed = JSON.parse(trimmed)
+    }
+    const obj = Array.isArray(parsed) ? parsed[0] : parsed
+    if (!obj || typeof obj !== 'object') return []
+    const subsections = (obj as {subsections?: unknown}).subsections
+    if (!Array.isArray(subsections)) return []
+    return subsections
+      .filter(item => item && typeof item === 'object')
+      .map(item => {
+        const section = item as Record<string, unknown>
+        return {
+          frames: Number(section.frames) || 0,
+          type: String(section.type ?? ''),
+          mfpp: Number(section.mfpp) || 1,
+        }
+      })
+      .filter(section => section.frames > 0)
+  } catch {
+    return []
+  }
+}
+
 /** True if race/best-of should end given current frame wins. */
 export function isMatchCompleteByMode(
   format: DivisionFormatLite | null | undefined,

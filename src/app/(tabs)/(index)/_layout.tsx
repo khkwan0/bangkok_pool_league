@@ -34,6 +34,27 @@ export default function MatchLayout() {
           headerRight: () => <SettingsButton />,
         }}
       />
+      <Stack.Screen
+        name="cups/manage/index"
+        options={{
+          title: 'Manage cups',
+          headerRight: () => <SettingsButton />,
+        }}
+      />
+      <Stack.Screen
+        name="cups/manage/create"
+        options={{
+          title: 'Create cup',
+          headerRight: () => <SettingsButton />,
+        }}
+      />
+      <Stack.Screen
+        name="cups/manage/[tournamentId]"
+        options={{
+          title: 'Cup admin',
+          headerRight: () => <SettingsButton />,
+        }}
+      />
     </Stack>
   )
 }

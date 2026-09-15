@@ -1,3 +1,12 @@
+import BracketTree, {
+  type BracketTreeMatch,
+  type BracketTreeStage,
+} from '@/components/cups/BracketTree'
+// TEMP: remove fakeBracketPreview import + USE_FAKE override when done testing
+import {
+  USE_FAKE_32_BRACKET,
+  buildFake32PlayerStages,
+} from '@/components/cups/fakeBracketPreview'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeague} from '@/hooks'
@@ -6,35 +15,11 @@ import {useLocalSearchParams, useRouter} from 'expo-router'
 import React from 'react'
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   useColorScheme,
 } from 'react-native'
-
-type BracketMatch = {
-  match_id: number
-  bracket_side: string
-  round: number
-  position: number
-  home_display: string | null
-  away_display: string | null
-  status_id: number
-  home_frames: number | null
-  away_frames: number | null
-  date: string | null
-  venue_name?: string | null
-  home_team_id?: number | null
-  away_team_id?: number | null
-  home_tournament_team_id?: number | null
-  away_tournament_team_id?: number | null
-}
-
-type BracketStage = {
-  stage_key: string
-  label: string
-  stage_order: number
-  matches: BracketMatch[]
-}
 
 type CompletedMatch = {
   match_id: number
@@ -52,37 +37,83 @@ export default function CupBracketScreen() {
   const {id} = useLocalSearchParams<{id: string}>()
   const tournamentId = Number(id)
   const api = useTournaments()
+  const apiRef = React.useRef(api)
+  apiRef.current = api
   const league = useLeague()
   const router = useRouter()
   const isDark = useColorScheme() === 'dark'
   const [name, setName] = React.useState('')
   const [status, setStatus] = React.useState('')
-  const [stages, setStages] = React.useState<BracketStage[]>([])
+  const [stages, setStages] = React.useState<BracketTreeStage[]>([])
   const [completed, setCompleted] = React.useState<CompletedMatch[]>([])
   const [loading, setLoading] = React.useState(true)
   const [openingId, setOpeningId] = React.useState<number | null>(null)
+  const [canSignup, setCanSignup] = React.useState(false)
+  const [alreadyEntered, setAlreadyEntered] = React.useState(false)
+  const [openSignup, setOpenSignup] = React.useState(false)
+  const [signingUp, setSigningUp] = React.useState(false)
+  const [entryCount, setEntryCount] = React.useState<number | null>(null)
+
+  const load = React.useCallback(async () => {
+    if (!tournamentId) return
+    const [signupRes, bracketRes, completedRes] = await Promise.all([
+      apiRef.current.getSignupStatus(tournamentId).catch(() => null),
+      apiRef.current.getBracket(tournamentId).catch(() => null),
+      apiRef.current.getCompletedMatches(tournamentId).catch(() => null),
+    ])
+    if (signupRes?.status === 'ok') {
+      setName(signupRes.tournament?.name ?? '')
+      setStatus(signupRes.tournament?.status ?? '')
+      setOpenSignup(Boolean(signupRes.tournament?.open_signup))
+      setCanSignup(Boolean(signupRes.can_signup))
+      setAlreadyEntered(Boolean(signupRes.already_entered))
+      setEntryCount(
+        signupRes.tournament?.entry_count != null
+          ? Number(signupRes.tournament.entry_count)
+          : null,
+      )
+    }
+    if (bracketRes?.status === 'ok') {
+      setName(bracketRes.tournament?.name ?? '')
+      setStatus(bracketRes.tournament?.status ?? '')
+      setStages(Array.isArray(bracketRes.stages) ? bracketRes.stages : [])
+    } else {
+      setStages([])
+    }
+    if (completedRes?.status === 'ok') {
+      setCompleted(
+        Array.isArray(completedRes.matches) ? completedRes.matches : [],
+      )
+    } else {
+      setCompleted([])
+    }
+  }, [tournamentId])
 
   React.useEffect(() => {
-    if (!tournamentId) return
+    let cancelled = false
     setLoading(true)
-    Promise.all([
-      api.getBracket(tournamentId),
-      api.getCompletedMatches(tournamentId),
-    ])
-      .then(([bracketRes, completedRes]: any[]) => {
-        if (bracketRes?.status === 'ok') {
-          setName(bracketRes.tournament?.name ?? '')
-          setStatus(bracketRes.tournament?.status ?? '')
-          setStages(Array.isArray(bracketRes.stages) ? bracketRes.stages : [])
-        }
-        if (completedRes?.status === 'ok') {
-          setCompleted(
-            Array.isArray(completedRes.matches) ? completedRes.matches : [],
-          )
-        }
-      })
-      .finally(() => setLoading(false))
-  }, [tournamentId])
+    load().finally(() => {
+      if (!cancelled) setLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [load])
+
+  async function onSignup() {
+    setSigningUp(true)
+    try {
+      const res = await api.selfSignup(tournamentId)
+      if (res?.status === 'ok') {
+        Alert.alert('Entered', 'You are registered in this cup.')
+        await load()
+      } else {
+        Alert.alert('Could not sign up', res?.error || 'Try again later.')
+      }
+    } finally {
+      setSigningUp(false)
+    }
+  }
 
   function scoringIds(match: {
     home_team_id?: number | null
@@ -97,14 +128,17 @@ export default function CupBracketScreen() {
     return {home, away}
   }
 
-  async function openMatch(match: {
-    match_id: number
-    home_team_id?: number | null
-    away_team_id?: number | null
-    home_tournament_team_id?: number | null
-    away_tournament_team_id?: number | null
-    status_id?: number
-  }) {
+  async function openMatch(
+    match: Pick<
+      BracketTreeMatch,
+      | 'match_id'
+      | 'home_team_id'
+      | 'away_team_id'
+      | 'home_tournament_team_id'
+      | 'away_tournament_team_id'
+      | 'status_id'
+    >,
+  ) {
     const {home, away} = scoringIds(match)
     if (!match.match_id || !home || !away) return
     setOpeningId(match.match_id)
@@ -122,6 +156,9 @@ export default function CupBracketScreen() {
           home_team_id: info.home_team_id || home,
           away_team_id: info.away_team_id || away,
         }
+        const homeId = Number(payload.home_team_id ?? 0)
+        const awayId = Number(payload.away_team_id ?? 0)
+        if (!homeId || !awayId) return
         if (match.status_id === 3 || Number(info.status_id) === 3) {
           router.push({
             pathname: '/completed/Match',
@@ -149,95 +186,95 @@ export default function CupBracketScreen() {
     )
   }
 
+  const isDraftOpen = status === 'draft' && openSignup
+  // TEMP: remove with fakeBracketPreview.ts
+  const displayStages = USE_FAKE_32_BRACKET
+    ? buildFake32PlayerStages()
+    : stages
+  const showEmpty =
+    !USE_FAKE_32_BRACKET &&
+    !isDraftOpen &&
+    stages.length === 0 &&
+    completed.length === 0
+
   return (
     <ScrollView
       horizontal={false}
       contentContainerStyle={{padding: 16, paddingBottom: 40}}>
-      <Text style={{fontSize: 22, fontWeight: '800'}}>{name}</Text>
+      <Text style={{fontSize: 22, fontWeight: '800'}}>
+        {name || `Cup #${tournamentId}`}
+      </Text>
       <Text style={{marginTop: 4, opacity: 0.6, textTransform: 'capitalize'}}>
-        {status.replace(/_/g, ' ')}
+        {(status || 'unknown').replace(/_/g, ' ')}
+        {entryCount != null ? ` · ${entryCount} entries` : ''}
       </Text>
 
-      {stages.map(stage => {
-        const byRound = new Map<number, BracketMatch[]>()
-        for (const m of stage.matches) {
-          const list = byRound.get(m.round) ?? []
-          list.push(m)
-          byRound.set(m.round, list)
-        }
-        const rounds = [...byRound.keys()].sort((a, b) => a - b)
-        return (
-          <View key={stage.stage_key} style={{marginTop: 24}}>
-            <Text style={{fontSize: 17, fontWeight: '700', marginBottom: 10}}>
-              {stage.label}
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {rounds.map(round => (
-                <View key={round} style={{width: 200, marginRight: 12}}>
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      fontWeight: '700',
-                      opacity: 0.5,
-                      marginBottom: 8,
-                      textTransform: 'uppercase',
-                    }}>
-                    Round {round}
-                  </Text>
-                  {(byRound.get(round) ?? [])
-                    .sort((a, b) => a.position - b.position)
-                    .map(m => {
-                      const {home, away} = scoringIds(m)
-                      const playable =
-                        !!home && !!away && m.status_id !== 3
-                      return (
-                        <Pressable
-                          key={m.match_id}
-                          disabled={
-                            (!playable && m.status_id !== 3) ||
-                            openingId === m.match_id
-                          }
-                          onPress={() => openMatch(m)}
-                          style={{
-                            marginBottom: 10,
-                            padding: 12,
-                            borderRadius: 10,
-                            backgroundColor: isDark ? '#1f1f1f' : '#fff',
-                            borderWidth: 1,
-                            borderColor: isDark ? '#333' : '#e2e8f0',
-                            opacity: playable || m.status_id === 3 ? 1 : 0.85,
-                          }}>
-                          <Text style={{fontWeight: '600'}}>
-                            {m.home_display || 'TBD'}
-                            {m.status_id === 3
-                              ? `  ${m.home_frames ?? 0}`
-                              : ''}
-                          </Text>
-                          <Text style={{fontWeight: '600', marginTop: 4}}>
-                            {m.away_display || 'TBD'}
-                            {m.status_id === 3
-                              ? `  ${m.away_frames ?? 0}`
-                              : ''}
-                          </Text>
-                          <Text
-                            style={{
-                              marginTop: 6,
-                              fontSize: 11,
-                              opacity: 0.55,
-                            }}>
-                            {m.bracket_side}
-                            {m.venue_name ? ` · ${m.venue_name}` : ''}
-                            {m.date ? ` · ${String(m.date).slice(0, 10)}` : ''}
-                          </Text>
-                        </Pressable>
-                      )
-                    })}
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-        )
-      })}
+      {USE_FAKE_32_BRACKET ? (
+        <Text
+          style={{
+            marginTop: 10,
+            padding: 10,
+            borderRadius: 8,
+            backgroundColor: isDark ? '#422006' : '#fef3c7',
+            color: isDark ? '#fcd34d' : '#92400e',
+            fontSize: 12,
+            fontWeight: '600',
+          }}>
+          FAKE 32-player bracket preview — delete fakeBracketPreview.ts when done
+        </Text>
+      ) : null}
+
+      {isDraftOpen ? (
+        <View
+          style={{
+            marginTop: 16,
+            padding: 14,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: isDark ? '#334155' : '#bfdbfe',
+            backgroundColor: isDark ? '#0f172a' : '#eff6ff',
+          }}>
+          <Text style={{fontWeight: '700', marginBottom: 6}}>
+            Open for signup
+          </Text>
+          <Text style={{fontSize: 13, opacity: 0.75, marginBottom: 12}}>
+            {alreadyEntered
+              ? 'You are already entered in this cup.'
+              : canSignup
+                ? 'Register yourself before the organizer generates the bracket.'
+                : 'Log in as a player to enter this cup.'}
+          </Text>
+          {canSignup ? (
+            <Pressable
+              disabled={signingUp}
+              onPress={onSignup}
+              style={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                borderRadius: 8,
+                backgroundColor: isDark ? '#2563eb' : '#1d4ed8',
+                opacity: signingUp ? 0.6 : 1,
+              }}>
+              <Text style={{color: '#fff', fontWeight: '700'}}>
+                {signingUp ? 'Signing up…' : 'Sign up'}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+
+      {showEmpty ? (
+        <Text style={{marginTop: 24, opacity: 0.55}}>
+          Bracket is not ready yet.
+        </Text>
+      ) : null}
+
+      <BracketTree
+        stages={displayStages}
+        onMatchPress={USE_FAKE_32_BRACKET ? undefined : openMatch}
+        openingId={openingId}
+      />
 
       {completed.length > 0 ? (
         <View style={{marginTop: 28}}>

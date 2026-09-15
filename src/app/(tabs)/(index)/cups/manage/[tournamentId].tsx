@@ -1,0 +1,845 @@
+import BracketTree, {type BracketSlotRef} from '@/components/cups/BracketTree'
+// TEMP: remove with fakeBracketPreview.ts
+import {
+  USE_FAKE_32_BRACKET,
+  buildFake32PlayerStages,
+  swapFakeRound1Slots,
+} from '@/components/cups/fakeBracketPreview'
+import Button from '@/components/Button'
+import {ThemedText as Text} from '@/components/ThemedText'
+import {ThemedView as View} from '@/components/ThemedView'
+import {useLeagueContext} from '@/context/LeagueContext'
+import {useMiniLeagues} from '@/hooks/useMiniLeagues'
+import {useTournaments} from '@/hooks/useTournaments'
+import {isMiniCompetition} from '@/types/competition'
+import {useFocusEffect, useLocalSearchParams, useRouter} from 'expo-router'
+import React from 'react'
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  Switch,
+  TextInput,
+  useColorScheme,
+  View as RNView,
+} from 'react-native'
+
+type Entry = {
+  id: number
+  participant_type: string
+  seed: number
+  team_id?: number | null
+  player_id?: number | null
+  label?: string | null
+  display_name?: string | null
+}
+
+type PlayerHit = {
+  id: number
+  nickname: string
+  firstname: string
+  lastname: string
+}
+
+export default function CupsManageDetailScreen() {
+  const params = useLocalSearchParams<{
+    tournamentId: string
+    mini_league_id?: string
+  }>()
+  const tournamentId = Number(params.tournamentId)
+  const paramMiniId = Number(params.mini_league_id || 0) || null
+  const {state} = useLeagueContext()
+  const api = useTournaments()
+  const miniApi = useMiniLeagues()
+  const apiRef = React.useRef(api)
+  const miniApiRef = React.useRef(miniApi)
+  apiRef.current = api
+  miniApiRef.current = miniApi
+  const router = useRouter()
+  const isDark = useColorScheme() === 'dark'
+
+  const competition = state.competition
+  const miniLeagueId =
+    paramMiniId ??
+    (isMiniCompetition(competition) ? competition.id : null)
+  const scope =
+    miniLeagueId && miniLeagueId > 0
+      ? {type: 'mini' as const, id: miniLeagueId}
+      : {type: 'site' as const}
+  const isSiteAdmin = Number(state.user?.role_id) === 9
+
+  const [loading, setLoading] = React.useState(true)
+  const [allowed, setAllowed] = React.useState(false)
+  const [busy, setBusy] = React.useState(false)
+  const [tournament, setTournament] = React.useState<any>(null)
+  const [entries, setEntries] = React.useState<Entry[]>([])
+  const [teams, setTeams] = React.useState<any[]>([])
+  const [teamIdInput, setTeamIdInput] = React.useState('')
+  const [playerIdInput, setPlayerIdInput] = React.useState('')
+  const [playerSearch, setPlayerSearch] = React.useState('')
+  const [playerHits, setPlayerHits] = React.useState<PlayerHit[]>([])
+  const [allPlayers, setAllPlayers] = React.useState<PlayerHit[]>([])
+  const [playersLoaded, setPlayersLoaded] = React.useState(false)
+  const [draftStages, setDraftStages] = React.useState<any[]>([])
+  const [hasDraft, setHasDraft] = React.useState(false)
+  const [fakeStages, setFakeStages] = React.useState(() =>
+    buildFake32PlayerStages(),
+  )
+  const pageScrollRef = React.useRef<ScrollView>(null)
+  const pageScrollOffsetRef = React.useRef(0)
+
+  const miniId = scope.type === 'mini' ? scope.id : 0
+  const scopeType = scope.type
+
+  const load = React.useCallback(async () => {
+    if (!tournamentId) return
+    const currentScope =
+      scopeType === 'mini' ? {type: 'mini' as const, id: miniId} : {type: 'site' as const}
+    let canManage = isSiteAdmin
+    if (currentScope.type === 'mini') {
+      const m = await miniApiRef.current.get(miniId)
+      canManage = isSiteAdmin || Boolean(m?.data?.is_admin)
+      if (canManage) {
+        const t = await miniApiRef.current.listTeams(miniId)
+        if (t?.status === 'ok') setTeams(t.data || [])
+      }
+    }
+    if (!canManage) {
+      setAllowed(false)
+      return
+    }
+    setAllowed(true)
+    const [res, playersRes, draftRes] = await Promise.all([
+      apiRef.current.adminGet(currentScope, tournamentId),
+      apiRef.current.listAllPlayers().catch(() => null),
+      apiRef.current.adminGetBracketDraft(currentScope, tournamentId).catch(() => null),
+    ])
+    if (res?.status === 'ok') {
+      setTournament(res.tournament || res)
+      setEntries(Array.isArray(res.entries) ? res.entries : [])
+    }
+    if (
+      draftRes?.status === 'ok' &&
+      draftRes.draft &&
+      Array.isArray(draftRes.stages)
+    ) {
+      setDraftStages(draftRes.stages)
+      setHasDraft(true)
+    } else {
+      setDraftStages([])
+      setHasDraft(false)
+    }
+    const raw = Array.isArray(playersRes)
+      ? playersRes
+      : Array.isArray(playersRes?.data)
+        ? playersRes.data
+        : []
+    setAllPlayers(
+      raw
+        .filter(
+          (p: any) =>
+            Number(p?.id) > 0 && Number(p?.merged_with_id ?? 0) === 0,
+        )
+        .map((p: any) => ({
+          id: Number(p.id),
+          nickname: String(p.nickname || ''),
+          firstname: String(p.firstname || p.first_name || ''),
+          lastname: String(p.lastname || p.last_name || ''),
+        })),
+    )
+    setPlayersLoaded(true)
+  }, [isSiteAdmin, miniId, scopeType, tournamentId])
+
+  const hasHydrated = React.useRef(false)
+
+  React.useEffect(() => {
+    hasHydrated.current = false
+    setLoading(true)
+    setTournament(null)
+  }, [tournamentId, miniId, scopeType])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let cancelled = false
+      if (!hasHydrated.current) setLoading(true)
+      load().finally(() => {
+        if (!cancelled) {
+          hasHydrated.current = true
+          setLoading(false)
+        }
+      })
+      return () => {
+        cancelled = true
+      }
+    }, [load]),
+  )
+
+  async function addTeamEntry(teamId: number) {
+    if (!teamId) return
+    setBusy(true)
+    try {
+      const res = await api.adminAddEntry(scope, tournamentId, {
+        type: 'team',
+        team_id: teamId,
+      })
+      if (res?.status === 'ok') {
+        setTeamIdInput('')
+        await load()
+      } else {
+        Alert.alert('Error', res?.error || 'Could not add team')
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function addPlayerEntry(playerId?: number) {
+    const id = playerId ?? parseInt(playerIdInput, 10)
+    if (!id) {
+      Alert.alert('Player', 'Search and select a player, or enter an id.')
+      return
+    }
+    setBusy(true)
+    try {
+      const res = await api.adminAddEntry(scope, tournamentId, {
+        type: 'player',
+        player_id: id,
+      })
+      if (res?.status === 'ok') {
+        setPlayerIdInput('')
+        setPlayerSearch('')
+        setPlayerHits([])
+        await load()
+      } else {
+        Alert.alert('Error', res?.error || 'Could not add player')
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function onPlayerSearchChange(text: string) {
+    setPlayerSearch(text)
+    const q = text.trim().toLowerCase()
+    if (q.length < 1) {
+      setPlayerHits([])
+      return
+    }
+    const hits = allPlayers
+      .filter(p => {
+        const nick = p.nickname.toLowerCase()
+        const first = p.firstname.toLowerCase()
+        const last = p.lastname.toLowerCase()
+        const full = `${first} ${last}`.trim()
+        return (
+          nick.includes(q) ||
+          first.includes(q) ||
+          last.includes(q) ||
+          full.includes(q) ||
+          String(p.id) === q
+        )
+      })
+      .slice(0, 50)
+    setPlayerHits(hits)
+  }
+
+  async function toggleOpenSignup(value: boolean) {
+    setBusy(true)
+    try {
+      const res = await api.adminUpdate(scope, tournamentId, {
+        open_signup: value,
+      })
+      if (res?.status === 'ok') {
+        setTournament((t: any) => (t ? {...t, open_signup: value} : t))
+      } else {
+        Alert.alert('Error', res?.error || 'Could not update signup setting')
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function removeEntry(entryId: number) {
+    setBusy(true)
+    try {
+      const res = await api.adminRemoveEntry(scope, tournamentId, entryId)
+      if (res?.status === 'ok') await load()
+      else Alert.alert('Error', res?.error || 'Could not remove entry')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function generate() {
+    Alert.alert(
+      'Generate draft bracket?',
+      'Creates a preview only. Matches are not locked until you confirm.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Generate draft',
+          onPress: async () => {
+            setBusy(true)
+            try {
+              const res = await api.adminGenerateBracket(scope, tournamentId)
+              if (res?.status === 'ok') {
+                if (Array.isArray(res.stages)) {
+                  setDraftStages(res.stages)
+                  setHasDraft(true)
+                }
+                Alert.alert(
+                  'Draft ready',
+                  `Preview built (${res.match_count ?? 0} matches). Review then lock in.`,
+                )
+                await load()
+              } else {
+                Alert.alert('Error', res?.error || 'Generate failed')
+              }
+            } finally {
+              setBusy(false)
+            }
+          },
+        },
+      ],
+    )
+  }
+
+  async function confirmDraft() {
+    Alert.alert(
+      'Lock in bracket?',
+      'Creates real matches and locks entries. This cannot be undone without a full reset.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Lock in',
+          onPress: async () => {
+            setBusy(true)
+            try {
+              const res = await api.adminConfirmBracket(scope, tournamentId)
+              if (res?.status === 'ok') {
+                setHasDraft(false)
+                setDraftStages([])
+                Alert.alert(
+                  'Locked',
+                  `Bracket locked (${res.match_count ?? 0} matches)`,
+                )
+                await load()
+              } else {
+                Alert.alert('Error', res?.error || 'Confirm failed')
+              }
+            } finally {
+              setBusy(false)
+            }
+          },
+        },
+      ],
+    )
+  }
+
+  async function discardDraft() {
+    Alert.alert('Discard draft?', 'Removes the preview bracket.', [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'Discard',
+        style: 'destructive',
+        onPress: async () => {
+          setBusy(true)
+          try {
+            const res = await api.adminDiscardBracketDraft(scope, tournamentId)
+            if (res?.status === 'ok') {
+              setHasDraft(false)
+              setDraftStages([])
+              await load()
+            } else {
+              Alert.alert('Error', res?.error || 'Discard failed')
+            }
+          } finally {
+            setBusy(false)
+          }
+        },
+      },
+    ])
+  }
+
+  async function reset() {
+    Alert.alert(
+      'Reset bracket?',
+      'Deletes cup matches and returns the cup to draft.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setBusy(true)
+            try {
+              const res = await api.adminResetBracket(scope, tournamentId)
+              if (res?.status === 'ok') {
+                await load()
+              } else {
+                Alert.alert('Error', res?.error || 'Reset failed')
+              }
+            } finally {
+              setBusy(false)
+            }
+          },
+        },
+      ],
+    )
+  }
+
+  async function removeCup() {
+    Alert.alert('Delete draft cup?', 'This cannot be undone.', [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          setBusy(true)
+          try {
+            const res = await api.adminDelete(scope, tournamentId)
+            if (res?.status === 'ok') {
+              router.back()
+            } else {
+              Alert.alert('Error', res?.error || 'Delete failed')
+            }
+          } finally {
+            setBusy(false)
+          }
+        },
+      },
+    ])
+  }
+
+  if (loading && !hasHydrated.current) {
+    return (
+      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <ActivityIndicator />
+      </View>
+    )
+  }
+
+  if (!allowed || !tournament) {
+    return (
+      <View style={{flex: 1, padding: 24, justifyContent: 'center'}}>
+        <Text style={{textAlign: 'center', opacity: 0.7}}>
+          Cup not found or you do not have access.
+        </Text>
+      </View>
+    )
+  }
+
+  const status = String(tournament.status || '')
+  const isDraft = status === 'draft'
+  const mode = String(tournament.participant_mode || 'team')
+  const openSignup = Boolean(tournament.open_signup)
+  const allowsPlayerEntries = mode === 'player' || mode === 'mixed'
+  const card = {
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: isDark ? '#333' : '#e2e8f0',
+    backgroundColor: isDark ? '#1f1f1f' : '#fff',
+    marginBottom: 10,
+  }
+
+  return (
+    <ScrollView
+      ref={pageScrollRef}
+      style={{flex: 1}}
+      contentContainerStyle={{padding: 16, paddingBottom: 48}}
+      scrollEventThrottle={16}
+      onScroll={e => {
+        pageScrollOffsetRef.current = e.nativeEvent.contentOffset.y
+      }}>
+      <Text style={{fontSize: 22, fontWeight: '800'}}>{tournament.name}</Text>
+      <Text style={{marginTop: 4, opacity: 0.6}}>
+        {status.replace(/_/g, ' ')} · {mode}
+        {tournament.game_type_label ? ` · ${tournament.game_type_label}` : ''}
+      </Text>
+
+      <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 16}}>
+        {!isDraft ? (
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: '/(tabs)/(index)/cups/[id]',
+                params: {id: String(tournamentId)},
+              })
+            }
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              borderRadius: 8,
+              backgroundColor: isDark ? '#334155' : '#e2e8f0',
+            }}>
+            <Text style={{fontWeight: '600'}}>View bracket</Text>
+          </Pressable>
+        ) : null}
+        {isDraft ? (
+          <>
+            <Pressable
+              onPress={generate}
+              disabled={busy}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                borderRadius: 8,
+                backgroundColor: isDark ? '#2563eb' : '#1d4ed8',
+              }}>
+              <Text style={{color: '#fff', fontWeight: '700'}}>
+                {hasDraft ? 'Regenerate draft' : 'Generate draft'}
+              </Text>
+            </Pressable>
+            {hasDraft ? (
+              <>
+                <Pressable
+                  onPress={confirmDraft}
+                  disabled={busy}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    borderRadius: 8,
+                    backgroundColor: isDark ? '#15803d' : '#166534',
+                  }}>
+                  <Text style={{color: '#fff', fontWeight: '700'}}>
+                    Lock in bracket
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={discardDraft}
+                  disabled={busy}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    borderRadius: 8,
+                    backgroundColor: isDark ? '#334155' : '#e2e8f0',
+                  }}>
+                  <Text style={{fontWeight: '600'}}>Discard draft</Text>
+                </Pressable>
+              </>
+            ) : null}
+          </>
+        ) : (
+          <Pressable
+            onPress={reset}
+            disabled={busy}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              borderRadius: 8,
+              backgroundColor: isDark ? '#7f1d1d' : '#b91c1c',
+            }}>
+            <Text style={{color: '#fff', fontWeight: '700'}}>
+              Reset to draft
+            </Text>
+          </Pressable>
+        )}
+      </View>
+
+      {USE_FAKE_32_BRACKET ? (
+        <View style={{marginTop: 20}}>
+          <Text
+            style={{
+              padding: 10,
+              borderRadius: 8,
+              backgroundColor: isDark ? '#422006' : '#fef3c7',
+              color: isDark ? '#fcd34d' : '#92400e',
+              fontSize: 12,
+              fontWeight: '600',
+              marginBottom: 8,
+            }}>
+            FAKE 32-player bracket — delete fakeBracketPreview.ts when done
+          </Text>
+          <BracketTree
+            stages={fakeStages}
+            editableRound1
+            verticalScrollRef={pageScrollRef}
+            verticalScrollOffsetRef={pageScrollOffsetRef}
+            onSwapRound1Slots={(from, to) => {
+              setFakeStages(prev => swapFakeRound1Slots(prev, from, to))
+            }}
+          />
+        </View>
+      ) : hasDraft && draftStages.length > 0 ? (
+        <View style={{marginTop: 20}}>
+          <Text style={{fontSize: 17, fontWeight: '700'}}>
+            Draft bracket preview
+          </Text>
+          <Text style={{marginTop: 4, fontSize: 12, opacity: 0.6}}>
+            Preview only — matches are not created until you lock in. Drag
+            round-1 players to rearrange.
+          </Text>
+          <BracketTree
+            stages={draftStages}
+            editableRound1
+            verticalScrollRef={pageScrollRef}
+            verticalScrollOffsetRef={pageScrollOffsetRef}
+            onSwapRound1Slots={async (from: BracketSlotRef, to: BracketSlotRef) => {
+              const res = await api.adminSwapBracketDraftSlots(
+                scope,
+                tournamentId,
+                from,
+                to,
+              )
+              if (res?.status === 'ok' && Array.isArray(res.stages)) {
+                setDraftStages(res.stages)
+              } else {
+                Alert.alert('Swap failed', res?.error || 'Could not update draft')
+              }
+            }}
+          />
+        </View>
+      ) : null}
+
+      <Text style={{marginTop: 24, fontSize: 17, fontWeight: '700'}}>
+        Entries ({entries.length})
+      </Text>
+
+      {isDraft && allowsPlayerEntries ? (
+        <RNView
+          style={{
+            marginTop: 12,
+            marginBottom: 4,
+            padding: 12,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: isDark ? '#333' : '#e2e8f0',
+            backgroundColor: isDark ? '#1a1a1a' : '#f8fafc',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+          }}>
+          <RNView style={{flex: 1}}>
+            <Text style={{fontWeight: '600'}}>Allow player self-signup</Text>
+            <Text style={{fontSize: 12, opacity: 0.6, marginTop: 4}}>
+              {openSignup
+                ? 'Players can register themselves while this cup is draft.'
+                : 'Only organizers can add entries. Search by name below.'}
+            </Text>
+          </RNView>
+          <Switch
+            value={openSignup}
+            disabled={busy}
+            onValueChange={toggleOpenSignup}
+          />
+        </RNView>
+      ) : null}
+
+      {isDraft ? (
+        <View style={{marginTop: 10, marginBottom: 8}}>
+          {(mode === 'team' || mode === 'mixed') && teams.length > 0 ? (
+            <View style={{marginBottom: 12}}>
+              <Text style={{opacity: 0.65, marginBottom: 6}}>Add mini team</Text>
+              <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                {teams.map((t: any) => (
+                  <Pressable
+                    key={t.id}
+                    disabled={busy}
+                    onPress={() => addTeamEntry(Number(t.id))}
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      marginRight: 8,
+                      marginBottom: 8,
+                      backgroundColor: isDark ? '#333' : '#e2e8f0',
+                    }}>
+                    <Text>{t.name || `Team ${t.id}`}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          ) : null}
+
+          {(mode === 'team' || mode === 'mixed') && (
+            <View style={{flexDirection: 'row', marginBottom: 10}}>
+              <TextInput
+                value={teamIdInput}
+                onChangeText={setTeamIdInput}
+                placeholder="Team ID"
+                keyboardType="number-pad"
+                placeholderTextColor={isDark ? '#666' : '#94a3b8'}
+                style={{
+                  flex: 1,
+                  borderWidth: 1,
+                  borderColor: isDark ? '#333' : '#e2e8f0',
+                  borderRadius: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 8,
+                  marginRight: 8,
+                  color: isDark ? '#fff' : '#0f172a',
+                }}
+              />
+              <Pressable
+                disabled={busy}
+                onPress={() => addTeamEntry(parseInt(teamIdInput, 10))}
+                style={{
+                  paddingHorizontal: 12,
+                  justifyContent: 'center',
+                  borderRadius: 8,
+                  backgroundColor: isDark ? '#2563eb' : '#1d4ed8',
+                }}>
+                <Text style={{color: '#fff', fontWeight: '600'}}>Add</Text>
+              </Pressable>
+            </View>
+          )}
+
+          {allowsPlayerEntries && (
+            <View style={{marginBottom: 10}}>
+              <Text style={{opacity: 0.65, marginBottom: 6}}>
+                Search all players (nickname, first or last name)
+              </Text>
+              <TextInput
+                value={playerSearch}
+                onChangeText={onPlayerSearchChange}
+                placeholder={
+                  playersLoaded
+                    ? 'Type a name…'
+                    : 'Loading player directory…'
+                }
+                editable={playersLoaded}
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholderTextColor={isDark ? '#666' : '#94a3b8'}
+                style={{
+                  borderWidth: 1,
+                  borderColor: isDark ? '#333' : '#e2e8f0',
+                  borderRadius: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 8,
+                  color: isDark ? '#fff' : '#0f172a',
+                  marginBottom: 6,
+                }}
+              />
+              {playerSearch.trim().length > 0 && playerHits.length === 0 ? (
+                <Text style={{fontSize: 12, opacity: 0.5, marginBottom: 6}}>
+                  No matches
+                </Text>
+              ) : null}
+              {playerHits.map(p => (
+                <Pressable
+                  key={p.id}
+                  disabled={busy}
+                  onPress={() => addPlayerEntry(p.id)}
+                  style={{
+                    paddingVertical: 10,
+                    paddingHorizontal: 10,
+                    borderRadius: 8,
+                    marginBottom: 6,
+                    backgroundColor: isDark ? '#262626' : '#f1f5f9',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                  <View style={{flex: 1, paddingRight: 8}}>
+                    <Text style={{fontWeight: '700'}}>
+                      {p.nickname || '—'}{' '}
+                      <Text style={{fontWeight: '600', opacity: 0.55}}>
+                        #{p.id}
+                      </Text>
+                    </Text>
+                    <Text style={{fontSize: 12, opacity: 0.55, marginTop: 2}}>
+                      {[p.firstname, p.lastname].filter(Boolean).join(' ') ||
+                        'No name on file'}
+                    </Text>
+                  </View>
+                  <Text style={{color: isDark ? '#93c5fd' : '#1d4ed8', fontWeight: '600'}}>
+                    Add
+                  </Text>
+                </Pressable>
+              ))}
+              <View style={{flexDirection: 'row', marginTop: 4}}>
+                <TextInput
+                  value={playerIdInput}
+                  onChangeText={setPlayerIdInput}
+                  placeholder="Or player ID"
+                  keyboardType="number-pad"
+                  placeholderTextColor={isDark ? '#666' : '#94a3b8'}
+                  style={{
+                    flex: 1,
+                    borderWidth: 1,
+                    borderColor: isDark ? '#333' : '#e2e8f0',
+                    borderRadius: 8,
+                    paddingHorizontal: 10,
+                    paddingVertical: 8,
+                    marginRight: 8,
+                    color: isDark ? '#fff' : '#0f172a',
+                  }}
+                />
+                <Pressable
+                  disabled={busy}
+                  onPress={() => addPlayerEntry()}
+                  style={{
+                    paddingHorizontal: 12,
+                    justifyContent: 'center',
+                    borderRadius: 8,
+                    backgroundColor: isDark ? '#2563eb' : '#1d4ed8',
+                  }}>
+                  <Text style={{color: '#fff', fontWeight: '600'}}>Add</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+        </View>
+      ) : (
+        <Text style={{marginTop: 8, opacity: 0.55, marginBottom: 8}}>
+          Entries are locked after the bracket is generated.
+        </Text>
+      )}
+
+      {entries.length === 0 ? (
+        <Text style={{opacity: 0.55, marginTop: 8}}>
+          No entries yet.
+          {isDraft && mode === 'team'
+            ? ' Team cups may auto-import teams on create; you can still add more.'
+            : ''}
+        </Text>
+      ) : (
+        entries
+          .slice()
+          .sort((a, b) => a.seed - b.seed)
+          .map(e => (
+            <View key={e.id} style={card}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <View style={{flex: 1, paddingRight: 8}}>
+                  <Text style={{fontWeight: '700'}}>
+                    #{e.seed}{' '}
+                    {e.display_name || e.label || e.participant_type}
+                  </Text>
+                  <Text style={{marginTop: 2, fontSize: 12, opacity: 0.55}}>
+                    {e.participant_type}
+                    {e.team_id ? ` · team ${e.team_id}` : ''}
+                    {e.player_id ? ` · player ${e.player_id}` : ''}
+                  </Text>
+                </View>
+                {isDraft ? (
+                  <Pressable onPress={() => removeEntry(e.id)} disabled={busy}>
+                    <Text style={{color: '#dc2626', fontWeight: '600'}}>
+                      Remove
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            </View>
+          ))
+      )}
+
+      {isDraft ? (
+        <View style={{marginTop: 24}}>
+          <Button onPress={removeCup} disabled={busy}>
+            <Text style={{color: '#fff', fontWeight: '700'}}>
+              Delete draft cup
+            </Text>
+          </Button>
+        </View>
+      ) : null}
+    </ScrollView>
+  )
+}

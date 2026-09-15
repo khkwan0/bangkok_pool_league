@@ -75,8 +75,13 @@ export default function MiniLeagueOverviewScreen() {
   }
 
   const isAdmin = Boolean(mini.is_admin)
-  const links: {label: string; href: string; adminOnly?: boolean; hint?: string}[] =
-    [
+  const links: {
+    label: string
+    href: string
+    adminOnly?: boolean
+    hint?: string
+    params?: Record<string, string>
+  }[] = [
       {
         label: 'Players',
         href: `/teams/mini-leagues/${miniId}/players`,
@@ -92,6 +97,13 @@ export default function MiniLeagueOverviewScreen() {
         href: `/teams/mini-leagues/${miniId}/create-match`,
         adminOnly: true,
         hint: `${matchCount} matches`,
+      },
+      {
+        label: 'Cups',
+        href: '/(tabs)/(index)/cups/manage',
+        adminOnly: true,
+        hint: 'Create & manage tournaments',
+        params: {mini_league_id: String(miniId)},
       },
       {
         label: 'Add from main league',
@@ -132,7 +144,13 @@ export default function MiniLeagueOverviewScreen() {
             .map(l => (
               <Pressable
                 key={l.href}
-                onPress={() => router.push(l.href as any)}
+                onPress={() =>
+                  router.push(
+                    l.params
+                      ? ({pathname: l.href, params: l.params} as any)
+                      : (l.href as any),
+                  )
+                }
                 className="py-4 border-b border-slate-200 dark:border-slate-700 flex-row justify-between items-center">
                 <View>
                   <Text className="font-semibold text-base">{l.label}</Text>

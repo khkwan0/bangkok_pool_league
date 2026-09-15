@@ -68,7 +68,11 @@ export interface Teams {
   GetTeam(teamId: number): Promise<Team>
   GetTeamPlayers(teamId: number): Promise<Player[]>
   GetTeamMatches(teamId: number): Promise<Match[]>
-  GetPlayers(teamid?: number, activeOnly?: boolean): Promise<{data: any[]}>
+  GetPlayers(
+    teamid?: number,
+    activeOnly?: boolean,
+    matchId?: number | null,
+  ): Promise<{data: any[]}>
   AddExistingPlayerToTeam(
     teamId: number,
     playerId: number,

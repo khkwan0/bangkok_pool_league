@@ -150,10 +150,11 @@ export default function MatchCard({
       const homeId = Number(matchInfo!.home_team_id)
       const awayId = Number(matchInfo!.away_team_id)
       if (!homeId || !awayId) return
+      const matchId = Number(matchInfo!.match_id ?? 0) || null
 
       const [homeRes, awayRes] = await Promise.all([
-        teams.GetPlayers(homeId, true),
-        teams.GetPlayers(awayId, true),
+        teams.GetPlayers(homeId, true, matchId),
+        teams.GetPlayers(awayId, true, matchId),
       ])
       if (cancelled) return
 

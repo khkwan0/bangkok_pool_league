@@ -455,13 +455,22 @@ export const MatchProvider = (props: any) => {
   }
 
   async function UpdateTeams() {
-    const {home_team_id, away_team_id} =
+    const {home_team_id, away_team_id, match_id} =
       matchInfoRef.current as MatchInfoDataType
     try {
       if (home_team_id && away_team_id) {
         const _teams: TeamsType = {}
-        const _homePlayers = await teams.GetPlayers(home_team_id, true)
-        const _awayPlayers = await teams.GetPlayers(away_team_id, true)
+        const matchId = match_id != null ? Number(match_id) : null
+        const _homePlayers = await teams.GetPlayers(
+          home_team_id,
+          true,
+          matchId,
+        )
+        const _awayPlayers = await teams.GetPlayers(
+          away_team_id,
+          true,
+          matchId,
+        )
         const homePlayers: TeamsType[string] = {}
         const awayPlayers: TeamsType[string] = {}
         _homePlayers.data.forEach(

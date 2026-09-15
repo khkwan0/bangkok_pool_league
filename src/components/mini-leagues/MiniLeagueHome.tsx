@@ -17,6 +17,7 @@ import {
   MiniSeasonChips,
   useMiniSeasonSelection,
 } from '@/components/mini-leagues/MiniSeasonChips'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {router} from 'expo-router'
 import React from 'react'
 import {
@@ -60,7 +61,9 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
   const screenBg = useThemeColor({}, 'background')
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
-  const {state, StopRefreshUpcoming, apiUrl} = useLeagueContext()
+  const {state, StopRefreshUpcoming} = useLeagueContext()
+  const stopRefreshRef = React.useRef(StopRefreshUpcoming)
+  stopRefreshRef.current = StopRefreshUpcoming
   const [matches, setMatches] = React.useState<MiniMatch[]>([])
   const [mini, setMini] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
@@ -72,7 +75,8 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
     paddingTop: 4,
     paddingBottom: 24,
   })
-  const {seasons, seasonId, setSeasonId} = useMiniSeasonSelection(miniLeagueId)
+  const {seasons, seasonId, setSeasonId, ready: seasonsReady} =
+    useMiniSeasonSelection(miniLeagueId)
 
   const load = React.useCallback(async () => {
     const opts =
@@ -92,17 +96,38 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
           .sort((a, b) => String(a.date).localeCompare(String(b.date))),
       )
     }
-  }, [miniLeagueId, apiUrl, seasonId])
+  }, [miniLeagueId, seasonId])
+
+  const hasLoadedOnce = React.useRef(false)
 
   React.useEffect(() => {
-    setLoading(true)
+    hasLoadedOnce.current = false
+  }, [miniLeagueId])
+
+  React.useEffect(() => {
+    if (!seasonsReady) return
+    let cancelled = false
+    const isInitial = !hasLoadedOnce.current
+    if (isInitial) setLoading(true)
     load().finally(() => {
-      setLoading(false)
-      if (state.refreshUpcoming) {
-        StopRefreshUpcoming()
+      if (!cancelled) {
+        if (isInitial) setLoading(false)
+        hasLoadedOnce.current = true
+        // Clear any pending refresh flag without triggering a second fetch.
+        stopRefreshRef.current()
       }
     })
-  }, [load, state.refreshUpcoming, StopRefreshUpcoming])
+    return () => {
+      cancelled = true
+    }
+  }, [load, seasonsReady])
+
+  React.useEffect(() => {
+    if (!state.refreshUpcoming || !hasLoadedOnce.current) return
+    load().finally(() => {
+      stopRefreshRef.current()
+    })
+  }, [state.refreshUpcoming, load])
 
   async function onRefresh() {
     setRefreshing(true)
@@ -128,198 +153,193 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
     }
   }
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator color={NON_CANONICAL_ACCENT} />
-      </View>
-    )
-  }
-
   const soft = isDark
     ? NON_CANONICAL_ACCENT_SOFT_DARK
     : NON_CANONICAL_ACCENT_SOFT
+  const showLiveScores =
+    typeof state.showLiveScores === 'undefined' || state.showLiveScores
 
   return (
     <View className="flex-1" style={{backgroundColor: screenBg}}>
-      {(typeof state.showLiveScores === 'undefined' || state.showLiveScores) && (
-        <LiveScores />
-      )}
-      <RNView style={{paddingHorizontal: 12, paddingTop: 8}}>
-        <Pressable
-          onPress={() => router.push('/(tabs)/(index)/cups')}
-          style={{
-            paddingVertical: 10,
-            paddingHorizontal: 14,
-            borderRadius: 12,
-            backgroundColor: soft,
-            borderWidth: 1,
-            borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
-            marginBottom: 8,
-            alignItems: 'center',
-          }}>
-          <Text style={{fontWeight: '700', color: NON_CANONICAL_ACCENT}}>
-            Cups & tournaments
-          </Text>
-        </Pressable>
-        <MiniSeasonChips
-          seasons={seasons}
-          seasonId={seasonId}
-          onSelect={setSeasonId}
-        />
-      </RNView>
-      <RNView
-        style={{
-          marginHorizontal: 8,
-          marginTop: 12,
-          marginBottom: 10,
-          paddingVertical: 18,
-          paddingHorizontal: 18,
-          borderRadius: 16,
-          backgroundColor: soft,
-          borderWidth: 1,
-          borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
-        }}>
-        <RNView
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 16,
-          }}>
-          <RNView style={{flex: 1, minWidth: 0, paddingRight: 4}}>
-            <Text
-              style={{
-                color: NON_CANONICAL_ACCENT,
-                fontSize: 11,
-                fontWeight: '800',
-                letterSpacing: 0.8,
-              }}>
-              UPCOMING
-            </Text>
-            <Text
-              numberOfLines={1}
-              style={{fontSize: 16, fontWeight: '800', marginTop: 4}}>
-              {matches.length} open match{matches.length === 1 ? '' : 'es'}
-            </Text>
-            <Text style={{fontSize: 12, opacity: 0.65, marginTop: 4}}>
-              {mini?.is_admin ? 'Admin' : 'Member'}
-            </Text>
+      {showLiveScores ? <LiveScores /> : null}
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={NON_CANONICAL_ACCENT} />
+        </View>
+      ) : (
+        <>
+          <RNView style={{paddingHorizontal: 12, paddingTop: 8}}>
+            <MiniSeasonChips
+              seasons={seasons}
+              seasonId={seasonId}
+              onSelect={setSeasonId}
+            />
           </RNView>
           <RNView
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              paddingLeft: 4,
-            }}>
-            <Pressable
-              onPress={() =>
-                router.push({
-                  pathname: '/teams/mini-leagues/[id]',
-                  params: {id: String(miniLeagueId)},
-                })
-              }
-              accessibilityRole="button"
-              accessibilityLabel="Manage mini league"
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#fff',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 1,
-                borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
-              }}>
-              <MCI name="cog-outline" size={22} color={NON_CANONICAL_ACCENT} />
-            </Pressable>
-            {mini?.is_admin ? (
-              <Button
-                small
-                onPress={() =>
-                  router.push({
-                    pathname: '/teams/mini-leagues/[id]/create-match',
-                    params: {id: String(miniLeagueId)},
-                  })
-                }>
-                <Text className="text-white">New</Text>
-              </Button>
-            ) : null}
-          </RNView>
-        </RNView>
-      </RNView>
-
-      <FlatList
-        data={matches}
-        keyExtractor={item => String(item.id)}
-        style={{flex: 1, backgroundColor: screenBg}}
-        contentContainerStyle={listContentStyle}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={NON_CANONICAL_ACCENT}
-            colors={[NON_CANONICAL_ACCENT]}
-          />
-        }
-        ListEmptyComponent={
-          <View
-            style={{
-              marginHorizontal: 16,
-              marginTop: 24,
-              paddingVertical: 36,
-              paddingHorizontal: 20,
+              marginHorizontal: 8,
+              marginTop: 12,
+              marginBottom: 10,
+              paddingVertical: 18,
+              paddingHorizontal: 18,
               borderRadius: 16,
+              backgroundColor: soft,
               borderWidth: 1,
-              borderStyle: 'dashed',
-              borderColor: isDark ? '#444' : '#CBD5E1',
-              alignItems: 'center',
+              borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
             }}>
-            <MCI
-              name="billiards-rack"
-              size={36}
-              color={NON_CANONICAL_ACCENT}
-              style={{opacity: 0.8, marginBottom: 10}}
-            />
-            <Text style={{fontWeight: '700', fontSize: 16, textAlign: 'center'}}>
-              No open matches
-            </Text>
-            <Text
+            <RNView
               style={{
-                opacity: 0.6,
-                textAlign: 'center',
-                marginTop: 6,
-                lineHeight: 20,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 16,
               }}>
-              {mini?.is_admin
-                ? 'Create a match to get started.'
-                : 'Ask an admin to schedule the next match.'}
-            </Text>
-            {mini?.is_admin ? (
-              <View style={{marginTop: 16}}>
-                <Button
-                  small
+              <RNView style={{flex: 1, minWidth: 0, paddingRight: 4}}>
+                <Text
+                  style={{
+                    color: NON_CANONICAL_ACCENT,
+                    fontSize: 11,
+                    fontWeight: '800',
+                    letterSpacing: 0.8,
+                  }}>
+                  UPCOMING
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={{fontSize: 16, fontWeight: '800', marginTop: 4}}>
+                  {matches.length} open match
+                  {matches.length === 1 ? '' : 'es'}
+                </Text>
+                <Text style={{fontSize: 12, opacity: 0.65, marginTop: 4}}>
+                  {mini?.is_admin ? 'Admin' : 'Member'}
+                </Text>
+              </RNView>
+              <RNView
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  paddingLeft: 4,
+                }}>
+                <Pressable
                   onPress={() =>
                     router.push({
-                      pathname: '/teams/mini-leagues/[id]/create-match',
+                      pathname: '/teams/mini-leagues/[id]',
                       params: {id: String(miniLeagueId)},
                     })
-                  }>
-                  <Text className="text-white">Create match</Text>
-                </Button>
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel="Manage mini league"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#fff',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 1,
+                    borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
+                  }}>
+                  <MCI
+                    name="cog-outline"
+                    size={22}
+                    color={NON_CANONICAL_ACCENT}
+                  />
+                </Pressable>
+                {mini?.is_admin ? (
+                  <Button
+                    small
+                    onPress={() =>
+                      router.push({
+                        pathname: '/teams/mini-leagues/[id]/create-match',
+                        params: {id: String(miniLeagueId)},
+                      })
+                    }>
+                    <Text className="text-white">New</Text>
+                  </Button>
+                ) : null}
+              </RNView>
+            </RNView>
+          </RNView>
+
+          <FlatList
+            data={matches}
+            keyExtractor={item => String(item.id)}
+            style={{flex: 1, backgroundColor: screenBg}}
+            contentContainerStyle={listContentStyle}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={NON_CANONICAL_ACCENT}
+                colors={[NON_CANONICAL_ACCENT]}
+              />
+            }
+            ListEmptyComponent={
+              <View
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 24,
+                  paddingVertical: 36,
+                  paddingHorizontal: 20,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderStyle: 'dashed',
+                  borderColor: isDark ? '#444' : '#CBD5E1',
+                  alignItems: 'center',
+                }}>
+                <MCI
+                  name="billiards-rack"
+                  size={36}
+                  color={NON_CANONICAL_ACCENT}
+                  style={{opacity: 0.8, marginBottom: 10}}
+                />
+                <Text
+                  style={{
+                    fontWeight: '700',
+                    fontSize: 16,
+                    textAlign: 'center',
+                  }}>
+                  No open matches
+                </Text>
+                <Text
+                  style={{
+                    opacity: 0.6,
+                    textAlign: 'center',
+                    marginTop: 6,
+                    lineHeight: 20,
+                  }}>
+                  {mini?.is_admin
+                    ? 'Create a match to get started.'
+                    : 'Ask an admin to schedule the next match.'}
+                </Text>
+                {mini?.is_admin ? (
+                  <View style={{marginTop: 16}}>
+                    <Button
+                      small
+                      onPress={() =>
+                        router.push({
+                          pathname:
+                            '/teams/mini-leagues/[id]/create-match',
+                          params: {id: String(miniLeagueId)},
+                        })
+                      }>
+                      <Text className="text-white">Create match</Text>
+                    </Button>
+                  </View>
+                ) : null}
               </View>
-            ) : null}
-          </View>
-        }
-        renderItem={({item}) => (
-          <MiniMatchCard
-            item={item}
-            opening={openingId === item.id}
-            onPress={() => openMatch(item.id)}
+            }
+            renderItem={({item}) => (
+              <MiniMatchCard
+                item={item}
+                opening={openingId === item.id}
+                onPress={() => openMatch(item.id)}
+              />
+            )}
           />
-        )}
-      />
+        </>
+      )}
     </View>
   )
 }

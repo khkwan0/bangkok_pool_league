@@ -51,11 +51,17 @@ function useMarqueeAnimation(loopWidth: number, active: boolean) {
   const translateX = React.useRef(new Animated.Value(0)).current
   const animationRef = React.useRef<Animated.CompositeAnimation | null>(null)
 
+  const stop = React.useCallback(() => {
+    animationRef.current?.stop()
+    animationRef.current = null
+    translateX.stopAnimation()
+  }, [translateX])
+
   const start = React.useCallback(() => {
     if (loopWidth < MIN_LOOP_WIDTH_PX) {
       return
     }
-    animationRef.current?.stop()
+    stop()
     translateX.setValue(0)
     animationRef.current = Animated.loop(
       Animated.timing(translateX, {
@@ -67,18 +73,18 @@ function useMarqueeAnimation(loopWidth: number, active: boolean) {
       }),
     )
     animationRef.current.start()
-  }, [loopWidth, translateX])
+  }, [loopWidth, stop, translateX])
 
   React.useEffect(() => {
     if (active) {
       start()
     } else {
-      animationRef.current?.stop()
+      stop()
     }
     return () => {
-      animationRef.current?.stop()
+      stop()
     }
-  }, [active, start])
+  }, [active, start, stop])
 
   return {translateX, restart: start}
 }

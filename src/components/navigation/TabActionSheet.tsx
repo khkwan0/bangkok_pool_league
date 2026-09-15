@@ -91,9 +91,9 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
     const hasNewForumPosts = useHasNewForumPosts()
     const hasUnreadAnnouncements = useHasUnreadAnnouncements()
     const competition = state.competition
-    // 7 rows + header; 55% was clipping the last item on iOS.
+    // 8 rows + header; keep sheet tall enough for the last item on iOS.
     const snapPoints = React.useMemo(() => {
-      const estimatedContentHeight = 620 + Math.max(insets.bottom, 16)
+      const estimatedContentHeight = 700 + Math.max(insets.bottom, 16)
       const minOpenRatio = 0.72
       const ratio = Math.min(
         0.88,
@@ -219,6 +219,13 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
                 navigate('/teams')
               }
             }}
+          />
+          <QuickActionItem
+            icon="trophy"
+            label="Cups & tournaments"
+            iconColor="#B45309"
+            iconBackground="rgba(180, 83, 9, 0.15)"
+            onPress={() => navigate('/(tabs)/(index)/cups')}
           />
           <QuickActionItem
             icon="trophy-outline"
