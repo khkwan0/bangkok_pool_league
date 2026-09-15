@@ -1,18 +1,19 @@
 import {ThemedText as Text} from '@/components/ThemedText'
-import {ThemedView as View} from '@/components/ThemedView'
+import {formatBangkokWeekdayDate} from '@/lib/bangkokTime'
 import {
   NON_CANONICAL_ACCENT,
   NON_CANONICAL_ACCENT_SOFT,
   NON_CANONICAL_ACCENT_SOFT_DARK,
 } from '@/types/competition'
-import {formatBangkokWeekdayDate} from '@/lib/bangkokTime'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {LinearGradient} from 'expo-linear-gradient'
 import React from 'react'
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
   useColorScheme,
+  View,
 } from 'react-native'
 
 export type MiniMatchCardItem = {
@@ -38,33 +39,99 @@ function teamLabel(name: string | undefined, fallback: string) {
   return trimmed || fallback
 }
 
+function statusMeta(statusId: number, isDark: boolean) {
+  if (statusId === 3) {
+    return {
+      label: 'Final',
+      icon: 'flag-checkered' as const,
+      color: isDark ? '#fbbf24' : '#b45309',
+      soft: isDark ? 'rgba(251, 191, 36, 0.16)' : 'rgba(180, 83, 9, 0.12)',
+      gradient: isDark
+        ? (['#3d2808', '#24180c', '#1a1a1a'] as const)
+        : (['#fb923c', '#ffedd5', '#fff7ed'] as const),
+      border: isDark ? '#6b4a12' : '#fdba74',
+      stripe: isDark ? '#f59e0b' : '#d97706',
+    }
+  }
+  if (statusId === 2) {
+    return {
+      label: 'Live',
+      icon: 'broadcast' as const,
+      color: isDark ? '#34d399' : '#047857',
+      soft: isDark ? 'rgba(52, 211, 153, 0.16)' : 'rgba(4, 120, 87, 0.12)',
+      gradient: isDark
+        ? (['#0f3d2e', '#13241c', '#1a1a1a'] as const)
+        : (['#34d399', '#d1fae5', '#ecfdf5'] as const),
+      border: isDark ? '#1f5c45' : '#a7f3d0',
+      stripe: isDark ? '#34d399' : '#059669',
+    }
+  }
+  return {
+    label: 'Open',
+    icon: 'clock-outline' as const,
+    color: NON_CANONICAL_ACCENT,
+    soft: isDark
+      ? NON_CANONICAL_ACCENT_SOFT_DARK
+      : NON_CANONICAL_ACCENT_SOFT,
+    gradient: isDark
+      ? (['#7a1f4a', '#3a1528', '#1a1a1a'] as const)
+      : (['#f472b6', '#fce7f3', '#fff1f7'] as const),
+    border: isDark ? '#7a2a4d' : '#f9a8d4',
+    stripe: NON_CANONICAL_ACCENT,
+  }
+}
+
+function Chip({
+  icon,
+  label,
+  color,
+  background,
+}: {
+  icon: React.ComponentProps<typeof MCI>['name']
+  label: string
+  color: string
+  background: string
+}) {
+  return (
+    <View style={[styles.chip, {backgroundColor: background}]}>
+      <MCI name={icon} size={13} color={color} />
+      <Text style={[styles.chipText, {color}]} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
+  )
+}
+
 export function MiniMatchCard({item, onPress, opening}: Props) {
-  const colorScheme = useColorScheme()
-  const isDark = colorScheme === 'dark'
-  const soft = isDark
-    ? NON_CANONICAL_ACCENT_SOFT_DARK
-    : NON_CANONICAL_ACCENT_SOFT
-  const cardBg = isDark ? '#242424' : '#FFFFFF'
-  const muted = isDark ? '#A8A29E' : '#64748B'
+  const isDark = useColorScheme() === 'dark'
+  const theme = statusMeta(Number(item.status_id) || 1, isDark)
+  const muted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(15,23,42,0.55)'
   const home = teamLabel(item.home_team_name, 'Home')
   const away = teamLabel(item.away_team_name, 'Away')
   const dateLabel = formatBangkokWeekdayDate(item.date)
+  const homeScore = Number(item.home_frames) || 0
+  const awayScore = Number(item.away_frames) || 0
   const hasScore =
     item.home_frames != null ||
     item.away_frames != null ||
     Number(item.status_id) === 3
-  const radius = 22
+  const homeWins = hasScore && homeScore > awayScore
+  const awayWins = hasScore && awayScore > homeScore
+  const isTournament = Number(item.tournament_id) > 0
+  // Mini matches default round=1 on create — only show for real tournament brackets.
+  const showRound =
+    isTournament && item.round != null && Number(item.round) > 0
+  const radius = 18
 
   return (
-    // Outer wrapper keeps the shadow; matching bg + radius so corners round cleanly.
     <View
       style={[
         styles.shadowWrap,
         {
           borderRadius: radius,
-          backgroundColor: cardBg,
-          shadowColor: isDark ? '#000' : '#0F172A',
-          shadowOpacity: isDark ? 0.45 : 0.14,
+          backgroundColor: isDark ? '#1a1a1a' : '#FFFFFF',
+          shadowColor: isDark ? '#000000' : '#0F172A',
+          shadowOpacity: isDark ? 0.5 : 0.16,
           shadowRadius: 12,
           shadowOffset: {width: 0, height: 6},
           elevation: 6,
@@ -75,99 +142,174 @@ export function MiniMatchCard({item, onPress, opening}: Props) {
         disabled={opening}
         accessibilityRole="button"
         accessibilityLabel={`${home} versus ${away}, ${dateLabel}`}
-        style={({pressed}) => [
-          styles.card,
-          {
+        style={({pressed}) => ({
+          borderRadius: radius,
+          overflow: 'hidden',
+          opacity: opening ? 0.75 : 1,
+          transform: [{scale: pressed && !opening ? 0.985 : 1}],
+        })}>
+        <LinearGradient
+          colors={[...theme.gradient]}
+          locations={[0, 0.55, 1]}
+          start={{x: 0, y: 0.5}}
+          end={{x: 1, y: 0.5}}
+          style={{
             borderRadius: radius,
-            backgroundColor: cardBg,
-            borderColor: isDark ? '#3F3F46' : '#E2E8F0',
-            opacity: opening ? 0.75 : 1,
-            transform: [{scale: pressed && !opening ? 0.985 : 1}],
-          },
-        ]}>
-        <View style={[styles.accentBar, {borderTopLeftRadius: radius, borderTopRightRadius: radius}]} />
+            borderWidth: 1,
+            borderColor: theme.border,
+          }}>
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 4,
+              backgroundColor: theme.stripe,
+            }}
+          />
 
-        <View style={styles.body}>
-          <View style={styles.metaRow}>
-            <View style={[styles.dateChip, {backgroundColor: soft}]}>
-              <MCI name="calendar" size={14} color={NON_CANONICAL_ACCENT} />
-              <Text
-                numberOfLines={1}
-                style={styles.dateText}>
-                {dateLabel}
-              </Text>
-            </View>
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
-              {Number(item.tournament_id) > 0 ? (
-                <Text
-                  style={{
-                    color: NON_CANONICAL_ACCENT,
-                    fontWeight: '700',
-                    fontSize: 11,
-                    textTransform: 'uppercase',
-                  }}>
-                  Tournament
-                </Text>
-              ) : null}
+          <View style={styles.body}>
+            <View style={styles.metaRow}>
+              <View style={styles.chipsWrap}>
+                <Chip
+                  icon="calendar"
+                  label={dateLabel}
+                  color={theme.color}
+                  background={theme.soft}
+                />
+                <Chip
+                  icon={theme.icon}
+                  label={theme.label}
+                  color={theme.color}
+                  background={theme.soft}
+                />
+                {showRound ? (
+                  <Chip
+                    icon="tournament"
+                    label={`R${item.round}`}
+                    color={muted}
+                    background={
+                      isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.06)'
+                    }
+                  />
+                ) : null}
+                {isTournament ? (
+                  <Chip
+                    icon="trophy-outline"
+                    label="Tournament"
+                    color={isDark ? '#fbbf24' : '#b45309'}
+                    background={
+                      isDark
+                        ? 'rgba(251, 191, 36, 0.16)'
+                        : 'rgba(180, 83, 9, 0.12)'
+                    }
+                  />
+                ) : null}
+              </View>
               <Text style={[styles.matchId, {color: muted}]}>#{item.id}</Text>
             </View>
-          </View>
 
-          <View style={styles.teamsRow}>
-            <View style={styles.teamCol}>
-              <Text numberOfLines={2} style={styles.teamName}>
-                {home}
-              </Text>
-              {hasScore ? (
-                <Text style={styles.score}>{Number(item.home_frames) || 0}</Text>
-              ) : null}
-            </View>
+            <View style={styles.teamsRow}>
+              <View style={styles.teamCol}>
+                <Text
+                  numberOfLines={2}
+                  style={[
+                    styles.teamName,
+                    homeWins ? {color: theme.color} : null,
+                  ]}>
+                  {home}
+                </Text>
+                {hasScore ? (
+                  <Text
+                    style={[
+                      styles.score,
+                      {
+                        color: homeWins
+                          ? theme.color
+                          : isDark
+                            ? '#e5e5e5'
+                            : '#0f172a',
+                      },
+                    ]}>
+                    {homeScore}
+                  </Text>
+                ) : null}
+              </View>
 
-            <View style={styles.vsCol}>
-              <View style={[styles.vsBadge, {backgroundColor: soft}]}>
-                <Text style={styles.vsText}>VS</Text>
+              <View style={styles.vsCol}>
+                <View style={[styles.vsBadge, {backgroundColor: theme.soft}]}>
+                  <MCI name="billiards-rack" size={18} color={theme.color} />
+                </View>
+                {!hasScore ? (
+                  <Text style={[styles.vsHint, {color: muted}]}>VS</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.teamCol}>
+                <Text
+                  numberOfLines={2}
+                  style={[
+                    styles.teamName,
+                    awayWins ? {color: theme.color} : null,
+                  ]}>
+                  {away}
+                </Text>
+                {hasScore ? (
+                  <Text
+                    style={[
+                      styles.score,
+                      {
+                        color: awayWins
+                          ? theme.color
+                          : isDark
+                            ? '#e5e5e5'
+                            : '#0f172a',
+                      },
+                    ]}>
+                    {awayScore}
+                  </Text>
+                ) : null}
               </View>
             </View>
 
-            <View style={styles.teamCol}>
-              <Text numberOfLines={2} style={styles.teamName}>
-                {away}
-              </Text>
-              {hasScore ? (
-                <Text style={styles.score}>{Number(item.away_frames) || 0}</Text>
-              ) : null}
-            </View>
-          </View>
-
-          <View
-            style={[
-              styles.footer,
-              {borderTopColor: isDark ? '#333' : '#F1F5F9'},
-            ]}>
-            <View style={styles.statusRow}>
-              <View style={styles.statusDot} />
-              <Text style={[styles.statusText, {color: muted}]}>
-                {Number(item.status_id) === 1 ? 'Open' : 'Match'}
-                {item.round != null ? ` · Round ${item.round}` : ''}
-              </Text>
-            </View>
-            {opening ? (
+            <View
+              style={[
+                styles.footer,
+                {
+                  borderTopColor: isDark
+                    ? 'rgba(255,255,255,0.08)'
+                    : 'rgba(15,23,42,0.08)',
+                },
+              ]}>
               <View style={styles.statusRow}>
-                <ActivityIndicator size="small" color={NON_CANONICAL_ACCENT} />
-                <Text style={styles.ctaText}>Opening…</Text>
-              </View>
-            ) : (
-              <View style={styles.statusRow}>
-                <Text style={styles.ctaText}>Scoresheet</Text>
                 <MCI
-                  name="chevron-right"
-                  size={18}
-                  color={NON_CANONICAL_ACCENT}
+                  name="clipboard-text-outline"
+                  size={16}
+                  color={theme.color}
                 />
+                <Text style={[styles.statusText, {color: muted}]}>
+                  {isTournament ? 'Tournament match' : 'Mini league match'}
+                </Text>
               </View>
-            )}
+              {opening ? (
+                <View style={styles.statusRow}>
+                  <ActivityIndicator size="small" color={theme.color} />
+                  <Text style={[styles.ctaText, {color: theme.color}]}>
+                    Opening…
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.statusRow}>
+                  <Text style={[styles.ctaText, {color: theme.color}]}>
+                    Scoresheet
+                  </Text>
+                  <MCI name="chevron-right" size={18} color={theme.color} />
+                </View>
+              )}
+            </View>
           </View>
-        </View>
+        </LinearGradient>
       </Pressable>
     </View>
   )
@@ -178,42 +320,43 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 8,
   },
-  card: {
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-  accentBar: {
-    height: 5,
-    backgroundColor: NON_CANONICAL_ACCENT,
-  },
   body: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     paddingTop: 14,
-    paddingBottom: 16,
+    paddingBottom: 14,
+    paddingLeft: 18,
+    backgroundColor: 'transparent',
   },
   metaRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    gap: 8,
+    marginBottom: 14,
   },
-  dateChip: {
+  chipsWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     borderRadius: 999,
-    maxWidth: '75%',
+    maxWidth: '100%',
   },
-  dateText: {
-    color: NON_CANONICAL_ACCENT,
-    fontSize: 12,
+  chipText: {
+    fontSize: 11,
     fontWeight: '700',
   },
   matchId: {
     fontSize: 12,
     fontWeight: '600',
+    marginTop: 4,
   },
   teamsRow: {
     flexDirection: 'row',
@@ -226,36 +369,35 @@ const styles = StyleSheet.create({
   },
   teamName: {
     textAlign: 'center',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
-    lineHeight: 22,
+    lineHeight: 21,
   },
   score: {
     marginTop: 8,
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '800',
-    color: NON_CANONICAL_ACCENT,
   },
   vsCol: {
     width: 56,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
   },
   vsBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  vsText: {
-    color: NON_CANONICAL_ACCENT,
-    fontSize: 11,
+  vsHint: {
+    fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.6,
+    letterSpacing: 0.8,
   },
   footer: {
-    marginTop: 16,
+    marginTop: 14,
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
@@ -267,18 +409,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#22C55E',
-  },
   statusText: {
     fontSize: 12,
     fontWeight: '600',
   },
   ctaText: {
-    color: NON_CANONICAL_ACCENT,
     fontSize: 12,
     fontWeight: '700',
   },
