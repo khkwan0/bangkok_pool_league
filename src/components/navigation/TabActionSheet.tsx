@@ -222,7 +222,7 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
           />
           <QuickActionItem
             icon="trophy"
-            label="Cups & tournaments"
+            label="Tournaments"
             iconColor="#B45309"
             iconBackground="rgba(180, 83, 9, 0.15)"
             onPress={() => navigate('/(tabs)/(index)/cups')}

@@ -449,7 +449,7 @@ export default function CupsManageDetailScreen() {
   async function reset() {
     Alert.alert(
       'Reset bracket?',
-      'Deletes cup matches and returns the cup to draft.',
+      'Deletes tournament matches and returns the tournament to draft.',
       [
         {text: 'Cancel', style: 'cancel'},
         {
@@ -474,7 +474,7 @@ export default function CupsManageDetailScreen() {
   }
 
   async function removeCup() {
-    Alert.alert('Delete draft cup?', 'This cannot be undone.', [
+    Alert.alert('Delete draft tournament?', 'This cannot be undone.', [
       {text: 'Cancel', style: 'cancel'},
       {
         text: 'Delete',
@@ -508,7 +508,7 @@ export default function CupsManageDetailScreen() {
     return (
       <View style={{flex: 1, padding: 24, justifyContent: 'center'}}>
         <Text style={{textAlign: 'center', opacity: 0.7}}>
-          Cup not found or you do not have access.
+          Tournament not found or you do not have access.
         </Text>
       </View>
     )
@@ -718,7 +718,7 @@ export default function CupsManageDetailScreen() {
             <Text style={{fontWeight: '600'}}>Allow player self-signup</Text>
             <Text style={{fontSize: 12, opacity: 0.6, marginTop: 4}}>
               {openSignup
-                ? 'Players can register themselves while this cup is draft.'
+                ? 'Players can register themselves while this tournament is draft.'
                 : 'Only organizers can add entries. Search by name below.'}
             </Text>
           </RNView>
@@ -896,7 +896,7 @@ export default function CupsManageDetailScreen() {
         <Text style={{opacity: 0.55, marginTop: 8}}>
           No entries yet.
           {isDraft && mode === 'team'
-            ? ' Team cups may auto-import teams on create; you can still add more.'
+            ? ' Team tournaments may auto-import teams on create; you can still add more.'
             : ''}
         </Text>
       ) : (
@@ -938,7 +938,7 @@ export default function CupsManageDetailScreen() {
         <View style={{marginTop: 24}}>
           <Button onPress={removeCup} disabled={busy}>
             <Text style={{color: '#fff', fontWeight: '700'}}>
-              Delete draft cup
+              Delete draft tournament
             </Text>
           </Button>
         </View>

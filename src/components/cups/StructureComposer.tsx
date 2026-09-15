@@ -16,7 +16,7 @@ import {
 } from 'react-native'
 
 const STAGE_GRAPH_HELP =
-  'The stage graph is the cup’s bracket blueprint: ordered stages (knockout, groups, consolation, final) plus advancement edges that say who moves where (winners, round losers, or group placements). Presets fill this in for you — edit stages and edges to rename Plate/Spoon, add consolation paths, or change how groups feed the knockout.'
+  'The stage graph is the tournament’s bracket blueprint: ordered stages (knockout, groups, consolation, final) plus advancement edges that say who moves where (winners, round losers, or group placements). Presets fill this in for you — edit stages and edges to rename Plate/Spoon, add consolation paths, or change how groups feed the knockout.'
 
 const STAGE_KINDS: {value: StageKind; label: string}[] = [
   {value: 'single_elimination', label: 'Single elimination'},

@@ -371,7 +371,7 @@ export default function MatchCard({
                       textTransform: 'uppercase',
                       letterSpacing: 1,
                     }}>
-                    Cup
+                    Tournament
                     {(matchInfo as any).division_name
                       ? ` · ${(matchInfo as any).division_name}`
                       : ''}

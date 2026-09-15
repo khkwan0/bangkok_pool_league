@@ -100,7 +100,7 @@ export default function CupBracketScreen() {
     try {
       const res = await api.selfSignup(tournamentId)
       if (res?.status === 'ok') {
-        Alert.alert('Entered', 'You are registered in this cup.')
+        Alert.alert('Entered', 'You are registered in this tournament.')
         await load()
       } else {
         Alert.alert('Could not sign up', res?.error || 'Try again later.')
@@ -190,7 +190,7 @@ export default function CupBracketScreen() {
       horizontal={false}
       contentContainerStyle={{padding: 16, paddingBottom: 40}}>
       <Text style={{fontSize: 22, fontWeight: '800'}}>
-        {name || `Cup #${tournamentId}`}
+        {name || `Tournament #${tournamentId}`}
       </Text>
       <Text style={{marginTop: 4, opacity: 0.6, textTransform: 'capitalize'}}>
         {(status || 'unknown').replace(/_/g, ' ')}
@@ -212,10 +212,10 @@ export default function CupBracketScreen() {
           </Text>
           <Text style={{fontSize: 13, opacity: 0.75, marginBottom: 12}}>
             {alreadyEntered
-              ? 'You are already entered in this cup.'
+              ? 'You are already entered in this tournament.'
               : canSignup
                 ? 'Register yourself before the organizer generates the bracket.'
-                : 'Log in as a player to enter this cup.'}
+                : 'Log in as a player to enter this tournament.'}
           </Text>
           {canSignup ? (
             <Pressable

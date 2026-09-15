@@ -1,9 +1,12 @@
+import {TournamentListCard} from '@/components/cups/TournamentListCard'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTournaments} from '@/hooks/useTournaments'
 import {isMiniCompetition} from '@/types/competition'
+import Ionicons from '@expo/vector-icons/Ionicons'
+import {LinearGradient} from 'expo-linear-gradient'
 import {useRouter} from 'expo-router'
 import React from 'react'
 import {
@@ -90,22 +93,32 @@ export default function CupsListScreen() {
                 params: isMini ? {mini_league_id: String(miniId)} : {},
               })
             }
-            style={{
-              paddingVertical: 12,
-              borderRadius: 10,
-              alignItems: 'center',
-              backgroundColor: isDark ? '#2563eb' : '#1d4ed8',
-            }}>
-            <Text style={{color: '#fff', fontWeight: '700'}}>
-              Manage cups
-            </Text>
+            style={({pressed}) => ({opacity: pressed ? 0.9 : 1})}>
+            <LinearGradient
+              colors={isDark ? ['#1d4ed8', '#0f766e'] : ['#1d4ed8', '#0f766e']}
+              start={{x: 0, y: 0.5}}
+              end={{x: 1, y: 0.5}}
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 14,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}>
+              <Ionicons name="settings-outline" size={18} color="#fff" />
+              <Text style={{color: '#fff', fontWeight: '700'}}>
+                Manage tournaments
+              </Text>
+            </LinearGradient>
           </Pressable>
         </View>
       ) : null}
       <FlatList
         data={rows}
         keyExtractor={item => String(item.id)}
-        contentContainerStyle={{padding: 16, gap: 10, flexGrow: 1}}
+        contentContainerStyle={{padding: 16, gap: 12, flexGrow: 1}}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -117,35 +130,39 @@ export default function CupsListScreen() {
           />
         }
         ListEmptyComponent={
-          <Text style={{opacity: 0.6, textAlign: 'center', marginTop: 40}}>
-            No cups yet in this competition.
-          </Text>
+          <View style={{alignItems: 'center', marginTop: 48, gap: 10}}>
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isDark
+                  ? 'rgba(245, 158, 11, 0.15)'
+                  : 'rgba(180, 83, 9, 0.1)',
+              }}>
+              <Ionicons
+                name="trophy-outline"
+                size={30}
+                color={isDark ? '#fbbf24' : '#b45309'}
+              />
+            </View>
+            <Text style={{opacity: 0.6, textAlign: 'center'}}>
+              No tournaments yet in this competition.
+            </Text>
+          </View>
         }
         renderItem={({item}) => (
-          <Pressable
+          <TournamentListCard
+            item={item}
             onPress={() =>
               router.push({
                 pathname: '/(tabs)/(index)/cups/[id]',
                 params: {id: String(item.id)},
               })
             }
-            style={{
-              padding: 14,
-              borderRadius: 12,
-              backgroundColor: isDark ? '#1f1f1f' : '#fff',
-              borderWidth: 1,
-              borderColor: isDark ? '#333' : '#e2e8f0',
-            }}>
-            <Text style={{fontWeight: '700', fontSize: 16}}>{item.name}</Text>
-            <Text style={{marginTop: 4, opacity: 0.65, fontSize: 13}}>
-              {item.status.replace(/_/g, ' ')}
-              {item.open_signup && item.status === 'draft'
-                ? ' · open signup'
-                : ''}
-              {item.game_type_label ? ` · ${item.game_type_label}` : ''}
-              {item.entry_count != null ? ` · ${item.entry_count} entries` : ''}
-            </Text>
-          </Pressable>
+          />
         )}
       />
     </View>

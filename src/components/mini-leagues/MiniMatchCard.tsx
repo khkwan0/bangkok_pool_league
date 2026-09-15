@@ -106,7 +106,7 @@ export function MiniMatchCard({item, onPress, opening}: Props) {
                     fontSize: 11,
                     textTransform: 'uppercase',
                   }}>
-                  Cup
+                  Tournament
                 </Text>
               ) : null}
               <Text style={[styles.matchId, {color: muted}]}>#{item.id}</Text>

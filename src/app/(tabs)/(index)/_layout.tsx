@@ -23,35 +23,35 @@ export default function MatchLayout() {
       <Stack.Screen
         name="cups/index"
         options={{
-          title: 'Cups',
+          title: 'Tournaments',
           headerRight: () => <SettingsButton />,
         }}
       />
       <Stack.Screen
         name="cups/[id]"
         options={{
-          title: 'Cup bracket',
+          title: 'Tournament bracket',
           headerRight: () => <SettingsButton />,
         }}
       />
       <Stack.Screen
         name="cups/manage/index"
         options={{
-          title: 'Manage cups',
+          title: 'Manage tournaments',
           headerRight: () => <SettingsButton />,
         }}
       />
       <Stack.Screen
         name="cups/manage/create"
         options={{
-          title: 'Create cup',
+          title: 'Create tournament',
           headerRight: () => <SettingsButton />,
         }}
       />
       <Stack.Screen
         name="cups/manage/[tournamentId]"
         options={{
-          title: 'Cup admin',
+          title: 'Tournament admin',
           headerRight: () => <SettingsButton />,
         }}
       />

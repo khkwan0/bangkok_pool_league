@@ -99,7 +99,7 @@ export default function MiniLeagueOverviewScreen() {
         hint: `${matchCount} matches`,
       },
       {
-        label: 'Cups',
+        label: 'Tournaments',
         href: '/(tabs)/(index)/cups/manage',
         adminOnly: true,
         hint: 'Create & manage tournaments',

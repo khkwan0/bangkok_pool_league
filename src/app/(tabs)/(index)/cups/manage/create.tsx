@@ -346,7 +346,7 @@ export default function CupsCreateScreen() {
 
   async function onCreate() {
     if (!name.trim()) {
-      Alert.alert('Name required', 'Enter a cup name.')
+      Alert.alert('Name required', 'Enter a tournament name.')
       return
     }
     if (!gameTypeId || !matchFormatId) {
@@ -356,7 +356,7 @@ export default function CupsCreateScreen() {
     if (!isMiniRoute && !seasonIdentifier && !selectedMiniId) {
       Alert.alert(
         'Scope required',
-        'Choose a league season or a mini league for this cup.',
+        'Choose a league season or a mini league for this tournament.',
       )
       return
     }
@@ -399,7 +399,7 @@ export default function CupsCreateScreen() {
           },
         })
       } else {
-        Alert.alert('Error', res?.error || 'Could not create cup')
+        Alert.alert('Error', res?.error || 'Could not create tournament')
       }
     } finally {
       setSaving(false)
@@ -418,7 +418,7 @@ export default function CupsCreateScreen() {
     return (
       <View style={{flex: 1, padding: 24, justifyContent: 'center'}}>
         <Text style={{textAlign: 'center', opacity: 0.7}}>
-          Only league or mini-league admins can create cups.
+          Only league or mini-league admins can create tournaments.
         </Text>
       </View>
     )
@@ -456,15 +456,15 @@ export default function CupsCreateScreen() {
       keyboardShouldPersistTaps="handled">
       <Text style={{fontSize: 13, opacity: 0.6, marginBottom: 12}}>
         {isMiniRoute
-          ? 'Cup will belong to this mini league.'
-          : 'Team cups must belong to a canonical season or a mini league (not both).'}
+          ? 'Tournament will belong to this mini league.'
+          : 'Team tournaments must belong to a canonical season or a mini league (not both).'}
       </Text>
 
       <Text style={{fontWeight: '600', marginBottom: 6}}>Name</Text>
       <TextInput
         value={name}
         onChangeText={setName}
-        placeholder="Cup name"
+        placeholder="Tournament name"
         placeholderTextColor={isDark ? '#666' : '#94a3b8'}
         style={{
           borderWidth: 1,
@@ -795,7 +795,7 @@ export default function CupsCreateScreen() {
             }}
           />
           <Text style={{fontSize: 12, opacity: 0.55, marginBottom: 16}}>
-            Applied to every cup match scoresheet when the bracket is generated.
+            Applied to every tournament match scoresheet when the bracket is generated.
           </Text>
         </>
       ) : null}
@@ -804,7 +804,7 @@ export default function CupsCreateScreen() {
 
       <Button onPress={onCreate} disabled={saving}>
         <Text style={{color: '#fff', fontWeight: '700'}}>
-          {saving ? 'Creating…' : 'Create cup'}
+          {saving ? 'Creating…' : 'Create tournament'}
         </Text>
       </Button>
     </ScrollView>
