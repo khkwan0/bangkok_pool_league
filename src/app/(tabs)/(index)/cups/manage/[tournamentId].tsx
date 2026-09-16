@@ -1,4 +1,5 @@
 import BracketTree from '@/components/cups/BracketTree'
+import SeedReorderList from '@/components/cups/SeedReorderList'
 import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
@@ -157,6 +158,7 @@ export default function CupsManageDetailScreen() {
   >(null)
   const pageScrollRef = React.useRef<ScrollView>(null)
   const pageScrollOffsetRef = React.useRef(0)
+  const [seedDragging, setSeedDragging] = React.useState(false)
 
   const miniId = scope.type === 'mini' ? scope.id : 0
   const scopeType = scope.type
@@ -363,6 +365,17 @@ export default function CupsManageDetailScreen() {
     }
   }
 
+  async function reorderSeeds(orderedIds: number[]) {
+    setBusy(true)
+    try {
+      const res = await api.adminReorderSeeds(scope, tournamentId, orderedIds)
+      if (res?.status === 'ok') await load()
+      else Alert.alert('Error', res?.error || 'Could not reorder seeds')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function generate() {
     Alert.alert(
       'Generate draft bracket?',
@@ -540,14 +553,6 @@ export default function CupsManageDetailScreen() {
       ? Number(tournament.tables_available)
       : null
   const allowsPlayerEntries = mode === 'player' || mode === 'mixed'
-  const card = {
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: isDark ? '#333' : '#e2e8f0',
-    backgroundColor: isDark ? '#1f1f1f' : '#fff',
-    marginBottom: 10,
-  }
 
   return (
     <ScrollView
@@ -555,6 +560,7 @@ export default function CupsManageDetailScreen() {
       style={{flex: 1}}
       contentContainerStyle={{padding: 16, paddingBottom: 48}}
       scrollEventThrottle={16}
+      scrollEnabled={!seedDragging}
       onScroll={e => {
         pageScrollOffsetRef.current = e.nativeEvent.contentOffset.y
       }}>
@@ -1066,38 +1072,14 @@ export default function CupsManageDetailScreen() {
             : ''}
         </Text>
       ) : (
-        entries
-          .slice()
-          .sort((a, b) => a.seed - b.seed)
-          .map(e => (
-            <View key={e.id} style={card}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <View style={{flex: 1, paddingRight: 8}}>
-                  <Text style={{fontWeight: '700'}}>
-                    #{e.seed}{' '}
-                    {e.display_name || e.label || e.participant_type}
-                  </Text>
-                  <Text style={{marginTop: 2, fontSize: 12, opacity: 0.55}}>
-                    {e.participant_type}
-                    {e.team_id ? ` · team ${e.team_id}` : ''}
-                    {e.player_id ? ` · player ${e.player_id}` : ''}
-                  </Text>
-                </View>
-                {isDraft ? (
-                  <Pressable onPress={() => removeEntry(e.id)} disabled={busy}>
-                    <Text style={{color: '#dc2626', fontWeight: '600'}}>
-                      Remove
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </View>
-          ))
+        <SeedReorderList
+          entries={entries}
+          editable={isDraft}
+          busy={busy}
+          onReorder={reorderSeeds}
+          onRemove={isDraft ? removeEntry : undefined}
+          onDraggingChange={setSeedDragging}
+        />
       )}
 
       {isDraft ? (

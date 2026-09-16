@@ -48,6 +48,9 @@ export function useTournaments() {
   const adminRemoveEntry = async (scope, tournamentId, entryId) =>
     Delete(`${adminBase(scope)}/${tournamentId}/entries?entry_id=${entryId}`)
 
+  const adminReorderSeeds = async (scope, tournamentId, entryIds) =>
+    Put(`${adminBase(scope)}/${tournamentId}/seeds`, {entry_ids: entryIds})
+
   const adminSearchPlayers = async (scope, tournamentId, q) =>
     Get(
       `${adminBase(scope)}/${tournamentId}/player-search?q=${encodeURIComponent(
@@ -144,6 +147,7 @@ export function useTournaments() {
     adminDelete,
     adminAddEntry,
     adminRemoveEntry,
+    adminReorderSeeds,
     adminSearchPlayers,
     listAllPlayers,
     getSignupStatus,
