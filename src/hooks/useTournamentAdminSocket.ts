@@ -29,15 +29,25 @@ export function useTournamentAdminSocket(opts: {
   onRemoteUpdate: (payload: UpdatePayload) => void
 }) {
   const {tournamentId, enabled, onRemoteUpdate} = opts
-  const {webSocketUrl, state} = useLeagueContext() as any
+  const {webSocketUrl, apiUrl, state} = useLeagueContext() as any
   const selfId = Number(state?.user?.id) || 0
   const [editors, setEditors] = React.useState<TournamentEditor[]>([])
   const onRemoteUpdateRef = React.useRef(onRemoteUpdate)
   onRemoteUpdateRef.current = onRemoteUpdate
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Prefer API host so stage API + stage sockets stay aligned.
+  const socketUrl = React.useMemo(() => {
+    const fromApi =
+      typeof apiUrl === 'string'
+        ? apiUrl.replace(/\/api\/?$/, '').replace(/\/$/, '')
+        : ''
+    if (fromApi.startsWith('http')) return fromApi
+    return webSocketUrl
+  }, [apiUrl, webSocketUrl])
+
   React.useEffect(() => {
-    if (!enabled || !tournamentId || !webSocketUrl) {
+    if (!enabled || !tournamentId || !socketUrl) {
       setEditors([])
       return
     }
@@ -49,7 +59,11 @@ export function useTournamentAdminSocket(opts: {
     async function setup() {
       const authOptions = await loadSocketAuth()
       if (cancelled) return
-      socket = createSocketClient(webSocketUrl, authOptions)
+      socket = createSocketClient(socketUrl, authOptions)
+
+      socket.on('connect_error', err => {
+        console.warn('tournament socket connect_error', err?.message)
+      })
 
       socket.on('tournament:editors', (payload: EditorsPayload) => {
         if (Number(payload?.tournament_id) !== tournamentId) return
@@ -98,7 +112,7 @@ export function useTournamentAdminSocket(opts: {
       }
       setEditors([])
     }
-  }, [enabled, tournamentId, webSocketUrl, selfId])
+  }, [enabled, tournamentId, socketUrl, selfId])
 
   const others = React.useMemo(
     () =>

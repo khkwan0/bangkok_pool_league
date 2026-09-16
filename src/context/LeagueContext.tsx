@@ -273,23 +273,23 @@ export const LeagueProvider = ({children}: any) => {
     config.webSocketUrl,
   )
   useEffect(() => {
-    const loadApiUrl = async () => {
+    const loadUrls = async () => {
       try {
         const savedApiUrl = await AsyncStorage.getItem('api_url')
+        const savedWebSocketUrl = await AsyncStorage.getItem('web_socket_url')
         if (savedApiUrl) {
           setApiUrlState(savedApiUrl)
+          const derivedWs = savedApiUrl
+            .replace(/\/api\/?$/, '')
+            .replace(/\/$/, '')
+          if (derivedWs.startsWith('http')) {
+            setWebSocketUrlState(derivedWs)
+            if (savedWebSocketUrl !== derivedWs) {
+              await AsyncStorage.setItem('web_socket_url', derivedWs)
+            }
+            return
+          }
         }
-      } catch (e) {
-        console.error(e)
-      }
-    }
-    loadApiUrl()
-  }, [])
-
-  useEffect(() => {
-    const loadWebSocketUrl = async () => {
-      try {
-        const savedWebSocketUrl = await AsyncStorage.getItem('web_socket_url')
         if (savedWebSocketUrl) {
           setWebSocketUrlState(savedWebSocketUrl)
         }
@@ -297,7 +297,7 @@ export const LeagueProvider = ({children}: any) => {
         console.error(e)
       }
     }
-    loadWebSocketUrl()
+    loadUrls()
   }, [])
 
   useEffect(() => {
@@ -406,6 +406,12 @@ export const LeagueProvider = ({children}: any) => {
     try {
       setApiUrlState(newApiUrl)
       await AsyncStorage.setItem('api_url', newApiUrl)
+      // Keep sockets on the same host as the API (stage vs prod).
+      const ws = newApiUrl.replace(/\/api\/?$/, '').replace(/\/$/, '')
+      if (ws.startsWith('http')) {
+        setWebSocketUrlState(ws)
+        await AsyncStorage.setItem('web_socket_url', ws)
+      }
     } catch (e) {
       console.error('Failed to save api url:', e)
     }
@@ -414,7 +420,9 @@ export const LeagueProvider = ({children}: any) => {
   async function resetApiUrl() {
     try {
       setApiUrlState(config.apiUrl)
-      await AsyncStorage.removeItem('api_domain')
+      await AsyncStorage.removeItem('api_url')
+      setWebSocketUrlState(config.webSocketUrl)
+      await AsyncStorage.removeItem('web_socket_url')
     } catch (e) {
       console.error('Failed to reset domain:', e)
     }
