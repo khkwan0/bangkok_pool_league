@@ -63,7 +63,7 @@ type Props = {
   /** When set, tapping an empty R1 slot assigns this entry. */
   selectedUnplacedEntryId?: number | null
   onAssignRound1Slot?: (slot: BracketSlotRef) => void
-  /** Max tables for this tournament (enables table cycle on draft cards). */
+  /** Max tables — enables table badge cycle when onCycleMatchTable is set. */
   tablesAvailable?: number | null
   onCycleMatchTable?: (match: BracketTreeMatch) => void
   /** Parent vertical ScrollView — used for edge auto-scroll while dragging. */
@@ -416,11 +416,10 @@ function MatchBox({
         ? 'No table'
         : null
   const canCycleTable = !!(
-    editableRound1 &&
-    match.temp_id &&
     edit.tablesAvailable &&
     edit.tablesAvailable > 0 &&
-    edit.onCycleMatchTable
+    edit.onCycleMatchTable &&
+    (match.temp_id || (match.match_id != null && match.match_id > 0))
   )
 
   const content = (

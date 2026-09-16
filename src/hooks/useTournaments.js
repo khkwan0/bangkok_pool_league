@@ -104,6 +104,24 @@ export function useTournaments() {
       set_table: {temp_id: tempId, table_number: tableNumber},
     })
 
+  /** Assign / clear table_number on a locked (or any) cup match. */
+  const adminSetMatchTable = async (
+    scope,
+    tournamentId,
+    matchId,
+    tableNumber,
+  ) => {
+    if (scope?.type === 'mini' && Number(scope.id) > 0) {
+      return Patch(
+        `/mini-leagues/${scope.id}/tournaments/${tournamentId}/matches/${matchId}`,
+        {table_number: tableNumber},
+      )
+    }
+    return Patch(`/admin/tournaments/matches/${matchId}`, {
+      table_number: tableNumber,
+    })
+  }
+
   const adminResetBracket = async (scope, tournamentId) =>
     Post(`${adminBase(scope)}/${tournamentId}/reset-bracket`, {})
 
@@ -138,6 +156,7 @@ export function useTournaments() {
     adminClearBracketDraftSlot,
     adminAssignBracketDraftSlot,
     adminSetBracketDraftTable,
+    adminSetMatchTable,
     adminResetBracket,
     adminMatchFormats,
   }

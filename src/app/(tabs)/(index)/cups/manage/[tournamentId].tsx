@@ -147,6 +147,7 @@ export default function CupsManageDetailScreen() {
   const [allPlayers, setAllPlayers] = React.useState<PlayerHit[]>([])
   const [playersLoaded, setPlayersLoaded] = React.useState(false)
   const [draftStages, setDraftStages] = React.useState<any[]>([])
+  const [liveStages, setLiveStages] = React.useState<any[]>([])
   const [hasDraft, setHasDraft] = React.useState(false)
   const [unplaced, setUnplaced] = React.useState<
     Array<{entry_id: number; display_name: string; seed?: number}>
@@ -183,9 +184,12 @@ export default function CupsManageDetailScreen() {
       apiRef.current.listAllPlayers().catch(() => null),
       apiRef.current.adminGetBracketDraft(currentScope, tournamentId).catch(() => null),
     ])
+    let tournamentStatus = ''
     if (res?.status === 'ok') {
-      setTournament(res.tournament || res)
+      const t = res.tournament || res
+      setTournament(t)
       setEntries(Array.isArray(res.entries) ? res.entries : [])
+      tournamentStatus = String(t?.status || '')
     }
     if (
       draftRes?.status === 'ok' &&
@@ -200,6 +204,18 @@ export default function CupsManageDetailScreen() {
       setHasDraft(false)
       setUnplaced([])
       setSelectedUnplacedId(null)
+    }
+    if (tournamentStatus && tournamentStatus !== 'draft') {
+      const bracketRes = await apiRef.current
+        .getBracket(tournamentId)
+        .catch(() => null)
+      if (bracketRes?.status === 'ok' && Array.isArray(bracketRes.stages)) {
+        setLiveStages(bracketRes.stages)
+      } else {
+        setLiveStages([])
+      }
+    } else {
+      setLiveStages([])
     }
     const raw = Array.isArray(playersRes)
       ? playersRes
@@ -727,83 +743,128 @@ export default function CupsManageDetailScreen() {
         </View>
       ) : null}
 
+      {!isDraft && liveStages.length > 0 ? (
+        <View style={{marginTop: 20}}>
+          <Text style={{fontSize: 17, fontWeight: '700'}}>Bracket tables</Text>
+          <Text style={{marginTop: 4, fontSize: 12, opacity: 0.6}}>
+            {tablesAvailable
+              ? `Tap table badges to cycle through 1–${tablesAvailable} (or clear).`
+              : 'Set tables available below, then assign tables to matches.'}
+          </Text>
+          <BracketTree
+            stages={liveStages}
+            tablesAvailable={tablesAvailable}
+            verticalScrollRef={pageScrollRef}
+            verticalScrollOffsetRef={pageScrollOffsetRef}
+            onCycleMatchTable={async match => {
+              if (!tablesAvailable || !match.match_id) return
+              const current =
+                match.table_number != null ? Number(match.table_number) : 0
+              const next =
+                current >= tablesAvailable ? null : current + 1 || 1
+              const res = await api.adminSetMatchTable(
+                scope,
+                tournamentId,
+                match.match_id,
+                next,
+              )
+              if (res?.status === 'ok') {
+                setLiveStages(prev =>
+                  prev.map((stage: any) => ({
+                    ...stage,
+                    matches: (stage.matches || []).map((m: any) =>
+                      Number(m.match_id) === Number(match.match_id)
+                        ? {...m, table_number: next}
+                        : m,
+                    ),
+                  })),
+                )
+              } else {
+                Alert.alert(
+                  'Table update failed',
+                  res?.error || 'Could not set table',
+                )
+              }
+            }}
+          />
+        </View>
+      ) : null}
+
       <Text style={{marginTop: 24, fontSize: 17, fontWeight: '700'}}>
         Entries ({entries.length})
       </Text>
 
-      {isDraft ? (
-        <RNView
+      <RNView
+        style={{
+          marginTop: 12,
+          marginBottom: 4,
+          padding: 12,
+          borderRadius: 10,
+          borderWidth: 1,
+          borderColor: isDark ? '#333' : '#e2e8f0',
+          backgroundColor: isDark ? '#1a1a1a' : '#f8fafc',
+        }}>
+        <Text style={{fontWeight: '600'}}>Tables available</Text>
+        <Text style={{fontSize: 12, opacity: 0.6, marginTop: 4}}>
+          {isDraft
+            ? 'Used when generating the draft bracket to assign table numbers. Regenerate the draft after changing this.'
+            : 'Change anytime. Matches with a table above the new max are cleared.'}
+        </Text>
+        <TextInput
+          value={tablesAvailable != null ? String(tablesAvailable) : ''}
+          onChangeText={async text => {
+            const cleaned = text.replace(/[^0-9]/g, '')
+            const n = cleaned ? parseInt(cleaned, 10) : null
+            setTournament((t: any) =>
+              t
+                ? {
+                    ...t,
+                    tables_available: n != null && n >= 1 ? n : null,
+                  }
+                : t,
+            )
+          }}
+          onEndEditing={async e => {
+            const cleaned = String(e.nativeEvent.text || '').replace(
+              /[^0-9]/g,
+              '',
+            )
+            const n = cleaned ? parseInt(cleaned, 10) : null
+            const value = n != null && n >= 1 ? n : null
+            setBusy(true)
+            try {
+              const res = await api.adminUpdate(scope, tournamentId, {
+                tables_available: value,
+              })
+              if (res?.status !== 'ok') {
+                Alert.alert(
+                  'Error',
+                  res?.error || 'Could not update tables',
+                )
+                await load()
+              } else if (!isDraft) {
+                await load()
+              }
+            } finally {
+              setBusy(false)
+            }
+          }}
+          keyboardType="number-pad"
+          placeholder="e.g. 4"
+          placeholderTextColor={isDark ? '#666' : '#94a3b8'}
           style={{
-            marginTop: 12,
-            marginBottom: 4,
-            padding: 12,
-            borderRadius: 10,
+            marginTop: 10,
             borderWidth: 1,
             borderColor: isDark ? '#333' : '#e2e8f0',
-            backgroundColor: isDark ? '#1a1a1a' : '#f8fafc',
-          }}>
-          <Text style={{fontWeight: '600'}}>Tables available</Text>
-          <Text style={{fontSize: 12, opacity: 0.6, marginTop: 4}}>
-            Used when generating the draft bracket to assign table numbers.
-            Regenerate the draft after changing this.
-          </Text>
-          <TextInput
-            value={
-              tablesAvailable != null ? String(tablesAvailable) : ''
-            }
-            onChangeText={async text => {
-              const cleaned = text.replace(/[^0-9]/g, '')
-              const n = cleaned ? parseInt(cleaned, 10) : null
-              setTournament((t: any) =>
-                t
-                  ? {
-                      ...t,
-                      tables_available:
-                        n != null && n >= 1 ? n : null,
-                    }
-                  : t,
-              )
-            }}
-            onEndEditing={async e => {
-              const cleaned = String(e.nativeEvent.text || '').replace(
-                /[^0-9]/g,
-                '',
-              )
-              const n = cleaned ? parseInt(cleaned, 10) : null
-              const value = n != null && n >= 1 ? n : null
-              setBusy(true)
-              try {
-                const res = await api.adminUpdate(scope, tournamentId, {
-                  tables_available: value,
-                })
-                if (res?.status !== 'ok') {
-                  Alert.alert(
-                    'Error',
-                    res?.error || 'Could not update tables',
-                  )
-                  await load()
-                }
-              } finally {
-                setBusy(false)
-              }
-            }}
-            keyboardType="number-pad"
-            placeholder="e.g. 4"
-            placeholderTextColor={isDark ? '#666' : '#94a3b8'}
-            style={{
-              marginTop: 10,
-              borderWidth: 1,
-              borderColor: isDark ? '#333' : '#e2e8f0',
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-              color: isDark ? '#fff' : '#0f172a',
-              backgroundColor: isDark ? '#1f1f1f' : '#fff',
-              width: 120,
-            }}
-          />
-        </RNView>
-      ) : null}
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            color: isDark ? '#fff' : '#0f172a',
+            backgroundColor: isDark ? '#1f1f1f' : '#fff',
+            width: 120,
+          }}
+        />
+      </RNView>
 
       {isDraft && allowsPlayerEntries ? (
         <RNView
