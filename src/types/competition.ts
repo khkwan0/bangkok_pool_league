@@ -225,6 +225,15 @@ export function getCompetitionPalette(
       border: isDark ? p.borderDark : p.border,
     }
   }
+  if (competition.type === 'canonical') {
+    return {
+      accent: '#0a7ea4',
+      label: isDark ? '#E0F2FE' : '#0369A1',
+      soft: isDark ? '#0C4A6E' : '#E0F2FE',
+      softHeader: isDark ? '#0B2838' : '#E0F2FE',
+      border: isDark ? '#0369A1' : '#7DD3FC',
+    }
+  }
   return {
     accent: NON_CANONICAL_ACCENT,
     label: isDark ? NON_CANONICAL_ACCENT_SOFT : NON_CANONICAL_ACCENT,

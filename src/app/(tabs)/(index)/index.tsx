@@ -63,8 +63,10 @@ export default function UpcomingMatches(props: any) {
   const router = useRouter()
   const {width} = Dimensions.get('window')
   const colorScheme = useColorScheme()
+  const screenBg = colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5'
   const listContentStyle = useTabListContentContainerStyle({
-    backgroundColor: colors.background,
+    backgroundColor: screenBg,
+    flexGrow: 1,
     paddingHorizontal: 0,
   })
 
@@ -341,7 +343,7 @@ export default function UpcomingMatches(props: any) {
       <View
         style={{
           flex: 1,
-          backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5',
+          backgroundColor: screenBg,
         }}>
         <LiveScores />
         <View className="flex-1 items-center justify-center px-6">
@@ -358,7 +360,7 @@ export default function UpcomingMatches(props: any) {
       <View
         style={{
           flex: 1,
-          backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#F5F5F5',
+          backgroundColor: screenBg,
         }}>
         {refreshing && (
           <View className="flex-1 items-center justify-center">
@@ -510,14 +512,13 @@ export default function UpcomingMatches(props: any) {
                     listContentStyle,
                     fixtures.length === 0
                       ? {
-                          flexGrow: 1,
                           justifyContent: 'center',
                           alignItems: 'center',
                           paddingHorizontal: 24,
                         }
                       : null,
                   ]}
-                  style={{flex: 1}}
+                  style={{flex: 1, backgroundColor: screenBg}}
                   horizontal={
                     fixtures.length > 0 && state.isNewMatchCard ? true : false
                   }

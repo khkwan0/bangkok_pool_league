@@ -1,6 +1,5 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useLeagueContext} from '@/context/LeagueContext'
-import {useThemeColor} from '@/hooks/useThemeColor'
 import {
   competitionDisplayName,
   competitionModeLabel,
@@ -20,7 +19,6 @@ type Props = {
 
 export function CompetitionSwitcher({title, compact}: Props) {
   const {state, openCompetitionPicker} = useLeagueContext()
-  const textColor = useThemeColor({}, 'text')
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const navigation = useNavigation()
@@ -38,15 +36,12 @@ export function CompetitionSwitcher({title, compact}: Props) {
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerStyle: {
-        backgroundColor: canonical
-          ? isDark
-            ? '#1A1A1A'
-            : '#F5F5F5'
-          : softHeader,
+        backgroundColor: softHeader,
       },
-      headerShadowVisible: !canonical,
+      headerShadowVisible: true,
+      headerTintColor: labelOnSoft,
     })
-  }, [navigation, canonical, softHeader, isDark])
+  }, [navigation, softHeader, labelOnSoft])
 
   if (canonical) {
     return (
@@ -68,12 +63,12 @@ export function CompetitionSwitcher({title, compact}: Props) {
             style={{
               fontWeight: '700',
               fontSize: compact ? 15 : 16,
-              color: textColor,
+              color: labelOnSoft,
               flexShrink: 1,
             }}>
             {label}
           </Text>
-          <MCI name="chevron-down" size={18} color={textColor} />
+          <MCI name="chevron-down" size={18} color={labelOnSoft} />
         </View>
       </Pressable>
     )
