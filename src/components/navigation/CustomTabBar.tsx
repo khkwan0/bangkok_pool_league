@@ -9,7 +9,7 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {useForumActivitySync} from '@/hooks/useForumActivity'
 import {useHasNewForumPosts} from '@/lib/forumActivity'
 import {
-  NON_CANONICAL_ACCENT,
+  getCompetitionPalette,
   isCanonicalCompetition,
 } from '@/types/competition'
 import {
@@ -112,9 +112,13 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
   const messageBadge =
     leagueState.messageCount > 0 ? String(leagueState.messageCount) : undefined
   const canonical = isCanonicalCompetition(leagueState.competition)
+  const competitionAccent = getCompetitionPalette(
+    leagueState.competition,
+    colorScheme === 'dark',
+  ).accent
   const fabBorderColor = canonical
     ? colors.buttonBackground
-    : NON_CANONICAL_ACCENT
+    : competitionAccent
 
   const fabAdjacentIndices = React.useMemo(() => {
     const visibleIndices = state.routes.reduce<number[]>((indices, route, index) => {
@@ -216,7 +220,7 @@ export function CustomTabBar({state, descriptors, navigation}: BottomTabBarProps
               ? colorScheme === 'dark'
                 ? '#333'
                 : '#e5e5e5'
-              : NON_CANONICAL_ACCENT,
+              : competitionAccent,
             borderTopWidth: canonical ? StyleSheet.hairlineWidth : 2,
           },
         ]}>

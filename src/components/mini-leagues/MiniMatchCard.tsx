@@ -1,9 +1,8 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {formatBangkokWeekdayDate} from '@/lib/bangkokTime'
 import {
-  NON_CANONICAL_ACCENT,
-  NON_CANONICAL_ACCENT_SOFT,
-  NON_CANONICAL_ACCENT_SOFT_DARK,
+  getMiniLeaguePalette,
+  type MiniLeaguePalette,
 } from '@/types/competition'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {LinearGradient} from 'expo-linear-gradient'
@@ -32,6 +31,7 @@ type Props = {
   item: MiniMatchCardItem
   onPress: () => void
   opening?: boolean
+  miniLeagueId: number
 }
 
 function teamLabel(name: string | undefined, fallback: string) {
@@ -39,7 +39,11 @@ function teamLabel(name: string | undefined, fallback: string) {
   return trimmed || fallback
 }
 
-function statusMeta(statusId: number, isDark: boolean) {
+function statusMeta(
+  statusId: number,
+  isDark: boolean,
+  palette: MiniLeaguePalette,
+) {
   if (statusId === 3) {
     return {
       label: 'Final',
@@ -48,9 +52,10 @@ function statusMeta(statusId: number, isDark: boolean) {
       soft: isDark ? 'rgba(251, 191, 36, 0.16)' : 'rgba(180, 83, 9, 0.12)',
       gradient: isDark
         ? (['#3d2808', '#24180c', '#1a1a1a'] as const)
-        : (['#fb923c', '#ffedd5', '#fff7ed'] as const),
+        : (['#ffedd5', '#fff7ed', '#ffffff'] as const),
       border: isDark ? '#6b4a12' : '#fdba74',
       stripe: isDark ? '#f59e0b' : '#d97706',
+      softAccent: undefined as string | undefined,
     }
   }
   if (statusId === 2) {
@@ -61,23 +66,24 @@ function statusMeta(statusId: number, isDark: boolean) {
       soft: isDark ? 'rgba(52, 211, 153, 0.16)' : 'rgba(4, 120, 87, 0.12)',
       gradient: isDark
         ? (['#0f3d2e', '#13241c', '#1a1a1a'] as const)
-        : (['#34d399', '#d1fae5', '#ecfdf5'] as const),
+        : (['#d1fae5', '#ecfdf5', '#ffffff'] as const),
       border: isDark ? '#1f5c45' : '#a7f3d0',
       stripe: isDark ? '#34d399' : '#059669',
+      softAccent: undefined as string | undefined,
     }
   }
+  const label = isDark ? palette.accentOnSoftDark : palette.accentOnSoftLight
   return {
     label: 'Open',
     icon: 'clock-outline' as const,
-    color: NON_CANONICAL_ACCENT,
-    soft: isDark
-      ? NON_CANONICAL_ACCENT_SOFT_DARK
-      : NON_CANONICAL_ACCENT_SOFT,
-    gradient: isDark
-      ? (['#7a1f4a', '#3a1528', '#1a1a1a'] as const)
-      : (['#f472b6', '#fce7f3', '#fff1f7'] as const),
-    border: isDark ? '#7a2a4d' : '#f9a8d4',
-    stripe: NON_CANONICAL_ACCENT,
+    color: label,
+    // Solid accent chip for icons that need punch; text uses high-contrast label above.
+    soft: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.06)',
+    softAccent: isDark ? 'rgba(255,255,255,0.14)' : palette.soft,
+    gradient: isDark ? palette.gradientDark : palette.gradientLight,
+    border: isDark ? palette.borderDark : palette.border,
+    stripe: palette.accent,
+    accent: palette.accent,
   }
 }
 
@@ -102,10 +108,12 @@ function Chip({
   )
 }
 
-export function MiniMatchCard({item, onPress, opening}: Props) {
+export function MiniMatchCard({item, onPress, opening, miniLeagueId}: Props) {
   const isDark = useColorScheme() === 'dark'
-  const theme = statusMeta(Number(item.status_id) || 1, isDark)
-  const muted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(15,23,42,0.55)'
+  const palette = getMiniLeaguePalette(miniLeagueId)
+  const theme = statusMeta(Number(item.status_id) || 1, isDark, palette)
+  const muted = isDark ? 'rgba(248,250,252,0.78)' : 'rgba(15,23,42,0.72)'
+  const bodyText = isDark ? '#F8FAFC' : '#0F172A'
   const home = teamLabel(item.home_team_name, 'Home')
   const away = teamLabel(item.away_team_name, 'Away')
   const dateLabel = formatBangkokWeekdayDate(item.date)
@@ -176,13 +184,13 @@ export function MiniMatchCard({item, onPress, opening}: Props) {
                   icon="calendar"
                   label={dateLabel}
                   color={theme.color}
-                  background={theme.soft}
+                  background={theme.softAccent ?? theme.soft}
                 />
                 <Chip
                   icon={theme.icon}
                   label={theme.label}
                   color={theme.color}
-                  background={theme.soft}
+                  background={theme.softAccent ?? theme.soft}
                 />
                 {showRound ? (
                   <Chip
@@ -216,7 +224,7 @@ export function MiniMatchCard({item, onPress, opening}: Props) {
                   numberOfLines={2}
                   style={[
                     styles.teamName,
-                    homeWins ? {color: theme.color} : null,
+                    {color: homeWins ? theme.color : bodyText},
                   ]}>
                   {home}
                 </Text>
@@ -251,7 +259,7 @@ export function MiniMatchCard({item, onPress, opening}: Props) {
                   numberOfLines={2}
                   style={[
                     styles.teamName,
-                    awayWins ? {color: theme.color} : null,
+                    {color: awayWins ? theme.color : bodyText},
                   ]}>
                   {away}
                 </Text>

@@ -6,9 +6,7 @@ import {useThemeColor} from '@/hooks/useThemeColor'
 import {validateCompetition} from '@/lib/competitionValidation'
 import {
   CANONICAL_COMPETITION,
-  NON_CANONICAL_ACCENT,
-  NON_CANONICAL_ACCENT_SOFT,
-  NON_CANONICAL_ACCENT_SOFT_DARK,
+  getMiniLeaguePalette,
   type Competition,
 } from '@/types/competition'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -167,9 +165,22 @@ export function CompetitionPickerModal() {
   const border = isDark ? '#333' : '#E2E8F0'
   const muted = isDark ? '#A8A29E' : '#64748B'
   const mainSectionBg = isDark ? MAIN_SOFT_DARK : MAIN_SOFT_LIGHT
-  const miniSectionBg = isDark
-    ? NON_CANONICAL_ACCENT_SOFT_DARK
-    : NON_CANONICAL_ACCENT_SOFT
+  const activeMiniPalette =
+    activeMiniId != null ? getMiniLeaguePalette(activeMiniId) : null
+  const miniSectionAccent =
+    activeMiniPalette?.accent ?? getMiniLeaguePalette(1).accent
+  const miniSectionBg = activeMiniPalette
+    ? isDark
+      ? activeMiniPalette.softDark
+      : activeMiniPalette.soft
+    : isDark
+      ? '#1E1E1E'
+      : '#F8FAFC'
+  const miniSectionBorder = activeMiniPalette
+    ? isDark
+      ? activeMiniPalette.borderDark
+      : activeMiniPalette.border
+    : border
 
   const load = React.useCallback(async () => {
     setLoading(true)
@@ -376,14 +387,14 @@ export function CompetitionPickerModal() {
               paddingBottom: 20,
               paddingHorizontal: 18,
               borderWidth: 1,
-              borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
+              borderColor: miniSectionBorder,
               minHeight: 200,
             }}>
             <Text
               style={{
                 fontSize: 12,
                 fontWeight: '800',
-                color: NON_CANONICAL_ACCENT,
+                color: miniSectionAccent,
                 letterSpacing: 0.8,
                 lineHeight: 16,
                 marginBottom: 8,
@@ -403,7 +414,7 @@ export function CompetitionPickerModal() {
 
             {loading && items.length === 0 ? (
               <ActivityIndicator
-                color={NON_CANONICAL_ACCENT}
+                color={miniSectionAccent}
                 style={{marginVertical: 24}}
               />
             ) : null}
@@ -423,6 +434,7 @@ export function CompetitionPickerModal() {
             {items.map((item, index) => {
               const selected = activeMiniId === item.id
               const pending = item.member_status === 'pending'
+              const itemPalette = getMiniLeaguePalette(item.id)
               return (
                 <View
                   key={item.id}
@@ -437,7 +449,7 @@ export function CompetitionPickerModal() {
                         name: item.name,
                       })
                     }
-                    radioColor={NON_CANONICAL_ACCENT}
+                    radioColor={itemPalette.accent}
                     title={item.name}
                     subtitle={
                       pending
@@ -449,9 +461,13 @@ export function CompetitionPickerModal() {
                     titleColor={textColor}
                     subtitleColor={muted}
                     backgroundColor={
-                      selected ? (isDark ? '#4A0D2A' : '#fff') : cardBg
+                      selected
+                        ? isDark
+                          ? itemPalette.dark
+                          : '#fff'
+                        : cardBg
                     }
-                    borderColor={selected ? NON_CANONICAL_ACCENT : border}
+                    borderColor={selected ? itemPalette.accent : border}
                     borderWidth={selected ? 2 : 1}
                     footer={
                       pending ? (
@@ -486,12 +502,12 @@ export function CompetitionPickerModal() {
                 <MCI
                   name="plus"
                   size={18}
-                  color={NON_CANONICAL_ACCENT}
+                  color={miniSectionAccent}
                   style={{marginRight: 8}}
                 />
                 <Text
                   style={{
-                    color: NON_CANONICAL_ACCENT,
+                    color: miniSectionAccent,
                     fontWeight: '700',
                     fontSize: 15,
                     lineHeight: 20,

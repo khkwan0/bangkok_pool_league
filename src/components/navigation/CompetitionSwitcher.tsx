@@ -2,12 +2,9 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useThemeColor} from '@/hooks/useThemeColor'
 import {
-  NON_CANONICAL_ACCENT,
-  NON_CANONICAL_ACCENT_DARK,
-  NON_CANONICAL_ACCENT_SOFT,
-  NON_CANONICAL_ACCENT_SOFT_DARK,
   competitionDisplayName,
   competitionModeLabel,
+  getCompetitionPalette,
   isCanonicalCompetition,
 } from '@/types/competition'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -32,11 +29,11 @@ export function CompetitionSwitcher({title, compact}: Props) {
   const modeLabel = competitionModeLabel(competition)
   const label = title || competitionDisplayName(competition)
 
-  const accent = isDark ? NON_CANONICAL_ACCENT : NON_CANONICAL_ACCENT
-  const softBg = isDark
-    ? NON_CANONICAL_ACCENT_SOFT_DARK
-    : NON_CANONICAL_ACCENT_SOFT
-  const softHeader = isDark ? NON_CANONICAL_ACCENT_DARK : NON_CANONICAL_ACCENT_SOFT
+  const palette = getCompetitionPalette(competition, isDark)
+  const accent = palette.accent
+  const labelOnSoft = palette.label
+  const softBg = palette.soft
+  const softHeader = palette.softHeader
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -106,24 +103,24 @@ export function CompetitionSwitcher({title, compact}: Props) {
             gap: 4,
             marginBottom: 1,
           }}>
-          <MCI name="trophy-outline" size={12} color={accent} />
+          <MCI name="trophy-outline" size={12} color={labelOnSoft} />
           <Text
             style={{
-              color: accent,
+              color: labelOnSoft,
               fontSize: 10,
               fontWeight: '800',
               letterSpacing: 0.8,
             }}>
             {modeLabel}
           </Text>
-          <MCI name="chevron-down" size={14} color={accent} />
+          <MCI name="chevron-down" size={14} color={labelOnSoft} />
         </View>
         <Text
           numberOfLines={1}
           style={{
             fontWeight: '700',
             fontSize: compact ? 13 : 14,
-            color: isDark ? '#FCE4EC' : '#880E4F',
+            color: labelOnSoft,
             maxWidth: compact ? 200 : 260,
           }}>
           {label}

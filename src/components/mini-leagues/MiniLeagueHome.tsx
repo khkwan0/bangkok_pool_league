@@ -9,9 +9,7 @@ import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useThemeColor} from '@/hooks/useThemeColor'
 import {
-  NON_CANONICAL_ACCENT,
-  NON_CANONICAL_ACCENT_SOFT,
-  NON_CANONICAL_ACCENT_SOFT_DARK,
+  getMiniLeaguePalette,
 } from '@/types/competition'
 import {
   MiniSeasonChips,
@@ -153,9 +151,15 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
     }
   }
 
-  const soft = isDark
-    ? NON_CANONICAL_ACCENT_SOFT_DARK
-    : NON_CANONICAL_ACCENT_SOFT
+  const palette = getMiniLeaguePalette(miniLeagueId)
+  const accent = palette.accent
+  const labelColor = isDark
+    ? palette.accentOnSoftDark
+    : palette.accentOnSoftLight
+  const soft = isDark ? palette.softDark : palette.soft
+  const softBorder = isDark ? palette.borderDark : palette.border
+  const panelMuted = isDark ? 'rgba(248,250,252,0.78)' : 'rgba(15,23,42,0.7)'
+  const panelTitle = isDark ? '#F8FAFC' : '#0F172A'
   const showLiveScores =
     typeof state.showLiveScores === 'undefined' || state.showLiveScores
 
@@ -164,7 +168,7 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
       {showLiveScores ? <LiveScores /> : null}
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={NON_CANONICAL_ACCENT} />
+          <ActivityIndicator color={accent} />
         </View>
       ) : (
         <>
@@ -185,7 +189,7 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
               borderRadius: 16,
               backgroundColor: soft,
               borderWidth: 1,
-              borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
+              borderColor: softBorder,
             }}>
             <RNView
               style={{
@@ -197,7 +201,7 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
               <RNView style={{flex: 1, minWidth: 0, paddingRight: 4}}>
                 <Text
                   style={{
-                    color: NON_CANONICAL_ACCENT,
+                    color: labelColor,
                     fontSize: 11,
                     fontWeight: '800',
                     letterSpacing: 0.8,
@@ -206,11 +210,21 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
                 </Text>
                 <Text
                   numberOfLines={1}
-                  style={{fontSize: 16, fontWeight: '800', marginTop: 4}}>
+                  style={{
+                    fontSize: 16,
+                    fontWeight: '800',
+                    marginTop: 4,
+                    color: panelTitle,
+                  }}>
                   {matches.length} open match
                   {matches.length === 1 ? '' : 'es'}
                 </Text>
-                <Text style={{fontSize: 12, opacity: 0.65, marginTop: 4}}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    marginTop: 4,
+                    color: panelMuted,
+                  }}>
                   {mini?.is_admin ? 'Admin' : 'Member'}
                 </Text>
               </RNView>
@@ -238,12 +252,12 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderWidth: 1,
-                    borderColor: isDark ? '#5C1A3A' : '#F8BBD0',
+                    borderColor: softBorder,
                   }}>
                   <MCI
                     name="cog-outline"
                     size={22}
-                    color={NON_CANONICAL_ACCENT}
+                    color={accent}
                   />
                 </Pressable>
                 {mini?.is_admin ? (
@@ -271,8 +285,8 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor={NON_CANONICAL_ACCENT}
-                colors={[NON_CANONICAL_ACCENT]}
+                tintColor={accent}
+                colors={[accent]}
               />
             }
             ListEmptyComponent={
@@ -291,7 +305,7 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
                 <MCI
                   name="billiards-rack"
                   size={36}
-                  color={NON_CANONICAL_ACCENT}
+                  color={accent}
                   style={{opacity: 0.8, marginBottom: 10}}
                 />
                 <Text
@@ -333,6 +347,7 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
             renderItem={({item}) => (
               <MiniMatchCard
                 item={item}
+                miniLeagueId={miniLeagueId}
                 opening={openingId === item.id}
                 onPress={() => openMatch(item.id)}
               />

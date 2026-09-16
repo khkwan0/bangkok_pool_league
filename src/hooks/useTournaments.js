@@ -94,6 +94,16 @@ export function useTournaments() {
       assign: {...slot, entry_id: entryId},
     })
 
+  const adminSetBracketDraftTable = async (
+    scope,
+    tournamentId,
+    tempId,
+    tableNumber,
+  ) =>
+    Patch(`${adminBase(scope)}/${tournamentId}/bracket-draft`, {
+      set_table: {temp_id: tempId, table_number: tableNumber},
+    })
+
   const adminResetBracket = async (scope, tournamentId) =>
     Post(`${adminBase(scope)}/${tournamentId}/reset-bracket`, {})
 
@@ -127,6 +137,7 @@ export function useTournaments() {
     adminSwapBracketDraftSlots,
     adminClearBracketDraftSlot,
     adminAssignBracketDraftSlot,
+    adminSetBracketDraftTable,
     adminResetBracket,
     adminMatchFormats,
   }

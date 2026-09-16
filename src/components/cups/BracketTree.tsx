@@ -38,6 +38,7 @@ export type BracketTreeMatch = {
   away_entry_id?: number | null
   date?: string | null
   venue_name?: string | null
+  table_number?: number | null
   home_team_id?: number | null
   away_team_id?: number | null
   home_tournament_team_id?: number | null
@@ -62,6 +63,9 @@ type Props = {
   /** When set, tapping an empty R1 slot assigns this entry. */
   selectedUnplacedEntryId?: number | null
   onAssignRound1Slot?: (slot: BracketSlotRef) => void
+  /** Max tables for this tournament (enables table cycle on draft cards). */
+  tablesAvailable?: number | null
+  onCycleMatchTable?: (match: BracketTreeMatch) => void
   /** Parent vertical ScrollView — used for edge auto-scroll while dragging. */
   verticalScrollRef?: React.RefObject<ScrollView | null>
   /** Current vertical contentOffset.y of that ScrollView. */
@@ -120,6 +124,8 @@ type EditCtx = {
   onClearRound1Slot?: (slot: BracketSlotRef) => void
   selectedUnplacedEntryId?: number | null
   onAssignRound1Slot?: (slot: BracketSlotRef) => void
+  tablesAvailable?: number | null
+  onCycleMatchTable?: (match: BracketTreeMatch) => void
 }
 const EditContext = React.createContext<EditCtx>({})
 
@@ -390,6 +396,7 @@ function MatchBox({
   isDark: boolean
   editableRound1?: boolean
 }) {
+  const edit = React.useContext(EditContext)
   const editable = !!(editableRound1 && match.round === 1 && match.temp_id)
   const cardH = editable ? CARD_H_EDIT : CARD_H
   const hasSides =
@@ -402,6 +409,19 @@ function MatchBox({
     match.match_id > 0 &&
     (playable || match.status_id === 3) &&
     !disabled
+  const tableLabel =
+    match.table_number != null && Number(match.table_number) > 0
+      ? `Table ${match.table_number}`
+      : edit.tablesAvailable
+        ? 'No table'
+        : null
+  const canCycleTable = !!(
+    editableRound1 &&
+    match.temp_id &&
+    edit.tablesAvailable &&
+    edit.tablesAvailable > 0 &&
+    edit.onCycleMatchTable
+  )
 
   const content = (
     <View
@@ -431,33 +451,63 @@ function MatchBox({
         isDark={isDark}
         editable={editable}
       />
-      {!editable ? (
+      <View
+        style={{
+          marginTop: editable ? 2 : 6,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 4,
+          paddingHorizontal: editable ? 4 : 0,
+        }}>
         <Text
           style={{
-            marginTop: 6,
-            fontSize: 10,
+            flex: 1,
+            fontSize: editable ? 9 : 10,
             opacity: 0.5,
             textTransform: 'uppercase',
             letterSpacing: 0.4,
           }}
           numberOfLines={1}>
-          {`R${match.round} · ${match.bracket_side}`}
-          {match.venue_name ? ` · ${match.venue_name}` : ''}
-          {match.date ? ` · ${String(match.date).slice(0, 10)}` : ''}
+          {editable
+            ? `R${match.round} · drag to swap`
+            : `R${match.round} · ${match.bracket_side}`}
+          {!editable && match.venue_name ? ` · ${match.venue_name}` : ''}
+          {!editable && match.date ? ` · ${String(match.date).slice(0, 10)}` : ''}
         </Text>
-      ) : (
-        <Text
-          style={{
-            fontSize: 9,
-            opacity: 0.45,
-            textTransform: 'uppercase',
-            marginTop: 2,
-            paddingHorizontal: 4,
-          }}
-          numberOfLines={1}>
-          {`R${match.round} · drag to swap`}
-        </Text>
-      )}
+        {tableLabel ? (
+          <Pressable
+            disabled={!canCycleTable}
+            onPress={() => edit.onCycleMatchTable?.(match)}
+            hitSlop={6}
+            style={{
+              paddingHorizontal: 6,
+              paddingVertical: 2,
+              borderRadius: 4,
+              backgroundColor: canCycleTable
+                ? isDark
+                  ? '#1e3a5f'
+                  : '#dbeafe'
+                : isDark
+                  ? '#333'
+                  : '#f1f5f9',
+            }}>
+            <Text
+              style={{
+                fontSize: 9,
+                fontWeight: '800',
+                color: canCycleTable
+                  ? isDark
+                    ? '#93c5fd'
+                    : '#1d4ed8'
+                  : undefined,
+                opacity: canCycleTable ? 1 : 0.65,
+              }}>
+              {tableLabel}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   )
 
@@ -653,6 +703,8 @@ export default function BracketTree({
   onClearRound1Slot,
   selectedUnplacedEntryId,
   onAssignRound1Slot,
+  tablesAvailable,
+  onCycleMatchTable,
   verticalScrollRef,
   verticalScrollOffsetRef,
 }: Props) {
@@ -881,8 +933,11 @@ export default function BracketTree({
             opacity: 0.65,
           }}>
           Round 1: long-press to drag-swap, × to clear (moves to Unplaced).
-          Select an unplaced player then tap an empty slot to place them. Hold
-          near the screen edge to auto-scroll.
+          Select an unplaced player then tap an empty slot to place them.
+          {tablesAvailable
+            ? ' Tap a table badge to cycle table numbers.'
+            : ''}{' '}
+          Hold near the screen edge to auto-scroll.
         </Text>
       ) : null}
       {stages.map(stage => {
@@ -957,6 +1012,8 @@ export default function BracketTree({
     onClearRound1Slot,
     selectedUnplacedEntryId,
     onAssignRound1Slot,
+    tablesAvailable,
+    onCycleMatchTable,
   }
 
   const chip =

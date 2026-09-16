@@ -1,9 +1,9 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {
-  NON_CANONICAL_ACCENT,
   competitionDisplayName,
   competitionModeLabel,
+  getCompetitionPalette,
   isCanonicalCompetition,
 } from '@/types/competition'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -25,6 +25,7 @@ export function CompetitionModeBanner() {
 
   const modeLabel = competitionModeLabel(competition) || 'OTHER'
   const name = competitionDisplayName(competition)
+  const palette = getCompetitionPalette(competition, isDark)
 
   return (
     <Pressable
@@ -32,14 +33,14 @@ export function CompetitionModeBanner() {
       accessibilityRole="button"
       accessibilityLabel={`${modeLabel} mode: ${name}. Tap to change league`}
       style={{
-        backgroundColor: NON_CANONICAL_ACCENT,
+        backgroundColor: palette.accent,
         paddingHorizontal: 14,
         paddingVertical: 8,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 10,
         borderTopWidth: 1,
-        borderTopColor: isDark ? '#880E4F' : '#AD1457',
+        borderTopColor: palette.border,
       }}>
       <MCI name="trophy" size={18} color="#fff" />
       <View style={{flex: 1, minWidth: 0}}>

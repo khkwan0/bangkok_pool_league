@@ -518,6 +518,11 @@ export default function CupsManageDetailScreen() {
   const isDraft = status === 'draft'
   const mode = String(tournament.participant_mode || 'team')
   const openSignup = Boolean(tournament.open_signup)
+  const tablesAvailable =
+    tournament.tables_available != null &&
+    Number(tournament.tables_available) > 0
+      ? Number(tournament.tables_available)
+      : null
   const allowsPlayerEntries = mode === 'player' || mode === 'mixed'
   const card = {
     padding: 12,
@@ -630,6 +635,9 @@ export default function CupsManageDetailScreen() {
           <Text style={{marginTop: 4, fontSize: 12, opacity: 0.6}}>
             Preview only — × clears a slot (player goes to Unplaced). Select
             Unplaced then tap an empty slot to place.
+            {tablesAvailable
+              ? ` Tap table badges to cycle through 1–${tablesAvailable}.`
+              : ''}
           </Text>
           <UnplacedTray
             items={unplaced}
@@ -642,6 +650,7 @@ export default function CupsManageDetailScreen() {
           <BracketTree
             stages={draftStages}
             editableRound1
+            tablesAvailable={tablesAvailable}
             verticalScrollRef={pageScrollRef}
             verticalScrollOffsetRef={pageScrollOffsetRef}
             selectedUnplacedEntryId={selectedUnplacedId}
@@ -692,6 +701,28 @@ export default function CupsManageDetailScreen() {
                 )
               }
             }}
+            onCycleMatchTable={async match => {
+              if (!tablesAvailable || !match.temp_id) return
+              const current =
+                match.table_number != null ? Number(match.table_number) : 0
+              const next =
+                current >= tablesAvailable ? null : current + 1 || 1
+              const res = await api.adminSetBracketDraftTable(
+                scope,
+                tournamentId,
+                match.temp_id,
+                next,
+              )
+              if (res?.status === 'ok' && Array.isArray(res.stages)) {
+                setDraftStages(res.stages)
+                setUnplaced(Array.isArray(res.unplaced) ? res.unplaced : [])
+              } else {
+                Alert.alert(
+                  'Table update failed',
+                  res?.error || 'Could not set table',
+                )
+              }
+            }}
           />
         </View>
       ) : null}
@@ -699,6 +730,80 @@ export default function CupsManageDetailScreen() {
       <Text style={{marginTop: 24, fontSize: 17, fontWeight: '700'}}>
         Entries ({entries.length})
       </Text>
+
+      {isDraft ? (
+        <RNView
+          style={{
+            marginTop: 12,
+            marginBottom: 4,
+            padding: 12,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: isDark ? '#333' : '#e2e8f0',
+            backgroundColor: isDark ? '#1a1a1a' : '#f8fafc',
+          }}>
+          <Text style={{fontWeight: '600'}}>Tables available</Text>
+          <Text style={{fontSize: 12, opacity: 0.6, marginTop: 4}}>
+            Used when generating the draft bracket to assign table numbers.
+            Regenerate the draft after changing this.
+          </Text>
+          <TextInput
+            value={
+              tablesAvailable != null ? String(tablesAvailable) : ''
+            }
+            onChangeText={async text => {
+              const cleaned = text.replace(/[^0-9]/g, '')
+              const n = cleaned ? parseInt(cleaned, 10) : null
+              setTournament((t: any) =>
+                t
+                  ? {
+                      ...t,
+                      tables_available:
+                        n != null && n >= 1 ? n : null,
+                    }
+                  : t,
+              )
+            }}
+            onEndEditing={async e => {
+              const cleaned = String(e.nativeEvent.text || '').replace(
+                /[^0-9]/g,
+                '',
+              )
+              const n = cleaned ? parseInt(cleaned, 10) : null
+              const value = n != null && n >= 1 ? n : null
+              setBusy(true)
+              try {
+                const res = await api.adminUpdate(scope, tournamentId, {
+                  tables_available: value,
+                })
+                if (res?.status !== 'ok') {
+                  Alert.alert(
+                    'Error',
+                    res?.error || 'Could not update tables',
+                  )
+                  await load()
+                }
+              } finally {
+                setBusy(false)
+              }
+            }}
+            keyboardType="number-pad"
+            placeholder="e.g. 4"
+            placeholderTextColor={isDark ? '#666' : '#94a3b8'}
+            style={{
+              marginTop: 10,
+              borderWidth: 1,
+              borderColor: isDark ? '#333' : '#e2e8f0',
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              color: isDark ? '#fff' : '#0f172a',
+              backgroundColor: isDark ? '#1f1f1f' : '#fff',
+              width: 120,
+            }}
+          />
+        </RNView>
+      ) : null}
 
       {isDraft && allowsPlayerEntries ? (
         <RNView

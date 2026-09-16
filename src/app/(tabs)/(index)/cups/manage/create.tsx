@@ -153,6 +153,7 @@ export default function CupsCreateScreen() {
   )
   const [raceTo, setRaceTo] = React.useState('5')
   const [openSignup, setOpenSignup] = React.useState(false)
+  const [tablesAvailable, setTablesAvailable] = React.useState('')
   const [regionCount, setRegionCount] = React.useState('4')
   const [teamsPerRegion, setTeamsPerRegion] = React.useState('4')
   const [groupCount, setGroupCount] = React.useState('4')
@@ -379,6 +380,10 @@ export default function CupsCreateScreen() {
           participantMode === 'player' || participantMode === 'mixed'
             ? openSignup
             : false,
+        tables_available: (() => {
+          const n = parseInt(tablesAvailable, 10)
+          return Number.isFinite(n) && n >= 1 ? n : null
+        })(),
       }
       if (isMiniRoute || selectedMiniId) {
         payload.mini_league_id = effectiveMiniId
@@ -612,6 +617,31 @@ export default function CupsCreateScreen() {
           <Switch value={openSignup} onValueChange={setOpenSignup} />
         </RNView>
       )}
+
+      <Text style={{fontWeight: '600', marginBottom: 6}}>Tables available</Text>
+      <TextInput
+        value={tablesAvailable}
+        onChangeText={setTablesAvailable}
+        keyboardType="number-pad"
+        placeholder="e.g. 4"
+        placeholderTextColor={isDark ? '#666' : '#94a3b8'}
+        style={{
+          borderWidth: 1,
+          borderColor: isDark ? '#333' : '#e2e8f0',
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          marginBottom: 6,
+          color: isDark ? '#fff' : '#0f172a',
+          backgroundColor: isDark ? '#1f1f1f' : '#fff',
+          width: 120,
+        }}
+      />
+      <Text style={{fontSize: 12, opacity: 0.55, marginBottom: 16}}>
+        How many pool tables can run matches at once. Bracket slots will be
+        assigned table numbers when you generate the draft (you can retap to
+        change them).
+      </Text>
 
       <Text style={{fontWeight: '600', marginBottom: 6}}>Preset</Text>
       <RNView style={{flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8}}>
