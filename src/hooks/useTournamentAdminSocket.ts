@@ -110,9 +110,9 @@ export function useTournamentAdminSocket(opts: {
 
   const others = React.useMemo(
     () =>
-      editors.filter(
-        e => selfId <= 0 || Number(e.player_id) !== selfId,
-      ),
+      selfId > 0
+        ? editors.filter(e => Number(e.player_id) !== selfId)
+        : [],
     [editors, selfId],
   )
 
