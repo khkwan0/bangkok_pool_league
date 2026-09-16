@@ -533,21 +533,34 @@ export default function MatchCardOld({
           }}
           asChild>
           <Pressable style={({pressed}) => ({opacity: pressed ? 0.96 : 1})}>
-            <View style={styles.chipsWrap}>
-              <Chip
-                icon="calendar"
-                label={dateLabel}
-                color={theme.chipText}
-                background={theme.chipBg}
-              />
-              {bothConfirmed ? (
+            <View style={styles.metaRow}>
+              <View style={styles.chipsWrap}>
                 <Chip
-                  icon="check-decagram"
-                  label={t('match_confirmed')}
-                  color={theme.confirm}
-                  background={theme.confirmBg}
+                  icon="calendar"
+                  label={dateLabel}
+                  color={theme.chipText}
+                  background={theme.chipBg}
                 />
-              ) : null}
+                {bothConfirmed ? (
+                  <Chip
+                    icon="check-decagram"
+                    label={t('match_confirmed')}
+                    color={theme.confirm}
+                    background={theme.confirmBg}
+                  />
+                ) : null}
+              </View>
+              <View style={styles.scoresheetCta}>
+                <MCI
+                  name="clipboard-text-outline"
+                  size={16}
+                  color={accent}
+                />
+                <Text style={[styles.scoresheetCtaText, {color: accent}]}>
+                  Scoresheet
+                </Text>
+                <MCI name="chevron-right" size={18} color={accent} />
+              </View>
             </View>
 
             {postponedProposal?.newDate && !bothConfirmed ? (
@@ -977,11 +990,29 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 4,
   },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 12,
+  },
   chipsWrap: {
+    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginBottom: 12,
+  },
+  scoresheetCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingTop: 2,
+    flexShrink: 0,
+  },
+  scoresheetCtaText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   chip: {
     flexDirection: 'row',
