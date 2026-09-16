@@ -1,8 +1,12 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import React from 'react'
 import {
-  LayoutChangeEvent,
+  Dimensions,
+  Modal,
+  Platform,
   Pressable,
+  ScrollView,
+  StyleSheet,
   useColorScheme,
   View,
 } from 'react-native'
@@ -11,8 +15,8 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
 } from 'react-native-reanimated'
+import {FullWindowOverlay} from 'react-native-screens'
 
 export type SeedListEntry = {
   id: number
@@ -28,17 +32,55 @@ type Props = {
   entries: SeedListEntry[]
   editable: boolean
   busy?: boolean
-  onReorder: (orderedIds: number[]) => void | Promise<void>
+  /** Called with full ordered ids after a swap (optimistic parent update). */
+  onReorder: (orderedIds: number[]) => void
   onRemove?: (entryId: number) => void
-  /** Disable parent ScrollView while a row is dragging. */
   onDraggingChange?: (dragging: boolean) => void
+  verticalScrollRef?: React.RefObject<ScrollView | null>
+  verticalScrollOffsetRef?: React.MutableRefObject<number>
 }
 
+const OVERLAY_W = 220
+const OVERLAY_H = 44
+const EDGE_PX = 64
+const MAX_SCROLL_SPEED = 18
 const ROW_GAP = 10
 
 function rowLabel(e: SeedListEntry) {
   return e.display_name || e.label || e.participant_type
 }
+
+function sortEntries(entries: SeedListEntry[]) {
+  return [...entries].sort((a, b) => a.seed - b.seed || a.id - b.id)
+}
+
+function withDenseSeeds(list: SeedListEntry[]): SeedListEntry[] {
+  return list.map((e, i) => ({...e, seed: i + 1}))
+}
+
+function measureView(
+  ref: React.RefObject<View | null>,
+): Promise<{x: number; y: number; w: number; h: number} | null> {
+  return new Promise(resolve => {
+    const node = ref.current
+    if (!node) {
+      resolve(null)
+      return
+    }
+    node.measureInWindow((x, y, w, h) => {
+      if (w <= 0 || h <= 0) resolve(null)
+      else resolve({x, y, w, h})
+    })
+  })
+}
+
+type RowSlot = {
+  id: number
+  label: string
+  viewRef: React.RefObject<View | null>
+}
+
+type DragOverlay = {label: string; x: number; y: number}
 
 export default function SeedReorderList({
   entries,
@@ -47,199 +89,394 @@ export default function SeedReorderList({
   onReorder,
   onRemove,
   onDraggingChange,
+  verticalScrollRef,
+  verticalScrollOffsetRef,
 }: Props) {
   const isDark = useColorScheme() === 'dark'
-  const sorted = React.useMemo(
-    () => [...entries].sort((a, b) => a.seed - b.seed || a.id - b.id),
-    [entries],
-  )
-  const [heights, setHeights] = React.useState<Record<number, number>>({})
+  const sortedProp = React.useMemo(() => sortEntries(entries), [entries])
+  const [local, setLocal] = React.useState(sortedProp)
+  const draggingIdRef = React.useRef<number | null>(null)
+
+  React.useEffect(() => {
+    if (draggingIdRef.current == null) {
+      setLocal(sortedProp)
+    }
+  }, [sortedProp])
+
+  const slotsRef = React.useRef<Map<number, RowSlot>>(new Map())
+  const [selectedId, setSelectedId] = React.useState<number | null>(null)
+  const [hoverId, setHoverId] = React.useState<number | null>(null)
   const [draggingId, setDraggingId] = React.useState<number | null>(null)
-  const [hoverIndex, setHoverIndex] = React.useState<number | null>(null)
-  const orderRef = React.useRef(sorted.map(e => e.id))
-  orderRef.current = sorted.map(e => e.id)
+  const [overlay, setOverlay] = React.useState<DragOverlay | null>(null)
+  const lastPointer = React.useRef({x: 0, y: 0})
+  const rafRef = React.useRef<number | null>(null)
+  const localRef = React.useRef(local)
+  localRef.current = local
+  const reorderRef = React.useRef(onReorder)
+  reorderRef.current = onReorder
+  const onDraggingChangeRef = React.useRef(onDraggingChange)
+  onDraggingChangeRef.current = onDraggingChange
+  const verticalScrollRefStable = React.useRef(verticalScrollRef)
+  verticalScrollRefStable.current = verticalScrollRef
+  const verticalOffsetStable = React.useRef(verticalScrollOffsetRef)
+  verticalOffsetStable.current = verticalScrollOffsetRef
 
-  const defaultH = 72
-  const rowHeight = (id: number) => heights[id] ?? defaultH
+  const applySwap = React.useCallback((fromId: number, toId: number) => {
+    if (fromId === toId) return
+    const list = [...localRef.current]
+    const from = list.findIndex(e => e.id === fromId)
+    const to = list.findIndex(e => e.id === toId)
+    if (from < 0 || to < 0) return
+    ;[list[from], list[to]] = [list[to], list[from]]
+    const next = withDenseSeeds(list)
+    setLocal(next)
+    reorderRef.current(next.map(e => e.id))
+  }, [])
 
-  const onRowLayout = (id: number, e: LayoutChangeEvent) => {
-    const h = e.nativeEvent.layout.height
-    setHeights(prev => (prev[id] === h ? prev : {...prev, [id]: h}))
-  }
-
-  const startDrag = (id: number) => {
-    setDraggingId(id)
-    setHoverIndex(orderRef.current.indexOf(id))
-    onDraggingChange?.(true)
-  }
-
-  const moveDrag = (id: number, translationY: number) => {
-    const from = orderRef.current.indexOf(id)
-    if (from < 0) return
-    let y = translationY
-    let target = from
-    if (y > 0) {
-      while (
-        target < orderRef.current.length - 1 &&
-        y >
-          (rowHeight(orderRef.current[target]) +
-            rowHeight(orderRef.current[target + 1])) /
-            2 +
-            ROW_GAP / 2
+  const findRowAt = React.useCallback(async (pageX: number, pageY: number) => {
+    const entries = [...slotsRef.current.values()]
+    const measured = await Promise.all(
+      entries.map(async entry => {
+        const box = await measureView(entry.viewRef)
+        return box ? {entry, box} : null
+      }),
+    )
+    let best: {entry: RowSlot; area: number} | null = null
+    for (const item of measured) {
+      if (!item) continue
+      const {entry, box} = item
+      if (
+        pageX >= box.x &&
+        pageX <= box.x + box.w &&
+        pageY >= box.y &&
+        pageY <= box.y + box.h
       ) {
-        y -= rowHeight(orderRef.current[target + 1]) + ROW_GAP
-        target++
-      }
-    } else if (y < 0) {
-      while (
-        target > 0 &&
-        y <
-          -(
-            (rowHeight(orderRef.current[target]) +
-              rowHeight(orderRef.current[target - 1])) /
-              2 +
-            ROW_GAP / 2
-          )
-      ) {
-        y += rowHeight(orderRef.current[target - 1]) + ROW_GAP
-        target--
+        const area = box.w * box.h
+        if (!best || area < best.area) best = {entry, area}
       }
     }
-    setHoverIndex(target)
-  }
+    return best?.entry ?? null
+  }, [])
 
-  const endDrag = async (id: number) => {
-    const from = orderRef.current.indexOf(id)
-    const to = hoverIndex ?? from
-    setDraggingId(null)
-    setHoverIndex(null)
-    onDraggingChange?.(false)
-    if (from < 0 || to < 0 || from === to) return
-    const next = [...orderRef.current]
-    const [item] = next.splice(from, 1)
-    next.splice(to, 0, item)
-    await onReorder(next)
-  }
+  const applyAutoScroll = React.useCallback((pageY: number) => {
+    const {height} = Dimensions.get('window')
+    let dy = 0
+    if (pageY < EDGE_PX) {
+      dy = -MAX_SCROLL_SPEED * ((EDGE_PX - pageY) / EDGE_PX)
+    } else if (pageY > height - EDGE_PX) {
+      dy = MAX_SCROLL_SPEED * ((pageY - (height - EDGE_PX)) / EDGE_PX)
+    }
+    if (dy === 0) return
+    const vRef = verticalScrollRefStable.current?.current
+    const offsetRef = verticalOffsetStable.current
+    if (vRef && offsetRef) {
+      const nextY = Math.max(0, offsetRef.current + dy)
+      offsetRef.current = nextY
+      vRef.scrollTo({y: nextY, animated: false})
+    }
+  }, [])
 
-  if (sorted.length === 0) return null
+  const stopAutoScrollLoop = React.useCallback(() => {
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
+    }
+  }, [])
 
-  return (
+  const startAutoScrollLoop = React.useCallback(() => {
+    stopAutoScrollLoop()
+    const tick = () => {
+      if (draggingIdRef.current == null) {
+        rafRef.current = null
+        return
+      }
+      const {x, y} = lastPointer.current
+      applyAutoScroll(y)
+      setOverlay(prev =>
+        prev ? {...prev, x: x - OVERLAY_W / 2, y: y - OVERLAY_H / 2} : prev,
+      )
+      void findRowAt(x, y).then(hit => {
+        const from = draggingIdRef.current
+        if (hit && from && hit.id !== from) setHoverId(hit.id)
+        else setHoverId(null)
+      })
+      rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+  }, [applyAutoScroll, findRowAt, stopAutoScrollLoop])
+
+  React.useEffect(() => () => stopAutoScrollLoop(), [stopAutoScrollLoop])
+
+  const beginDrag = React.useCallback(
+    (id: number, pageX: number, pageY: number) => {
+      draggingIdRef.current = id
+      lastPointer.current = {x: pageX, y: pageY}
+      const slot = slotsRef.current.get(id)
+      setSelectedId(id)
+      setDraggingId(id)
+      setHoverId(null)
+      setOverlay({
+        label: slot?.label ?? 'Entry',
+        x: pageX - OVERLAY_W / 2,
+        y: pageY - OVERLAY_H / 2,
+      })
+      onDraggingChangeRef.current?.(true)
+      startAutoScrollLoop()
+    },
+    [startAutoScrollLoop],
+  )
+
+  const moveDrag = React.useCallback((pageX: number, pageY: number) => {
+    lastPointer.current = {x: pageX, y: pageY}
+    setOverlay(prev =>
+      prev
+        ? {...prev, x: pageX - OVERLAY_W / 2, y: pageY - OVERLAY_H / 2}
+        : prev,
+    )
+    void findRowAt(pageX, pageY).then(hit => {
+      const from = draggingIdRef.current
+      if (hit && from && hit.id !== from) setHoverId(hit.id)
+      else setHoverId(null)
+    })
+  }, [findRowAt])
+
+  const endDrag = React.useCallback(
+    (pageX: number, pageY: number) => {
+      stopAutoScrollLoop()
+      const from = draggingIdRef.current
+      setOverlay(null)
+      setDraggingId(null)
+      onDraggingChangeRef.current?.(false)
+      void findRowAt(pageX, pageY).then(hit => {
+        setHoverId(null)
+        draggingIdRef.current = null
+        if (from && hit && hit.id !== from) {
+          applySwap(from, hit.id)
+          setSelectedId(null)
+        }
+      })
+    },
+    [applySwap, findRowAt, stopAutoScrollLoop],
+  )
+
+  const toggleSelect = React.useCallback(
+    (id: number) => {
+      if (selectedId === id) {
+        setSelectedId(null)
+        return
+      }
+      if (selectedId != null && selectedId !== id) {
+        applySwap(selectedId, id)
+        setSelectedId(null)
+        return
+      }
+      setSelectedId(id)
+    },
+    [applySwap, selectedId],
+  )
+
+  const registerRow = React.useCallback((slot: RowSlot) => {
+    slotsRef.current.set(slot.id, slot)
+  }, [])
+  const unregisterRow = React.useCallback((id: number) => {
+    slotsRef.current.delete(id)
+  }, [])
+
+  if (local.length === 0) return null
+
+  const list = (
     <View style={{marginTop: 8}}>
       {editable ? (
         <Text style={{fontSize: 12, opacity: 0.55, marginBottom: 8}}>
-          Drag the handle to set seed order (1 at the top).
+          Long-press to drag-swap seeds (1 at the top), or tap two rows to swap.
+          Hold near the screen edge to auto-scroll.
         </Text>
       ) : null}
-      {sorted.map((e, index) => {
-        const displaySeed =
-          draggingId != null && hoverIndex != null
-            ? (() => {
-                const ids = [...orderRef.current]
-                const from = ids.indexOf(draggingId)
-                if (from < 0) return index + 1
-                const [item] = ids.splice(from, 1)
-                ids.splice(hoverIndex, 0, item)
-                return ids.indexOf(e.id) + 1
-              })()
-            : e.seed
-
-        return (
-          <SeedRow
-            key={e.id}
-            entry={e}
-            seed={displaySeed}
-            editable={editable}
-            busy={busy}
-            isDark={isDark}
-            isDragging={draggingId === e.id}
-            onLayout={ev => onRowLayout(e.id, ev)}
-            onRemove={onRemove}
-            onDragStart={() => startDrag(e.id)}
-            onDragMove={ty => moveDrag(e.id, ty)}
-            onDragEnd={() => endDrag(e.id)}
-          />
-        )
-      })}
+      {local.map(e => (
+        <SeedRow
+          key={e.id}
+          entry={e}
+          editable={editable}
+          busy={busy}
+          isDark={isDark}
+          selected={selectedId === e.id}
+          hovered={hoverId === e.id}
+          isSource={draggingId === e.id}
+          onRemove={onRemove}
+          registerRow={registerRow}
+          unregisterRow={unregisterRow}
+          beginDrag={beginDrag}
+          moveDrag={moveDrag}
+          endDrag={endDrag}
+          toggleSelect={toggleSelect}
+        />
+      ))}
     </View>
+  )
+
+  if (!editable) return list
+
+  const chip =
+    overlay != null ? (
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <View
+          style={{
+            position: 'absolute',
+            left: overlay.x,
+            top: overlay.y,
+            width: OVERLAY_W,
+            height: OVERLAY_H,
+            borderRadius: 8,
+            paddingHorizontal: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            backgroundColor: isDark ? '#1e293b' : '#fff',
+            borderWidth: 1,
+            borderColor: isDark ? '#60a5fa' : '#2563eb',
+            shadowColor: '#000',
+            shadowOpacity: 0.3,
+            shadowRadius: 10,
+            shadowOffset: {width: 0, height: 6},
+            elevation: 30,
+          }}>
+          <Text style={{fontSize: 12, opacity: 0.7, fontWeight: '800'}}>
+            ☰
+          </Text>
+          <Text
+            style={{flex: 1, fontWeight: '700', fontSize: 13}}
+            numberOfLines={1}>
+            {overlay.label}
+          </Text>
+        </View>
+      </View>
+    ) : null
+
+  return (
+    <>
+      {list}
+      {Platform.OS === 'ios' ? (
+        <FullWindowOverlay>{chip}</FullWindowOverlay>
+      ) : (
+        <Modal visible={overlay != null} transparent animationType="none">
+          {chip}
+        </Modal>
+      )}
+    </>
   )
 }
 
 function SeedRow({
   entry,
-  seed,
   editable,
   busy,
   isDark,
-  isDragging,
-  onLayout,
+  selected,
+  hovered,
+  isSource,
   onRemove,
-  onDragStart,
-  onDragMove,
-  onDragEnd,
+  registerRow,
+  unregisterRow,
+  beginDrag,
+  moveDrag,
+  endDrag,
+  toggleSelect,
 }: {
   entry: SeedListEntry
-  seed: number
   editable: boolean
   busy?: boolean
   isDark: boolean
-  isDragging: boolean
-  onLayout: (e: LayoutChangeEvent) => void
+  selected: boolean
+  hovered: boolean
+  isSource: boolean
   onRemove?: (entryId: number) => void
-  onDragStart: () => void
-  onDragMove: (ty: number) => void
-  onDragEnd: () => void
+  registerRow: (slot: RowSlot) => void
+  unregisterRow: (id: number) => void
+  beginDrag: (id: number, x: number, y: number) => void
+  moveDrag: (x: number, y: number) => void
+  endDrag: (x: number, y: number) => void
+  toggleSelect: (id: number) => void
 }) {
-  const ty = useSharedValue(0)
-  const dragging = useSharedValue(0)
+  const viewRef = React.useRef<View>(null)
+  const label = `#${entry.seed} ${rowLabel(entry)}`
+  const activeSV = useSharedValue(0)
 
-  const pan = Gesture.Pan()
-    .enabled(editable && !busy)
-    .activateAfterLongPress(120)
-    .onStart(() => {
-      dragging.value = 1
-      runOnJS(onDragStart)()
-    })
-    .onUpdate(e => {
-      ty.value = e.translationY
-      runOnJS(onDragMove)(e.translationY)
-    })
-    .onEnd(() => {
-      ty.value = withSpring(0)
-      dragging.value = 0
-      runOnJS(onDragEnd)()
-    })
-    .onFinalize(() => {
-      ty.value = withSpring(0)
-      dragging.value = 0
-    })
+  React.useEffect(() => {
+    if (!editable) return
+    registerRow({id: entry.id, label, viewRef})
+    return () => unregisterRow(entry.id)
+  }, [editable, entry.id, label, registerRow, unregisterRow])
 
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{translateY: ty.value}],
-    zIndex: dragging.value ? 20 : 1,
-    opacity: dragging.value ? 0.95 : 1,
-    shadowOpacity: dragging.value ? 0.25 : 0,
-    elevation: dragging.value ? 6 : 0,
+  const beginDragJS = React.useCallback(
+    (id: number, x: number, y: number) => beginDrag(id, x, y),
+    [beginDrag],
+  )
+  const moveDragJS = React.useCallback(
+    (x: number, y: number) => moveDrag(x, y),
+    [moveDrag],
+  )
+  const endDragJS = React.useCallback(
+    (x: number, y: number) => endDrag(x, y),
+    [endDrag],
+  )
+
+  const pan = React.useMemo(() => {
+    if (!editable) return Gesture.Pan().enabled(false)
+    const id = entry.id
+    return Gesture.Pan()
+      .enabled(!busy)
+      .activateAfterLongPress(160)
+      .onStart(e => {
+        activeSV.value = 1
+        runOnJS(beginDragJS)(id, e.absoluteX, e.absoluteY)
+      })
+      .onUpdate(e => {
+        runOnJS(moveDragJS)(e.absoluteX, e.absoluteY)
+      })
+      .onEnd(e => {
+        activeSV.value = 0
+        runOnJS(endDragJS)(e.absoluteX, e.absoluteY)
+      })
+      .onFinalize(() => {
+        activeSV.value = 0
+      })
+  }, [editable, busy, entry.id, activeSV, beginDragJS, moveDragJS, endDragJS])
+
+  const placeholderStyle = useAnimatedStyle(() => ({
+    opacity: activeSV.value ? 0.35 : 1,
   }))
 
-  return (
+  const borderColor = hovered
+    ? isDark
+      ? '#60a5fa'
+      : '#2563eb'
+    : selected
+      ? isDark
+        ? '#93c5fd'
+        : '#3b82f6'
+      : isDark
+        ? '#333'
+        : '#e2e8f0'
+
+  const body = (
     <Animated.View
-      onLayout={onLayout}
+      ref={viewRef}
       style={[
         {
           marginBottom: ROW_GAP,
           borderRadius: 10,
-          borderWidth: 1,
-          borderColor: isDark ? '#333' : '#e2e8f0',
+          borderWidth: selected || hovered ? 2 : 1,
+          borderColor,
           backgroundColor: isDark
-            ? isDragging
-              ? '#1e293b'
+            ? isSource
+              ? '#0f172a'
               : '#1f1f1f'
-            : isDragging
-              ? '#eff6ff'
+            : isSource
+              ? '#f1f5f9'
               : '#fff',
           padding: 12,
         },
-        animStyle,
+        placeholderStyle,
       ]}>
       <View
         style={{
@@ -248,31 +485,29 @@ function SeedRow({
           gap: 10,
         }}>
         {editable ? (
-          <GestureDetector gesture={pan}>
-            <View
-              style={{
-                paddingHorizontal: 8,
-                paddingVertical: 10,
-                borderRadius: 6,
-                backgroundColor: isDark ? '#334155' : '#e2e8f0',
-              }}
-              accessibilityLabel="Drag to reorder seed">
-              <Text style={{fontSize: 14, opacity: 0.7, letterSpacing: 1}}>
-                ⠿
-              </Text>
-            </View>
-          </GestureDetector>
+          <View
+            style={{
+              paddingHorizontal: 8,
+              paddingVertical: 10,
+              borderRadius: 6,
+              backgroundColor: isDark ? '#334155' : '#e2e8f0',
+            }}>
+            <Text style={{fontSize: 14, opacity: 0.7, fontWeight: '800'}}>
+              ☰
+            </Text>
+          </View>
         ) : null}
-        <View style={{flex: 1, paddingRight: 8}}>
-          <Text style={{fontWeight: '700'}}>
-            #{seed} {rowLabel(entry)}
-          </Text>
+        <Pressable
+          disabled={!editable || busy}
+          onPress={() => editable && toggleSelect(entry.id)}
+          style={{flex: 1, paddingRight: 8}}>
+          <Text style={{fontWeight: '700'}}>{label}</Text>
           <Text style={{marginTop: 2, fontSize: 12, opacity: 0.55}}>
             {entry.participant_type}
             {entry.team_id ? ` · team ${entry.team_id}` : ''}
             {entry.player_id ? ` · player ${entry.player_id}` : ''}
           </Text>
-        </View>
+        </Pressable>
         {editable && onRemove ? (
           <Pressable onPress={() => onRemove(entry.id)} disabled={busy}>
             <Text style={{color: '#dc2626', fontWeight: '600'}}>Remove</Text>
@@ -281,4 +516,8 @@ function SeedRow({
       </View>
     </Animated.View>
   )
+
+  if (!editable) return body
+
+  return <GestureDetector gesture={pan}>{body}</GestureDetector>
 }

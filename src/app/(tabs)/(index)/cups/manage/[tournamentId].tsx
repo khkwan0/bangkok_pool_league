@@ -366,13 +366,19 @@ export default function CupsManageDetailScreen() {
   }
 
   async function reorderSeeds(orderedIds: number[]) {
-    setBusy(true)
-    try {
-      const res = await api.adminReorderSeeds(scope, tournamentId, orderedIds)
-      if (res?.status === 'ok') await load()
-      else Alert.alert('Error', res?.error || 'Could not reorder seeds')
-    } finally {
-      setBusy(false)
+    setEntries(prev => {
+      const byId = new Map(prev.map(e => [e.id, e]))
+      return orderedIds
+        .map((id, i) => {
+          const e = byId.get(id)
+          return e ? {...e, seed: i + 1} : null
+        })
+        .filter(Boolean) as Entry[]
+    })
+    const res = await api.adminReorderSeeds(scope, tournamentId, orderedIds)
+    if (res?.status !== 'ok') {
+      Alert.alert('Error', res?.error || 'Could not reorder seeds')
+      await load()
     }
   }
 
@@ -1079,6 +1085,8 @@ export default function CupsManageDetailScreen() {
           onReorder={reorderSeeds}
           onRemove={isDraft ? removeEntry : undefined}
           onDraggingChange={setSeedDragging}
+          verticalScrollRef={pageScrollRef}
+          verticalScrollOffsetRef={pageScrollOffsetRef}
         />
       )}
 
