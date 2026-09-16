@@ -6,6 +6,7 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTournaments} from '@/hooks/useTournaments'
+import {useTournamentAdminSocket} from '@/hooks/useTournamentAdminSocket'
 import {isMiniCompetition} from '@/types/competition'
 import {useFocusEffect, useLocalSearchParams, useRouter} from 'expo-router'
 import React from 'react'
@@ -241,6 +242,16 @@ export default function CupsManageDetailScreen() {
   }, [isSiteAdmin, miniId, scopeType, tournamentId])
 
   const hasHydrated = React.useRef(false)
+
+  const onRemoteTournamentUpdate = React.useCallback(() => {
+    void load()
+  }, [load])
+
+  const {others: otherEditors} = useTournamentAdminSocket({
+    tournamentId,
+    enabled: allowed && tournamentId > 0,
+    onRemoteUpdate: onRemoteTournamentUpdate,
+  })
 
   React.useEffect(() => {
     hasHydrated.current = false
@@ -575,6 +586,23 @@ export default function CupsManageDetailScreen() {
         {status.replace(/_/g, ' ')} · {mode}
         {tournament.game_type_label ? ` · ${tournament.game_type_label}` : ''}
       </Text>
+      {otherEditors.length > 0 ? (
+        <RNView
+          style={{
+            marginTop: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 8,
+            backgroundColor: isDark ? '#1e3a5f' : '#dbeafe',
+            borderWidth: 1,
+            borderColor: isDark ? '#3b82f6' : '#93c5fd',
+          }}>
+          <Text style={{fontSize: 13, fontWeight: '600'}}>
+            Also editing:{' '}
+            {otherEditors.map(e => e.nickname).join(', ')}
+          </Text>
+        </RNView>
+      ) : null}
 
       <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 16}}>
         {!isDraft ? (

@@ -1,0 +1,112 @@
+import {createSocketClient, loadSocketAuth} from '@/lib/socketAuth'
+import {useLeagueContext} from '@/context/LeagueContext'
+import React from 'react'
+import type {Socket} from 'socket.io-client'
+
+export type TournamentEditor = {
+  player_id: number
+  nickname: string
+}
+
+type UpdatePayload = {
+  tournament_id?: number
+  type?: string
+  actor_id?: number | null
+}
+
+type EditorsPayload = {
+  tournament_id?: number
+  editors?: TournamentEditor[]
+}
+
+/**
+ * Join tournament_{id} for admin edit presence + invalidate-on-change.
+ * Connects while `enabled`; tears down on disable / unmount.
+ */
+export function useTournamentAdminSocket(opts: {
+  tournamentId: number
+  enabled: boolean
+  onRemoteUpdate: (payload: UpdatePayload) => void
+}) {
+  const {tournamentId, enabled, onRemoteUpdate} = opts
+  const {webSocketUrl, state} = useLeagueContext() as any
+  const selfId = Number(state?.user?.id) || 0
+  const [editors, setEditors] = React.useState<TournamentEditor[]>([])
+  const onRemoteUpdateRef = React.useRef(onRemoteUpdate)
+  onRemoteUpdateRef.current = onRemoteUpdate
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  React.useEffect(() => {
+    if (!enabled || !tournamentId || !webSocketUrl) {
+      setEditors([])
+      return
+    }
+
+    let cancelled = false
+    let socket: Socket | null = null
+    const room = `tournament_${tournamentId}`
+
+    async function setup() {
+      const authOptions = await loadSocketAuth()
+      if (cancelled) return
+      socket = createSocketClient(webSocketUrl, authOptions)
+
+      socket.on('tournament:editors', (payload: EditorsPayload) => {
+        if (Number(payload?.tournament_id) !== tournamentId) return
+        setEditors(Array.isArray(payload.editors) ? payload.editors : [])
+      })
+
+      socket.on('tournament_update', (payload: UpdatePayload) => {
+        if (Number(payload?.tournament_id) !== tournamentId) return
+        if (
+          payload?.actor_id != null &&
+          selfId > 0 &&
+          Number(payload.actor_id) === selfId
+        ) {
+          return
+        }
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => {
+          onRemoteUpdateRef.current(payload)
+        }, 300)
+      })
+
+      socket.on('connect', () => {
+        socket?.emit(
+          'join',
+          room,
+          (ack?: {status?: string; error?: string}) => {
+            if (ack?.status !== 'ok') {
+              console.warn('tournament join failed', ack?.error)
+            }
+          },
+        )
+      })
+
+      socket.connect()
+    }
+
+    setup()
+
+    return () => {
+      cancelled = true
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (socket) {
+        socket.emit('leave', room)
+        socket.removeAllListeners()
+        socket.disconnect()
+      }
+      setEditors([])
+    }
+  }, [enabled, tournamentId, webSocketUrl, selfId])
+
+  const others = React.useMemo(
+    () =>
+      editors.filter(
+        e => selfId <= 0 || Number(e.player_id) !== selfId,
+      ),
+    [editors, selfId],
+  )
+
+  return {editors, others, selfId}
+}
