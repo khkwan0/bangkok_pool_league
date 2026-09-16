@@ -72,13 +72,7 @@ export function useTournamentAdminSocket(opts: {
 
       socket.on('tournament_update', (payload: UpdatePayload) => {
         if (Number(payload?.tournament_id) !== tournamentId) return
-        if (
-          payload?.actor_id != null &&
-          selfId > 0 &&
-          Number(payload.actor_id) === selfId
-        ) {
-          return
-        }
+        // Do not skip by actor_id: same admin on phone + web must still refresh.
         if (debounceRef.current) clearTimeout(debounceRef.current)
         debounceRef.current = setTimeout(() => {
           onRemoteUpdateRef.current(payload)
