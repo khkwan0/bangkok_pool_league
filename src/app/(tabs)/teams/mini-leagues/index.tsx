@@ -7,6 +7,7 @@ import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContaine
 import {useTheme} from 'expo-router/react-navigation'
 import {router, useFocusEffect} from 'expo-router'
 import React from 'react'
+import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
   Alert,
@@ -17,6 +18,7 @@ import {
 } from 'react-native'
 
 export default function MiniLeaguesScreen() {
+  const {t} = useTranslation()
   const api = useMiniLeagues()
   const {setCompetition} = useLeagueContext()
   const {colors} = useTheme()
@@ -67,7 +69,7 @@ export default function MiniLeaguesScreen() {
           params: {id: String(res.data.id)},
         })
       } else {
-        Alert.alert('Error', res?.error || 'Could not create mini league')
+        Alert.alert(t('error'), res?.error || t('mini_league_create_error'))
       }
     } finally {
       setCreating(false)
@@ -83,11 +85,11 @@ export default function MiniLeaguesScreen() {
         await setCompetition({
           type: 'mini',
           id,
-          name: row?.name || 'Mini league',
+          name: row?.name || t('mini_league'),
         })
       }
     } else {
-      Alert.alert('Error', res?.error || 'Request failed')
+      Alert.alert(t('error'), res?.error || t('request_failed'))
     }
   }
 
@@ -102,14 +104,11 @@ export default function MiniLeaguesScreen() {
   return (
     <View className="flex-1">
       <View className="px-4 pt-4 pb-2">
-        <Text className="text-base mb-2 opacity-80">
-          Create a mini league for ad hoc matches. Stats stay separate from the
-          main league. Switch competition from the Home header anytime.
-        </Text>
+        <Text className="text-base mb-2 opacity-80">{t('mini_leagues_intro')}</Text>
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder="Mini league name"
+          placeholder={t('mini_league_name')}
           placeholderTextColor={colors.text + '66'}
           style={{
             borderWidth: 1,
@@ -123,7 +122,7 @@ export default function MiniLeaguesScreen() {
         />
         <Button onPress={onCreate} disabled={creating || !name.trim()}>
           <Text className="text-white">
-            {creating ? 'Creating…' : 'Create mini league'}
+            {creating ? t('creating') : t('create_mini_league')}
           </Text>
         </Button>
       </View>
@@ -136,7 +135,7 @@ export default function MiniLeaguesScreen() {
         }
         ListEmptyComponent={
           <Text className="text-center opacity-60 mt-8 px-4">
-            No mini leagues yet.
+            {t('mini_leagues_empty')}
           </Text>
         }
         renderItem={({item}) => (
@@ -157,18 +156,20 @@ export default function MiniLeaguesScreen() {
             className="mx-4 my-2 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
             <Text className="text-base font-semibold">{item.name}</Text>
             <Text className="text-sm opacity-70 mt-1">
-              {item.is_admin ? 'Admin' : 'Member'}
-              {item.member_status === 'pending' ? ' · Invite pending' : ''}
+              {item.is_admin ? t('admin') : t('member')}
+              {item.member_status === 'pending'
+                ? ` · ${t('invite_pending')}`
+                : ''}
             </Text>
             {item.member_status === 'pending' ? (
               <View className="flex-row gap-2 mt-3">
                 <Button onPress={() => onRespond(item.id, 'accept')}>
-                  <Text className="text-white">Accept</Text>
+                  <Text className="text-white">{t('accept')}</Text>
                 </Button>
                 <Button
                   type="outline"
                   onPress={() => onRespond(item.id, 'decline')}>
-                  Decline
+                  decline
                 </Button>
               </View>
             ) : null}

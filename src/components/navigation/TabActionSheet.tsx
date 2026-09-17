@@ -159,9 +159,9 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
           }}>
           <View className="mb-4">
             <View className="flex-row items-center justify-between">
-              <Text type="subtitle">Quick Actions</Text>
+              <Text type="subtitle">{t('quick_actions_title')}</Text>
               <Text className="text-sm opacity-60">
-                Build {config.build}
+                {t('build')} {config.build}
               </Text>
             </View>
             <Text className="mt-1 text-sm opacity-60">
@@ -222,14 +222,14 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
           />
           <QuickActionItem
             icon="trophy"
-            label="Tournaments"
+            label={t('tournaments')}
             iconColor="#B45309"
             iconBackground="rgba(180, 83, 9, 0.15)"
             onPress={() => navigate('/(tabs)/(index)/cups')}
           />
           <QuickActionItem
             icon="trophy-outline"
-            label="Change league…"
+            label={t('change_league')}
             iconColor="#E91E63"
             iconBackground="rgba(233, 30, 99, 0.15)"
             onPress={() => {

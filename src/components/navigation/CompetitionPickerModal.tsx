@@ -12,6 +12,7 @@ import {
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {router} from 'expo-router'
 import React from 'react'
+import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
   Alert,
@@ -138,6 +139,7 @@ function OptionRow({
 }
 
 export function CompetitionPickerModal() {
+  const {t} = useTranslation()
   const {state, setCompetition, closeCompetitionPicker, apiUrl} =
     useLeagueContext()
   const api = useMiniLeagues()
@@ -203,14 +205,14 @@ export function CompetitionPickerModal() {
         setItems([])
         setError(
           res?.error === 'unauthorized'
-            ? 'Sign in to see mini leagues'
-            : res?.error || 'Could not load mini leagues',
+            ? t('mini_leagues_sign_in')
+            : res?.error || t('mini_leagues_load_error'),
         )
       }
     } finally {
       setLoading(false)
     }
-  }, [setCompetition])
+  }, [setCompetition, t])
 
   React.useEffect(() => {
     if (visible) {
@@ -247,7 +249,7 @@ export function CompetitionPickerModal() {
           params: {id: String(res.data.id)},
         })
       } else {
-        Alert.alert('Error', res?.error || 'Could not create mini league')
+        Alert.alert(t('error'), res?.error || t('mini_league_create_error'))
       }
     } finally {
       setCreating(false)
@@ -263,11 +265,11 @@ export function CompetitionPickerModal() {
         await select({
           type: 'mini',
           id,
-          name: row?.name || 'Mini league',
+          name: row?.name || t('mini_league'),
         })
       }
     } else {
-      Alert.alert('Error', res?.error || 'Request failed')
+      Alert.alert(t('error'), res?.error || t('request_failed'))
     }
   }
 
@@ -288,12 +290,12 @@ export function CompetitionPickerModal() {
             paddingBottom: 8,
           }}>
           <Text style={{fontSize: 22, fontWeight: '800', flex: 1, paddingRight: 12}}>
-            You're viewing
+            {t('competition_picker_title')}
           </Text>
           <Pressable
             onPress={closeCompetitionPicker}
             accessibilityRole="button"
-            accessibilityLabel="Close"
+            accessibilityLabel={t('close')}
             hitSlop={12}
             style={({pressed}) => ({
               width: 36,
@@ -324,7 +326,7 @@ export function CompetitionPickerModal() {
               marginBottom: 20,
               paddingHorizontal: 4,
             }}>
-            Pick what Home, standings, and results show. Tap one to switch.
+            {t('competition_picker_hint')}
           </Text>
 
           {/* Main league section */}
@@ -347,7 +349,7 @@ export function CompetitionPickerModal() {
                 lineHeight: 16,
                 marginBottom: 8,
               }}>
-              MAIN LEAGUE
+              {t('main_league').toUpperCase()}
             </Text>
             <Text
               style={{
@@ -356,15 +358,15 @@ export function CompetitionPickerModal() {
                 lineHeight: 20,
                 marginBottom: 18,
               }}>
-              The official Bangkok Pool League season.
+              {t('main_league_description')}
             </Text>
 
             <OptionRow
               selected={isCanonical}
               onPress={() => select(CANONICAL_COMPETITION)}
               radioColor={isCanonical ? '#FFD54F' : MAIN}
-              title="Bangkok Pool League"
-              subtitle="Official season matches & table"
+              title={t('bangkok_pool_league')}
+              subtitle={t('official_season_table')}
               titleColor={isCanonical ? '#fff' : textColor}
               subtitleColor={
                 isCanonical ? 'rgba(255,255,255,0.75)' : muted
@@ -399,7 +401,7 @@ export function CompetitionPickerModal() {
                 lineHeight: 16,
                 marginBottom: 8,
               }}>
-              MINI LEAGUES
+              {t('mini_leagues').toUpperCase()}
             </Text>
             <Text
               style={{
@@ -408,8 +410,7 @@ export function CompetitionPickerModal() {
                 lineHeight: 20,
                 marginBottom: 18,
               }}>
-              Private groups with their own matches. Stats stay separate from
-              the main league.
+              {t('mini_leagues_section_description')}
             </Text>
 
             {loading && items.length === 0 ? (
@@ -427,7 +428,7 @@ export function CompetitionPickerModal() {
                   lineHeight: 20,
                   fontSize: 14,
                 }}>
-                None yet — create one below if you want a private group.
+                {t('mini_leagues_none_yet')}
               </Text>
             ) : null}
 
@@ -453,10 +454,10 @@ export function CompetitionPickerModal() {
                     title={item.name}
                     subtitle={
                       pending
-                        ? 'Invite pending'
+                        ? t('invite_pending')
                         : item.is_admin
-                          ? 'You admin this group'
-                          : 'Private mini league'
+                          ? t('you_admin_this_group')
+                          : t('private_mini_league')
                     }
                     titleColor={textColor}
                     subtitleColor={muted}
@@ -473,12 +474,12 @@ export function CompetitionPickerModal() {
                       pending ? (
                         <View style={{flexDirection: 'row', gap: 8}}>
                           <Button onPress={() => onRespond(item.id, 'accept')}>
-                            <Text className="text-white">Accept</Text>
+                            <Text className="text-white">{t('accept')}</Text>
                           </Button>
                           <Button
                             type="outline"
                             onPress={() => onRespond(item.id, 'decline')}>
-                            Decline
+                            decline
                           </Button>
                         </View>
                       ) : null
@@ -512,7 +513,7 @@ export function CompetitionPickerModal() {
                     fontSize: 15,
                     lineHeight: 20,
                   }}>
-                  Create a mini league
+                  {t('create_a_mini_league')}
                 </Text>
               </Pressable>
             ) : (
@@ -525,13 +526,13 @@ export function CompetitionPickerModal() {
                   backgroundColor: cardBg,
                 }}>
                 <Text style={{fontWeight: '700', marginBottom: 10, fontSize: 15}}>
-                  New mini league
+                  {t('new_mini_league')}
                 </Text>
                 <TextInput
                   value={name}
                   onChangeText={setName}
                   autoFocus
-                  placeholder="Name"
+                  placeholder={t('name')}
                   placeholderTextColor={muted}
                   style={{
                     borderWidth: 1,
@@ -551,7 +552,7 @@ export function CompetitionPickerModal() {
                         setShowCreate(false)
                         setName('')
                       }}>
-                      Cancel
+                      cancel
                     </Button>
                   </View>
                   <View style={{flex: 1}}>
@@ -559,7 +560,7 @@ export function CompetitionPickerModal() {
                       onPress={onCreate}
                       disabled={creating || !name.trim()}>
                       <Text className="text-white">
-                        {creating ? 'Creating…' : 'Create'}
+                        {creating ? t('creating') : t('create')}
                       </Text>
                     </Button>
                   </View>

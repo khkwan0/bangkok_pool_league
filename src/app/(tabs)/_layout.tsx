@@ -34,7 +34,7 @@ import {useTranslation} from 'react-i18next'
 import {AppState, Platform, View} from 'react-native'
 
 export default function TabLayout() {
-  const {t} = useTranslation()
+  const {t, i18n} = useTranslation()
   const {state, dispatch} = useLeagueContext()
   const account = useAccount()
   const {markRead, syncReads, getAnnouncements, getAnnouncement} =
@@ -311,7 +311,13 @@ export default function TabLayout() {
       return
     }
     checkUnreadAnnouncements()
-  }, [isMounted, showLanguageOption, state.user?.id, checkUnreadAnnouncements])
+  }, [
+    isMounted,
+    showLanguageOption,
+    state.user?.id,
+    i18n.language,
+    checkUnreadAnnouncements,
+  ])
 
   // Keep app icon badge in sync with in-app unread count
   React.useEffect(() => {
@@ -406,6 +412,9 @@ export default function TabLayout() {
     try {
       await AsyncStorage.setItem('language', lang)
       await i18n.changeLanguage(lang)
+      if (state.user?.id) {
+        await account.SaveLanguage(lang)
+      }
       setShowLanguageOption(false)
     } catch (error) {
       console.log(error)

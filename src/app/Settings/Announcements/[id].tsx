@@ -73,7 +73,15 @@ export default function AnnouncementDetailScreen() {
     return () => {
       cancelled = true
     }
-  }, [id, getAnnouncement, getAnnouncements, markRead, navigation, t])
+  }, [
+    id,
+    getAnnouncement,
+    getAnnouncements,
+    markRead,
+    navigation,
+    t,
+    i18n.language,
+  ])
 
   const content = React.useMemo(() => {
     if (!announcement?.content) {

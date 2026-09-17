@@ -1,6 +1,7 @@
 import config from '@/config'
 import {useNetwork} from '@/hooks/useNetwork'
 import {useLeagueContext} from '@/context/LeagueContext'
+import i18n from '@/i18n'
 import {
   markAnnouncementReadLocal,
   syncAnnouncementReadsWithBackend,
@@ -15,6 +16,22 @@ import type {
 } from '@/types/announcements'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import React from 'react'
+
+/** Locale the announcements API understands (`en` | `th`). */
+function announcementLocaleParam(): string {
+  const lang = (i18n.language || 'en').trim().toLowerCase()
+  if (lang === 'th' || lang.startsWith('th-')) {
+    return 'th'
+  }
+  return 'en'
+}
+
+function withAnnouncementLocale(path: string): string {
+  const locale = announcementLocaleParam()
+  return path.includes('?')
+    ? `${path}&locale=${encodeURIComponent(locale)}`
+    : `${path}?locale=${encodeURIComponent(locale)}`
+}
 
 export function useAnnouncements() {
   const network = useNetwork()
@@ -31,7 +48,9 @@ export function useAnnouncements() {
       pageSize = 20,
     ): Promise<PaginatedAnnouncements & {error?: string}> => {
       const res = await networkRef.current.Get(
-        `/announcements?page=${page}&pageSize=${pageSize}`,
+        withAnnouncementLocale(
+          `/announcements?page=${page}&pageSize=${pageSize}`,
+        ),
       )
       if (res?.status === 'ok' && res.data) {
         return res.data as PaginatedAnnouncements
@@ -43,7 +62,9 @@ export function useAnnouncements() {
 
   const getAnnouncement = React.useCallback(
     async (id: number): Promise<Announcement | null> => {
-      const res = await networkRef.current.Get(`/announcements?id=${id}`)
+      const res = await networkRef.current.Get(
+        withAnnouncementLocale(`/announcements?id=${id}`),
+      )
       if (res?.status === 'ok' && res.data) {
         return res.data as Announcement
       }
@@ -53,7 +74,9 @@ export function useAnnouncements() {
   )
 
   const getUnread = React.useCallback(async (): Promise<Announcement | null> => {
-    const res = await networkRef.current.Get('/announcements/unread')
+    const res = await networkRef.current.Get(
+      withAnnouncementLocale('/announcements/unread'),
+    )
     if (res?.status === 'ok') {
       return (res.data as Announcement | null) ?? null
     }
@@ -61,7 +84,9 @@ export function useAnnouncements() {
   }, [])
 
   const hasUnread = React.useCallback(async (): Promise<boolean> => {
-    const res = await networkRef.current.Get('/announcements/unread?countOnly=1')
+    const res = await networkRef.current.Get(
+      withAnnouncementLocale('/announcements/unread?countOnly=1'),
+    )
     if (res?.status === 'ok' && res.data) {
       return Boolean(res.data.hasUnread)
     }
