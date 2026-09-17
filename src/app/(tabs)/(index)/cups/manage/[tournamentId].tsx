@@ -13,6 +13,7 @@ import React from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   Switch,
@@ -139,6 +140,7 @@ export default function CupsManageDetailScreen() {
   const [loading, setLoading] = React.useState(true)
   const [allowed, setAllowed] = React.useState(false)
   const [busy, setBusy] = React.useState(false)
+  const [busyMessage, setBusyMessage] = React.useState('Working…')
   const [tournament, setTournament] = React.useState<any>(null)
   const [entries, setEntries] = React.useState<Entry[]>([])
   const [teams, setTeams] = React.useState<any[]>([])
@@ -393,6 +395,25 @@ export default function CupsManageDetailScreen() {
     }
   }
 
+  async function runBusy(
+    message: string,
+    work: () => Promise<void>,
+  ) {
+    setBusyMessage(message)
+    setBusy(true)
+    // Let the blocking modal paint before the network call starts.
+    await new Promise<void>(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve())
+      })
+    })
+    try {
+      await work()
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function generate() {
     Alert.alert(
       'Generate draft bracket?',
@@ -401,9 +422,8 @@ export default function CupsManageDetailScreen() {
         {text: 'Cancel', style: 'cancel'},
         {
           text: 'Generate draft',
-          onPress: async () => {
-            setBusy(true)
-            try {
+          onPress: () => {
+            void runBusy('Generating draft…', async () => {
               const res = await api.adminGenerateBracket(scope, tournamentId)
               if (res?.status === 'ok') {
                 if (Array.isArray(res.stages)) {
@@ -422,9 +442,7 @@ export default function CupsManageDetailScreen() {
               } else {
                 Alert.alert('Error', res?.error || 'Generate failed')
               }
-            } finally {
-              setBusy(false)
-            }
+            })
           },
         },
       ],
@@ -439,9 +457,8 @@ export default function CupsManageDetailScreen() {
         {text: 'Cancel', style: 'cancel'},
         {
           text: 'Lock in',
-          onPress: async () => {
-            setBusy(true)
-            try {
+          onPress: () => {
+            void runBusy('Locking bracket…', async () => {
               const res = await api.adminConfirmBracket(scope, tournamentId)
               if (res?.status === 'ok') {
                 setHasDraft(false)
@@ -456,9 +473,7 @@ export default function CupsManageDetailScreen() {
               } else {
                 Alert.alert('Error', res?.error || 'Confirm failed')
               }
-            } finally {
-              setBusy(false)
-            }
+            })
           },
         },
       ],
@@ -471,9 +486,8 @@ export default function CupsManageDetailScreen() {
       {
         text: 'Discard',
         style: 'destructive',
-        onPress: async () => {
-          setBusy(true)
-          try {
+        onPress: () => {
+          void runBusy('Discarding draft…', async () => {
             const res = await api.adminDiscardBracketDraft(scope, tournamentId)
             if (res?.status === 'ok') {
               setHasDraft(false)
@@ -484,9 +498,7 @@ export default function CupsManageDetailScreen() {
             } else {
               Alert.alert('Error', res?.error || 'Discard failed')
             }
-          } finally {
-            setBusy(false)
-          }
+          })
         },
       },
     ])
@@ -501,18 +513,15 @@ export default function CupsManageDetailScreen() {
         {
           text: 'Reset',
           style: 'destructive',
-          onPress: async () => {
-            setBusy(true)
-            try {
+          onPress: () => {
+            void runBusy('Resetting bracket…', async () => {
               const res = await api.adminResetBracket(scope, tournamentId)
               if (res?.status === 'ok') {
                 await load()
               } else {
                 Alert.alert('Error', res?.error || 'Reset failed')
               }
-            } finally {
-              setBusy(false)
-            }
+            })
           },
         },
       ],
@@ -525,18 +534,15 @@ export default function CupsManageDetailScreen() {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: async () => {
-          setBusy(true)
-          try {
+        onPress: () => {
+          void runBusy('Deleting tournament…', async () => {
             const res = await api.adminDelete(scope, tournamentId)
             if (res?.status === 'ok') {
               router.back()
             } else {
               Alert.alert('Error', res?.error || 'Delete failed')
             }
-          } finally {
-            setBusy(false)
-          }
+          })
         },
       },
     ])
@@ -572,12 +578,44 @@ export default function CupsManageDetailScreen() {
   const allowsPlayerEntries = mode === 'player' || mode === 'mixed'
 
   return (
+    <>
+    <Modal visible={busy} transparent animationType="fade" statusBarTranslucent>
+      <RNView
+        pointerEvents="auto"
+        style={{
+          flex: 1,
+          backgroundColor: 'rgba(15,23,42,0.55)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 24,
+        }}>
+        <RNView
+          style={{
+            minWidth: 220,
+            maxWidth: 320,
+            borderRadius: 14,
+            paddingVertical: 22,
+            paddingHorizontal: 20,
+            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+            alignItems: 'center',
+            gap: 12,
+          }}>
+          <ActivityIndicator size="large" color={isDark ? '#93c5fd' : '#1d4ed8'} />
+          <Text style={{fontSize: 15, fontWeight: '700', textAlign: 'center'}}>
+            {busyMessage}
+          </Text>
+          <Text style={{fontSize: 12, opacity: 0.6, textAlign: 'center'}}>
+            Please wait — do not leave this screen
+          </Text>
+        </RNView>
+      </RNView>
+    </Modal>
     <ScrollView
       ref={pageScrollRef}
       style={{flex: 1}}
       contentContainerStyle={{padding: 16, paddingBottom: 48}}
       scrollEventThrottle={16}
-      scrollEnabled={!seedDragging}
+      scrollEnabled={!seedDragging && !busy}
       onScroll={e => {
         pageScrollOffsetRef.current = e.nativeEvent.contentOffset.y
       }}>
@@ -1128,5 +1166,6 @@ export default function CupsManageDetailScreen() {
         </View>
       ) : null}
     </ScrollView>
+    </>
   )
 }
