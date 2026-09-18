@@ -5,6 +5,7 @@ import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useLeague} from '@/hooks'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
+import {useNetwork} from '@/hooks/useNetwork'
 import {useTournaments} from '@/hooks/useTournaments'
 import {
   buildStructureFromPreset,
@@ -117,6 +118,7 @@ export default function CupsCreateScreen() {
   const paramMiniId = Number(params.mini_league_id || 0) || null
   const {state} = useLeagueContext()
   const league = useLeague()
+  const {Get} = useNetwork()
   const api = useTournaments()
   const miniApi = useMiniLeagues()
   const router = useRouter()
@@ -253,7 +255,8 @@ export default function CupsCreateScreen() {
         await Promise.all([
           api.adminPresets(adminScope),
           api.adminMatchFormats(adminScope),
-          league.GetGameTypes(),
+          // Same source as web tournament admin (8-ball / 9-ball), not /gametypes frame types.
+          Get('/league-game-types'),
           !isMiniRoute ? league.GetSeasons() : Promise.resolve(null),
           !isMiniRoute && isSiteAdmin
             ? miniApi.list()
@@ -782,6 +785,9 @@ export default function CupsCreateScreen() {
             </Text>
           </Pressable>
         ))}
+        {gameTypes.length === 0 ? (
+          <Text style={{opacity: 0.55}}>No game types available.</Text>
+        ) : null}
       </RNView>
 
       <Text style={{fontWeight: '600', marginBottom: 6}}>Match format</Text>

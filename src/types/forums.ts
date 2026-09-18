@@ -93,6 +93,7 @@ export type ForumTopicDetail = {
   forum: ForumBoard
   topic: ForumTopicListItem & {forum_slug?: string; category_slug?: string}
   poll: ForumPoll | null
+  opening_post?: {id: number; content: string} | null
   can_reply: boolean
   can_moderate: boolean
   can_manage: boolean
@@ -130,6 +131,7 @@ export type ForumPostsPage = Paginated<ForumPost> & {
 
 export type ForumTopicUpdate = {
   title?: string
+  content?: string
   is_pinned?: boolean
   is_locked?: boolean
   is_hidden?: boolean

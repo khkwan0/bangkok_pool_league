@@ -1,6 +1,7 @@
 import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
 import {router, useFocusEffect} from 'expo-router'
@@ -13,9 +14,9 @@ import {
   TextInput,
 } from 'react-native'
 
-function canCreateTeam(mini: any) {
+function canCreateTeam(mini: any, isSiteAdmin = false) {
   if (!mini) return false
-  if (mini.is_admin) return true
+  if (isSiteAdmin || mini.is_admin) return true
   const permission = mini.team_create_permission || 'admins'
   if (permission === 'anyone') return true
   if (permission === 'members') return mini.member_status === 'active'
@@ -26,6 +27,8 @@ function canCreateTeam(mini: any) {
 export function MiniLeagueTeamsPanel({miniLeagueId}: {miniLeagueId: number}) {
   const api = useMiniLeagues()
   const {colors} = useTheme()
+  const {state} = useLeagueContext()
+  const isSiteAdmin = Number(state.user?.role_id) === 9
   const [loading, setLoading] = React.useState(true)
   const [mini, setMini] = React.useState<any>(null)
   const [teams, setTeams] = React.useState<any[]>([])
@@ -78,7 +81,7 @@ export function MiniLeagueTeamsPanel({miniLeagueId}: {miniLeagueId: number}) {
     )
   }
 
-  const allowCreate = canCreateTeam(mini)
+  const allowCreate = canCreateTeam(mini, isSiteAdmin)
 
   return (
     <ScrollView
@@ -152,7 +155,7 @@ export function MiniLeagueTeamsPanel({miniLeagueId}: {miniLeagueId: number}) {
         </View>
       ) : null}
 
-      {mini?.is_admin ? (
+      {mini?.is_admin || isSiteAdmin ? (
         <Pressable
           className="mt-6 mb-10"
           onPress={() =>

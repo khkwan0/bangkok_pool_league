@@ -13,7 +13,7 @@ export default function MiniLeagueOverviewScreen() {
   const miniId = Number(id)
   const api = useMiniLeagues()
   const {colors} = useTheme()
-  const {setCompetition} = useLeagueContext()
+  const {state, setCompetition} = useLeagueContext()
   const [loading, setLoading] = React.useState(true)
   const [mini, setMini] = React.useState<any>(null)
   const [memberCount, setMemberCount] = React.useState(0)
@@ -74,7 +74,8 @@ export default function MiniLeagueOverviewScreen() {
     )
   }
 
-  const isAdmin = Boolean(mini.is_admin)
+  const isSiteAdmin = Number(state.user?.role_id) === 9
+  const isAdmin = Boolean(mini.is_admin) || isSiteAdmin
   const links: {
     label: string
     href: string

@@ -1,6 +1,7 @@
 import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {useLeague} from '@/hooks'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
@@ -32,6 +33,7 @@ export default function MiniLeagueCreateMatchScreen() {
   const api = useMiniLeagues()
   const league = useLeague()
   const {colors} = useTheme()
+  const {state} = useLeagueContext()
   const [loading, setLoading] = React.useState(true)
   const [mini, setMini] = React.useState<any>(null)
   const [members, setMembers] = React.useState<any[]>([])
@@ -139,7 +141,7 @@ export default function MiniLeagueCreateMatchScreen() {
     )
   }
 
-  if (!mini?.is_admin) {
+  if (!(Boolean(mini?.is_admin) || Number(state.user?.role_id) === 9)) {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Text>Only admins can create matches.</Text>

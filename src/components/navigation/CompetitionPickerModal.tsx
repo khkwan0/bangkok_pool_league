@@ -249,7 +249,12 @@ export function CompetitionPickerModal() {
           params: {id: String(res.data.id)},
         })
       } else {
-        Alert.alert(t('error'), res?.error || t('mini_league_create_error'))
+        Alert.alert(
+          t('error'),
+          res?.error === 'already_created_mini_league'
+            ? t('already_created_mini_league')
+            : res?.error || t('mini_league_create_error'),
+        )
       }
     } finally {
       setCreating(false)

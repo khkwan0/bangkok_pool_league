@@ -1,5 +1,6 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
 import {useFocusEffect, useLocalSearchParams} from 'expo-router'
@@ -17,12 +18,16 @@ export default function MiniLeagueCopyScreen() {
   const miniId = Number(id)
   const api = useMiniLeagues()
   const {colors} = useTheme()
+  const {state} = useLeagueContext()
   const [loading, setLoading] = React.useState(true)
   const [mini, setMini] = React.useState<any>(null)
   const [canonicalTeams, setCanonicalTeams] = React.useState<any[]>([])
   const [canonicalFormats, setCanonicalFormats] = React.useState<any[]>([])
   const [canonicalPlayers, setCanonicalPlayers] = React.useState<any[]>([])
   const [playerQuery, setPlayerQuery] = React.useState('')
+
+  const isAdmin =
+    Boolean(mini?.is_admin) || Number(state.user?.role_id) === 9
 
   const loadPickers = React.useCallback(async () => {
     const [ct, cf, cp] = await Promise.all([
@@ -41,9 +46,11 @@ export default function MiniLeagueCopyScreen() {
       ;(async () => {
         const m = await api.get(miniId)
         if (m?.status === 'ok') setMini(m.data)
-        if (m?.data?.is_admin) await loadPickers()
+        const canManage =
+          Boolean(m?.data?.is_admin) || Number(state.user?.role_id) === 9
+        if (canManage) await loadPickers()
       })().finally(() => setLoading(false))
-    }, [api, loadPickers, miniId]),
+    }, [api, loadPickers, miniId, state.user?.role_id]),
   )
 
   async function copyTeam(teamId: number) {
@@ -78,7 +85,7 @@ export default function MiniLeagueCopyScreen() {
     )
   }
 
-  if (!mini?.is_admin) {
+  if (!isAdmin) {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Text>Only admins can copy from the main league.</Text>

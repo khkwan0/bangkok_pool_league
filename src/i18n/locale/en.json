@@ -96,6 +96,7 @@
   "main_league_description": "The official Bangkok Pool League season.",
   "member": "Member",
   "mini_league": "Mini league",
+  "already_created_mini_league": "You can only create one mini league.",
   "mini_league_create_error": "Could not create mini league",
   "mini_league_name": "Mini league name",
   "mini_leagues": "Mini leagues",

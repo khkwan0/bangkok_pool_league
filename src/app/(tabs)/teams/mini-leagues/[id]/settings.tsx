@@ -127,7 +127,7 @@ export default function MiniLeagueSettingsScreen() {
     )
   }
 
-  if (!mini?.is_admin) {
+  if (!(Boolean(mini?.is_admin) || Number(state.user?.role_id) === 9)) {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Text>Only admins can change settings.</Text>

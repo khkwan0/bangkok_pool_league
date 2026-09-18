@@ -4,6 +4,7 @@ import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
+import {ForumImageAttachButton} from '@/components/Forums/ForumImageAttachButton'
 import {useForumSettings, forumLengthErrorKey} from '@/hooks/useForumSettings'
 import {useForums} from '@/hooks/useForums'
 import type {ForumTopicDetail} from '@/types/forums'
@@ -45,6 +46,7 @@ export default function ForumEditTopic() {
   const [detail, setDetail] = React.useState<ForumTopicDetail | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [title, setTitle] = React.useState('')
+  const [content, setContent] = React.useState('')
   const [isPinned, setIsPinned] = React.useState(false)
   const [isLocked, setIsLocked] = React.useState(false)
   const [isHidden, setIsHidden] = React.useState(false)
@@ -65,6 +67,7 @@ export default function ForumEditTopic() {
         }
         setDetail(topicDetail)
         setTitle(topicDetail.topic.title)
+        setContent(topicDetail.opening_post?.content ?? '')
         setIsPinned(topicDetail.topic.is_pinned)
         setIsLocked(topicDetail.topic.is_locked)
         setIsHidden(topicDetail.topic.is_hidden)
@@ -77,7 +80,7 @@ export default function ForumEditTopic() {
   }, [cat, forumKey, topicKey, getTopic])
 
   async function handleSave() {
-    if (!cat || !forumKey || !topicKey || !title.trim()) {
+    if (!cat || !forumKey || !topicKey || !detail || !title.trim()) {
       setError(t('forums_topic_title_required'))
       return
     }
@@ -86,10 +89,14 @@ export default function ForumEditTopic() {
       setError(null)
       const updates: {
         title: string
+        content: string
         is_pinned?: boolean
         is_locked?: boolean
         is_hidden?: boolean
-      } = {title: title.trim()}
+      } = {
+        title: title.trim(),
+        content,
+      }
       if (detail.can_pin) {
         updates.is_pinned = isPinned
       }
@@ -197,6 +204,37 @@ export default function ForumEditTopic() {
           className="mt-1"
         />
 
+        <Text className="mb-2 mt-4 text-sm font-semibold">
+          {t('forums_message')}{' '}
+          <Text className="text-xs font-normal opacity-60">({t('optional')})</Text>
+        </Text>
+        <TextInput
+          value={content}
+          onChangeText={setContent}
+          placeholder={t('forums_message_placeholder')}
+          multiline
+          maxLength={forumSettings.opening_post_max_length}
+          inputStyle={{
+            minHeight: 140,
+            paddingTop: 12,
+            paddingBottom: 12,
+            textAlignVertical: 'top',
+          }}
+        />
+        <ForumCharCounter
+          length={content.length}
+          maxLength={forumSettings.opening_post_max_length}
+          className="mt-1"
+        />
+        <View className="mt-2">
+          <ForumImageAttachButton
+            disabled={submitting}
+            onInsert={snippet =>
+              setContent(prev => (prev ? `${prev}${snippet}` : snippet.trim()))
+            }
+          />
+        </View>
+
         {(detail.can_pin || detail.can_lock_hide) && (
           <View
             className="mt-6 rounded-xl p-4"
@@ -238,7 +276,10 @@ export default function ForumEditTopic() {
             <Button
               onPress={handleSave}
               disabled={
-                submitting || !title.trim() || title.length > forumSettings.topic_title_max_length
+                submitting ||
+                !title.trim() ||
+                title.length > forumSettings.topic_title_max_length ||
+                content.length > forumSettings.opening_post_max_length
               }>
               {submitting ? t('forums_saving') : t('forums_save_topic')}
             </Button>

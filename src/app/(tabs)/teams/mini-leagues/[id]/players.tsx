@@ -1,6 +1,7 @@
 import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
 import {useFocusEffect, useLocalSearchParams} from 'expo-router'
@@ -18,6 +19,7 @@ export default function MiniLeaguePlayersScreen() {
   const miniId = Number(id)
   const api = useMiniLeagues()
   const {colors} = useTheme()
+  const {state} = useLeagueContext()
   const [loading, setLoading] = React.useState(true)
   const [mini, setMini] = React.useState<any>(null)
   const [members, setMembers] = React.useState<any[]>([])
@@ -26,7 +28,8 @@ export default function MiniLeaguePlayersScreen() {
   const [playerQuery, setPlayerQuery] = React.useState('')
   const [canonicalPlayers, setCanonicalPlayers] = React.useState<any[]>([])
 
-  const isAdmin = Boolean(mini?.is_admin)
+  const isAdmin =
+    Boolean(mini?.is_admin) || Number(state.user?.role_id) === 9
 
   const refresh = React.useCallback(async () => {
     const [m, mem] = await Promise.all([

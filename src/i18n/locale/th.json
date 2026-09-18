@@ -96,6 +96,7 @@
   "main_league_description": "ฤดูกาลอย่างเป็นทางการของ Bangkok Pool League",
   "member": "สมาชิก",
   "mini_league": "ลีกย่อย",
+  "already_created_mini_league": "สร้างลีกย่อยได้เพียง 1 ลีกเท่านั้น",
   "mini_league_create_error": "สร้างลีกย่อยไม่สำเร็จ",
   "mini_league_name": "ชื่อลีกย่อย",
   "mini_leagues": "ลีกย่อย",
