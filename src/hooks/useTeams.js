@@ -3,15 +3,22 @@ import { useNetwork } from '@/hooks/useNetwork'
 export const useTeams = () => {
   const {Get, Post} = useNetwork()
 
-  const GetPlayers = async (teamid = -1, activeOnly = false) => {
+  const GetPlayers = async (
+    teamid = -1,
+    activeOnly = false,
+    matchId = null,
+  ) => {
     try {
       if (teamid && Number.isInteger(teamid) && teamid >= 0) {
-        const players = await Get(
+        let url =
           '/playersteam/players?teamid=' +
-            teamid +
-            '&active_only=' +
-            activeOnly,
-        )
+          teamid +
+          '&active_only=' +
+          activeOnly
+        if (matchId != null && Number(matchId) > 0) {
+          url += '&matchid=' + Number(matchId)
+        }
+        const players = await Get(url)
         return players
       } else {
         return []

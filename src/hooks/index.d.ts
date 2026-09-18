@@ -47,7 +47,9 @@ export interface League {
     playerId: number,
     teamId: number,
   ): Promise<{status: string}>
-  GetLiveScores(): Promise<{status: string; data: Match[]}>
+  GetLiveScores(
+    miniLeagueId?: number | null,
+  ): Promise<{status: string; data: Match[]}>
 }
 
 export interface Match {
@@ -66,7 +68,11 @@ export interface Teams {
   GetTeam(teamId: number): Promise<Team>
   GetTeamPlayers(teamId: number): Promise<Player[]>
   GetTeamMatches(teamId: number): Promise<Match[]>
-  GetPlayers(teamid?: number, activeOnly?: boolean): Promise<{data: any[]}>
+  GetPlayers(
+    teamid?: number,
+    activeOnly?: boolean,
+    matchId?: number | null,
+  ): Promise<{data: any[]}>
   AddExistingPlayerToTeam(
     teamId: number,
     playerId: number,

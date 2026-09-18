@@ -16,7 +16,7 @@ import {
 export default function DomainSettings() {
   const navigation = useNavigation()
   const {t} = useTranslation()
-  const {apiUrl, setApiUrl, resetApiUrl} = useLeagueContext()
+  const {apiUrl, setApiUrl, resetApiUrl, webSocketUrl} = useLeagueContext()
   const [customDomain, setCustomDomain] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -56,13 +56,15 @@ export default function DomainSettings() {
     }
     setIsSubmitting(true)
     try {
-      // Remove https:// if present, we'll add it in useNetwork
       let cleanDomain = customDomain.trim()
-      if (cleanDomain.startsWith('https://')) {
-        cleanDomain = cleanDomain.replace('https://', '')
+      if (
+        !cleanDomain.startsWith('https://') &&
+        !cleanDomain.startsWith('http://')
+      ) {
+        cleanDomain = `https://${cleanDomain}`
       }
-      if (cleanDomain.startsWith('http://')) {
-        cleanDomain = cleanDomain.replace('http://', '')
+      if (!cleanDomain.endsWith('/api') && !cleanDomain.endsWith('/api/')) {
+        cleanDomain = `${cleanDomain.replace(/\/$/, '')}/api`
       }
       await setApiUrl(cleanDomain)
       setCustomDomain('')
@@ -82,9 +84,13 @@ export default function DomainSettings() {
           <Text className="text-lg font-bold mb-2">Current Domain</Text>
           <View className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mb-4">
             <Text className="text-base font-mono">{apiUrl}</Text>
+            <Text className="text-xs font-mono mt-2 opacity-70">
+              WS: {webSocketUrl}
+            </Text>
           </View>
           <Text className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            API endpoints will use: {apiUrl}
+            API endpoints will use: {apiUrl}. Changing the API host also points
+            sockets at the same host (needed for live tournament sync).
           </Text>
         </View>
 

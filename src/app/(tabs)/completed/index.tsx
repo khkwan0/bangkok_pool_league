@@ -1,9 +1,11 @@
 import Button from '@/components/Button'
 import CompletedMatch from '@/components/Completed/CompletedMatch'
 import CompletedMatchesOther from '@/components/Completed/CompletedMatchesOther'
+import {MiniLeagueCompleted} from '@/components/mini-leagues/MiniLeagueCompleted'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useLeague} from '@/hooks/useLeague'
+import {isMiniCompetition} from '@/types/competition'
 import {usePathname, useRouter} from 'expo-router'
 import React, {useCallback} from 'react'
 import {useTranslation} from 'react-i18next'
@@ -75,9 +77,14 @@ export default function CompletedHome() {
   )
 
   React.useEffect(() => {
+    if (isMiniCompetition(state.competition)) return
     getCompletedMatches(user.teams || [])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user.teams])
+  }, [user.teams, state.competition])
+
+  if (isMiniCompetition(state.competition)) {
+    return <MiniLeagueCompleted miniLeagueId={state.competition.id} />
+  }
 
   return (
     <View className="flex-1">

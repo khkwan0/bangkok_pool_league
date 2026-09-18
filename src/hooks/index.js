@@ -2,6 +2,7 @@ import {useAccount} from './useAccount'
 import {useDisclose} from './useDisclose'
 import {useLeague} from './useLeague'
 import {useMatch} from './useMatch'
+import {useMiniLeagues} from './useMiniLeagues'
 import {useNetwork} from './useNetwork'
 import {useSeason} from './useSeason'
 import {useTeams} from './useTeams'
@@ -18,6 +19,7 @@ export {
   useDisclose,
   useLeague,
   useMatch,
+  useMiniLeagues,
   useNetwork,
   useSeason,
   useTeams,

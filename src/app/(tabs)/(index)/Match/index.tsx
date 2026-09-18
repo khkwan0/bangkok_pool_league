@@ -13,6 +13,7 @@ import { ThemedView as View } from '@/components/ThemedView'
 import { useMatchContext } from '@/context/MatchContext'
 import { useMatch } from '@/hooks/useMatch'
 import { useTabListContentContainerStyle } from '@/hooks/useTabListContentContainerStyle'
+import { resolveFormatSubsections } from '@/lib/matchFormat'
 import { useNavigation } from "expo-router/react-navigation"
 import { router, useLocalSearchParams } from 'expo-router'
 import React from 'react'
@@ -68,8 +69,7 @@ export default function ScoreSheet() {
   }, [])
 
   React.useEffect(() => {
-    const format = JSON.parse(matchInfo.format as string)
-    const subsections = format[0].subsections
+    const subsections = resolveFormatSubsections(matchInfo.format)
     let frameNumber = 1
     let sectionCount = 1
     const _frames: FrameType[] = []

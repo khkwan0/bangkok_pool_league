@@ -6,7 +6,6 @@ import {
   Alert,
   Text,
   View,
-  StyleSheet,
 } from 'react-native'
 import {useTranslation} from 'react-i18next'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -14,18 +13,12 @@ import {useMatchContext} from '@/context/MatchContext'
 import React from 'react'
 import {LinearGradient} from 'expo-linear-gradient'
 import * as Haptics from 'expo-haptics'
+import {
+  frameHasRequiredPlayers,
+  isMatchCompleteByMode,
+  parseMatchFormat,
+} from '@/lib/matchFormat'
 
-function FinalizedButton() {
-  return (
-    <LinearGradient
-      colors={['gold', 'white', 'gold']}
-      start={{x: 0, y: 0}}
-      end={{x: 1, y: 0}}
-      style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text>Finalized</Text>
-    </LinearGradient>
-  )
-}
 export default function Finalizer({matchInfo}: {matchInfo: any}) {
   const colorScheme = useColorScheme()
   const {
@@ -40,66 +33,73 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
   const homeStyle = `bg-red-400 dark:bg-red-600 mx-4 p-4 items-center rounded-lg`
   const awayStyle = `bg-blue-400 dark:bg-blue-600 mx-4 p-4 item-center rounded-lg`
 
-  async function CanFinalize(side: string) {
-    let validCount = 0
+  function canActForTeam(teamId: number): boolean {
+    const userId = state.user?.id
+    if (state.user?.role_id === 9) return true
+    if (userId == null || !teamId) return false
+    const roster = matchState.teams?.[teamId]
+    if (!roster) return false
+    return (
+      Object.prototype.hasOwnProperty.call(roster, String(userId)) ||
+      Object.prototype.hasOwnProperty.call(roster, userId)
+    )
+  }
+
+  function CanFinalize(_side: string) {
+    const homeId = Number(matchState.matchInfo?.home_team_id ?? 0)
+    const awayId = Number(matchState.matchInfo?.away_team_id ?? 0)
+    const format = parseMatchFormat(
+      matchState.matchInfo?.format ?? matchInfo?.format,
+    )
+    const mode = format?.mode ?? 'full_play'
+
+    let homeWins = 0
+    let awayWins = 0
     let frameCount = 0
+    let validCount = 0
+    let decidedValid = 0
+    let decidedCount = 0
+
     matchState.frameData.forEach((frame: any) => {
-      if (frame.frameNumber !== -1) {
-        frameCount++
-        // singles
-        if (
-          typeof frame.type === 'string' &&
-          frame.type[frame.type.length - 1] === 's'
-        ) {
-          if (
-            frame.awayPlayerIds.length === 1 &&
-            frame.homePlayerIds.length === 1 &&
-            frame.winner > 0
-          ) {
-            validCount++
-          } else {
-            // console.log(frame.frameNumber, frame.type)
-          }
-        } else if (
-          typeof frame.type === 'string' &&
-          frame.type[frame.type.length - 1] === 'd'
-        ) {
-          if (
-            frame.awayPlayerIds.length === 2 &&
-            frame.homePlayerIds.length === 2 &&
-            frame.winner > 0
-          ) {
-            validCount++
-          }
+      if (frame.frameNumber === -1 || frame.type === 'section') return
+      frameCount++
+      const winner = Number(frame.winner ?? 0)
+      if (winner > 0) {
+        decidedCount++
+        if (frameHasRequiredPlayers(frame)) {
+          decidedValid++
+          if (winner === homeId) homeWins++
+          else if (winner === awayId) awayWins++
         }
       }
+      if (frameHasRequiredPlayers(frame)) {
+        validCount++
+      }
     })
-    return validCount === frameCount
+
+    if (mode === 'race_to' || mode === 'best_of') {
+      if (homeWins === awayWins) return false
+      if (!isMatchCompleteByMode(format, homeWins, awayWins)) return false
+      return decidedCount > 0 && decidedValid === decidedCount
+    }
+
+    return frameCount > 0 && validCount === frameCount
   }
+
   async function HandleFinalize(side: string) {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-      if (await CanFinalize(side)) {
-        if (
-          (state.user.teams?.some(
-            (team: {id: number}) => team.id === matchState.matchInfo.home_team_id,
-          ) ||
-            state.user.role_id === 9) &&
+      if (CanFinalize(side)) {
+        const sideTeamId =
           side === 'home'
-        ) {
-          setHomeLoading(true)
-          FinalizeMatch(side, matchState.matchInfo.home_team_id)
-        } else if (
-          (state.user.teams?.some(
-            (team: {id: number}) => team.id === matchState.matchInfo.away_team_id,
-          ) ||
-            state.user.role_id === 9) &&
-          side === 'away'
-        ) {
-          setAwayLoading(true)
-          FinalizeMatch(side, matchState.matchInfo.away_team_id)
+            ? matchState.matchInfo.home_team_id
+            : matchState.matchInfo.away_team_id
+        if (canActForTeam(sideTeamId) && (side === 'home' || side === 'away')) {
+          if (side === 'home') setHomeLoading(true)
+          else setAwayLoading(true)
+          FinalizeMatch(side, sideTeamId)
         } else {
-          Alert.alert(t('error'), t('not_on_team') + ' ' + side + ' ' + matchInfo.home_team_id + ' ' + JSON.stringify(state.user.teams))
+          Alert.alert(t('error'), t('not_on_team') + ' ' + side)
         }
       } else {
         Alert.alert(t('error'), t('match_not_finalizable'))
@@ -115,24 +115,12 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
 
   function Unfinalize(side: string) {
     try {
-      if (
-        (state.user.teams?.some(
-          (team: {id: number}) => team.id === matchInfo.home_team_id,
-        ) ||
-          state.user.role_id === 9) &&
-        side === 'home'
-      ) {
-        setHomeLoading(true)
-        UnfinalizeMatch(side, matchInfo.home_team_id)
-      } else if (
-        (state.user.teams?.some(
-          (team: {id: number}) => team.id === matchInfo.away_team_id,
-        ) ||
-          state.user.role_id === 9) &&
-        side === 'away'
-      ) {
-        setAwayLoading(true)
-        UnfinalizeMatch(side, matchInfo.away_team_id)
+      const sideTeamId =
+        side === 'home' ? matchInfo.home_team_id : matchInfo.away_team_id
+      if (canActForTeam(sideTeamId) && (side === 'home' || side === 'away')) {
+        if (side === 'home') setHomeLoading(true)
+        else setAwayLoading(true)
+        UnfinalizeMatch(side, sideTeamId)
       }
     } catch (e) {
       console.log(e)

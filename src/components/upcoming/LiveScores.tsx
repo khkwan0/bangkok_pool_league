@@ -1,4 +1,6 @@
 import {useLeague} from '@/hooks'
+import {useLeagueContext} from '@/context/LeagueContext'
+import {isMiniCompetition} from '@/types/competition'
 import {useTheme} from "expo-router/react-navigation"
 import {router} from 'expo-router'
 import React from 'react'
@@ -49,11 +51,17 @@ function useMarqueeAnimation(loopWidth: number, active: boolean) {
   const translateX = React.useRef(new Animated.Value(0)).current
   const animationRef = React.useRef<Animated.CompositeAnimation | null>(null)
 
+  const stop = React.useCallback(() => {
+    animationRef.current?.stop()
+    animationRef.current = null
+    translateX.stopAnimation()
+  }, [translateX])
+
   const start = React.useCallback(() => {
     if (loopWidth < MIN_LOOP_WIDTH_PX) {
       return
     }
-    animationRef.current?.stop()
+    stop()
     translateX.setValue(0)
     animationRef.current = Animated.loop(
       Animated.timing(translateX, {
@@ -65,18 +73,18 @@ function useMarqueeAnimation(loopWidth: number, active: boolean) {
       }),
     )
     animationRef.current.start()
-  }, [loopWidth, translateX])
+  }, [loopWidth, stop, translateX])
 
   React.useEffect(() => {
     if (active) {
       start()
     } else {
-      animationRef.current?.stop()
+      stop()
     }
     return () => {
-      animationRef.current?.stop()
+      stop()
     }
-  }, [active, start])
+  }, [active, start, stop])
 
   return {translateX, restart: start}
 }
@@ -259,6 +267,9 @@ function LiveScoresWithData() {
   const {colors} = useTheme()
   const colorScheme = useColorScheme()
   const league = useLeague()
+  const {state} = useLeagueContext()
+  const competition = state.competition
+  const miniLeagueId = isMiniCompetition(competition) ? competition.id : null
   const [scores, setScores] = React.useState<LiveScore[]>([])
   const [tickerKey, setTickerKey] = React.useState(0)
   const [navigatingMatchId, setNavigatingMatchId] = React.useState<number | null>(
@@ -272,7 +283,8 @@ function LiveScoresWithData() {
 
   const getLiveScores = React.useCallback(async () => {
     try {
-      const res = await league.GetLiveScores()
+      // @ts-expect-error runtime accepts optional miniLeagueId
+      const res = await league.GetLiveScores(miniLeagueId)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
         const next = Array.isArray(res.data)
           ? (res.data as unknown as LiveScore[])
@@ -296,19 +308,26 @@ function LiveScoresWithData() {
         if (countChanged) {
           setScores(next)
           setTickerKey(k => k + 1)
+        } else {
+          setScores(next)
         }
       }
     } catch (e) {
       console.log(e)
     }
-  }, [league])
+  }, [league, miniLeagueId])
 
   const getLiveScoresRef = React.useRef(getLiveScores)
   getLiveScoresRef.current = getLiveScores
 
   React.useEffect(() => {
+    // Reset ticker when competition mode changes
+    scoresKeyRef.current = ''
+    scoresCountRef.current = 0
+    setScores([])
+    setTickerKey(k => k + 1)
     getLiveScoresRef.current()
-  }, [])
+  }, [miniLeagueId])
 
   React.useEffect(() => {
     refreshTimer.current = setInterval(
@@ -320,7 +339,7 @@ function LiveScoresWithData() {
         clearInterval(refreshTimer.current)
       }
     }
-  }, [])
+  }, [miniLeagueId])
 
   React.useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -338,7 +357,7 @@ function LiveScoresWithData() {
       }
     })
     return () => subscription.remove()
-  }, [])
+  }, [miniLeagueId])
 
   const navigatingRef = React.useRef(false)
   const openMatchScoresheet = React.useCallback(

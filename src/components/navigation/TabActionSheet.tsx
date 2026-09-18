@@ -84,15 +84,16 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
     const colors = Colors[colorScheme]
     const router = useRouter()
     const {t} = useTranslation()
-    const {state} = useLeagueContext()
+    const {state, openCompetitionPicker} = useLeagueContext()
     const insets = useSafeAreaInsets()
     const {height: windowHeight} = useWindowDimensions()
     const user = state.user
     const hasNewForumPosts = useHasNewForumPosts()
     const hasUnreadAnnouncements = useHasUnreadAnnouncements()
-    // 6 rows + header; 55% was clipping the last item on iOS.
+    const competition = state.competition
+    // 8 rows + header; keep sheet tall enough for the last item on iOS.
     const snapPoints = React.useMemo(() => {
-      const estimatedContentHeight = 560 + Math.max(insets.bottom, 16)
+      const estimatedContentHeight = 700 + Math.max(insets.bottom, 16)
       const minOpenRatio = 0.72
       const ratio = Math.min(
         0.88,
@@ -158,9 +159,9 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
           }}>
           <View className="mb-4">
             <View className="flex-row items-center justify-between">
-              <Text type="subtitle">Quick Actions</Text>
+              <Text type="subtitle">{t('quick_actions_title')}</Text>
               <Text className="text-sm opacity-60">
-                Build {config.build}
+                {t('build')} {config.build}
               </Text>
             </View>
             <Text className="mt-1 text-sm opacity-60">
@@ -211,7 +212,38 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             label={t('teams')}
             iconColor="#4CAF50"
             iconBackground="rgba(76, 175, 80, 0.15)"
-            onPress={() => navigate('/teams')}
+            onPress={() => {
+              if (competition.type === 'mini') {
+                navigate(`/teams/mini-leagues/${competition.id}`)
+              } else {
+                navigate('/teams')
+              }
+            }}
+          />
+          <QuickActionItem
+            icon="trophy"
+            label={t('tournaments')}
+            iconColor="#B45309"
+            iconBackground="rgba(180, 83, 9, 0.15)"
+            onPress={() => navigate('/(tabs)/(index)/cups')}
+          />
+          <QuickActionItem
+            icon="trophy-outline"
+            label={t('change_league')}
+            iconColor="#E91E63"
+            iconBackground="rgba(233, 30, 99, 0.15)"
+            onPress={() => {
+              pendingRouteRef.current = null
+              if (ref && 'current' in ref && ref.current) {
+                ref.current.dismiss()
+              }
+              const open = () => openCompetitionPicker()
+              if (SHEET_DISMISS_NAV_DELAY_MS > 0) {
+                setTimeout(open, SHEET_DISMISS_NAV_DELAY_MS)
+              } else {
+                open()
+              }
+            }}
           />
           <QuickActionItem
             icon="information-outline"

@@ -69,7 +69,7 @@ export default function AnnouncementsScreen() {
 
   React.useEffect(() => {
     loadAnnouncements()
-  }, [loadAnnouncements])
+  }, [loadAnnouncements, i18n.language])
 
   function handleRefresh() {
     if (refreshing) {

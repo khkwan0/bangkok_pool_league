@@ -1,5 +1,5 @@
 import {Stack} from 'expo-router'
-import {t} from 'i18next'
+import {CompetitionSwitcher} from '@/components/navigation/CompetitionSwitcher'
 import {SettingsButton} from '@/components/navigation/SettingsButton'
 
 export default function StatisticsLayout() {
@@ -8,7 +8,7 @@ export default function StatisticsLayout() {
       <Stack.Screen
         name="index"
         options={{
-          headerTitle: t('statistics'),
+          headerTitle: () => <CompetitionSwitcher />,
           headerRight: () => <SettingsButton />,
         }}
       />

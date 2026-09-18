@@ -103,7 +103,7 @@ export const useNetwork = () => {
     }
   }
 
-  const Delete = async function (endpoint) {
+  const Delete = async function (endpoint, payload) {
     try {
       const _endpoint =
         typeof endpoint !== 'undefined' && endpoint[0] === '/'
@@ -113,7 +113,9 @@ export const useNetwork = () => {
       const token = await AsyncStorage.getItem('jwt')
       const res = await fetch(apiDomain + '/' + _endpoint, {
         method: 'DELETE',
+        body: payload ? JSON.stringify(payload) : undefined,
         headers: {
+          'Content-Type': 'application/json',
           Authorization: 'Bearer ' + token,
         },
       })
