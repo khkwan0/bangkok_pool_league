@@ -2005,7 +2005,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
                     onSubmitEditing={() => SendMessage()}
                     disabled={!isInputEnabled}
                     multiline
-                    maxLength={500}
+                    maxLength={1000}
                     textAlignVertical="center"
                     containerStyle={{
                       opacity: isInputEnabled ? 1 : 0.5,
