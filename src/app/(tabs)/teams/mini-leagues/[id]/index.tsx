@@ -2,6 +2,7 @@ import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
 import {router, useFocusEffect, useLocalSearchParams} from 'expo-router'
@@ -74,7 +75,7 @@ export default function MiniLeagueOverviewScreen() {
     )
   }
 
-  const isSiteAdmin = Number(state.user?.role_id) === 9
+  const isSiteAdmin = isLeagueAdmin(state.user)
   const isAdmin = Boolean(mini.is_admin) || isSiteAdmin
   const links: {
     label: string

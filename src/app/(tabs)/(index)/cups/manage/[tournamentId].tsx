@@ -4,6 +4,7 @@ import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTournaments} from '@/hooks/useTournaments'
 import {useTournamentAdminSocket} from '@/hooks/useTournamentAdminSocket'
@@ -135,7 +136,7 @@ export default function CupsManageDetailScreen() {
     miniLeagueId && miniLeagueId > 0
       ? {type: 'mini' as const, id: miniLeagueId}
       : {type: 'site' as const}
-  const isSiteAdmin = Number(state.user?.role_id) === 9
+  const isSiteAdmin = isLeagueAdmin(state.user)
 
   const [loading, setLoading] = React.useState(true)
   const [allowed, setAllowed] = React.useState(false)

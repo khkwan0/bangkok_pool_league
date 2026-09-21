@@ -6,6 +6,7 @@ import TwoColumns from '@/components/TwoColumns'
 import {useNavigation, useTheme} from "expo-router/react-navigation"
 import config from '@/config'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useTranslation} from 'react-i18next'
 import {useLeague, useTeams} from '@/hooks'
 import TrieSearch from 'trie-search'
@@ -30,7 +31,7 @@ const PlayerCard = props => {
               {props.abbrevFirst
                 ? (props.player.firstname ?? props.player.firstName).substr(
                     0,
-                    user.role_id === 9
+                    isLeagueAdmin(user)
                       ? props.player.lastname.length
                       : (props.player.firstname ?? props.player.firstName)
                             .length > 2
@@ -46,7 +47,7 @@ const PlayerCard = props => {
               {props.abbrevLast
                 ? (props.player.lastname ?? props.player.lastName).substr(
                     0,
-                    user.role_id === 9
+                    isLeagueAdmin(user)
                       ? props.player.lastname.length
                       : (props.player.lastname ?? props.player.lastName)
                             .length > 2
@@ -362,7 +363,7 @@ const Team = props => {
     setCanAdd(
       captains.includes(user.id) ||
         assts.includes(user.id) ||
-        user.role_id === 9,
+        isLeagueAdmin(user),
     )
   }, [captains, assts])
 
@@ -481,7 +482,7 @@ const Team = props => {
                         <Text>
                           {captain.flag} {captain.nickname}
                         </Text>
-                        {user.role_id === 9 && (
+                        {isLeagueAdmin(user) && (
                           <Text>
                             ({captain.firstname} {captain.lastname})
                           </Text>
@@ -516,7 +517,7 @@ const Team = props => {
                         <Text>
                           {assistant.flag} {assistant.nickname}
                         </Text>
-                        {user.role_id === 9 && (
+                        {isLeagueAdmin(user) && (
                           <Text>
                             ({assistant.firstname} {assistant.lastname})
                           </Text>
@@ -556,7 +557,7 @@ const Team = props => {
                         })
                       }>
                       <Text className="text-lg">{player.nickname}</Text>
-                      {user.role_id === 9 && (
+                      {isLeagueAdmin(user) && (
                         <Text className="text-lg">
                           ({player.firstname} {player.lastname})
                         </Text>

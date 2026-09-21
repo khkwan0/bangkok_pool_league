@@ -20,6 +20,7 @@ import NavDest from '@/components/NavDest'
 import React, {useEffect, useState} from 'react'
 import {useColorScheme} from 'react-native'
 import {useAccount} from '@/hooks/useAccount'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {isReanimated3} from 'react-native-reanimated'
 
 const SectionHeader = ({title}: {title: string}) => {
@@ -149,7 +150,7 @@ export default function Settings() {
 
         {/* League Management */}
         <SectionHeader title={t('league_management')} />
-        {user.role_id === 9 && (
+        {isLeagueAdmin(user) && (
           <NavDest
             icon="account-group"
             text={t('admin')}

@@ -2,6 +2,7 @@ import Row from '@/components/Row'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatchContext} from '@/context/MatchContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import * as Haptics from 'expo-haptics'
 import {router} from 'expo-router'
@@ -42,7 +43,7 @@ export default function Player({
   const isPlayerOnTeam = () => {
     try {
       /*
-      if (typeof user?.role_id !== 'undefined' && user.role_id === 9) {
+      if (isLeagueAdmin(user)) {
         return true
       }
       let playerList = null
@@ -58,7 +59,7 @@ export default function Player({
       const playerList = []
       playerList.push(...Object.keys(state.teams[awayTeamId]))
       playerList.push(...Object.keys(state.teams[homeTeamId]))
-      const isOnATeam = playerList.includes(user.id.toString()) || user.role_id === 9
+      const isOnATeam = playerList.includes(user.id.toString()) || isLeagueAdmin(user)
       return isOnATeam
     } catch (e) {
       console.error(e)

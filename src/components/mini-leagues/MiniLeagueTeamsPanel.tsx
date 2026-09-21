@@ -2,6 +2,7 @@ import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
 import {router, useFocusEffect} from 'expo-router'
@@ -28,7 +29,7 @@ export function MiniLeagueTeamsPanel({miniLeagueId}: {miniLeagueId: number}) {
   const api = useMiniLeagues()
   const {colors} = useTheme()
   const {state} = useLeagueContext()
-  const isSiteAdmin = Number(state.user?.role_id) === 9
+  const isSiteAdmin = isLeagueAdmin(state.user)
   const [loading, setLoading] = React.useState(true)
   const [mini, setMini] = React.useState<any>(null)
   const [teams, setTeams] = React.useState<any[]>([])

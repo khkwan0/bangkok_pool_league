@@ -2,6 +2,7 @@ import CueChat from '@/app/Settings/CueChat'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {Stack, useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
@@ -10,7 +11,7 @@ export default function AdminAiAgentScreen() {
   const {t} = useTranslation()
   const router = useRouter()
   const {state} = useLeagueContext()
-  const isAdmin = Number(state.user?.role_id) === 9
+  const isAdmin = isLeagueAdmin(state.user)
 
   React.useEffect(() => {
     if (!isAdmin) {

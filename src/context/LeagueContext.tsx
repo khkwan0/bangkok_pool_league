@@ -6,6 +6,7 @@ import {
   parseStoredCompetition,
   type Competition,
 } from '@/types/competition'
+import {applyScoreUnitToI18n} from '@/lib/matchUnitI18n'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   createContext,
@@ -19,6 +20,8 @@ import {
 interface User {
   id?: number
   role_id?: number
+  isAdmin?: boolean
+  isSuperAdmin?: boolean
   teams?: {id: number; team_role_id: number}[]
   profile_picture?: string
   nickname?: string
@@ -52,6 +55,8 @@ interface LeagueState {
   refreshUpcoming: boolean
   competition: Competition
   competitionPickerOpen: boolean
+  sport: 'pool' | 'darts'
+  scoreUnit: 'frame' | 'leg'
 }
 
 export interface LeagueContextType {
@@ -84,6 +89,8 @@ const initialState: LeagueState = {
   refreshUpcoming: false,
   competition: CANONICAL_COMPETITION,
   competitionPickerOpen: false,
+  sport: 'pool',
+  scoreUnit: 'frame',
 }
 
 const LeagueReducer = (state: any, action: any) => {
@@ -261,6 +268,26 @@ const LeagueReducer = (state: any, action: any) => {
         competitionPickerOpen: Boolean(action.payload),
       }
     }
+    case 'SET_SCORE_UNIT': {
+      const unit =
+        action.payload === 'leg' || action.payload === 'legs' ? 'leg' : 'frame'
+      return {
+        ...state,
+        scoreUnit: unit,
+        sport: unit === 'leg' ? 'darts' : 'pool',
+      }
+    }
+    case 'SET_SPORT': {
+      const sport =
+        action.payload === 'darts' || action.payload === 'dart'
+          ? 'darts'
+          : 'pool'
+      return {
+        ...state,
+        sport,
+        scoreUnit: sport === 'darts' ? 'leg' : 'frame',
+      }
+    }
     default:
       return state
   }
@@ -359,6 +386,36 @@ export const LeagueProvider = ({children}: any) => {
     }
     loadCompetition()
   }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadBranding() {
+      try {
+        const base = apiUrl.replace(/\/$/, '')
+        const res = await fetch(`${base}/branding`)
+        if (!res.ok) return
+        const json = await res.json()
+        const sportRaw = json?.data?.sport
+        const unitRaw = json?.data?.score_unit
+        if (cancelled) return
+        const sport =
+          sportRaw === 'darts' || sportRaw === 'dart'
+            ? 'darts'
+            : unitRaw === 'leg' || unitRaw === 'legs'
+              ? 'darts'
+              : 'pool'
+        const normalized = sport === 'darts' ? 'leg' : 'frame'
+        dispatch({type: 'SET_SPORT', payload: sport})
+        applyScoreUnitToI18n(normalized)
+      } catch (e) {
+        console.error('Failed to load league branding:', e)
+      }
+    }
+    void loadBranding()
+    return () => {
+      cancelled = true
+    }
+  }, [apiUrl])
 
   async function LogoutUser() {
     try {

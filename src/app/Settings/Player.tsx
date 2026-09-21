@@ -8,6 +8,7 @@ import LeagueHistory from '@/components/LeagueHistory'
 import {useTranslation} from 'react-i18next'
 import {useLeague} from '@/hooks'
 import { useLeagueContext } from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {router, useLocalSearchParams} from 'expo-router'
 
 export default function Player(props: {playerId?: string | number} = {}) { 
@@ -114,7 +115,7 @@ export default function Player(props: {playerId?: string | number} = {}) {
                 <Text fontSize="xl">{playerInfo.name}</Text>
               </View>
             </Row>
-            {user.role_id === 9 && (
+            {isLeagueAdmin(user) && (
               <>
                 <Row>
                   <View flex={2}>
@@ -189,7 +190,7 @@ export default function Player(props: {playerId?: string | number} = {}) {
                     )}
                   </Row>
                   <Row space={10}>
-                    {user.role_id === 9 && team.team_role_id < 2 && (
+                    {isLeagueAdmin(user) && team.team_role_id < 2 && (
                       <Button
                         variant="ghost"
                         onPress={() =>
@@ -198,7 +199,7 @@ export default function Player(props: {playerId?: string | number} = {}) {
                         {t('promote')}
                       </Button>
                     )}
-                    {user.role_id < 9 &&
+                    {!isLeagueAdmin(user) &&
                       teamRoleId[team.id] === 2 &&
                       team.team_role_id < 1 && (
                         <Button
@@ -209,14 +210,14 @@ export default function Player(props: {playerId?: string | number} = {}) {
                           {t('promote')}
                         </Button>
                       )}
-                    {user.role_id === 9 && team.team_role_id > 0 && (
+                    {isLeagueAdmin(user) && team.team_role_id > 0 && (
                       <Button
                         variant="ghost"
                         onPress={() => HandleRemoveStatus(team.id)}>
                         {t('revoke')}
                       </Button>
                     )}
-                    {user.role_id < 9 &&
+                    {!isLeagueAdmin(user) &&
                       teamRoleId[team.id] === 2 &&
                       team.team_role_id === 1 && (
                         <Button

@@ -2,6 +2,7 @@ import Row from '@/components/Row'
 import {ThemedText as Text} from '@/components/ThemedText'
 import config from '@/config'
 import {LeagueContextType, useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useLeague, useTeams} from '@/hooks'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useIsFocused, useNavigation} from "expo-router/react-navigation"
@@ -312,8 +313,8 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
     )
   }, [teamData.assistants, state.user?.id])
   const isAdmin = React.useMemo(() => {
-    return state.user?.role_id === 9
-  }, [state.user?.role_id])
+    return isLeagueAdmin(state.user)
+  }, [state.user])
   const canManageRoles = React.useMemo(() => {
     return isAdmin || isCaptain || isAssistant
   }, [isAdmin, isCaptain, isAssistant])

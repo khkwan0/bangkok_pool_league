@@ -2,6 +2,7 @@ import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
 import {useFocusEffect, useLocalSearchParams} from 'expo-router'
@@ -127,7 +128,7 @@ export default function MiniLeagueSettingsScreen() {
     )
   }
 
-  if (!(Boolean(mini?.is_admin) || Number(state.user?.role_id) === 9)) {
+  if (!(Boolean(mini?.is_admin) || isLeagueAdmin(state.user))) {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Text>Only admins can change settings.</Text>

@@ -543,6 +543,16 @@ export const useLeague = () => {
     }
   }
 
+  const GetBranding = async () => {
+    try {
+      const res = await Get('/branding')
+      return res
+    } catch (e) {
+      console.log(e)
+      throw new Error(e)
+    }
+  }
+
   const GetCompletedMatchesByTeamId = async teams => {
     try {
       const res = await Post('/matches/completed', {teams})
@@ -591,6 +601,7 @@ export const useLeague = () => {
     GetPostponed,
     GetRawPlayerInfo,
     GetRules,
+    GetBranding,
     GetSeason,
     GetSeasonV2,
     GetStandings,

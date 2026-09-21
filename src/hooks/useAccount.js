@@ -1,3 +1,4 @@
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import config from '@/config'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useNetwork} from '@/hooks/useNetwork'
@@ -7,8 +8,7 @@ import {getMessaging, getToken} from '@react-native-firebase/messaging'
 import {Platform} from 'react-native'
 
 export const useAccount = () => {
-  const {state, dispatch} = useLeagueContext()
-  const user = state?.user || null
+  const {dispatch} = useLeagueContext()
   const {Get, Post} = useNetwork()
 
   const LoadUser = async () => {
@@ -20,12 +20,16 @@ export const useAccount = () => {
     }
   }
 
-  // uses jwt
+  // uses jwt — always refresh so isAdmin matches the current host league
   const FetchUser = async () => {
     try {
-      let userData = user
-      if (!user?.id) {
-        userData = await Get('/user')
+      const jwt = await AsyncStorage.getItem('jwt')
+      if (!jwt) {
+        return null
+      }
+
+      const userData = await Get('/user')
+      if (userData?.id) {
         dispatch({type: 'SET_USER', payload: userData})
       }
 
@@ -34,7 +38,7 @@ export const useAccount = () => {
         const token = await getToken(messaging)
         await Post('/user/token', {token: token})
         await ensureUserChannels({
-          includeAdmin: userData?.role_id === 9,
+          includeAdmin: isLeagueAdmin(userData),
         })
       } catch (tokenError) {
         console.error('Error registering FCM token:', tokenError)

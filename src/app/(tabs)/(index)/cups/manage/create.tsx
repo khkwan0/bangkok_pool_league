@@ -3,6 +3,7 @@ import {StructureComposer} from '@/components/cups/StructureComposer'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useLeague} from '@/hooks'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useNetwork} from '@/hooks/useNetwork'
@@ -129,7 +130,7 @@ export default function CupsCreateScreen() {
     paramMiniId ??
     (isMiniCompetition(competition) ? competition.id : null)
   const isMiniRoute = routeMiniId != null && routeMiniId > 0
-  const isSiteAdmin = Number(state.user?.role_id) === 9
+  const isSiteAdmin = isLeagueAdmin(state.user)
 
   const [loading, setLoading] = React.useState(true)
   const [allowed, setAllowed] = React.useState(false)

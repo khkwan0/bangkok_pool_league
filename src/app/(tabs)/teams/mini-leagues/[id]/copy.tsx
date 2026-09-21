@@ -1,6 +1,7 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
 import {useFocusEffect, useLocalSearchParams} from 'expo-router'
@@ -27,7 +28,7 @@ export default function MiniLeagueCopyScreen() {
   const [playerQuery, setPlayerQuery] = React.useState('')
 
   const isAdmin =
-    Boolean(mini?.is_admin) || Number(state.user?.role_id) === 9
+    Boolean(mini?.is_admin) || isLeagueAdmin(state.user)
 
   const loadPickers = React.useCallback(async () => {
     const [ct, cf, cp] = await Promise.all([
@@ -47,10 +48,10 @@ export default function MiniLeagueCopyScreen() {
         const m = await api.get(miniId)
         if (m?.status === 'ok') setMini(m.data)
         const canManage =
-          Boolean(m?.data?.is_admin) || Number(state.user?.role_id) === 9
+          Boolean(m?.data?.is_admin) || isLeagueAdmin(state.user)
         if (canManage) await loadPickers()
       })().finally(() => setLoading(false))
-    }, [api, loadPickers, miniId, state.user?.role_id]),
+    }, [api, loadPickers, miniId, state.user]),
   )
 
   async function copyTeam(teamId: number) {

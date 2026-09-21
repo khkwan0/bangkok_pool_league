@@ -10,6 +10,7 @@ import {
 import {useTranslation} from 'react-i18next'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatchContext} from '@/context/MatchContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import React from 'react'
 import {LinearGradient} from 'expo-linear-gradient'
 import * as Haptics from 'expo-haptics'
@@ -35,7 +36,7 @@ export default function Finalizer({matchInfo}: {matchInfo: any}) {
 
   function canActForTeam(teamId: number): boolean {
     const userId = state.user?.id
-    if (state.user?.role_id === 9) return true
+    if (isLeagueAdmin(state.user)) return true
     if (userId == null || !teamId) return false
     const roster = matchState.teams?.[teamId]
     if (!roster) return false

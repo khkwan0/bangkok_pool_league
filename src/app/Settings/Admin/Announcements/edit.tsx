@@ -6,6 +6,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useAnnouncements} from '@/hooks/useAnnouncements'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {resolveAnnouncementContent} from '@/lib/announcementContent'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useLocalSearchParams, useNavigation, useRouter} from 'expo-router'
@@ -57,10 +58,10 @@ export default function AdminAnnouncementEditScreen() {
   }, [navigation, isNew, t])
 
   React.useEffect(() => {
-    if (state.user?.role_id !== 9) {
+    if (!isLeagueAdmin(state.user)) {
       router.replace('/Settings/Admin')
     }
-  }, [state.user?.role_id, router])
+  }, [state.user, router])
 
   React.useEffect(() => {
     if (isNew || !Number.isFinite(editId) || editId <= 0) {

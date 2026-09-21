@@ -4,6 +4,7 @@ import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useNetwork} from '@/hooks/useNetwork'
 import {useThemeColor} from '@/hooks/useThemeColor'
 import {
@@ -1665,7 +1666,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
     )
   }
 
-  if (isAdminChat && Number(leagueState.user?.role_id) !== 9) {
+  if (isAdminChat && !isLeagueAdmin(leagueState.user)) {
     return (
       <>
         <Stack.Screen options={{title: t('admin_ai_agent')}} />

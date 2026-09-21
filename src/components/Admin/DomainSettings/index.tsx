@@ -2,6 +2,7 @@ import Button from '@/components/Button'
 import { ThemedText as Text } from '@/components/ThemedText'
 import config from '@/config'
 import { useLeagueContext } from '@/context/LeagueContext'
+import {useAccount} from '@/hooks/useAccount'
 import { useNavigation } from 'expo-router'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -17,6 +18,7 @@ export default function DomainSettings() {
   const navigation = useNavigation()
   const {t} = useTranslation()
   const {apiUrl, setApiUrl, resetApiUrl, webSocketUrl} = useLeagueContext()
+  const {FetchUser} = useAccount()
   const [customDomain, setCustomDomain] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -26,10 +28,19 @@ export default function DomainSettings() {
     })
   }, [navigation])
 
+  const refreshAdminForHost = async () => {
+    try {
+      await FetchUser()
+    } catch (error) {
+      console.error('Failed to refresh user after domain change:', error)
+    }
+  }
+
   const handleReset = async () => {
     setIsSubmitting(true)
     try {
       await resetApiUrl()
+      await refreshAdminForHost()
     } catch (error) {
       console.error('Failed to reset domain:', error)
     } finally {
@@ -43,6 +54,7 @@ export default function DomainSettings() {
       // Remove https:// if present, we'll add it in useNetwork
       const cleanDomain = 'https://stage.bkkleague.com/api'
       await setApiUrl(cleanDomain)
+      await refreshAdminForHost()
     } catch (error) {
       console.error('Failed to set preset domain:', error)
     } finally {
@@ -67,6 +79,7 @@ export default function DomainSettings() {
         cleanDomain = `${cleanDomain.replace(/\/$/, '')}/api`
       }
       await setApiUrl(cleanDomain)
+      await refreshAdminForHost()
       setCustomDomain('')
     } catch (error) {
       console.error('Failed to set custom domain:', error)

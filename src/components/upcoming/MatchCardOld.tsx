@@ -1,6 +1,7 @@
 import {MatchInfoDataType} from '@/components/Match/types'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useMatch} from '@/hooks/useMatch'
 import {
   formatMatchDate,
@@ -384,7 +385,7 @@ export default function MatchCardOld({
     matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0
   const dateLabel = formatMatchDate(getMatchDisplayDate(matchInfo))
   const canAct =
-    matchInfo.team_role_id > 0 || user.role_id === 9
+    matchInfo.team_role_id > 0 || isLeagueAdmin(user)
   const isHomeCaptainSide =
     !matchInfo.home_confirmed &&
     matchInfo.player_team_id === matchInfo.home_team_id &&

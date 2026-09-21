@@ -6,6 +6,7 @@ import {useNavigation, usePathname, useRouter} from 'expo-router'
 import {formatBangkokDateMed} from '@/lib/bangkokTime'
 import React from 'react'
 import {FlatList, Pressable, useColorScheme} from 'react-native'
+import {useTranslation} from 'react-i18next'
 
 type Frame = {
   frameId: number
@@ -28,6 +29,7 @@ type MatchMetadata = {
 }
 
 function FrameRow({frame, index}: {frame: Frame; index: number}) {
+  const {t} = useTranslation()
   const router = useRouter()
   const [homePressed, setHomePressed] = React.useState(false)
   const [awayPressed, setAwayPressed] = React.useState(false)
@@ -56,7 +58,7 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
     <View className="p-4 rounded-lg bg-white border border-slate-200 shadow-sm">
       <View className="mb-4">
         <Text className="text-sm font-medium text-slate-500">
-          <Text className="font-semibold">Frame</Text> {index + 1}
+          <Text className="font-semibold">{t('frame')}</Text> {index + 1}
         </Text>
       </View>
       <View className="flex-row items-center">

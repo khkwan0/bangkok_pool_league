@@ -2,6 +2,7 @@ import {TournamentListCard} from '@/components/cups/TournamentListCard'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTournaments} from '@/hooks/useTournaments'
 import {isMiniCompetition} from '@/types/competition'
@@ -57,7 +58,7 @@ export default function CupsManageScreen() {
     paramMiniId ??
     (isMiniCompetition(competition) ? competition.id : null)
   const scope = scopeFromParams(miniLeagueId)
-  const isSiteAdmin = Number(state.user?.role_id) === 9
+  const isSiteAdmin = isLeagueAdmin(state.user)
   const miniId = scope.type === 'mini' ? scope.id : 0
   const scopeType = scope.type
 
