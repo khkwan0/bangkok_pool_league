@@ -760,7 +760,10 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
 
         teardownSocket()
 
-        const authOptions = await loadSocketAuth()
+        const authOptions = await loadSocketAuth({
+          apiUrl,
+          leagueId: leagueState.leagueId,
+        })
         if (cancelled) return
 
         activeSocket = createSocketClient(socketUrl, authOptions)
@@ -952,7 +955,7 @@ export default function CueChat({agentScope = 'member'}: CueChatProps) {
         persistCueChatSession()
         teardownSocket(activeSocket)
       }
-    }, [leagueState.user?.id, agentScope]),
+    }, [leagueState.user?.id, leagueState.leagueId, agentScope, apiUrl]),
   )
 
   async function emitAgentRequest(params: {

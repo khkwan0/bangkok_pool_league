@@ -57,7 +57,10 @@ export function useTournamentAdminSocket(opts: {
     const room = `tournament_${tournamentId}`
 
     async function setup() {
-      const authOptions = await loadSocketAuth()
+      const authOptions = await loadSocketAuth({
+        apiUrl,
+        leagueId: state?.leagueId,
+      })
       if (cancelled) return
       socket = createSocketClient(socketUrl, authOptions)
 
@@ -106,7 +109,7 @@ export function useTournamentAdminSocket(opts: {
       }
       setEditors([])
     }
-  }, [enabled, tournamentId, socketUrl, selfId])
+  }, [enabled, tournamentId, socketUrl, selfId, apiUrl, state?.leagueId])
 
   const others = React.useMemo(
     () =>

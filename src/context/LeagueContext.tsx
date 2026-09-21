@@ -57,6 +57,8 @@ interface LeagueState {
   competitionPickerOpen: boolean
   sport: 'pool' | 'darts'
   scoreUnit: 'frame' | 'leg'
+  /** Resolved white-label league id from /branding (when known). */
+  leagueId?: number | null
 }
 
 export interface LeagueContextType {
@@ -91,6 +93,7 @@ const initialState: LeagueState = {
   competitionPickerOpen: false,
   sport: 'pool',
   scoreUnit: 'frame',
+  leagueId: null,
 }
 
 const LeagueReducer = (state: any, action: any) => {
@@ -288,6 +291,12 @@ const LeagueReducer = (state: any, action: any) => {
         scoreUnit: sport === 'darts' ? 'leg' : 'frame',
       }
     }
+    case 'SET_LEAGUE_ID': {
+      return {
+        ...state,
+        leagueId: action.payload ?? null,
+      }
+    }
     default:
       return state
   }
@@ -397,7 +406,11 @@ export const LeagueProvider = ({children}: any) => {
         const json = await res.json()
         const sportRaw = json?.data?.sport
         const unitRaw = json?.data?.score_unit
+        const leagueIdRaw = Number(json?.data?.id)
         if (cancelled) return
+        if (Number.isFinite(leagueIdRaw) && leagueIdRaw > 0) {
+          dispatch({type: 'SET_LEAGUE_ID', payload: leagueIdRaw})
+        }
         const sport =
           sportRaw === 'darts' || sportRaw === 'dart'
             ? 'darts'
