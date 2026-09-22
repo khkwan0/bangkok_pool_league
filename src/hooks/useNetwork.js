@@ -3,6 +3,19 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 // import {socket} from '~/socket'
 
+async function resolveApiDomain(contextApiUrl) {
+  try {
+    // Prefer persisted URL so cold start does not hit prod while stage is saved.
+    const saved = await AsyncStorage.getItem('api_url')
+    if (saved && saved.trim()) {
+      return saved.replace(/\/$/, '')
+    }
+  } catch {
+    // ignore
+  }
+  return (contextApiUrl ?? config.apiUrl ?? 'localhost').replace(/\/$/, '')
+}
+
 export const useNetwork = () => {
   const {apiUrl} = useLeagueContext()
   const Get = async function (endpoint) {
@@ -11,7 +24,7 @@ export const useNetwork = () => {
         typeof endpoint !== 'undefined' && endpoint[0] === '/'
           ? endpoint.substring(1)
           : endpoint
-      const apiDomain = apiUrl ?? config.apiUrl ?? 'localhost'
+      const apiDomain = await resolveApiDomain(apiUrl)
       const token = await AsyncStorage.getItem('jwt')
       const res = await fetch(apiDomain + '/' + _endpoint, {
         headers: {
@@ -25,6 +38,7 @@ export const useNetwork = () => {
       return {
         status: json.status || 'error',
         error: json.error || 'request_failed',
+        httpStatus: res.status,
         ...json,
       }
     } catch (e) {
@@ -39,7 +53,7 @@ export const useNetwork = () => {
         typeof endpoint !== 'undefined' && endpoint[0] === '/'
           ? endpoint.substring(1)
           : endpoint
-      const apiDomain = apiUrl ?? config.apiUrl ?? 'localhost'
+      const apiDomain = await resolveApiDomain(apiUrl)
       const token = await AsyncStorage.getItem('jwt')
       const res = await fetch(apiDomain + '/' + _endpoint, {
         method: 'POST',
@@ -63,7 +77,7 @@ export const useNetwork = () => {
         typeof endpoint !== 'undefined' && endpoint[0] === '/'
           ? endpoint.substring(1)
           : endpoint
-      const apiDomain = apiUrl ?? config.apiUrl ?? 'localhost'
+      const apiDomain = await resolveApiDomain(apiUrl)
       const token = await AsyncStorage.getItem('jwt')
       const res = await fetch(apiDomain + '/' + _endpoint, {
         method: 'PATCH',
@@ -86,7 +100,7 @@ export const useNetwork = () => {
         typeof endpoint !== 'undefined' && endpoint[0] === '/'
           ? endpoint.substring(1)
           : endpoint
-      const apiDomain = apiUrl ?? config.apiUrl ?? 'localhost'
+      const apiDomain = await resolveApiDomain(apiUrl)
       const token = await AsyncStorage.getItem('jwt')
       const res = await fetch(apiDomain + '/' + _endpoint, {
         method: 'PUT',
@@ -109,7 +123,7 @@ export const useNetwork = () => {
         typeof endpoint !== 'undefined' && endpoint[0] === '/'
           ? endpoint.substring(1)
           : endpoint
-      const apiDomain = apiUrl ?? config.apiUrl ?? 'localhost'
+      const apiDomain = await resolveApiDomain(apiUrl)
       const token = await AsyncStorage.getItem('jwt')
       const res = await fetch(apiDomain + '/' + _endpoint, {
         method: 'DELETE',

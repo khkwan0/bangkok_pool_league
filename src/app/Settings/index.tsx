@@ -80,6 +80,7 @@ export default function Settings() {
   async function HandleLogout() {
     try {
       await AsyncStorage.removeItem('jwt')
+      await AsyncStorage.removeItem('user')
       dispatch({type: 'DEL_USER'})
     } catch (e) {
       console.error('Error removing token:', e)

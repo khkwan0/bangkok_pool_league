@@ -67,3 +67,4 @@ bkkleague_backend
 ios/
 android/
 private_keys/
+.repowise/

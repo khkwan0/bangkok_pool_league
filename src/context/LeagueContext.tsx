@@ -336,6 +336,29 @@ export const LeagueProvider = ({children}: any) => {
     loadUrls()
   }, [])
 
+  // Restore session before screens mount so reopen does not flash as logged out.
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const [jwt, cachedUser] = await Promise.all([
+          AsyncStorage.getItem('jwt'),
+          AsyncStorage.getItem('user'),
+        ])
+        if (cancelled || !jwt?.trim() || !cachedUser) return
+        const parsed = JSON.parse(cachedUser)
+        if (parsed?.id) {
+          dispatch({type: 'SET_USER', payload: parsed})
+        }
+      } catch (e) {
+        console.error('Failed to hydrate cached user session:', e)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   useEffect(() => {
     const getMatchCardDesign = async () => {
       try {
@@ -433,6 +456,7 @@ export const LeagueProvider = ({children}: any) => {
   async function LogoutUser() {
     try {
       await AsyncStorage.removeItem('jwt')
+      await AsyncStorage.removeItem('user')
       dispatch({type: 'DEL_USER'})
       dispatch({type: 'SET_COMPETITION', payload: CANONICAL_COMPETITION})
       await AsyncStorage.setItem(

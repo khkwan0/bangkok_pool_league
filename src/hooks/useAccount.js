@@ -28,9 +28,43 @@ export const useAccount = () => {
         return null
       }
 
+      // Hydrate quickly from cache so cold start does not flash "logged out"
+      // while /user is in flight.
+      try {
+        const cached = await AsyncStorage.getItem('user')
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          if (parsed?.id) {
+            dispatch({type: 'SET_USER', payload: parsed})
+          }
+        }
+      } catch {
+        // ignore bad cache
+      }
+
       const userData = await Get('/user')
       if (userData?.id) {
         dispatch({type: 'SET_USER', payload: userData})
+        try {
+          await AsyncStorage.setItem('user', JSON.stringify(userData))
+        } catch (e) {
+          console.log(e)
+        }
+      } else if (
+        userData?.httpStatus === 401 ||
+        userData?.httpStatus === 404
+      ) {
+        // Server rejected the session — clear local auth.
+        await AsyncStorage.removeItem('jwt')
+        await AsyncStorage.removeItem('user')
+        dispatch({type: 'DEL_USER'})
+        return null
+      } else {
+        // Network / transient failure — keep cached session if present.
+        console.log(
+          'FetchUser: /user failed, keeping cached session',
+          userData?.error,
+        )
       }
 
       try {
@@ -38,13 +72,13 @@ export const useAccount = () => {
         const token = await getToken(messaging)
         await Post('/user/token', {token: token})
         await ensureUserChannels({
-          includeAdmin: isLeagueAdmin(userData),
+          includeAdmin: isLeagueAdmin(userData?.id ? userData : null),
         })
       } catch (tokenError) {
         console.error('Error registering FCM token:', tokenError)
       }
 
-      return userData
+      return userData?.id ? userData : null
     } catch (e) {
       console.log(e)
       console.log('no user')
@@ -76,6 +110,13 @@ export const useAccount = () => {
         if (typeof res.status !== 'undefined' && res.status === 'ok') {
           if (typeof res.data !== 'undefined' && res.data) {
             await AsyncStorage.setItem('jwt', res.data.token)
+            if (res.data.user) {
+              try {
+                await AsyncStorage.setItem('user', JSON.stringify(res.data.user))
+              } catch (e) {
+                console.log(e)
+              }
+            }
             const messaging = getMessaging()
             const token = await getToken(messaging)
             await Post('/user/token', {token: token})
@@ -98,6 +139,13 @@ export const useAccount = () => {
         if (typeof res.status !== 'undefined' && res.status === 'ok') {
           if (typeof res.data !== 'undefined' && res.data) {
             await AsyncStorage.setItem('jwt', res.data.token)
+            if (res.data.user) {
+              try {
+                await AsyncStorage.setItem('user', JSON.stringify(res.data.user))
+              } catch (e) {
+                console.log(e)
+              }
+            }
             dispatch({type: 'SET_USER', payload: res.data.user})
             return {status: 'ok'}
           }
@@ -125,6 +173,13 @@ export const useAccount = () => {
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
         if (typeof res.data !== 'undefined' && res.data) {
           await AsyncStorage.setItem('jwt', res.data.token)
+          if (res.data.user) {
+            try {
+              await AsyncStorage.setItem('user', JSON.stringify(res.data.user))
+            } catch (e) {
+              console.log(e)
+            }
+          }
           dispatch({type: 'SET_USER', payload: res.data.user})
           return {status: 'ok'}
         }
