@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "buildNumber": "169",
+      "buildNumber": "171",
       "googleServicesFile": "./GoogleService-Info.plist",
       "usesAppleSignIn": true,
       "associatedDomains": [
@@ -41,7 +41,7 @@
     },
     "android": {
       "package": "com.bangkok_pool_league",
-      "versionCode": 169,
+      "versionCode": 171,
       "googleServicesFile": "./firebase.google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",

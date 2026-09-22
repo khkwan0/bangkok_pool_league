@@ -8,7 +8,7 @@ import {useHasUnreadAnnouncements} from '@/lib/announcementUnread'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {
   BottomSheetModal,
-  BottomSheetView,
+  BottomSheetScrollView,
 } from '@expo/ui/community/bottom-sheet'
 import {useRouter} from 'expo-router'
 import React from 'react'
@@ -91,12 +91,13 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
     const hasNewForumPosts = useHasNewForumPosts()
     const hasUnreadAnnouncements = useHasUnreadAnnouncements()
     const competition = state.competition
-    // 8 rows + header; keep sheet tall enough for the last item on iOS.
+    // Cap height so short phones (SE, etc.) always get scrollable overflow.
     const snapPoints = React.useMemo(() => {
-      const estimatedContentHeight = 700 + Math.max(insets.bottom, 16)
-      const minOpenRatio = 0.72
+      const estimatedContentHeight = 760 + Math.max(insets.bottom, 16)
+      const minOpenRatio = 0.65
+      const maxOpenRatio = windowHeight < 700 ? 0.82 : 0.88
       const ratio = Math.min(
-        0.88,
+        maxOpenRatio,
         Math.max(minOpenRatio, estimatedContentHeight / windowHeight),
       )
       return [`${Math.round(ratio * 100)}%`]
@@ -148,15 +149,26 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
       <BottomSheetModal
         ref={ref}
         snapPoints={snapPoints}
+        enableDynamicSizing={false}
         enablePanDownToClose
         onDismiss={handleSheetDismiss}
         backgroundStyle={{backgroundColor: colors.background}}>
-        <BottomSheetView
-          style={{
-            flex: 1,
+        <BottomSheetScrollView
+          style={{flex: 1}}
+          contentContainerStyle={{
             paddingHorizontal: 20,
             paddingBottom: Math.max(insets.bottom, 16) + 16,
-          }}>
+            // Don't flexGrow — that expands content to fill and can hide overflow.
+            flexGrow: 0,
+          }}
+          showsVerticalScrollIndicator
+          // Android: keep bar visible. iOS: indicator still shows while scrolling.
+          persistentScrollbar={Platform.OS === 'android'}
+          indicatorStyle={colorScheme === 'dark' ? 'white' : 'black'}
+          bounces
+          alwaysBounceVertical={Platform.OS === 'ios'}
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled">
           <View className="mb-4">
             <View className="flex-row items-center justify-between">
               <Text type="subtitle">{t('quick_actions_title')}</Text>
@@ -228,6 +240,13 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             onPress={() => navigate('/(tabs)/(index)/cups')}
           />
           <QuickActionItem
+            icon="hand-coin"
+            label={t('coin_flip')}
+            iconColor="#F59E0B"
+            iconBackground="rgba(245, 158, 11, 0.15)"
+            onPress={() => navigate('/Settings/CoinFlip')}
+          />
+          <QuickActionItem
             icon="trophy-outline"
             label={t('change_league')}
             iconColor="#E91E63"
@@ -252,7 +271,7 @@ export const TabActionSheet = React.forwardRef<BottomSheetModal>(
             iconBackground="rgba(255, 152, 0, 0.15)"
             onPress={() => navigate('/Settings/Info')}
           />
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     )
   },
