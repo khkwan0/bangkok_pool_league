@@ -1,4 +1,9 @@
 import {Asset} from 'expo-asset'
+import {
+  cacheDirectory,
+  copyAsync,
+  getInfoAsync,
+} from 'expo-file-system/legacy'
 import {GLView, type ExpoWebGLRenderingContext} from 'expo-gl'
 import {Renderer} from 'expo-three'
 import React from 'react'
@@ -174,34 +179,76 @@ function tableSizeForCamera(aspect: number) {
   }
 }
 
+/** expo-gl texImage2D only accepts file:// URIs. */
+function toFileUri(uri: string) {
+  if (uri.startsWith('file://')) {
+    return uri
+  }
+  if (uri.startsWith('file:/')) {
+    return `file://${uri.slice('file:'.length)}`
+  }
+  if (uri.startsWith('/')) {
+    return `file://${uri}`
+  }
+  return uri
+}
+
+/**
+ * Android release packs require()'d PNGs as drawables. Their localUri is then
+ * schema-less / asset://, which expo-gl cannot upload — copy to cache first.
+ */
+async function resolveGlReadableUri(asset: Asset) {
+  const sourceUri = asset.localUri ?? asset.uri
+  if (!sourceUri) {
+    throw new Error('Coin texture asset missing uri')
+  }
+
+  const alreadyFile =
+    sourceUri.startsWith('file:') || sourceUri.startsWith('file:/')
+  if (alreadyFile || Platform.OS !== 'android') {
+    return toFileUri(sourceUri)
+  }
+
+  if (!cacheDirectory) {
+    throw new Error('Coin texture cache directory unavailable')
+  }
+
+  const ext = asset.type || 'png'
+  const name = asset.hash ?? String(asset.name ?? 'coin')
+  const dest = `${cacheDirectory}coin-tex-${name}.${ext}`
+  const info = await getInfoAsync(dest)
+  if (!info.exists) {
+    await copyAsync({from: sourceUri, to: dest})
+  }
+  return toFileUri(dest)
+}
+
 async function loadCoinTexture(moduleId: number) {
   const asset = Asset.fromModule(moduleId)
   await asset.downloadAsync()
 
-  if (!asset.localUri) {
-    throw new Error('Coin texture asset missing localUri')
-  }
-
   let width = asset.width ?? 0
   let height = asset.height ?? 0
   if (!width || !height) {
+    const probeUri = asset.localUri ?? asset.uri
+    if (!probeUri) {
+      throw new Error('Coin texture asset missing localUri')
+    }
     const size = await new Promise<{width: number; height: number}>(
       (resolve, reject) => {
-        Image.getSize(
-          asset.localUri!,
-          (w, h) => resolve({width: w, height: h}),
-          reject,
-        )
+        Image.getSize(probeUri, (w, h) => resolve({width: w, height: h}), reject)
       },
     )
     width = size.width
     height = size.height
   }
 
+  const localUri = await resolveGlReadableUri(asset)
+
   const texture = new THREE.Texture()
   ;(texture as any).isDataTexture = true
   texture.image = {
-    data: asset,
+    data: {localUri},
     width,
     height,
   }
