@@ -1,8 +1,10 @@
+import {Surface, useStatColors, winRateColor} from '@/components/PlayerStatistics/statUi'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
-import {usePathname, useRouter} from 'expo-router'
 import {formatBangkokDateMed} from '@/lib/bangkokTime'
-import {Pressable} from 'react-native'
+import {usePathname, useRouter} from 'expo-router'
+import {useTranslation} from 'react-i18next'
+import {Pressable, Text as RNText, View as RNView} from 'react-native'
 
 type StatType = {
   date: string
@@ -16,12 +18,16 @@ type StatType = {
 const StatsMatchPerformance = ({
   stats,
   path,
+  variant = 'table',
 }: {
   stats: StatType[]
   path: string | undefined
+  variant?: 'table' | 'cards'
 }) => {
   const router = useRouter()
   const currentPath = usePathname()
+  const {t} = useTranslation()
+  const colors = useStatColors()
   
   // Determine the correct Match route path
   const getMatchPath = () => {
@@ -55,6 +61,71 @@ const StatsMatchPerformance = ({
     
     // Fallback: append /Match to current path
     return `${currentPath}/Match`
+  }
+
+  if (variant === 'cards') {
+    return (
+      <>
+        {stats.map((stat: StatType, index: number) => {
+          const played = stat.singlesPlayed + stat.doublesPlayed
+          const won = stat.singlesWon + stat.doublesWon
+          const tone =
+            played === 0 ? colors.muted : winRateColor((won / played) * 100)
+          return (
+            <Pressable
+              key={stat.matchId + '_' + index}
+              onPress={() => {
+                router.push({
+                  pathname: getMatchPath() as any,
+                  params: {params: JSON.stringify({matchId: stat.matchId})},
+                } as any)
+              }}
+              style={({pressed}) => ({opacity: pressed ? 0.75 : 1})}>
+              <Surface
+                style={{
+                  paddingVertical: 12,
+                  paddingHorizontal: 14,
+                  marginBottom: 8,
+                  borderLeftWidth: 4,
+                  borderLeftColor: tone,
+                }}>
+                <Text type="link">{formatBangkokDateMed(stat.date)}</Text>
+                <RNView style={{flexDirection: 'row', marginTop: 8}}>
+                  <RNView style={{flex: 1}}>
+                    <RNText style={{fontSize: 12, color: colors.muted}}>
+                      {t('singles')}
+                    </RNText>
+                    <RNText
+                      style={{
+                        marginTop: 2,
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: colors.text,
+                      }}>
+                      {stat.singlesWon}/{stat.singlesPlayed}
+                    </RNText>
+                  </RNView>
+                  <RNView style={{flex: 1}}>
+                    <RNText style={{fontSize: 12, color: colors.muted}}>
+                      {t('doubles')}
+                    </RNText>
+                    <RNText
+                      style={{
+                        marginTop: 2,
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: colors.text,
+                      }}>
+                      {stat.doublesWon}/{stat.doublesPlayed}
+                    </RNText>
+                  </RNView>
+                </RNView>
+              </Surface>
+            </Pressable>
+          )
+        })}
+      </>
+    )
   }
 
   return (

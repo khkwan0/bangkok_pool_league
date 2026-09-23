@@ -2,10 +2,12 @@ import {Asset} from 'expo-asset'
 import {GLView, type ExpoWebGLRenderingContext} from 'expo-gl'
 import {Renderer} from 'expo-three'
 import React from 'react'
+import {Colors} from '@/constants/Colors'
 import {
   Image,
   Platform,
   StyleSheet,
+  useColorScheme,
   View,
   type LayoutChangeEvent,
 } from 'react-native'
@@ -42,11 +44,11 @@ const SETTLE_SPEED = 0.7
 const SETTLE_SPIN = 1.6
 const MIN_FLIPS = 6
 const MAX_FLIPS = 10
-const TOSS_VY_MIN = 12.5
-const TOSS_VY_RANGE = 2.5
+const TOSS_VY_MIN = 10.5
+const TOSS_VY_RANGE = 4.5
 /** Angular speed scale (rad/s factor) — randomized per toss, never below min. */
-const SPIN_SPEED_MIN = 1.15
-const SPIN_SPEED_MAX = 1.85
+const SPIN_SPEED_MIN = 0.8
+const SPIN_SPEED_MAX = 2.2
 const PHYSICS_SUBSTEPS = 4
 /** Extra clearance so rotating edges don't z-fight the felt. */
 const CONTACT_SLOP = 0.002
@@ -55,8 +57,8 @@ const CONTACT_SLOP = 0.002
 const HEADS_ANGLE = 0
 const TAILS_ANGLE = Math.PI
 
-const HEADS_TEXTURE = require('../../../assets/images/coin/ten-baht-heads.png')
-const TAILS_TEXTURE = require('../../../assets/images/coin/ten-baht-tails.png')
+const HEADS_TEXTURE = require('../../../assets/images/coin/rama-ix.png')
+const TAILS_TEXTURE = require('../../../assets/images/coin/thai-temple.png')
 
 type TossState = {
   active: boolean
@@ -161,12 +163,15 @@ function coinScaleForViewport(aspect: number, cameraDistance: number) {
   return Math.min(halfWidth, halfHeight) * VIEWPORT_FILL
 }
 
-/** Table radius that fits fully inside the camera frustum at y=0. */
-function tableRadiusForCamera(aspect: number) {
+/** Table dimensions that fill the perspective camera frustum at y=0. */
+function tableSizeForCamera(aspect: number) {
   const fovRad = THREE.MathUtils.degToRad(CAMERA_FOV)
   const halfHeight = Math.tan(fovRad / 2) * CAMERA_HEIGHT
   const halfWidth = halfHeight * aspect
-  return Math.min(halfWidth, halfHeight) * 0.92
+  return {
+    width: halfWidth * 2,
+    height: halfHeight * 2,
+  }
 }
 
 async function loadCoinTexture(moduleId: number) {
@@ -213,7 +218,10 @@ export const CoinFlipScene = React.forwardRef<
   CoinFlipSceneHandle,
   CoinFlipSceneProps
 >(function CoinFlipScene({onFlipStart, onFlipComplete}, ref) {
+  const colorScheme = useColorScheme() ?? 'light'
+  const canvasBackground = Colors[colorScheme].background
   const [layout, setLayout] = React.useState({width: 0, height: 0})
+  const layoutLockedRef = React.useRef(false)
   const tossRef = React.useRef<TossState | null>(null)
   const restYRef = React.useRef(0.05)
   const startTossRef = React.useRef<((outcome: CoinFlipOutcome) => void) | null>(
@@ -250,8 +258,14 @@ export const CoinFlipScene = React.forwardRef<
   }))
 
   const onLayout = React.useCallback((event: LayoutChangeEvent) => {
+    // Lock the first stable size so later UI changes don't stretch the GL buffer
+    // (that made the coin look oval).
+    if (layoutLockedRef.current) {
+      return
+    }
     const {width, height} = event.nativeEvent.layout
     if (width > 0 && height > 0) {
+      layoutLockedRef.current = true
       setLayout({width, height})
     }
   }, [])
@@ -273,6 +287,16 @@ export const CoinFlipScene = React.forwardRef<
       }
     }) as typeof gl.pixelStorei
 
+    // Expo GL may return undefined here, but Three.js calls .trim() on the logs.
+    const getShaderInfoLog = gl.getShaderInfoLog.bind(gl)
+    gl.getShaderInfoLog = ((
+      ...args: Parameters<typeof getShaderInfoLog>
+    ) => getShaderInfoLog(...args) ?? '') as typeof gl.getShaderInfoLog
+    const getProgramInfoLog = gl.getProgramInfoLog.bind(gl)
+    gl.getProgramInfoLog = ((
+      ...args: Parameters<typeof getProgramInfoLog>
+    ) => getProgramInfoLog(...args) ?? '') as typeof gl.getProgramInfoLog
+
     const OriginalWebGLRenderingContext = (globalThis as any)
       .WebGLRenderingContext
     ;(globalThis as any).WebGLRenderingContext = undefined
@@ -283,17 +307,17 @@ export const CoinFlipScene = React.forwardRef<
         width: bufW,
         height: bufH,
         pixelRatio: 1,
-        clearColor: 0x0f172a,
+        clearColor: new THREE.Color(canvasBackground).getHex(),
       })
     } finally {
       ;(globalThis as any).WebGLRenderingContext = OriginalWebGLRenderingContext
     }
 
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x0f172a)
+    scene.background = new THREE.Color(canvasBackground)
 
     const aspect = bufW / bufH
-    // Nearly straight top-down so the coin stays circular and the table isn't clipped.
+    // Perspective top-down so the coin grows as it rises toward the camera.
     const camera = new THREE.PerspectiveCamera(CAMERA_FOV, aspect, 0.1, 40)
     camera.position.set(0, CAMERA_HEIGHT, CAMERA_Z)
     camera.up.set(0, 0, -1)
@@ -306,34 +330,61 @@ export const CoinFlipScene = React.forwardRef<
     fillLight.position.set(-3, 8, -2)
     scene.add(ambient, keyLight, fillLight)
 
-    const tableRadius = tableRadiusForCamera(aspect)
+    const baseTableSize = tableSizeForCamera(aspect)
+    const tableGroup = new THREE.Group()
+    scene.add(tableGroup)
 
-    // Table surface centered under the camera (y = 0).
-    const tableGeo = new THREE.CircleGeometry(tableRadius, 64)
-    const tableMat = new THREE.MeshPhongMaterial({
-      color: 0x1a3a2a,
-      shininess: 18,
-      specular: 0x224433,
-    })
-    const table = new THREE.Mesh(tableGeo, tableMat)
-    table.rotation.x = -Math.PI / 2
-    table.position.set(0, 0, 0)
-    scene.add(table)
+    const tableDisposables: {dispose: () => void}[] = []
+    const track = <T extends {dispose: () => void}>(obj: T) => {
+      tableDisposables.push(obj)
+      return obj
+    }
 
-    const rimGeo = new THREE.RingGeometry(
-      tableRadius * 0.985,
-      tableRadius * 1.06,
-      64,
+    const feltMat = track(
+      new THREE.MeshPhongMaterial({
+        color: 0x1a3a2a,
+        shininess: 18,
+        specular: 0x224433,
+        side: THREE.DoubleSide,
+      }),
     )
-    const rimMat = new THREE.MeshPhongMaterial({
-      color: 0x5c4033,
-      shininess: 40,
-      side: THREE.DoubleSide,
-    })
-    const tableRim = new THREE.Mesh(rimGeo, rimMat)
-    tableRim.rotation.x = -Math.PI / 2
-    tableRim.position.set(0, 0.002, 0)
-    scene.add(tableRim)
+    const feltGeo = track(
+      new THREE.PlaneGeometry(
+        baseTableSize.width * 1.02,
+        baseTableSize.height * 1.02,
+      ),
+    )
+    const felt = new THREE.Mesh(feltGeo, feltMat)
+    felt.rotation.x = -Math.PI / 2
+    felt.position.set(0, 0, 0)
+    tableGroup.add(felt)
+
+    let syncedBufW = bufW
+    let syncedBufH = bufH
+    let syncedAspect = aspect
+
+    const syncViewport = () => {
+      const nextW = gl.drawingBufferWidth
+      const nextH = gl.drawingBufferHeight
+      if (nextW <= 0 || nextH <= 0) {
+        return
+      }
+      if (nextW === syncedBufW && nextH === syncedBufH) {
+        return
+      }
+      syncedBufW = nextW
+      syncedBufH = nextH
+      syncedAspect = nextW / nextH
+      renderer.setSize(nextW, nextH)
+      camera.aspect = syncedAspect
+      camera.updateProjectionMatrix()
+      const nextTable = tableSizeForCamera(syncedAspect)
+      tableGroup.scale.set(
+        nextTable.width / baseTableSize.width,
+        1,
+        nextTable.height / baseTableSize.height,
+      )
+    }
 
     const shadowGeo = new THREE.CircleGeometry(1, 48)
     const shadowMat = new THREE.MeshBasicMaterial({
@@ -631,6 +682,7 @@ export const CoinFlipScene = React.forwardRef<
 
     const renderLoop = (now: number) => {
       frameRef.current = requestAnimationFrame(renderLoop)
+      syncViewport()
 
       const last = lastFrameMsRef.current ?? now
       lastFrameMsRef.current = now
@@ -659,6 +711,7 @@ export const CoinFlipScene = React.forwardRef<
 
     teardownRef.current = () => {
       cancelled = true
+      const interrupted = tossRef.current
       startTossRef.current = null
       tossRef.current = null
       if (frameRef.current != null) {
@@ -666,10 +719,9 @@ export const CoinFlipScene = React.forwardRef<
         frameRef.current = null
       }
       geometry.dispose()
-      tableGeo.dispose()
-      tableMat.dispose()
-      rimGeo.dispose()
-      rimMat.dispose()
+      for (const obj of tableDisposables) {
+        obj.dispose()
+      }
       shadowGeo.dispose()
       shadowMat.dispose()
       rimMaterial.dispose()
@@ -678,21 +730,35 @@ export const CoinFlipScene = React.forwardRef<
       headsMap?.dispose()
       tailsMap?.dispose()
       renderer.dispose()
+      // Unlock the Flip button if the GL view remounted mid-toss.
+      if (interrupted?.active) {
+        callbacksRef.current.onFlipComplete?.(
+          outcomeFromAngle(interrupted.angle),
+        )
+      }
     }
-  }, [])
+  }, [canvasBackground])
 
   if (Platform.OS === 'web') {
-    return <View style={styles.webFallback} />
+    return (
+      <View style={[styles.webFallback, {backgroundColor: canvasBackground}]} />
+    )
   }
 
-  const side = Math.min(layout.width, layout.height)
-
   return (
-    <View style={styles.container} onLayout={onLayout}>
-      {side > 0 ? (
+    <View
+      style={[styles.container, {backgroundColor: canvasBackground}]}
+      onLayout={onLayout}>
+      {layout.width > 0 && layout.height > 0 ? (
         <GLView
-          key={`coin-gl-${Math.round(side)}`}
-          style={{width: side, height: side}}
+          // Remount only on theme change — resizing from result text must not
+          // tear down an in-flight toss (that left the Flip button stuck).
+          key={`coin-gl-${colorScheme}`}
+          style={{
+            width: layout.width,
+            height: layout.height,
+            backgroundColor: canvasBackground,
+          }}
           onContextCreate={onContextCreate}
         />
       ) : null}
@@ -706,13 +772,11 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
   },
   webFallback: {
     flex: 1,
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
   },
 })

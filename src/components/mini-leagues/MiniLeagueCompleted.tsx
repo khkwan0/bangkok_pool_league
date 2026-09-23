@@ -5,10 +5,11 @@ import {
   MiniSeasonChips,
   useMiniSeasonSelection,
 } from '@/components/mini-leagues/MiniSeasonChips'
+import {Colors} from '@/constants/Colors'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import React from 'react'
-import {ActivityIndicator, FlatList} from 'react-native'
+import {ActivityIndicator, FlatList, useColorScheme} from 'react-native'
 
 type CompletedMatchType = {
   match_id: number
@@ -26,6 +27,7 @@ export function MiniLeagueCompleted({miniLeagueId}: {miniLeagueId: number}) {
   const [refreshing, setRefreshing] = React.useState(false)
   const [isMounted, setIsMounted] = React.useState(false)
   const listContentStyle = useTabListContentContainerStyle()
+  const pageBg = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'].background
   const {seasons, seasonId, setSeasonId} = useMiniSeasonSelection(miniLeagueId)
 
   const load = React.useCallback(async () => {
@@ -64,13 +66,14 @@ export function MiniLeagueCompleted({miniLeagueId}: {miniLeagueId: number}) {
   }, [load])
 
   return (
-    <View className="flex-1">
+    <View className="flex-1" style={{backgroundColor: pageBg}}>
       {!isMounted ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator />
         </View>
       ) : (
         <FlatList
+          style={{backgroundColor: pageBg}}
           data={matches}
           keyExtractor={item => item.match_id.toString()}
           ListHeaderComponent={
@@ -82,10 +85,8 @@ export function MiniLeagueCompleted({miniLeagueId}: {miniLeagueId: number}) {
               />
             </View>
           }
-          renderItem={({item}) => (
-            <View className="bg-white mx-4 mb-4 rounded-xl shadow-sm overflow-hidden">
-              <CompletedMatch item={item} />
-            </View>
+          renderItem={({item, index}) => (
+            <CompletedMatch item={item} index={index} />
           )}
           refreshing={refreshing}
           onRefresh={load}
@@ -93,7 +94,7 @@ export function MiniLeagueCompleted({miniLeagueId}: {miniLeagueId: number}) {
           contentContainerStyle={listContentStyle}
           ListEmptyComponent={
             <Text className="text-center opacity-60 mt-10 px-4">
-              No completed matches yet.
+              no_completed_matches
             </Text>
           }
           ListFooterComponent={<View className="h-4" />}

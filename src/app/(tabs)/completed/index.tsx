@@ -1,15 +1,17 @@
-import Button from '@/components/Button'
 import CompletedMatch from '@/components/Completed/CompletedMatch'
 import CompletedMatchesOther from '@/components/Completed/CompletedMatchesOther'
+import {useStatColors} from '@/components/PlayerStatistics/statUi'
 import {MiniLeagueCompleted} from '@/components/mini-leagues/MiniLeagueCompleted'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useLeague} from '@/hooks/useLeague'
+import {Colors} from '@/constants/Colors'
 import {isMiniCompetition} from '@/types/competition'
+import {Ionicons} from '@expo/vector-icons'
 import {usePathname, useRouter} from 'expo-router'
 import React, {useCallback} from 'react'
 import {useTranslation} from 'react-i18next'
-import {FlatList, View} from 'react-native'
+import {FlatList, Pressable, Text, useColorScheme, View} from 'react-native'
 
 type CompletedMatchType = {
   match_id: number
@@ -26,25 +28,43 @@ type ApiResponse = {
 }
 
 function NoMatches() {
-  return (
-    <View className="px-4">
-      <CompletedMatchesOther />
-    </View>
-  )
+  return <CompletedMatchesOther />
 }
 
 function ShowAllMatches() {
   const router = useRouter()
   const pathname = usePathname()
   const {t} = useTranslation()
+  const colors = useStatColors()
   return (
-    <View className="px-4 mb-4">
-      <Button
-        onPress={() =>
-          router.push({pathname: '/completed/all', params: {from: pathname}})
-        }>
-        {t('show_all_matches')}
-      </Button>
+    <View style={{paddingHorizontal: 16, paddingBottom: 20}}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={() =>
+        router.push({pathname: '/completed/all', params: {from: pathname}})
+      }
+      style={({pressed}) => ({
+        opacity: pressed ? 0.75 : 1,
+      })}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          borderWidth: 1,
+          borderRadius: 16,
+          paddingHorizontal: 14,
+          paddingVertical: 12,
+        }}>
+        <Ionicons name="list-outline" size={18} color={colors.accent} />
+        <Text style={{flex: 1, fontSize: 15, fontWeight: '600', color: colors.text}}>
+          {t('show_all_matches')}
+        </Text>
+        <Ionicons name="chevron-forward" size={16} color={colors.muted} />
+      </View>
+    </Pressable>
     </View>
   )
 }
@@ -57,6 +77,7 @@ export default function CompletedHome() {
   const [refreshing, setRefreshing] = React.useState(false)
   const [isMounted, setIsMounted] = React.useState(false)
   const listContentStyle = useTabListContentContainerStyle()
+  const pageBg = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'].background
 
   const getCompletedMatches = useCallback(
     async (teams: {id: number}[]) => {
@@ -87,14 +108,13 @@ export default function CompletedHome() {
   }
 
   return (
-    <View className="flex-1">
+    <View className="flex-1" style={{backgroundColor: pageBg}}>
       <FlatList
+        style={{backgroundColor: pageBg}}
         data={matches}
         keyExtractor={item => item.match_id.toString()}
-        renderItem={({item}) => (
-          <View className="bg-white mx-4 mb-4 rounded-xl shadow-sm overflow-hidden">
-            <CompletedMatch item={item} />
-          </View>
+        renderItem={({item, index}) => (
+          <CompletedMatch item={item} index={index} />
         )}
         refreshing={refreshing}
         onRefresh={() => getCompletedMatches(user.teams || [])}

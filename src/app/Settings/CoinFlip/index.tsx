@@ -10,15 +10,17 @@ import * as Haptics from 'expo-haptics'
 import {Stack} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import {Platform, View as RNView} from 'react-native'
+import {Platform, StyleSheet, Text as RNText, View as RNView} from 'react-native'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 export default function CoinFlipScreen() {
   const {t} = useTranslation()
+  const insets = useSafeAreaInsets()
   const coinRef = React.useRef<CoinFlipSceneHandle>(null)
   const [flipping, setFlipping] = React.useState(false)
   const [result, setResult] = React.useState<CoinFlipOutcome | null>(null)
 
-  const resultLabel =
+  const canvasLabel =
     result === 'heads'
       ? t('coin_flip_heads')
       : result === 'tails'
@@ -50,20 +52,22 @@ export default function CoinFlipScreen() {
             )
           }}
         />
+        {/*
+          Avoid a full-screen overlay above GLView — on Android that punches
+          black holes through the felt. Keep the badge as a small bottom view.
+        */}
+        {canvasLabel ? (
+          <RNView pointerEvents="none" style={styles.resultBadge}>
+            <RNText style={styles.resultText}>{canvasLabel}</RNText>
+          </RNView>
+        ) : null}
       </RNView>
-      <View className="px-4 pb-8 pt-4">
+      <View
+        className="px-4 pt-4"
+        style={{paddingBottom: Math.max(insets.bottom, 16) + 16}}>
         <Text className="text-center text-base opacity-70">
           {t('coin_flip_hint')}
         </Text>
-        {resultLabel ? (
-          <Text className="mt-3 text-center text-2xl font-bold">
-            {resultLabel}
-          </Text>
-        ) : (
-          <Text className="mt-3 text-center text-lg opacity-50">
-            {flipping ? t('coin_flip_flipping') : '—'}
-          </Text>
-        )}
         <RNView className="mt-5">
           <Button
             disabled={flipping || Platform.OS === 'web'}
@@ -80,3 +84,22 @@ export default function CoinFlipScreen() {
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  resultBadge: {
+    position: 'absolute',
+    bottom: 28,
+    alignSelf: 'center',
+    paddingHorizontal: 22,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  },
+  resultText: {
+    color: '#ffffff',
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+})

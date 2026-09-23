@@ -1,12 +1,11 @@
-import {View, TouchableOpacity} from 'react-native'
-import {ThemedText as Text} from '@/components/ThemedText'
-import {formatBangkokDateMed, nowInBangkok} from '@/lib/bangkokTime'
-import {DateTime} from 'luxon'
-import React from 'react'
-import {MaterialIcons} from '@expo/vector-icons'
-import {useColorScheme} from 'nativewind'
+import {cardAccent, ResultScore} from '@/components/Completed/CompletedMatch'
+import {useStatColors} from '@/components/PlayerStatistics/statUi'
+import {formatBangkokDateMed} from '@/lib/bangkokTime'
+import {Ionicons} from '@expo/vector-icons'
 import {router} from 'expo-router'
-import {composeInitialProps, useTranslation} from 'react-i18next'
+import React from 'react'
+import {useTranslation} from 'react-i18next'
+import {Pressable, Text, View} from 'react-native'
 
 type MatchDateItemProps = {
   date: {
@@ -27,58 +26,69 @@ type MatchDateItemProps = {
 export default function MatchDateItem({date}: MatchDateItemProps) {
   const dateLabel = formatBangkokDateMed(date.date)
   const [show, setShow] = React.useState(false)
-  const colorscheme = useColorScheme()
-  const isDark = colorscheme.colorScheme === 'dark'
+  const colors = useStatColors()
   const {t} = useTranslation()
-
-  const count = React.useMemo(() => {
-    return date.matches.reduce((acc, match) => {
-      if (
-        match.match_status_id === 1 &&
-        DateTime.fromISO(match.match_date).toMillis() <
-          nowInBangkok().toMillis()
-      ) {
-        return acc + 1
-      }
-      return acc
-    }, 0)
-  }, [date])
-
-  function ToggleShow() {
-    setShow(s => !s)
-  }
+  const count = date.matches.length
 
   return (
-    <View>
-      <TouchableOpacity
-        onPress={ToggleShow}
-        className="p-4 flex-row items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm active:opacity-80">
-        <View className="flex-row items-center">
-          <MaterialIcons
-            name="event"
-            size={20}
-            color={isDark ? '#94a3b8' : '#64748b'}
-            className="mr-2"
-          />
-          <Text className="text-base font-medium text-slate-600 dark:text-slate-300">
+    <View style={{paddingHorizontal: 16, paddingBottom: 28}}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${dateLabel}, ${count} ${count === 1 ? t('match') : t('matches')}`}
+        onPress={() => setShow(open => !open)}
+        style={({pressed}) => ({opacity: pressed ? 0.75 : 1})}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            borderWidth: 1,
+            borderRadius: 16,
+            paddingHorizontal: 14,
+            paddingVertical: 14,
+          }}>
+          <Ionicons name="calendar-outline" size={18} color={colors.accent} />
+          <Text
+            style={{
+              flex: 1,
+              marginLeft: 8,
+              fontSize: 16,
+              fontWeight: '700',
+              color: colors.text,
+            }}>
             {dateLabel}
           </Text>
-        </View>
-        {count > 0 && (
-          <View className="bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
-            <Text className="text-sm font-medium text-blue-600 dark:text-blue-300">
-              {count} {count === 1 ? t('match') : t('matches')}
+          <View
+            style={{
+              minWidth: 28,
+              alignItems: 'center',
+              borderRadius: 999,
+              backgroundColor: colors.chip,
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+              marginRight: 8,
+            }}>
+            <Text style={{fontSize: 12, fontWeight: '700', color: colors.text}}>
+              {String(count)}
             </Text>
           </View>
-        )}
-      </TouchableOpacity>
-      {show && (
-        <View className="mt-2 space-y-2">
-          {date.matches.map(match => {
+          <Ionicons
+            name={show ? 'chevron-up' : 'chevron-down'}
+            size={18}
+            color={colors.muted}
+          />
+        </View>
+      </Pressable>
+      {show
+        ? date.matches.map((match, index) => {
+            const final = match.match_status_id === 3
             return (
-              <TouchableOpacity
+              <Pressable
+                key={`${match.match_id}`}
+                accessibilityRole="button"
                 onPress={() => {
-                  if (match.match_status_id === 3) {
+                  if (final) {
                     router.push({
                       pathname: '/completed/Match',
                       params: {
@@ -96,47 +106,44 @@ export default function MatchDateItem({date}: MatchDateItemProps) {
                     })
                   }
                 }}
-                key={`${'completed'}-${match.match_id}`}
-                className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                <View className="flex-row items-center mb-2">
-                  <View className="flex-[3] items-center">
-                    <Text className="text-center font-medium text-slate-700 dark:text-slate-200">
-                      {match.home_team_name}
+                style={({pressed}) => ({
+                  marginTop: 20,
+                  opacity: pressed ? 0.75 : 1,
+                })}>
+                <View
+                  style={{
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                    borderWidth: 1,
+                    borderLeftWidth: 4,
+                    borderLeftColor: cardAccent(index),
+                    borderRadius: 16,
+                    padding: 14,
+                  }}>
+                  {match.division_name ? (
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        fontSize: 12,
+                        fontWeight: '600',
+                        color: colors.muted,
+                        marginBottom: 8,
+                      }}>
+                      {match.division_name}
                     </Text>
-                  </View>
-                  <View className="flex-[1] items-center">
-                    <Text className="text-sm text-slate-400 dark:text-slate-500 font-medium">
-                      {t('vs')}
-                    </Text>
-                  </View>
-                  <View className="flex-[3] items-center">
-                    <Text className="text-center font-medium text-slate-700 dark:text-slate-200">
-                      {match.away_team_name}
-                    </Text>
-                  </View>
+                  ) : null}
+                  <ResultScore
+                    homeName={match.home_team_name}
+                    awayName={match.away_team_name}
+                    homeFrames={match.home_frames}
+                    awayFrames={match.away_frames}
+                    final={final}
+                  />
                 </View>
-                <View className="flex-row items-center">
-                  <View className="flex-[3] items-center">
-                    <Text className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                      {String(match.home_frames ?? 0)}
-                    </Text>
-                  </View>
-                  <View className="flex-[1] items-center">
-                    <Text className="text-sm text-slate-400 dark:text-slate-500 font-medium">
-                      {match.division_name || ''}
-                    </Text>
-                  </View>
-                  <View className="flex-[3] items-center">
-                    <Text className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                      {String(match.away_frames ?? 0)}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
+              </Pressable>
             )
-          })}
-        </View>
-      )}
+          })
+        : null}
     </View>
   )
 }

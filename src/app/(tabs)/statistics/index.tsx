@@ -1,6 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import Button from '@/components/Button'
 import PlayerStatistics from '@/components/PlayerStatistics'
+import StatShortcuts from '@/components/Statistics/StatShortcuts'
+import {useStatColors} from '@/components/PlayerStatistics/statUi'
+import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {MiniLeagueStats} from '@/components/mini-leagues/MiniLeagueStats'
 import {
@@ -9,14 +11,13 @@ import {
 } from '@/components/mini-leagues/MiniSeasonChips'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useLeague} from '@/hooks/useLeague'
+import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {isMiniCompetition} from '@/types/competition'
 import type {PlayerInfo} from '@/types/player'
-import {Ionicons} from '@expo/vector-icons'
 import {useTheme} from 'expo-router/react-navigation'
-import {router} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import {ActivityIndicator, View as RNView} from 'react-native'
+import {ActivityIndicator, ScrollView, View as RNView} from 'react-native'
 
 function MiniStatsWithSeason({miniLeagueId}: {miniLeagueId: number}) {
   const {seasons, seasonId, setSeasonId} = useMiniSeasonSelection(miniLeagueId)
@@ -34,7 +35,30 @@ function MiniStatsWithSeason({miniLeagueId}: {miniLeagueId: number}) {
   )
 }
 
-export default function StatisticsHome(props: any) {
+function GuestStatisticsHome() {
+  const listContentStyle = useTabListContentContainerStyle({
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 24,
+  })
+
+  return (
+    <View className="flex-1">
+      <ScrollView contentContainerStyle={listContentStyle}>
+        <Text type="title" className="mb-2">
+          stats_home_title
+        </Text>
+        <Text className="mb-5" style={{opacity: 0.72}}>
+          stats_home_subtitle
+        </Text>
+        <StatShortcuts variant="grid" showSignIn />
+      </ScrollView>
+    </View>
+  )
+}
+
+export default function StatisticsHome() {
   const league = useLeague()
   const [playerInfo, setPlayerInfo] = React.useState<PlayerInfo | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
@@ -43,12 +67,15 @@ export default function StatisticsHome(props: any) {
   const {state} = useLeagueContext()
   const user = state.user
   const {colors} = useTheme()
+  const statColors = useStatColors()
+  const isGuest = user?.id == null
 
   React.useEffect(() => {
-    async function fetchPlayerInfo(user) {
+    async function fetchPlayerInfo(userId: number) {
       try {
         setIsLoading(true)
-        const info = await league.GetPlayerStatsInfo(user.id)
+        setError('')
+        const info = await league.GetPlayerStatsInfo(userId)
         setPlayerInfo(info)
       } catch (e) {
         setError(t('failed_to_load_player_info'))
@@ -57,86 +84,35 @@ export default function StatisticsHome(props: any) {
         setIsLoading(false)
       }
     }
-    if (user && !isMiniCompetition(state.competition)) {
-      fetchPlayerInfo(user)
+    const userId = user?.id
+    if (userId != null && !isMiniCompetition(state.competition)) {
+      fetchPlayerInfo(userId)
     }
-  }, [user, state.competition])
+  }, [user?.id, state.competition])
 
   if (isMiniCompetition(state.competition)) {
     return <MiniStatsWithSeason miniLeagueId={state.competition.id} />
   }
 
-  if (typeof user.id === 'undefined' || user.id === null || !playerInfo) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <View className="my-4">
-          <Button
-            onPress={() => router.push('/statistics/LeagueStandings')}
-            icon={<Ionicons name="trophy" size={18} color="#FFD700" />}>
-            {t('league_standings')}
-          </Button>
-        </View>
-        <View className="my-4">
-          <Button
-            onPress={() => router.push('/statistics/TeamStatistics')}
-            icon={<Ionicons name="people" size={18} color="#4CAF50" />}>
-            {t('team_statistics')}
-          </Button>
-        </View>
-        <View className="my-4">
-          <Button
-            onPress={() => router.push('/statistics/PlayerStatistics')}
-            icon={<Ionicons name="person" size={18} color="#2196F3" />}>
-            {t('player_statistics')}
-          </Button>
-        </View>
-        <View className="my-4">
-          <Button
-            onPress={() => router.push('/statistics/PlayerRankings')}
-            icon={<Ionicons name="list" size={18} color="#9C27B0" />}>
-            {t('player_rankings')}
-          </Button>
-        </View>
-      </View>
-    )
+  if (isGuest) {
+    return <GuestStatisticsHome />
   }
+
   return (
     <View className="flex-1" style={{backgroundColor: colors.background}}>
-      {/* Navigation buttons in a horizontal row */}
-      <View className="flex-row justify-around items-center p-2 bg-gray-100 dark:bg-gray-700">
-        <Button
-          small
-          icon={<Ionicons name="trophy" size={18} color="#FFD700" />}
-          onPress={() => router.push('/statistics/LeagueStandings')}>
-          {t('league_standings_short')}
-        </Button>
-        <Button
-          small
-          icon={<Ionicons name="people" size={18} color="#4CAF50" />}
-          onPress={() => router.push('/statistics/TeamStatistics')}>
-          {t('team_statistics_short')}
-        </Button>
-        <Button
-          small
-          icon={<Ionicons name="person" size={18} color="#2196F3" />}
-          onPress={() => router.push('/statistics/PlayerStatistics')}>
-          {t('player_statistics_short')}
-        </Button>
-        <Button
-          small
-          icon={<Ionicons name="podium" size={18} color="#9C27B0" />}
-          onPress={() => router.push('/statistics/PlayerRankings')}>
-          {t('player_rankings_short')}
-        </Button>
-      </View>
-
-      {/* Player statistics content area */}
-      <View className="flex-1">
-        {isLoading ? (
+      <StatShortcuts variant="compact" />
+      <View className="flex-1" style={{backgroundColor: 'transparent'}}>
+        {isLoading || (!playerInfo && !error) ? (
           <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" color={statColors.accent} />
           </View>
-        ) : typeof user.id !== 'undefined' && user.id && playerInfo ? (
+        ) : error && !playerInfo ? (
+          <View className="flex-1 justify-center px-6">
+            <Text style={{textAlign: 'center', color: statColors.muted}}>
+              {error}
+            </Text>
+          </View>
+        ) : playerInfo ? (
           <PlayerStatistics playerInfo={playerInfo} path="/statistics" />
         ) : null}
       </View>

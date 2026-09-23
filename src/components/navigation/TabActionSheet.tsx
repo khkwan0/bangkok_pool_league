@@ -47,12 +47,23 @@ function QuickActionItem({
 }: QuickActionItemProps) {
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
+  const isDark = colorScheme === 'dark'
+  const [pressed, setPressed] = React.useState(false)
 
   return (
     <Pressable
-      className="my-2 flex-row items-center rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-700"
+      className="my-2 flex-row items-center overflow-hidden rounded-xl border px-3 py-3"
+      accessibilityRole="button"
       accessibilityHint={showBadge ? badgeLabel : undefined}
-      onPress={onPress}>
+      android_ripple={{color: iconBackground}}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      onPress={onPress}
+      style={{
+        backgroundColor: pressed ? iconBackground : 'transparent',
+        borderColor: pressed ? iconColor : isDark ? '#334155' : '#e2e8f0',
+        transform: [{scale: pressed ? 0.985 : 1}],
+      }}>
       <RNView className="relative mr-4">
         <View
           className="h-11 w-11 items-center justify-center rounded-full"

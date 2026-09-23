@@ -41,6 +41,7 @@ interface User {
   preferences?: {
     enabledPushNotifications?: boolean
     soundNotifications?: boolean
+    home_panels?: string[] | null
   }
 }
 
@@ -59,6 +60,10 @@ interface LeagueState {
   scoreUnit: 'frame' | 'leg'
   /** Resolved white-label league id from /branding (when known). */
   leagueId?: number | null
+  /** League default home panels from branding (null = sport default). */
+  homePanelsStored?: string[] | null
+  /** Effective league panels (resolved). */
+  homePanels?: string[] | null
 }
 
 export interface LeagueContextType {
@@ -94,6 +99,8 @@ const initialState: LeagueState = {
   sport: 'pool',
   scoreUnit: 'frame',
   leagueId: null,
+  homePanelsStored: null,
+  homePanels: null,
 }
 
 const LeagueReducer = (state: any, action: any) => {
@@ -297,6 +304,13 @@ const LeagueReducer = (state: any, action: any) => {
         leagueId: action.payload ?? null,
       }
     }
+    case 'SET_HOME_PANELS': {
+      return {
+        ...state,
+        homePanels: action.payload?.homePanels ?? null,
+        homePanelsStored: action.payload?.homePanelsStored ?? null,
+      }
+    }
     default:
       return state
   }
@@ -442,6 +456,19 @@ export const LeagueProvider = ({children}: any) => {
               : 'pool'
         const normalized = sport === 'darts' ? 'leg' : 'frame'
         dispatch({type: 'SET_SPORT', payload: sport})
+        dispatch({
+          type: 'SET_HOME_PANELS',
+          payload: {
+            homePanels: Array.isArray(json?.data?.home_panels)
+              ? json.data.home_panels
+              : null,
+            homePanelsStored: Array.isArray(json?.data?.home_panels_stored)
+              ? json.data.home_panels_stored
+              : json?.data?.home_panels_stored === null
+                ? null
+                : null,
+          },
+        })
         applyScoreUnitToI18n(normalized)
       } catch (e) {
         console.error('Failed to load league branding:', e)

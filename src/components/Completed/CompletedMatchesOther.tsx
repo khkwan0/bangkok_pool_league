@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {View, FlatList, ActivityIndicator} from 'react-native'
+import {Colors} from '@/constants/Colors'
+import {View, FlatList, ActivityIndicator, useColorScheme} from 'react-native'
 import {useSeason} from '@/hooks/useSeason'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import React from 'react'
@@ -29,6 +30,7 @@ export default function CompletedMatchesOther() {
   const {t} = useTranslation()
   const [isMounted, setIsMounted] = React.useState(false)
   const listContentStyle = useTabListContentContainerStyle()
+  const pageBg = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'].background
 
   React.useEffect(() => {
     const getCompletedMatches = async () => {
@@ -46,19 +48,21 @@ export default function CompletedMatchesOther() {
 
   if (!isMounted) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View
+        className="flex-1 items-center justify-center"
+        style={{backgroundColor: pageBg}}>
+        <ActivityIndicator size="large" color="#0a7ea4" />
       </View>
     )
   }
 
   return (
     <FlatList
+      style={{backgroundColor: pageBg, flex: 1}}
       data={matchDates}
       contentContainerStyle={listContentStyle}
       renderItem={({item}) => <MatchDateItem date={item} />}
       keyExtractor={(item, index) => `${index.toString()}_${item.date}`}
-      ItemSeparatorComponent={() => <View className="h-4" />}
       ListEmptyComponent={() => (
         <View className="p-4 items-center justify-center">
           <View className="p-2">

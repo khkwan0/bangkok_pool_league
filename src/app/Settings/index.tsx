@@ -53,6 +53,7 @@ export default function Settings() {
 
   const user = state.user
   const messageCount = state.messageCount
+  const [logoutPressed, setLogoutPressed] = useState(false)
 
   async function ToggleTheme(value: boolean) {
     try {
@@ -139,7 +140,13 @@ export default function Settings() {
 
         {(typeof user?.id === 'undefined' || !user.id) && (
           <View className="my-4">
-            <NavDest icon="login" text={t('login')} url="/Auth" />
+            <NavDest
+              icon="login"
+              text={t('login')}
+              url="/Auth"
+              iconColor="#0a7ea4"
+              iconBackground="rgba(10, 126, 164, 0.12)"
+            />
           </View>
         )}
 
@@ -147,6 +154,8 @@ export default function Settings() {
           icon="robot-outline"
           text={t('ai_assistant')}
           url={'/Settings/CueChat'}
+          iconColor="#9C27B0"
+          iconBackground="rgba(156, 39, 176, 0.15)"
         />
 
         {/* League Management */}
@@ -156,33 +165,45 @@ export default function Settings() {
             icon="account-group"
             text={t('admin')}
             url={'/Settings/Admin'}
+            iconColor="#6366F1"
+            iconBackground="rgba(99, 102, 241, 0.15)"
           />
         )}
         <NavDest
           icon="account-group"
           text={t('teams')}
           url={'/Settings/Teams'}
+          iconColor="#4CAF50"
+          iconBackground="rgba(76, 175, 80, 0.15)"
         />
         <NavDest
           icon="bullhorn-outline"
           text={t('announcements')}
           url={'/Settings/Announcements'}
+          iconColor="#FF9800"
+          iconBackground="rgba(255, 152, 0, 0.15)"
         />
         <NavDest
           icon="chart-areaspline-variant"
           text={t('statistics')}
           url={'/statistics'}
+          iconColor="#2196F3"
+          iconBackground="rgba(33, 150, 243, 0.15)"
         />
         <NavDest
           icon="information-outline"
           text={t('info_and_guides')}
           url={'/Settings/Info'}
+          iconColor="#FF9800"
+          iconBackground="rgba(255, 152, 0, 0.15)"
         />
         {user.id && (
           <NavDest
             icon="plus-circle"
             text={t('register_new_team')}
             url={'/Settings/RegisterTeam'}
+            iconColor="#10B981"
+            iconBackground="rgba(16, 185, 129, 0.15)"
           />
         )}
         {/*
@@ -203,11 +224,15 @@ export default function Settings() {
           icon="map-marker"
           text={t('venues')}
           url={'/Settings/Venues'}
+          iconColor="#E91E63"
+          iconBackground="rgba(233, 30, 99, 0.15)"
         />
         <NavDest
           icon="account-outline"
           text={t('players')}
           url={'/Settings/Players'}
+          iconColor="#3B82F6"
+          iconBackground="rgba(59, 130, 246, 0.15)"
         />
 
         {/* App Settings */}
@@ -216,6 +241,10 @@ export default function Settings() {
           icon="cog"
           text={t('preferences')}
           url={'/Settings/Preferences'}
+          iconColor={colors.primary}
+          iconBackground={
+            isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(10, 126, 164, 0.12)'
+          }
         />
       </View>
 
@@ -223,8 +252,19 @@ export default function Settings() {
       <View className="mt-auto pb-4" style={{paddingBottom: insets.bottom}}>
         {typeof user?.id !== 'undefined' && user.id && (
           <Pressable
+            accessibilityRole="button"
+            onPressIn={() => setLogoutPressed(true)}
+            onPressOut={() => setLogoutPressed(false)}
             onPress={HandleLogout}
-            className="flex-row items-center py-3 px-4 bg-red-500/10 rounded-lg">
+            className="flex-row items-center rounded-lg py-3 px-4"
+            style={{
+              backgroundColor: logoutPressed
+                ? 'rgba(239, 68, 68, 0.22)'
+                : 'rgba(239, 68, 68, 0.10)',
+              borderWidth: 1,
+              borderColor: logoutPressed ? '#ef4444' : 'transparent',
+              transform: [{scale: logoutPressed ? 0.985 : 1}],
+            }}>
             <MCI name="logout" color="#ef4444" size={24} />
             <Text className="ml-4" style={{color: '#ef4444'}}>
               {t('logout')}

@@ -6,6 +6,7 @@ import {useTheme} from "expo-router/react-navigation"
 import {useLeagueContext} from '../../context/LeagueContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import HomePanelsPreference from '@/components/Preferences/HomePanelsPreference'
 
 const Interface = () => {
   const {t} = useTranslation()
@@ -183,6 +184,8 @@ const Interface = () => {
           </Text>
         </View>
       )}
+
+      <HomePanelsPreference />
     </View>
   )
 }
