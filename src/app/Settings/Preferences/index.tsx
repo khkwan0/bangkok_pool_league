@@ -7,16 +7,60 @@ import { router, useNavigation } from 'expo-router';
 import React from 'react'
 import {useLeagueContext} from '@/context/LeagueContext'
 
+type PreferenceRowProps = {
+  icon: React.ComponentProps<typeof MCI>['name']
+  label: string
+  route: string
+  iconColor: string
+  iconBackground: string
+  showDivider?: boolean
+}
+
+function PreferenceRow({
+  icon,
+  label,
+  route,
+  iconColor,
+  iconBackground,
+  showDivider = true,
+}: PreferenceRowProps) {
+  const {colors} = useTheme()
+  const [pressed, setPressed] = React.useState(false)
+
+  return (
+    <Pressable
+      className={showDivider ? 'border-b' : undefined}
+      accessibilityRole="button"
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      onPress={() => router.push(route as any)}
+      style={{
+        borderColor: colors.border,
+        backgroundColor: pressed ? iconBackground : 'transparent',
+      }}>
+      <View className="flex-row items-center justify-between p-4">
+        <View className="flex-row items-center gap-3">
+          <MCI name={icon} size={24} color={pressed ? iconColor : colors.text} />
+          <Text className="text-base" style={{color: colors.text}}>
+            {label}
+          </Text>
+        </View>
+        <MCI
+          name="chevron-right"
+          size={24}
+          color={pressed ? iconColor : colors.text}
+        />
+      </View>
+    </Pressable>
+  )
+}
+
 export default function Preferences() {
   const {t} = useTranslation()
   const {colors} = useTheme()
   const navigation = useNavigation()
   const {state} = useLeagueContext()
   const user = state.user
-
-  function HandlePress(route: string) {
-    router.push(route as any)
-  }
 
   React.useEffect(() => {
     navigation.setOptions({title: t('preferences')})
@@ -35,37 +79,21 @@ export default function Preferences() {
         <View
           className="rounded-xl overflow-hidden shadow-sm"
           style={{backgroundColor: colors.card}}>
-          <Pressable
-            className="border-b"
-            style={{borderColor: colors.border}}
-            onPress={() => HandlePress('/Settings/Preferences/Language')}>
-            <View className="flex-row items-center justify-between p-4">
-              <View className="flex-row items-center gap-3">
-                <MCI name="translate" size={24} color={colors.text} />
-                <Text className="text-base" style={{color: colors.text}}>
-                  {t('language_in_english')}/{t('language_in_thai')}
-                </Text>
-              </View>
-              <MCI name="chevron-right" size={24} color={colors.text} />
-            </View>
-          </Pressable>
+          <PreferenceRow
+            icon="translate"
+            label={`${t('language_in_english')}/${t('language_in_thai')}`}
+            route="/Settings/Preferences/Language"
+            iconColor="#2196F3"
+            iconBackground="rgba(33, 150, 243, 0.15)"
+          />
           {user?.id && (
-            <Pressable
-              className="border-b"
-              style={{borderColor: colors.border}}
-              onPress={() =>
-                HandlePress('/Settings/Preferences/Notifications')
-              }>
-              <View className="flex-row items-center justify-between p-4">
-                <View className="flex-row items-center gap-3">
-                  <MCI name="bell-outline" size={24} color={colors.text} />
-                  <Text className="text-base" style={{color: colors.text}}>
-                    {t('notification')}
-                  </Text>
-                </View>
-                <MCI name="chevron-right" size={24} color={colors.text} />
-              </View>
-            </Pressable>
+            <PreferenceRow
+              icon="bell-outline"
+              label={t('notification')}
+              route="/Settings/Preferences/Notifications"
+              iconColor="#FF9800"
+              iconBackground="rgba(255, 152, 0, 0.15)"
+            />
           )}
         </View>
       </View>
@@ -82,51 +110,27 @@ export default function Preferences() {
           <View
             className="rounded-xl overflow-hidden shadow-sm"
             style={{backgroundColor: colors.card}}>
-            <Pressable
-              className="border-b"
-              style={{borderColor: colors.border}}
-              onPress={() => HandlePress('/Settings/Preferences/Security')}>
-              <View className="flex-row items-center justify-between p-4">
-                <View className="flex-row items-center gap-3">
-                  <MCI name="shield-outline" size={24} color={colors.text} />
-                  <Text className="text-base" style={{color: colors.text}}>
-                    {t('security')}
-                  </Text>
-                </View>
-                <MCI name="chevron-right" size={24} color={colors.text} />
-              </View>
-            </Pressable>
-
-            <Pressable
-              className="border-b"
-              style={{borderColor: colors.border}}
-              onPress={() => HandlePress('/Settings/Preferences/Profile')}>
-              <View className="flex-row items-center justify-between p-4">
-                <View className="flex-row items-center gap-3">
-                  <MCI name="account-outline" size={24} color={colors.text} />
-                  <Text className="text-base" style={{color: colors.text}}>
-                    {t('profile')}
-                  </Text>
-                </View>
-                <MCI name="chevron-right" size={24} color={colors.text} />
-              </View>
-            </Pressable>
-
-            <Pressable
-              className="border-b"
-              onPress={() =>
-                HandlePress('/Settings/Preferences/DeleteAccount')
-              }>
-              <View className="flex-row items-center justify-between p-4">
-                <View className="flex-row items-center gap-3">
-                  <MCI name="delete-outline" size={24} color={colors.text} />
-                  <Text className="text-base" style={{color: colors.text}}>
-                    {t('delete_account')}
-                  </Text>
-                </View>
-                <MCI name="chevron-right" size={24} color={colors.text} />
-              </View>
-            </Pressable>
+            <PreferenceRow
+              icon="shield-outline"
+              label={t('security')}
+              route="/Settings/Preferences/Security"
+              iconColor="#4CAF50"
+              iconBackground="rgba(76, 175, 80, 0.15)"
+            />
+            <PreferenceRow
+              icon="account-outline"
+              label={t('profile')}
+              route="/Settings/Preferences/Profile"
+              iconColor="#3B82F6"
+              iconBackground="rgba(59, 130, 246, 0.15)"
+            />
+            <PreferenceRow
+              icon="delete-outline"
+              label={t('delete_account')}
+              route="/Settings/Preferences/DeleteAccount"
+              iconColor="#ef4444"
+              iconBackground="rgba(239, 68, 68, 0.15)"
+            />
           </View>
         </View>
       )}
@@ -142,39 +146,20 @@ export default function Preferences() {
         <View
           className="rounded-xl overflow-hidden shadow-sm"
           style={{backgroundColor: colors.card}}>
-          <Pressable
-            className="border-b"
-            style={{borderColor: colors.border}}
-            onPress={() => HandlePress('/Settings/Preferences/Colors')}>
-            <View className="flex-row items-center justify-between p-4">
-              <View className="flex-row items-center gap-3">
-                <MCI name="palette-outline" size={24} color={colors.text} />
-                <Text className="text-base" style={{color: colors.text}}>
-                  {t('colors')}
-                </Text>
-              </View>
-              <MCI name="chevron-right" size={24} color={colors.text} />
-            </View>
-          </Pressable>
-
-          <Pressable
-            className="border-b"
-            style={{borderColor: colors.border}}
-            onPress={() => HandlePress('/Settings/Preferences/Interface')}>
-            <View className="flex-row items-center justify-between p-4">
-              <View className="flex-row items-center gap-3">
-                <MCI
-                  name="view-dashboard-outline"
-                  size={24}
-                  color={colors.text}
-                />
-                <Text className="text-base" style={{color: colors.text}}>
-                  {t('interface')}
-                </Text>
-              </View>
-              <MCI name="chevron-right" size={24} color={colors.text} />
-            </View>
-          </Pressable>
+          <PreferenceRow
+            icon="palette-outline"
+            label={t('colors')}
+            route="/Settings/Preferences/Colors"
+            iconColor="#E91E63"
+            iconBackground="rgba(233, 30, 99, 0.15)"
+          />
+          <PreferenceRow
+            icon="view-dashboard-outline"
+            label={t('interface')}
+            route="/Settings/Preferences/Interface"
+            iconColor="#9C27B0"
+            iconBackground="rgba(156, 39, 176, 0.15)"
+          />
         </View>
       </View>
     </View>
