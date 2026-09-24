@@ -1,7 +1,5 @@
 import Button from '@/components/Button'
-import TextInput from '@/components/TextInput'
-import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
-import {ForumImageAttachButton} from '@/components/Forums/ForumImageAttachButton'
+import {ForumContentInput} from '@/components/Forums/ForumContentInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -137,9 +135,10 @@ export function ForumReplyComposer({
       </View>
 
       <View className="px-4 pb-3">
-        <TextInput
+        <ForumContentInput
           value={value}
           onChangeText={onChangeText}
+          attachDisabled={submitting}
           placeholder={t('forums_reply_placeholder')}
           multiline
           maxLength={maxLength}
@@ -165,15 +164,6 @@ export function ForumReplyComposer({
           }}
           autoFocus
         />
-        {maxLength ? (
-          <ForumCharCounter length={value.length} maxLength={maxLength} className="mt-1" />
-        ) : null}
-        <View className="mt-2">
-          <ForumImageAttachButton
-            disabled={submitting}
-            onInsert={snippet => onChangeText(value ? `${value}${snippet}` : snippet.trim())}
-          />
-        </View>
       </View>
 
       <View className="px-4 pb-2">

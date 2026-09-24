@@ -9,8 +9,12 @@ const IMG_ATTR_RE = (name: string) =>
   new RegExp(`\\b${name}\\s*=\\s*["']([^"']*)["']`, 'i')
 
 function forumImagesOrigin(): string {
-  const base = config.forumImagesUrl ?? config.logoUrl
-  return base.replace(/\/forum_images\/?$/, '').replace(/\/$/, '')
+  if (config.forumImagesUrl) {
+    return config.forumImagesUrl
+      .replace(/\/forum_images\/?$/, '')
+      .replace(/\/$/, '')
+  }
+  return config.apiUrl.replace(/\/api\/?$/, '').replace(/\/$/, '')
 }
 
 export function resolveForumImageUrl(url: string): string {
@@ -31,8 +35,7 @@ export function resolveForumImageUrl(url: string): string {
   if (trimmed.startsWith('forum_images/')) {
     return `${forumImagesOrigin()}/${trimmed}`
   }
-  const base = config.forumImagesUrl ?? config.logoUrl
-  return base + trimmed.replace(/^\//, '')
+  return `${forumImagesOrigin()}/forum_images/${trimmed.replace(/^\//, '')}`
 }
 
 /** Web posts use display filenames ending in `_display.jpg`. */
@@ -84,6 +87,41 @@ export function buildForumImageEmbed(
   const display = toForumImagePath(displayFilename)
   const full = toForumImagePath(originalFilename)
   return `\n<img src="${display}" data-full="${full}" alt="Forum image" />\n`
+}
+
+const IMAGE_TOKEN_RE = /\[image (\d+)\]/g
+
+export function forumImageToken(n: number): string {
+  return `[image ${n}]`
+}
+
+/** Editable composer text: `<img>` tags swapped for `[image N]` tokens (N indexes `images`). */
+export type ForumComposerContent = {
+  text: string
+  images: string[]
+}
+
+export function parseForumComposerContent(raw: string): ForumComposerContent {
+  const images: string[] = []
+  const text = raw.replace(IMG_TAG_RE, tag => {
+    images.push(tag)
+    return forumImageToken(images.length)
+  })
+  return {text, images}
+}
+
+export function serializeForumComposerContent({text, images}: ForumComposerContent): string {
+  return text.replace(IMAGE_TOKEN_RE, (token, n: string) => images[Number(n) - 1] ?? token)
+}
+
+/** Image numbers whose token is still present in the text, in order of appearance. */
+export function forumComposerImageNumbers({text, images}: ForumComposerContent): number[] {
+  const seen = new Set<number>()
+  for (const match of text.matchAll(IMAGE_TOKEN_RE)) {
+    const n = Number(match[1])
+    if (images[n - 1]) seen.add(n)
+  }
+  return [...seen]
 }
 
 export function preserveForumImageTags(content: string): string {

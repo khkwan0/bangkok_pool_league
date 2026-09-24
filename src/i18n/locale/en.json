@@ -283,6 +283,7 @@
   "forums_views_count": "{count} views",
   "forums_write_reply": "Write a reply",
   "forums_add_image": "Add image",
+  "forums_remove_image": "Remove image",
   "forums_image_uploading": "Uploading image…",
   "forums_image_upload_failed": "Could not upload image. Please try again.",
   "forums_image_permission_title": "Photo access needed",

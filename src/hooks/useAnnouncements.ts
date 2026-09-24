@@ -1,4 +1,6 @@
 import config from '@/config'
+import {File} from 'expo-file-system'
+import {manipulateAsync, SaveFormat} from 'expo-image-manipulator'
 import {useNetwork} from '@/hooks/useNetwork'
 import {useLeagueContext} from '@/context/LeagueContext'
 import i18n from '@/i18n'
@@ -212,12 +214,12 @@ export function useAnnouncements() {
     async (originalUri: string): Promise<AnnouncementImageUploadResult> => {
       try {
         const token = await AsyncStorage.getItem('jwt')
+        const jpeg = await manipulateAsync(originalUri, [], {
+          compress: 0.9,
+          format: SaveFormat.JPEG,
+        })
         const data = new FormData()
-        data.append('image', {
-          uri: originalUri,
-          name: 'announcement.jpg',
-          type: 'image/jpeg',
-        } as unknown as Blob)
+        data.append('image', new File(jpeg.uri))
         const apiDomain = apiUrlRef.current ?? config.apiUrl
         const res = await fetch(
           `${apiDomain}/admin/announcements/gallery/upload`,

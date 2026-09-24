@@ -285,6 +285,7 @@
   "forums_views_count": "ดู {count} ครั้ง",
   "forums_write_reply": "เขียนตอบกลับ",
   "forums_add_image": "เพิ่มรูปภาพ",
+  "forums_remove_image": "ลบรูปภาพ",
   "forums_image_uploading": "กำลังอัปโหลดรูปภาพ…",
   "forums_image_upload_failed": "อัปโหลดรูปภาพไม่สำเร็จ กรุณาลองอีกครั้ง",
   "forums_image_permission_title": "ต้องการสิทธิ์เข้าถึงรูปภาพ",

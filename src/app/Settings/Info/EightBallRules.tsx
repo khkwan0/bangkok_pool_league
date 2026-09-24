@@ -18,9 +18,9 @@ const Rule = (props: RuleProps) => {
   return (
     <View className="mx-4 my-2 p-4 rounded-xl bg-secondary/10">
       <RNView className="flex-row items-center">
-        <View className="w-8 h-8 rounded-full bg-primary items-center justify-center mr-3">
+        <RNView className="w-8 h-8 rounded-full bg-primary items-center justify-center mr-3">
           <Text className="text-white font-bold">{`${props.idx + 1}`}</Text>
-        </View>
+        </RNView>
         <Text className="flex-1 text-lg font-bold">{props.rule.title}</Text>
       </RNView>
       <View className="mt-3 pl-11">

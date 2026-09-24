@@ -33,7 +33,7 @@ export default {
   profileUrl: 'https://' + profilePicturesUrl + '/',
 
   /**
-   * Optional forum image base URL. Falls back to `logoUrl` when omitted.
+   * Optional forum image base URL. Defaults to `/forum_images/` on the `apiUrl` host.
    * Example: 'https://bkkleague.com/forum_images/'
    */
   // forumImagesUrl: 'https://' + domain + '/forum_images/',

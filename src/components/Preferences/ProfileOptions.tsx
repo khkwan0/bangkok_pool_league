@@ -362,7 +362,7 @@ export default function ProfileOptions() {
                 <Pressable
                   className=" my-2 bg-primary border border-gray-300 dark:border-gray-700 px-6 py-3 rounded-full"
                   onPress={() => HandleShowPicker('camera')}>
-                  <Text>{t('camera')}</Text>
+                  <Text className="text-white">{t('camera')}</Text>
                 </Pressable>
               </View>
             )}
@@ -474,7 +474,7 @@ export default function ProfileOptions() {
               <Pressable
                 className="bg-primary px-6 py-3 rounded-full"
                 onPress={() => setIsEditingProfilePicture(true)}>
-                <Text type="link" className="text-white">
+                <Text className="text-white text-lg">
                   {t('change_profile_picture')}
                 </Text>
               </Pressable>

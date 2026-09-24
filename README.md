@@ -70,7 +70,7 @@ Release-build credentials (`ASC_*`, `ANDROID_*`, `PLAY_*`) are also documented i
 | `webSocketUrl` | Socket.IO origin, e.g. `https://bkkleague.com` |
 | `logoUrl` | Base URL for team/venue logos |
 | `profileUrl` | Base URL for profile pictures |
-| `forumImagesUrl` | Optional; forum post images (defaults to `logoUrl`) |
+| `forumImagesUrl` | Optional; forum post images (defaults to `/forum_images/` on the `apiUrl` host) |
 | `ONESIGNAL_APP_ID` | OneSignal push notification app ID |
 | `line.channelId` | LINE Login channel ID |
 | `version` | User-facing app version string |

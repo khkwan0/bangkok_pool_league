@@ -4,7 +4,7 @@ import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {ForumCharCounter} from '@/components/Forums/ForumCharCounter'
-import {ForumImageAttachButton} from '@/components/Forums/ForumImageAttachButton'
+import {ForumContentInput} from '@/components/Forums/ForumContentInput'
 import {useForumSettings, forumLengthErrorKey} from '@/hooks/useForumSettings'
 import {useForums} from '@/hooks/useForums'
 import type {ForumBoard} from '@/types/forums'
@@ -220,9 +220,10 @@ export default function ForumNewTopic() {
           {t('forums_message')}{' '}
           <Text className="text-xs font-normal opacity-60">({t('optional')})</Text>
         </Text>
-        <TextInput
+        <ForumContentInput
           value={content}
           onChangeText={setContent}
+          attachDisabled={submitting}
           placeholder={t('forums_message_placeholder')}
           multiline
           maxLength={forumSettings.opening_post_max_length}
@@ -233,19 +234,6 @@ export default function ForumNewTopic() {
             textAlignVertical: 'top',
           }}
         />
-        <ForumCharCounter
-          length={content.length}
-          maxLength={forumSettings.opening_post_max_length}
-          className="mt-1"
-        />
-        <View className="mt-2">
-          <ForumImageAttachButton
-            disabled={submitting}
-            onInsert={snippet =>
-              setContent(prev => (prev ? `${prev}${snippet}` : snippet.trim()))
-            }
-          />
-        </View>
 
         <Pressable
           onPress={() => setIsAnonymous(prev => !prev)}

@@ -2,6 +2,8 @@ import {useNetwork} from '@/hooks/useNetwork'
 import {useLeagueContext} from '@/context/LeagueContext'
 import config from '@/config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import {File} from 'expo-file-system'
+import {manipulateAsync, SaveFormat} from 'expo-image-manipulator'
 import {useCallback, useRef} from 'react'
 import type {
   ForumBoard,
@@ -293,12 +295,12 @@ export function useForums() {
   ): Promise<ForumImageUploadResult> => {
     try {
       const token = await AsyncStorage.getItem('jwt')
+      const jpeg = await manipulateAsync(originalUri, [], {
+        compress: 0.9,
+        format: SaveFormat.JPEG,
+      })
       const data = new FormData()
-      data.append('original', {
-        uri: originalUri,
-        name: 'original.jpg',
-        type: 'image/jpeg',
-      } as unknown as Blob)
+      data.append('original', new File(jpeg.uri))
       const apiDomain = apiUrlRef.current ?? config.apiUrl
       const res = await fetch(`${apiDomain}/forums/images`, {
         method: 'POST',
