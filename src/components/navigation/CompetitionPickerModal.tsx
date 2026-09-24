@@ -34,6 +34,8 @@ type MiniRow = {
   name: string
   is_admin?: boolean
   member_status?: string | null
+  created_by?: number | null
+  browsable?: boolean
 }
 
 function Radio({
@@ -152,11 +154,17 @@ export function CompetitionPickerModal() {
   const insets = useSafeAreaInsets()
   const visible = state.competitionPickerOpen
   const [items, setItems] = React.useState<MiniRow[]>([])
+  const [others, setOthers] = React.useState<MiniRow[]>([])
+  const [showOthers, setShowOthers] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [creating, setCreating] = React.useState(false)
   const [showCreate, setShowCreate] = React.useState(false)
   const [name, setName] = React.useState('')
   const [error, setError] = React.useState<string | null>(null)
+  const [othersError, setOthersError] = React.useState<string | null>(null)
+  const userId = state.user?.id ?? null
+  const userIdRef = React.useRef(userId)
+  userIdRef.current = userId
 
   const competitionRef = React.useRef(state.competition)
   competitionRef.current = state.competition
@@ -187,12 +195,70 @@ export function CompetitionPickerModal() {
   const load = React.useCallback(async () => {
     setLoading(true)
     setError(null)
+    setOthersError(null)
     try {
-      const res = await apiRef.current.list()
+      const [res, activeRes] = await Promise.all([
+        apiRef.current.list(),
+        apiRef.current.listActive(),
+      ])
+      const uid = userIdRef.current
+      let mine: MiniRow[] = []
       if (res?.status === 'ok' && Array.isArray(res.data)) {
-        setItems(res.data)
+        mine = (res.data as MiniRow[]).filter(item => {
+          if (
+            item.member_status === 'active' ||
+            item.member_status === 'pending'
+          ) {
+            return true
+          }
+          return (
+            uid != null &&
+            item.created_by != null &&
+            Number(item.created_by) === Number(uid)
+          )
+        })
+        setItems(mine)
+      } else {
+        setItems([])
+        setError(
+          res?.error === 'unauthorized'
+            ? t('mini_leagues_sign_in')
+            : res?.error || t('mini_leagues_load_error'),
+        )
+      }
+
+      const mineIds = new Set(mine.map(item => Number(item.id)))
+      let browsable: MiniRow[] = []
+      if (activeRes?.status === 'ok' && Array.isArray(activeRes.data)) {
+        browsable = (activeRes.data as MiniRow[])
+          .filter(item => !mineIds.has(Number(item.id)))
+          .map(item => ({
+            id: Number(item.id),
+            name: item.name,
+            browsable: true,
+          }))
+        setOthers(browsable)
+      } else {
+        setOthers([])
+        setOthersError(t('mini_leagues_load_error'))
+      }
+
+      if (res?.status === 'ok' && Array.isArray(res.data)) {
         const current = competitionRef.current
-        const validated = validateCompetition(current, res.data)
+        const validated = validateCompetition(
+          current,
+          [
+            ...mine,
+            ...browsable.map(item => ({...item, browsable: true as const})),
+          ],
+          uid,
+        )
+        if (
+          current.type === 'mini' &&
+          browsable.some(item => item.id === current.id)
+        ) {
+          setShowOthers(true)
+        }
         if (
           validated.type !== current.type ||
           (validated.type === 'mini' &&
@@ -201,13 +267,6 @@ export function CompetitionPickerModal() {
         ) {
           await setCompetition(validated)
         }
-      } else {
-        setItems([])
-        setError(
-          res?.error === 'unauthorized'
-            ? t('mini_leagues_sign_in')
-            : res?.error || t('mini_leagues_load_error'),
-        )
       }
     } finally {
       setLoading(false)
@@ -218,6 +277,7 @@ export function CompetitionPickerModal() {
     if (visible) {
       setShowCreate(false)
       setName('')
+      setShowOthers(false)
       load()
     }
   }, [visible, load, apiUrl])
@@ -259,6 +319,67 @@ export function CompetitionPickerModal() {
     } finally {
       setCreating(false)
     }
+  }
+
+  function leagueSubtitle(item: MiniRow) {
+    if (item.member_status === 'pending') return t('invite_pending')
+    const createdByUser =
+      userId != null &&
+      item.created_by != null &&
+      Number(item.created_by) === Number(userId)
+    if (createdByUser && item.member_status !== 'active') {
+      return t('you_created_this_league')
+    }
+    if (item.browsable) return t('other_mini_league')
+    if (item.is_admin) return t('you_admin_this_group')
+    return t('private_mini_league')
+  }
+
+  function renderLeague(item: MiniRow, isLast: boolean) {
+    const selected = activeMiniId === item.id
+    const pending = item.member_status === 'pending'
+    const itemPalette = getMiniLeaguePalette(item.id)
+    return (
+      <View
+        key={item.id}
+        style={{marginBottom: isLast ? 0 : 12}}>
+        <OptionRow
+          selected={selected}
+          disabled={pending}
+          onPress={() =>
+            select({
+              type: 'mini',
+              id: item.id,
+              name: item.name,
+            })
+          }
+          radioColor={itemPalette.accent}
+          title={item.name}
+          subtitle={leagueSubtitle(item)}
+          titleColor={textColor}
+          subtitleColor={muted}
+          backgroundColor={
+            selected ? (isDark ? itemPalette.dark : '#fff') : cardBg
+          }
+          borderColor={selected ? itemPalette.accent : border}
+          borderWidth={selected ? 2 : 1}
+          footer={
+            pending ? (
+              <View style={{flexDirection: 'row', gap: 8}}>
+                <Button onPress={() => onRespond(item.id, 'accept')}>
+                  <Text className="text-white">{t('accept')}</Text>
+                </Button>
+                <Button
+                  type="outline"
+                  onPress={() => onRespond(item.id, 'decline')}>
+                  decline
+                </Button>
+              </View>
+            ) : null
+          }
+        />
+      </View>
+    )
   }
 
   async function onRespond(id: number, action: 'accept' | 'decline') {
@@ -437,62 +558,73 @@ export function CompetitionPickerModal() {
               </Text>
             ) : null}
 
-            {items.map((item, index) => {
-              const selected = activeMiniId === item.id
-              const pending = item.member_status === 'pending'
-              const itemPalette = getMiniLeaguePalette(item.id)
-              return (
-                <View
-                  key={item.id}
-                  style={{marginBottom: index === items.length - 1 ? 0 : 12}}>
-                  <OptionRow
-                    selected={selected}
-                    disabled={pending}
-                    onPress={() =>
-                      select({
-                        type: 'mini',
-                        id: item.id,
-                        name: item.name,
-                      })
-                    }
-                    radioColor={itemPalette.accent}
-                    title={item.name}
-                    subtitle={
-                      pending
-                        ? t('invite_pending')
-                        : item.is_admin
-                          ? t('you_admin_this_group')
-                          : t('private_mini_league')
-                    }
-                    titleColor={textColor}
-                    subtitleColor={muted}
-                    backgroundColor={
-                      selected
-                        ? isDark
-                          ? itemPalette.dark
-                          : '#fff'
-                        : cardBg
-                    }
-                    borderColor={selected ? itemPalette.accent : border}
-                    borderWidth={selected ? 2 : 1}
-                    footer={
-                      pending ? (
-                        <View style={{flexDirection: 'row', gap: 8}}>
-                          <Button onPress={() => onRespond(item.id, 'accept')}>
-                            <Text className="text-white">{t('accept')}</Text>
-                          </Button>
-                          <Button
-                            type="outline"
-                            onPress={() => onRespond(item.id, 'decline')}>
-                            decline
-                          </Button>
-                        </View>
-                      ) : null
-                    }
-                  />
-                </View>
-              )
-            })}
+            {items.map((item, index) =>
+              renderLeague(item, index === items.length - 1),
+            )}
+
+            {!loading && !error ? (
+              <Pressable
+                onPress={() => setShowOthers(open => !open)}
+                accessibilityRole="button"
+                accessibilityState={{expanded: showOthers}}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  marginTop: items.length ? 8 : 0,
+                }}>
+                <MCI
+                  name={showOthers ? 'chevron-up' : 'chevron-down'}
+                  size={18}
+                  color={miniSectionAccent}
+                  style={{marginRight: 8}}
+                />
+                <Text
+                  style={{
+                    color: miniSectionAccent,
+                    fontWeight: '700',
+                    fontSize: 15,
+                    lineHeight: 20,
+                  }}>
+                  {showOthers
+                    ? t('hide_other_mini_leagues')
+                    : t('show_other_mini_leagues')}
+                  {others.length ? ` (${others.length})` : ''}
+                </Text>
+              </Pressable>
+            ) : null}
+
+            {showOthers ? (
+              <View style={{marginTop: 4}}>
+                {othersError ? (
+                  <Text
+                    style={{
+                      color: '#dc2626',
+                      fontSize: 13,
+                      textAlign: 'center',
+                      marginBottom: 12,
+                    }}>
+                    {othersError}
+                  </Text>
+                ) : others.length === 0 ? (
+                  <Text
+                    style={{
+                      color: muted,
+                      marginBottom: 12,
+                      lineHeight: 20,
+                      fontSize: 14,
+                      textAlign: 'center',
+                    }}>
+                    {t('other_mini_leagues_empty')}
+                  </Text>
+                ) : (
+                  others.map((item, index) =>
+                    renderLeague(item, index === others.length - 1),
+                  )
+                )}
+              </View>
+            ) : null}
 
             <View style={{height: 16}} />
 

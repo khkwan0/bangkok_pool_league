@@ -18,6 +18,7 @@ import {
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {router} from 'expo-router'
 import React from 'react'
+import {useTranslation} from 'react-i18next'
 import {
   ActivityIndicator,
   FlatList,
@@ -52,6 +53,7 @@ type MiniMatch = {
 }
 
 export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
+  const {t} = useTranslation()
   const api = useMiniLeagues()
   const apiRef = React.useRef(api)
   apiRef.current = api
@@ -225,7 +227,11 @@ export function MiniLeagueHome({miniLeagueId}: {miniLeagueId: number}) {
                     marginTop: 4,
                     color: panelMuted,
                   }}>
-                  {mini?.is_admin ? 'Admin' : 'Member'}
+                  {mini?.is_admin
+                    ? t('admin')
+                    : mini?.member_status === 'active'
+                      ? t('member')
+                      : t('other_mini_league')}
                 </Text>
               </RNView>
               <RNView

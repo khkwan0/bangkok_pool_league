@@ -4,6 +4,7 @@ export const useMiniLeagues = () => {
   const {Get, Post, Patch, Delete} = useNetwork()
 
   const list = async () => Get('/mini-leagues')
+  const listActive = async () => Get('/mini-leagues?active=1')
   const get = async id => Get(`/mini-leagues/${id}`)
   const create = async name => Post('/mini-leagues', {name})
   const update = async (id, payload) => Patch(`/mini-leagues/${id}`, payload)
@@ -69,6 +70,7 @@ export const useMiniLeagues = () => {
 
   return {
     list,
+    listActive,
     get,
     create,
     update,

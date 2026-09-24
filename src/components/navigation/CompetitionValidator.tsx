@@ -30,12 +30,51 @@ export function CompetitionValidator() {
       if (!userId) return
       if (competition.type !== 'mini') return
 
-      const res = await apiRef.current.list()
+      const [res, activeRes] = await Promise.all([
+        apiRef.current.list(),
+        apiRef.current.listActive(),
+      ])
       if (cancelled) return
       // Network/auth failure: keep persisted selection
       if (res?.status !== 'ok' || !Array.isArray(res.data)) return
 
-      const next = validateCompetition(competition, res.data)
+      const mine = res.data as Array<{
+        id: number
+        name: string
+        member_status?: string | null
+        created_by?: number | null
+      }>
+      const catalogOk =
+        activeRes?.status === 'ok' && Array.isArray(activeRes.data)
+      const mineIds = new Set(mine.map(row => Number(row.id)))
+      const browsable = catalogOk
+        ? (activeRes.data as Array<{id: number; name: string}>)
+            .filter(row => !mineIds.has(Number(row.id)))
+            .map(row => ({
+              id: Number(row.id),
+              name: row.name,
+              browsable: true as const,
+            }))
+        : []
+      const next = validateCompetition(
+        competition,
+        [...mine, ...browsable],
+        userId,
+      )
+      const pendingInvite = mine.some(
+        row =>
+          Number(row.id) === competition.id && row.member_status === 'pending',
+      )
+      // Catalog failed and this league is not one of theirs: keep the choice.
+      // A pending invite still falls back to the main league.
+      if (
+        !pendingInvite &&
+        !catalogOk &&
+        competition.type === 'mini' &&
+        next.type !== 'mini'
+      ) {
+        return
+      }
       if (
         next.type !== competition.type ||
         (next.type === 'mini' &&
