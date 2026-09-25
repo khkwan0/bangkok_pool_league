@@ -1,5 +1,9 @@
 import CompletedMatch from '@/components/Completed/CompletedMatch'
-import CompletedMatchesOther from '@/components/Completed/CompletedMatchesOther'
+import CompletedMatchesOther, {
+  type SeasonSelection,
+} from '@/components/Completed/CompletedMatchesOther'
+import {MiniSeasonChips} from '@/components/mini-leagues/MiniSeasonChips'
+import {useLeagueSeasonSelection} from '@/hooks/useLeagueSeasonSelection'
 import {useStatColors} from '@/components/PlayerStatistics/statUi'
 import {MiniLeagueCompleted} from '@/components/mini-leagues/MiniLeagueCompleted'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -27,8 +31,8 @@ type ApiResponse = {
   data: CompletedMatchType[]
 }
 
-function NoMatches() {
-  return <CompletedMatchesOther />
+function NoMatches({seasonSelection}: {seasonSelection: SeasonSelection}) {
+  return <CompletedMatchesOther seasonSelection={seasonSelection} />
 }
 
 function ShowAllMatches() {
@@ -78,6 +82,7 @@ export default function CompletedHome() {
   const [isMounted, setIsMounted] = React.useState(false)
   const listContentStyle = useTabListContentContainerStyle()
   const pageBg = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'].background
+  const seasonSelection = useLeagueSeasonSelection()
 
   const getCompletedMatches = useCallback(
     async (teams: {id: number}[]) => {
@@ -107,6 +112,12 @@ export default function CompletedHome() {
     return <MiniLeagueCompleted miniLeagueId={state.competition.id} />
   }
 
+  // Team-based results only cover current-season teams; past seasons list
+  // every completed match for that season.
+  if (seasonSelection.pastSeasonId != null) {
+    return <CompletedMatchesOther seasonSelection={seasonSelection} />
+  }
+
   return (
     <View className="flex-1" style={{backgroundColor: pageBg}}>
       <FlatList
@@ -120,8 +131,23 @@ export default function CompletedHome() {
         onRefresh={() => getCompletedMatches(user.teams || [])}
         contentContainerClassName="py-4"
         contentContainerStyle={listContentStyle}
-        ListHeaderComponent={matches.length > 0 ? <ShowAllMatches /> : null}
-        ListEmptyComponent={isMounted ? <NoMatches /> : null}
+        ListHeaderComponent={
+          matches.length > 0 ? (
+            <>
+              <View style={{paddingHorizontal: 16}}>
+                <MiniSeasonChips
+                  seasons={seasonSelection.seasons}
+                  seasonId={seasonSelection.seasonId}
+                  onSelect={seasonSelection.setSeasonId}
+                />
+              </View>
+              <ShowAllMatches />
+            </>
+          ) : null
+        }
+        ListEmptyComponent={
+          isMounted ? <NoMatches seasonSelection={seasonSelection} /> : null
+        }
         ListFooterComponent={<View className="h-4" />}
       />
     </View>
