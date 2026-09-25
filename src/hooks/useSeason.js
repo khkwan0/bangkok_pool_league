@@ -1,11 +1,15 @@
 import {useNetwork} from '@/hooks/useNetwork'
 
+const seasonQuery = seasonId => (seasonId != null ? '&season=' + seasonId : '')
+
 export const useSeason = () => {
   const {Get} = useNetwork()
 
-  const GetDoublesStats = async playerId => {
+  const GetDoublesStats = async (playerId, seasonId = null) => {
     try {
-      const stats = await Get('/stats/doubles?playerid=' + playerId)
+      const stats = await Get(
+        '/stats/doubles?playerid=' + playerId + seasonQuery(seasonId),
+      )
       return stats
     } catch (e) {
       console.log(e)
@@ -13,9 +17,11 @@ export const useSeason = () => {
     }
   }
 
-  const GetMatchPerformance = async playerId => {
+  const GetMatchPerformance = async (playerId, seasonId = null) => {
     try {
-      const stats = await Get('/stats/match?playerid=' + playerId)
+      const stats = await Get(
+        '/stats/match?playerid=' + playerId + seasonQuery(seasonId),
+      )
       return stats
     } catch (e) {
       console.log(e)
@@ -54,9 +60,11 @@ export const useSeason = () => {
     }
   }
 
-  const GetPlayerStats = async playerId => {
+  const GetPlayerStats = async (playerId, seasonId = null) => {
     try {
-      const stats = await Get('/stats?playerid=' + playerId)
+      const stats = await Get(
+        '/stats?playerid=' + playerId + seasonQuery(seasonId),
+      )
       return stats
     } catch (e) {
       console.log(e)

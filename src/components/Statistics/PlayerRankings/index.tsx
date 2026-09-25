@@ -3,6 +3,8 @@ import Row from '@/components/Row'
 import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
+import {MiniSeasonChips} from '@/components/mini-leagues/MiniSeasonChips'
+import {useLeagueSeasonSelection} from '@/hooks/useLeagueSeasonSelection'
 import {useNetwork} from '@/hooks/useNetwork'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {router, usePathname} from 'expo-router'
@@ -144,6 +146,9 @@ export default function PlayerRankings({
   const [error, setError] = useState<string | null>(null)
   const [minimumGames, setMinimumGames] = useState<string>('20')
   const listContentStyle = useTabListContentContainerStyle({paddingTop: 10})
+  const {seasons, seasonId, setSeasonId, pastSeasonId} =
+    useLeagueSeasonSelection(season)
+  const effectiveSeason = seasons.length > 0 ? pastSeasonId : season
 
   // Parse minimum games as number, default to 20 if invalid
   const minimumGamesNum = React.useMemo(() => {
@@ -159,8 +164,8 @@ export default function PlayerRankings({
 
         // Build query string with optional parameters
         const queryParams: string[] = []
-        if (season !== undefined && season !== null) {
-          queryParams.push(`season=${season}`)
+        if (effectiveSeason !== undefined && effectiveSeason !== null) {
+          queryParams.push(`season=${effectiveSeason}`)
         }
         if (divisionId !== undefined && divisionId !== null) {
           queryParams.push(`division_id=${divisionId}`)
@@ -205,38 +210,7 @@ export default function PlayerRankings({
     }
 
     fetchRankings()
-  }, [season, divisionId])
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" />
-        <Text className="mt-4">{t('loading') || 'Loading...'}</Text>
-      </View>
-    )
-  }
-
-  if (error) {
-    return (
-      <View className="flex-1 justify-center items-center px-4">
-        <Text className="text-red-500 text-center mb-2">{error}</Text>
-        <Text className="text-gray-500 text-center text-sm">
-          Please check the console for more details.
-        </Text>
-      </View>
-    )
-  }
-
-  if (rankings.length === 0 && !isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center px-4">
-        <Text className="text-center mb-2">{t('no_data_available') || 'No data available'}</Text>
-        <Text className="text-gray-500 text-center text-sm">
-          Try adjusting the season or division filters.
-        </Text>
-      </View>
-    )
-  }
+  }, [effectiveSeason, divisionId])
 
   // Filter out divisions with no players meeting minimum games
   const filteredRankings = rankings.filter(division => {
@@ -273,10 +247,36 @@ export default function PlayerRankings({
             </Pressable>
           </View>
         </View>
+        <View className="mt-3">
+          <MiniSeasonChips
+            seasons={seasons}
+            seasonId={seasonId}
+            onSelect={setSeasonId}
+          />
+        </View>
       </View>
 
       {/* Rankings List */}
-      {filteredRankings.length === 0 ? (
+      {isLoading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" />
+          <Text className="mt-4">{t('loading') || 'Loading...'}</Text>
+        </View>
+      ) : error ? (
+        <View className="flex-1 justify-center items-center px-4">
+          <Text className="text-red-500 text-center mb-2">{error}</Text>
+          <Text className="text-gray-500 text-center text-sm">
+            Please check the console for more details.
+          </Text>
+        </View>
+      ) : rankings.length === 0 ? (
+        <View className="flex-1 justify-center items-center px-4">
+          <Text className="text-center mb-2">{t('no_data_available') || 'No data available'}</Text>
+          <Text className="text-gray-500 text-center text-sm">
+            Try adjusting the season or division filters.
+          </Text>
+        </View>
+      ) : filteredRankings.length === 0 ? (
         <View className="flex-1 justify-center items-center px-4">
           <Text className="text-center mb-2">
             No players found with at least {minimumGamesNum} games played.

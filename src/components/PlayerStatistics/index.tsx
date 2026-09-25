@@ -11,8 +11,10 @@ import {
   winRateColor,
   winRatePercent,
 } from '@/components/PlayerStatistics/statUi'
+import {MiniSeasonChips} from '@/components/mini-leagues/MiniSeasonChips'
 import config from '@/config'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {useLeagueSeasonSelection} from '@/hooks/useLeagueSeasonSelection'
 import {useSeason} from '@/hooks/useSeason'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {
@@ -60,6 +62,8 @@ export default function PlayerStatistics({
 }) {
   const season = useSeason()
   const {state} = useLeagueContext()
+  const {seasons, seasonId, setSeasonId, selectedSeason, pastSeasonId} =
+    useLeagueSeasonSelection()
   const [stats, setStats] = useState<any>(null)
   const [doublesStats, setDoublesStats] = useState<any>(null)
   const [matchPerformance, setMatchPerformance] = useState<any>(null)
@@ -98,7 +102,7 @@ export default function PlayerStatistics({
 
   async function GetStats() {
     try {
-      const res = await season.GetPlayerStats(playerInfo.player_id)
+      const res = await season.GetPlayerStats(playerInfo.player_id, pastSeasonId)
       return res
     } catch (e) {
       console.log(e)
@@ -108,7 +112,10 @@ export default function PlayerStatistics({
 
   async function GetDoublesStats() {
     try {
-      const res = await season.GetDoublesStats(playerInfo.player_id)
+      const res = await season.GetDoublesStats(
+        playerInfo.player_id,
+        pastSeasonId,
+      )
       return res
     } catch (e) {
       console.log(e)
@@ -118,7 +125,10 @@ export default function PlayerStatistics({
 
   async function GetMatchPerformance() {
     try {
-      const res = await season.GetMatchPerformance(playerInfo.player_id)
+      const res = await season.GetMatchPerformance(
+        playerInfo.player_id,
+        pastSeasonId,
+      )
       return res
     } catch (e) {
       console.log(e)
@@ -139,7 +149,7 @@ export default function PlayerStatistics({
         setIsRefreshing(false)
       }
     })()
-  }, [playerInfo.player_id, isRefreshing])
+  }, [playerInfo.player_id, isRefreshing, pastSeasonId])
 
   React.useEffect(() => {
     ;(async () => {
@@ -154,7 +164,7 @@ export default function PlayerStatistics({
         setIsRefreshing(false)
       }
     })()
-  }, [playerInfo.player_id, isRefreshing])
+  }, [playerInfo.player_id, isRefreshing, pastSeasonId])
 
   React.useEffect(() => {
     ;(async () => {
@@ -169,7 +179,7 @@ export default function PlayerStatistics({
         setIsRefreshing(false)
       }
     })()
-  }, [playerInfo.player_id, isRefreshing])
+  }, [playerInfo.player_id, isRefreshing, pastSeasonId])
 
   const nationalityName =
     (i18n.language?.startsWith('th')
@@ -290,7 +300,19 @@ export default function PlayerStatistics({
         </RNView>
       </Surface>
 
-      <SectionTitle label="season_performance" />
+      <MiniSeasonChips
+        seasons={seasons}
+        seasonId={seasonId}
+        onSelect={setSeasonId}
+      />
+
+      <SectionTitle
+        label={
+          pastSeasonId != null && selectedSeason
+            ? selectedSeason.name
+            : 'season_performance'
+        }
+      />
       {isLoading ? (
         <LoadingCard label="loading_singles_statistics" />
       ) : seasonRows.length === 0 && !(total && total.played > 0) ? (

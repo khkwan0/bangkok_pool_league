@@ -1,5 +1,7 @@
 import React from 'react'
 import {TeamStats, useLeague} from '@/hooks'
+import {useLeagueSeasonSelection} from '@/hooks/useLeagueSeasonSelection'
+import {MiniSeasonChips} from '@/components/mini-leagues/MiniSeasonChips'
 import Button from '@/components/Button'
 import {ActivityIndicator, Pressable, ScrollView, View} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
@@ -136,12 +138,17 @@ const TeamStatistics = () => {
   const [isLoading, setIsLoading] = React.useState(false)
   const navigation = useNavigation()
   const {t} = useTranslation()
+  const {seasons, seasonId, setSeasonId, pastSeasonId} =
+    useLeagueSeasonSelection()
 
   React.useEffect(() => {
     navigation.setOptions({
       headerTitle: t('statistics'),
       headerBackTitle: t('back'),
     })
+  }, [])
+
+  React.useEffect(() => {
     ;(async () => {
       try {
         setIsLoading(true)
@@ -153,11 +160,11 @@ const TeamStatistics = () => {
         setIsLoading(false)
       }
     })()
-  }, [])
+  }, [pastSeasonId])
 
   async function GetTeamStats() {
     try {
-      const res = await league.GetTeamStats()
+      const res = await league.GetTeamStats(pastSeasonId)
       return res
     } catch (e) {
       console.log(e)
@@ -165,10 +172,21 @@ const TeamStatistics = () => {
     }
   }
 
+  const seasonChips = (
+    <MiniSeasonChips
+      seasons={seasons}
+      seasonId={seasonId}
+      onSelect={setSeasonId}
+    />
+  )
+
   if (isLoading) {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <ActivityIndicator size="large" />
+      <View style={{flex: 1, paddingHorizontal: 16, paddingTop: 12}}>
+        {seasonChips}
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size="large" />
+        </View>
       </View>
     )
   } else {
@@ -179,6 +197,7 @@ const TeamStatistics = () => {
           paddingHorizontal: 16,
           paddingVertical: 12,
         }}>
+        {seasonChips}
         <View className="my-4">
           <Text type="subtitle" className="text-xl font-bold">
             {t('eight_ball')}

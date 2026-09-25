@@ -1,7 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useStatColors} from '@/components/PlayerStatistics/statUi'
+import {MiniSeasonChips} from '@/components/mini-leagues/MiniSeasonChips'
 import {Colors} from '@/constants/Colors'
 import {useLeague} from '@/hooks'
+import {useLeagueSeasonSelection} from '@/hooks/useLeagueSeasonSelection'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import type {DivisionData, Team} from '@/types'
 import {Ionicons} from '@expo/vector-icons'
@@ -319,6 +321,10 @@ export default function LeagueStandings() {
   const league = useLeague()
   const [standings, setStandings] = useState<DivisionData[]>([])
   const [ready, setReady] = useState(false)
+  const {seasons, seasonId, setSeasonId, pastSeasonId} =
+    useLeagueSeasonSelection()
+  const [loadedSeasonId, setLoadedSeasonId] = useState<number | null>(null)
+  const isLoading = ready && loadedSeasonId !== pastSeasonId
   const listContentStyle = useTabListContentContainerStyle({paddingTop: 8})
   const pageBg = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'].background
 
@@ -331,12 +337,15 @@ export default function LeagueStandings() {
 
   React.useEffect(() => {
     league
-      .GetStandings()
+      .GetStandings(pastSeasonId)
       .then((next: DivisionData[]) => {
-        setStandings(next)
+        setStandings(Array.isArray(next) ? next : [])
       })
-      .finally(() => setReady(true))
-  }, [])
+      .finally(() => {
+        setReady(true)
+        setLoadedSeasonId(pastSeasonId)
+      })
+  }, [pastSeasonId])
 
   if (!ready) {
     return (
@@ -359,6 +368,18 @@ export default function LeagueStandings() {
       data={standings}
       keyExtractor={item => item.division}
       renderItem={({item}) => <DivisionStandings data={item} />}
+      ListHeaderComponent={
+        <View style={{paddingHorizontal: 16, paddingTop: 4}}>
+          <MiniSeasonChips
+            seasons={seasons}
+            seasonId={seasonId}
+            onSelect={setSeasonId}
+          />
+          {isLoading ? (
+            <ActivityIndicator style={{marginBottom: 12}} color="#0a7ea4" />
+          ) : null}
+        </View>
+      }
     />
   )
 }

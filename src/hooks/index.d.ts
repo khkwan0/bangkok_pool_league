@@ -21,7 +21,7 @@ export interface TeamStats {
 export interface League {
   getMatchById(matchId: number): Promise<{status: string; data: Match}>
   GetSeason(): Promise<{status: string; data: string}>
-  GetStandings(): Promise<DivisionData[]>
+  GetStandings(seasonId?: number | null): Promise<DivisionData[]>
   GetTeams(): Promise<Team[]>
   GetCompletedMatchesByTeamId(
     teams: {id: number}[],
@@ -41,7 +41,7 @@ export interface League {
   GetUniquePlayers(): Promise<{data: Player[]}>
   AddPlayerToTeam(playerId: number, teamId: number): Promise<{status: string}>
   GetCountries(): Promise<{status: string; data: Country[]}>
-  GetTeamStats(): Promise<TeamStats>
+  GetTeamStats(seasonId?: number | null): Promise<TeamStats>
   GetVenues(): Promise<Venue[]>
   RemovePlayerFromTeam(
     playerId: number,
