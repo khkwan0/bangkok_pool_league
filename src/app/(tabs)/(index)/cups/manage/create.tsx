@@ -148,7 +148,7 @@ export default function CupsCreateScreen() {
   >('team')
   const [gameTypeId, setGameTypeId] = React.useState<number | null>(null)
   const [matchFormatId, setMatchFormatId] = React.useState<number | null>(null)
-  const [seasonIdentifier, setSeasonIdentifier] = React.useState<number | null>(
+  const [seasonId, setSeasonId] = React.useState<number | null>(
     null,
   )
   const [selectedMiniId, setSelectedMiniId] = React.useState<number | null>(
@@ -358,7 +358,7 @@ export default function CupsCreateScreen() {
       Alert.alert('Missing fields', 'Select a game type and match format.')
       return
     }
-    if (!isMiniRoute && !seasonIdentifier && !selectedMiniId) {
+    if (!isMiniRoute && !seasonId && !selectedMiniId) {
       Alert.alert(
         'Scope required',
         'Choose a league season or a mini league for this tournament.',
@@ -393,7 +393,7 @@ export default function CupsCreateScreen() {
         payload.mini_league_id = effectiveMiniId
         payload.season_id = null
       } else {
-        payload.season_id = seasonIdentifier
+        payload.season_id = seasonId
         payload.mini_league_id = null
       }
       const res = await api.adminCreate(scope, payload)
@@ -492,12 +492,12 @@ export default function CupsCreateScreen() {
           <Text style={{fontWeight: '600', marginBottom: 6}}>Season</Text>
           <RNView style={{flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8}}>
             <Pressable
-              onPress={() => setSeasonIdentifier(null)}
-              style={chip(seasonIdentifier == null && !selectedMiniId)}>
+              onPress={() => setSeasonId(null)}
+              style={chip(seasonId == null && !selectedMiniId)}>
               <Text
                 style={{
                   color:
-                    seasonIdentifier == null && !selectedMiniId
+                    seasonId == null && !selectedMiniId
                       ? '#fff'
                       : undefined,
                 }}>
@@ -508,14 +508,14 @@ export default function CupsCreateScreen() {
               <Pressable
                 key={s.id}
                 onPress={() => {
-                  setSeasonIdentifier(s.identifier)
+                  setSeasonId(s.id)
                   setSelectedMiniId(null)
                 }}
-                style={chip(seasonIdentifier === s.identifier)}>
+                style={chip(seasonId === s.id)}>
                 <Text
                   style={{
                     color:
-                      seasonIdentifier === s.identifier ? '#fff' : undefined,
+                      seasonId === s.id ? '#fff' : undefined,
                   }}>
                   {s.name}
                 </Text>
@@ -543,7 +543,7 @@ export default function CupsCreateScreen() {
                     key={m.id}
                     onPress={() => {
                       setSelectedMiniId(m.id)
-                      setSeasonIdentifier(null)
+                      setSeasonId(null)
                     }}
                     style={chip(selectedMiniId === m.id)}>
                     <Text

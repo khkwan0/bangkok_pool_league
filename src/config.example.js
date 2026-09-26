@@ -17,6 +17,9 @@ export const webSocketDomain = 'bkkleague.com'
 export const profilePicturesUrl = 'bkkleague.com/profile_pictures'
 
 export default {
+  /** League this build belongs to. Sent as X-League-Id on every API request. Pool is 1. */
+  leagueId: 1,
+
   /** REST API base URL (no trailing slash). */
   apiUrl: 'https://' + domain + '/api',
 
