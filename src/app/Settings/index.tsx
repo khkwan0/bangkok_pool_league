@@ -197,15 +197,6 @@ export default function Settings() {
           iconColor="#FF9800"
           iconBackground="rgba(255, 152, 0, 0.15)"
         />
-        {user.id && (
-          <NavDest
-            icon="plus-circle"
-            text={t('register_new_team')}
-            url={'/Settings/RegisterTeam'}
-            iconColor="#10B981"
-            iconBackground="rgba(16, 185, 129, 0.15)"
-          />
-        )}
         {/*
         <NavDest
           icon="division"
