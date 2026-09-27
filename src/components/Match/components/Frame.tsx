@@ -7,16 +7,13 @@ import Player from './Player'
 import {useScoresheetTheme} from './scoresheetTheme'
 import WinButton from './WinButton'
 
-function frameKindLabel(type: string | undefined, t: (key: string) => string) {
-  if (!type) return ''
-  const game = type.startsWith('8') ? '8' : type.startsWith('9') ? '9' : ''
-  const kind = type.endsWith('d')
-    ? t('doubles')
-    : type.endsWith('s')
-      ? t('singles')
-      : ''
-  if (game && kind) return `${game} · ${kind}`
-  return kind
+function frameKindLabel(
+  noPlayers: number | undefined,
+  t: (key: string) => string,
+) {
+  if (noPlayers === 2) return t('doubles')
+  if (noPlayers === 1) return t('singles')
+  return ''
 }
 
 export default function Frame({item, index, refreshing}: FrameProps) {
@@ -24,6 +21,7 @@ export default function Frame({item, index, refreshing}: FrameProps) {
   const {t} = useTranslation()
   const theme = useScoresheetTheme()
   const frameType = state.matchInfo.initialFrames[index].type
+  const noPlayers = state.matchInfo.initialFrames[index].noPlayers
   const {home_team_id: homeTeamId, away_team_id: awayTeamId} = state.matchInfo
 
   function HandleWin(side: string, goldenBreak: boolean = false): void {
@@ -101,7 +99,7 @@ export default function Frame({item, index, refreshing}: FrameProps) {
   const winner = state.frameData[index].winner
   const homeWon = winner === homeTeamId
   const awayWon = winner === awayTeamId
-  const kind = frameKindLabel(frameType, t)
+  const kind = frameKindLabel(item.noPlayers ?? noPlayers, t)
 
   function panel(side: 'home' | 'away') {
     const palette = side === 'home' ? theme.home : theme.away
@@ -109,6 +107,8 @@ export default function Frame({item, index, refreshing}: FrameProps) {
     const lost = !!winner && !won
     return {
       flex: 1,
+      flexDirection: 'column' as const,
+      justifyContent: 'space-between' as const,
       borderRadius: 14,
       paddingVertical: 12,
       paddingHorizontal: 8,
@@ -157,7 +157,14 @@ export default function Frame({item, index, refreshing}: FrameProps) {
           </Text>
         ) : null}
       </View>
-      <View style={{flexDirection: 'row', gap: 8, paddingHorizontal: 10, paddingBottom: 10}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'stretch',
+          gap: 8,
+          paddingHorizontal: 10,
+          paddingBottom: 10,
+        }}>
         <View style={panel('home')}>
           <Player
             teamId={state.matchInfo.home_team_id ?? 0}
@@ -165,6 +172,7 @@ export default function Frame({item, index, refreshing}: FrameProps) {
             frameIndex={index}
             frameNumber={item.frameNumber}
             frameType={frameType}
+            noPlayers={item.noPlayers ?? noPlayers}
             playerIds={item.homePlayerIds}
             refreshing={refreshing}
             ink={theme.home.ink}
@@ -188,6 +196,7 @@ export default function Frame({item, index, refreshing}: FrameProps) {
             frameIndex={index}
             frameNumber={item.frameNumber}
             frameType={frameType}
+            noPlayers={item.noPlayers ?? noPlayers}
             playerIds={item.awayPlayerIds}
             refreshing={refreshing}
             ink={theme.away.ink}

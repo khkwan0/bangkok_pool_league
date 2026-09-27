@@ -101,17 +101,20 @@ export default function PlayerCard({
         ) {
           Object.keys(state.stats[key]).forEach(frameKey => {
             played++
-            const frameType = state.stats[key][frameKey].type.slice(-1)
-            if (frameType === 's') {
+            const entry = state.stats[key][frameKey]
+            const noPlayers = Number(entry.noPlayers)
+            const isSingles = noPlayers === 1
+            const isDoubles = noPlayers === 2
+            if (isSingles) {
               s_played++
-            } else if (frameType === 'd') {
+            } else if (isDoubles) {
               d_played++
             }
-            if (state.stats[key][frameKey].win) {
+            if (entry.win) {
               wins++
-              if (frameType === 's') {
+              if (isSingles) {
                 s_wins++
-              } else if (frameType === 'd') {
+              } else if (isDoubles) {
                 d_wins++
               }
             }
@@ -180,7 +183,9 @@ export default function PlayerCard({
             onPress={HandlePress}
             disabled={disabled}
             className={`p-4 rounded-md ${isPressed ? 'bg-red-500' : disabled ? 'bg-blue-400' : 'bg-blue-800'}`}>
-            <Text>select</Text>
+            <Text className="font-semibold" style={{color: '#FFFFFF'}}>
+              select
+            </Text>
           </Pressable>
         </View>
       </Row>

@@ -2,12 +2,14 @@ import Row from '@/components/Row'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatchContext} from '@/context/MatchContext'
 import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
+import {resolveNoPlayers} from '@/lib/matchFormat'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import * as Haptics from 'expo-haptics'
 import {router} from 'expo-router'
 import {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Alert, Pressable, Text, View} from 'react-native'
+import {useScoresheetTheme} from './scoresheetTheme'
 
 interface PlayerProps {
   teamId: number | string
@@ -15,6 +17,7 @@ interface PlayerProps {
   frameIndex: number
   frameNumber: number
   frameType?: string
+  noPlayers?: number
   playerIds: number[]
   refreshing?: boolean
   ink: string
@@ -39,6 +42,7 @@ function PlayerSlot({
   filled,
   nickname,
   ink,
+  pressColor,
   label,
   pressed,
   onPress,
@@ -48,24 +52,26 @@ function PlayerSlot({
   filled: boolean
   nickname?: string
   ink: string
+  pressColor: string
   label: string
   pressed: boolean
   onPress: () => void
   onPressIn: () => void
   onPressOut: () => void
 }) {
+  const color = pressed ? pressColor : ink
   return (
     <Pressable
       onPress={onPress}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
-      style={{opacity: pressed ? 0.55 : 1, paddingVertical: 2}}>
+      style={{paddingVertical: 2}}>
       <Row alignItems="center" justifyContent="center" style={{gap: 6}}>
         {filled ? (
           <Text
             numberOfLines={2}
             style={{
-              color: ink,
+              color,
               fontSize: 16,
               lineHeight: 20,
               fontWeight: '800',
@@ -75,8 +81,8 @@ function PlayerSlot({
           </Text>
         ) : (
           <>
-            <MCI name="plus" size={16} color={ink} />
-            <Text style={{color: ink, fontSize: 15, fontWeight: '700'}}>
+            <MCI name="plus" size={16} color={color} />
+            <Text style={{color, fontSize: 15, fontWeight: '700'}}>
               {label}
             </Text>
           </>
@@ -92,6 +98,7 @@ export default function Player({
   frameIndex,
   frameNumber,
   frameType,
+  noPlayers,
   playerIds,
   refreshing = false,
   ink,
@@ -99,11 +106,16 @@ export default function Player({
 }: PlayerProps) {
   const {state}: any = useMatchContext()
   const {t} = useTranslation()
-  const [isPressed, setIsPressed] = useState(false)
-  const [isDoublePressed, setIsDoublePressed] = useState(false)
+  const theme = useScoresheetTheme()
+  const [pressedSlot, setPressedSlot] = useState<number | null>(null)
   const {state: playerState}: any = useLeagueContext()
   const user = playerState.user
   const {home_team_id: homeTeamId, away_team_id: awayTeamId} = state.matchInfo
+  const slotCount = resolveNoPlayers(
+    frameType,
+    null,
+    noPlayers ?? state.matchInfo.initialFrames?.[frameIndex]?.noPlayers,
+  )
 
   const isPlayerOnTeam = () => {
     try {
@@ -159,26 +171,28 @@ export default function Player({
       state.firstBreak === homeTeamId &&
       state.frameData[frameIndex].frameNumber % 2 === 0)
 
-  function slotProps(slot: number, pressed: boolean, onPressIn: () => void, onPressOut: () => void) {
+  function slotProps(slot: number) {
     const playerId = playerIds[slot]
     const nickname = state?.teams?.[teamId]?.[playerId]?.nickname
     return {
       filled: typeof playerId !== 'undefined' && !!nickname,
       nickname,
       ink,
+      pressColor: theme.win,
       label: t('player'),
-      pressed,
+      pressed: pressedSlot === slot,
       onPress: () => handlePlayerSlotPress(slot),
-      onPressIn,
-      onPressOut,
+      onPressIn: () => setPressedSlot(slot),
+      onPressOut: () => setPressedSlot(null),
     }
   }
 
   if (refreshing) {
     return (
       <View style={{alignItems: 'center', gap: 10}}>
-        <PlayerSkeleton ink={ink} />
-        {(frameType === '8d' || frameType === '9d') && <PlayerSkeleton ink={ink} />}
+        {Array.from({length: slotCount}, (_, slot) => (
+          <PlayerSkeleton key={slot} ink={ink} />
+        ))}
         {hasBreak && (
           <View
             style={{
@@ -196,21 +210,11 @@ export default function Player({
 
   return (
     <View style={{alignItems: 'center'}}>
-      <PlayerSlot
-        {...slotProps(0, isPressed, () => setIsPressed(true), () => setIsPressed(false))}
-      />
-      {(frameType === '8d' || frameType === '9d') && (
-        <View style={{marginTop: 8}}>
-          <PlayerSlot
-            {...slotProps(
-              1,
-              isDoublePressed,
-              () => setIsDoublePressed(true),
-              () => setIsDoublePressed(false),
-            )}
-          />
+      {Array.from({length: slotCount}, (_, slot) => (
+        <View key={slot} style={slot > 0 ? {marginTop: 8} : undefined}>
+          <PlayerSlot {...slotProps(slot)} />
         </View>
-      )}
+      ))}
       {hasBreak && (
         <View
           style={{
