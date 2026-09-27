@@ -1,5 +1,6 @@
 import Row from '@/components/Row'
 import {ThemedText as Text} from '@/components/ThemedText'
+import TeamNameEdit from '@/components/Teams/TeamNameEdit'
 import config from '@/config'
 import {LeagueContextType, useLeagueContext} from '@/context/LeagueContext'
 import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
@@ -35,6 +36,8 @@ type TeamType = {
   players: PlayerType[]
   venue_logo?: string
   name: string
+  short_name?: string
+  very_short_name?: string
   id: number
 }
 interface TeamMembersProps {
@@ -483,6 +486,22 @@ export default function TeamMembers({teamId}: TeamMembersProps) {
                 </View>
               </Pressable>
             </View>
+            {(isCaptain || isAdmin) && (
+              <TeamNameEdit
+                teamId={_teamId}
+                initialName={teamData.name || ''}
+                initialShortName={teamData.short_name || ''}
+                initialVeryShortName={teamData.very_short_name || ''}
+                onSaved={names => {
+                  setTeamData(prev => ({
+                    ...prev,
+                    name: names.name,
+                    short_name: names.short_name,
+                    very_short_name: names.very_short_name,
+                  }))
+                }}
+              />
+            )}
             {(isOnTeam || isAdmin) && (
               <Pressable
                 onPressIn={() => setIsAddingPlayer(true)}

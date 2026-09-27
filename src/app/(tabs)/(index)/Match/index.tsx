@@ -1,4 +1,3 @@
-import CompletedMatchDetails from '@/components/Completed/CompletedMatchDetails'
 import {
   Finalizer,
   Frame,
@@ -18,7 +17,7 @@ import {
 import {router, useLocalSearchParams} from 'expo-router'
 import {useNavigation} from 'expo-router/react-navigation'
 import React from 'react'
-import {AppState, FlatList, View} from 'react-native'
+import {AppState, ActivityIndicator, FlatList, View} from 'react-native'
 
 export default function ScoreSheet() {
   const {state, dispatch, SocketConnect, SocketDisconnect, UpdateTeams}: any =
@@ -237,10 +236,59 @@ export default function ScoreSheet() {
   */
 
   // console.log(state.finalizedHome, state.finalizedAway)
+  const matchCompleted = !!(state.finalizedHome && state.finalizedAway)
+
+  React.useEffect(() => {
+    if (!isMounted || !matchCompleted || !matchInfo.match_id) return
+    let cancelled = false
+
+    async function goToCompleted() {
+      // Wait briefly for Postgres finalize to land so the completed view
+      // loads real frames/score instead of empty 0–0.
+      for (let attempt = 0; attempt < 10 && !cancelled; attempt++) {
+        try {
+          const res = await match.GetMatchMetadata(matchInfo.match_id)
+          const meta = res?.data
+          const scoreReady =
+            Number(meta?.home_frames ?? 0) + Number(meta?.away_frames ?? 0) > 0
+          const statusReady = Number(meta?.status_id ?? 0) === 3
+          if (scoreReady || statusReady || attempt === 9) break
+        } catch {
+          // keep trying
+        }
+        await new Promise(r => setTimeout(r, 350 + attempt * 150))
+      }
+      if (cancelled) return
+      router.replace({
+        pathname: '/completed/Match',
+        params: {
+          params: JSON.stringify({matchId: matchInfo.match_id}),
+        },
+      })
+    }
+
+    goToCompleted()
+    return () => {
+      cancelled = true
+    }
+  }, [isMounted, matchCompleted, matchInfo.match_id])
+
   if (!isMounted) {
     return null
-  } else if (state.finalizedHome && state.finalizedAway) {
-    return <CompletedMatchDetails matchId={matchInfo.match_id} />
+  }
+
+  if (matchCompleted) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: theme.canvas,
+        }}>
+        <ActivityIndicator />
+      </View>
+    )
   }
 
   const header = (

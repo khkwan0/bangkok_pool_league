@@ -80,6 +80,16 @@ export interface Teams {
   GetTeamStats(teamId: number): Promise<TeamStats>
   GetTeamInternalStats(teamId: number): Promise<TeamStats>
   GetTeamInfo(teamId: number): Promise<{status: string; data?: any}>
+  UpdateTeamNames(
+    teamId: number,
+    names: {name: string; short_name: string; very_short_name?: string},
+  ): Promise<{
+    status: string
+    error?: string
+    name?: string
+    short_name?: string
+    very_short_name?: string
+  }>
 }
 
 export interface Account {

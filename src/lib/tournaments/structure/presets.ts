@@ -363,6 +363,81 @@ const PRESETS: PresetDefinition[] = [
     }),
   },
   {
+    key: 'gold_silver_bronze',
+    label: 'Gold / Silver / Bronze',
+    description:
+      '32-team redraw cups: Gold losers drop to Silver, Silver losers to Bronze; random draw each round.',
+    explanation:
+      'CPBA-style ladder: everyone starts in Gold. Round-1 and round-2 losers drop into Silver (merging into Silver R2); Silver R1/R2 losers pool into Bronze R2 (Bronze R1 is a bye week). Each cup has its own final and 3rd-place match. Pairings are a random redraw every round — first drawn is home; if two homes share a venue, the first keeps home and the other flips away. Quarters losers are knocked out. Set field size below (power of two).',
+    configFields: [
+      {
+        key: 'field_size',
+        label: 'Field size',
+        type: 'number',
+        default: 32,
+        min: 8,
+        max: 64,
+      },
+    ],
+    build: cfg => {
+      const fieldSize = num(cfg, 'field_size', 32)
+      const size = [8, 16, 32, 64].includes(fieldSize) ? fieldSize : 32
+      const finalRound = Math.round(Math.log2(size))
+      const cupRules = {
+        final_round: finalRound,
+        semis_round: Math.max(1, finalRound - 1),
+        ko_from_round: Math.max(1, finalRound - 2),
+        third_place: true,
+        field_size: size,
+      }
+      return {
+        version: 1 as const,
+        stages: [
+          {
+            stage_key: 'gold',
+            label: 'Gold Cup',
+            stage_order: 0,
+            kind: 'redraw_elimination' as const,
+            config: {
+              ...cupRules,
+              entry_round: 1,
+              drops: [
+                {from_round: 1, to_stage: 'silver', to_round: 1},
+                {from_round: 2, to_stage: 'silver', to_round: 2},
+              ],
+            },
+          },
+          {
+            stage_key: 'silver',
+            label: 'Silver Cup',
+            stage_order: 1,
+            kind: 'redraw_elimination' as const,
+            config: {
+              ...cupRules,
+              entry_round: 1,
+              drops: [
+                {from_round: 1, to_stage: 'bronze', to_round: 2},
+                {from_round: 2, to_stage: 'bronze', to_round: 2},
+              ],
+            },
+          },
+          {
+            stage_key: 'bronze',
+            label: 'Bronze Cup',
+            stage_order: 2,
+            kind: 'redraw_elimination' as const,
+            config: {
+              ...cupRules,
+              entry_round: 2,
+              drops: [],
+            },
+          },
+        ],
+        edges: [],
+      }
+    },
+  },
+  {
     key: 'groups_knockout',
     label: 'Groups → Knockout',
     description:

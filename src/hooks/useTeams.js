@@ -1,7 +1,7 @@
 import { useNetwork } from '@/hooks/useNetwork'
 
 export const useTeams = () => {
-  const {Get, Post} = useNetwork()
+  const {Get, Post, Patch} = useNetwork()
 
   const GetPlayers = async (
     teamid = -1,
@@ -78,6 +78,25 @@ export const useTeams = () => {
     }
   }
 
+  const UpdateTeamNames = async (
+    teamId,
+    {name, short_name, very_short_name = ''},
+  ) => {
+    try {
+      if (!teamId) {
+        return {status: 'error', error: 'invalid_paramters'}
+      }
+      return await Patch(`/team/${teamId}/names`, {
+        name,
+        short_name,
+        very_short_name,
+      })
+    } catch (e) {
+      console.log(e)
+      return {status: 'error', error: 'server_error'}
+    }
+  }
+
   const GetTeamStats = async teamId => {
     try {
       if (teamId) {
@@ -97,6 +116,7 @@ export const useTeams = () => {
     AddExistingPlayerToTeam,
     GetTeamInternalStats,
     GetTeamInfo,
+    UpdateTeamNames,
     GetTeamStats,
   }
 }
