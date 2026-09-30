@@ -17,12 +17,10 @@ export default function AppCheckbox({
   disabled,
   testID,
 }: AppCheckboxProps) {
-  // Host defaults to the *device* scheme; pass RN Appearance so in-app
-  // dark/light overrides keep Compose label text readable.
-  const colorScheme = useColorScheme()
+  const colorScheme = useColorScheme() === 'dark' ? 'dark' : 'light'
 
   return (
-    <Host matchContents colorScheme={colorScheme ?? undefined}>
+    <Host matchContents colorScheme={colorScheme}>
       <Checkbox
         value={value}
         onValueChange={onValueChange}

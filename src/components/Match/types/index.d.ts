@@ -16,6 +16,11 @@ export type MatchInfoDataType = {
   /** >0 for cup / tournament fixtures (no division). */
   tournament_id?: number
   division_name?: string | null
+  /** Cup bracket round (1-based) when tournament_id > 0. */
+  round?: number | null
+  /** Stage label e.g. "Gold Cup" from tournament_stages. */
+  stage_label?: string | null
+  stage_key?: string | null
   home_confirmed: number
   away_confirmed: number
   team_role_id: number

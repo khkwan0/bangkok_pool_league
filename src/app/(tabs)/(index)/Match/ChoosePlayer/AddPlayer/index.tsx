@@ -1,92 +1,41 @@
 import React from 'react'
-import {View} from 'react-native'
+import {
+  FlatList,
+  Pressable,
+  useColorScheme,
+  View,
+} from 'react-native'
 import {ThemedView} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
-import {FlatList, TextInput, useColorScheme} from 'react-native'
 import Button from '@/components/Button'
 import TrieSearch from 'trie-search'
 import PlayerCard from '@/components/PlayerCard'
+import CustomTextInput from '@/components/TextInput'
 import {useLeague, useTeams} from '@/hooks'
 import {useTranslation} from 'react-i18next'
-import Row from '@/components/Row'
-import {useNavigation} from "expo-router/react-navigation"
+import {MaterialCommunityIcons} from '@expo/vector-icons'
+import {useNavigation} from 'expo-router/react-navigation'
 import {router, useLocalSearchParams} from 'expo-router'
 import {useThemeColor} from '@/hooks/useThemeColor'
 import {useMatchContext} from '@/context/MatchContext'
 
-const ChoosePlayer = props => {
-  const [searchQuery, setSearchQuery] = React.useState('')
-  const [list, setList] = React.useState([])
-  const {t} = useTranslation()
-  const colorScheme = useColorScheme()
-
-  const trie = React.useRef(new TrieSearch('nickname', {splitOnRegEx: false}))
-
-  React.useEffect(() => {
-    if (props.allPlayers && props.allPlayers.length > 0) {
-      trie.current.addAll(props.allPlayers ?? [])
-    }
-  }, [props.allPlayers])
-
-  React.useEffect(() => {
-    if (searchQuery.length > 0) {
-      const _list = trie.current.search(searchQuery)
-      setList(_list)
-    }
-  }, [searchQuery])
-
-  return (
-    <View>
-      <View>
-        <TextInput
-          style={colorScheme === 'dark' ? {borderColor: '#fff'} : {borderColor: '#000'}}
-          className="border border-gray-600 dark:border-gray-300 rounded p-5"
-          disabled={
-            typeof props.allPlayer === 'undefined' ||
-            props.allPlayers?.length === 0
-          }
-          placeholder={
-            typeof props.allPlayers === 'undefined'
-              ? t('loading')
-              : props.allPlayers.length === 0
-                ? t('loading')
-                : t('search_name')
-          }
-          value={searchQuery}
-          onChangeText={text => setSearchQuery(text)}
-        />
-      </View>
-      <View>
-        {list.map((item, idx) => (
-          <PlayerCard
-            key={'adduser' + idx}
-            abbrevLast
-            handleSelect={props.handleSelect}
-            player={item}
-          />
-        ))}
-      </View>
-    </View>
-  )
-}
-
-const ExistingPlayer = props => {
-  return (
-    <View>
-      <Text type="subtitle">add_existing_player</Text>
-      <TextInput
-        className="border rounded p-5"
-        placeholder="asd"
-        onChangeText={text => props.setQuery(text)}
-      />
-    </View>
-  )
+type PlayerHit = {
+  id: number
+  nickname: string
+  firstname?: string
+  lastname?: string
+  profile_picture?: string
+  id_str: string
 }
 
 const AddNewPlayer = ({
   handleSelect,
   setShowAddNewPlayer,
   showAddNewPlayer,
+}: {
+  handleSelect: (playerId: number, nickname: string, newplayer: boolean) => void
+  setShowAddNewPlayer: (show: boolean) => void
+  showAddNewPlayer: boolean
 }) => {
   const [nickname, setNickname] = React.useState('')
   const [firstName, setFirstName] = React.useState('')
@@ -146,95 +95,121 @@ const AddNewPlayer = ({
     setShowAddNewPlayer(false)
   }
 
-  if (showAddNewPlayer) {
+  if (!showAddNewPlayer) {
     return (
-      <View className="px-2">
-        <View className="my-4 mx-2">
-          <Text>nickname_required</Text>
-          <TextInput
-            onChangeText={text => setNickname(text)}
-            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4 dark:text-white"
+      <View className="px-4 pb-8">
+        <Pressable
+          onPress={() => setShowAddNewPlayer(true)}
+          className="flex-row items-center justify-center gap-2 rounded-xl bg-blue-600 py-4 active:bg-blue-700">
+          <MaterialCommunityIcons name="account-plus" size={22} color="#fff" />
+          <Text className="text-white text-center font-semibold">
+            add_new_player
+          </Text>
+        </Pressable>
+      </View>
+    )
+  }
+
+  return (
+    <View className="px-4 pb-10">
+      <View className="mb-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-900/40 p-4">
+        <Text type="subtitle" className="mb-4">
+          add_new_player
+        </Text>
+
+        <View className="mb-3">
+          <Text className="mb-1.5 text-sm opacity-80">nickname_required</Text>
+          <CustomTextInput
+            onChangeText={setNickname}
+            autoCapitalize="none"
+            leftIcon={MaterialCommunityIcons}
+            leftIconProps={{name: 'account-outline'}}
+            iconSize={22}
             value={nickname}
             placeholder={t('nickname')}
             placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
           />
         </View>
-        <View className="my-4 mx-2">
-          <Text>first_name_label</Text>
-          <TextInput
-            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4 dark:text-white"
-            onChangeText={text => setFirstName(text)}
+
+        <View className="mb-3">
+          <Text className="mb-1.5 text-sm opacity-80">first_name_label</Text>
+          <CustomTextInput
+            onChangeText={setFirstName}
+            autoCapitalize="words"
+            leftIcon={MaterialCommunityIcons}
+            leftIconProps={{name: 'card-account-details-outline'}}
+            iconSize={22}
             value={firstName}
             placeholder={t('first_name')}
             placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
           />
         </View>
-        <View className="my-4 mx-2">
-          <Text>last_name_label</Text>
-          <TextInput
-            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4 dark:text-white"
-            onChangeText={text => setLastName(text)}
+
+        <View className="mb-3">
+          <Text className="mb-1.5 text-sm opacity-80">last_name_label</Text>
+          <CustomTextInput
+            onChangeText={setLastName}
+            autoCapitalize="words"
+            leftIcon={MaterialCommunityIcons}
+            leftIconProps={{name: 'card-account-details-outline'}}
+            iconSize={22}
             value={lastName}
             placeholder={t('last_name')}
             placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
           />
         </View>
-        <View className="my-4 mx-2">
-          <Text>email_optional</Text>
-          <TextInput
-            className="border border-gray-600 dark:border-gray-300 rounded py-6 px-4 dark:text-white"
-            onChangeText={text => setEmail(text)}
+
+        <View className="mb-2">
+          <Text className="mb-1.5 text-sm opacity-80">email_optional</Text>
+          <CustomTextInput
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            leftIcon={MaterialCommunityIcons}
+            leftIconProps={{name: 'email-outline'}}
+            iconSize={22}
             value={email}
             placeholder={t('email_placeholder')}
             placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
           />
         </View>
-        <View>
+
+        {!!err && (
           <Text
-            className="text-center"
+            className="text-center mb-3"
             type="defaultSemiBold"
-            lightColor="#f00">
-            {err ?? ''}
+            style={{color: '#ef4444'}}>
+            {err}
           </Text>
-        </View>
-        <Row>
-          <View flex={1} className="mx-10">
-            <Button onPress={() => HandleClear()} disabled={loading}>
+        )}
+
+        <View className="flex-row gap-3 mt-2">
+          <View className="flex-1">
+            <Button type="outline" onPress={HandleClear} disabled={loading}>
               cancel
             </Button>
           </View>
-          <View flex={1} className="mx-10">
-            <Button onPress={() => HandleSave()} disabled={loading}>
+          <View className="flex-1">
+            <Button onPress={HandleSave} disabled={loading}>
               save
             </Button>
           </View>
-        </Row>
+        </View>
       </View>
-    )
-  } else {
-    return (
-      <View>
-        <Button onPress={() => setShowAddNewPlayer(true)}>
-          add_new_player
-        </Button>
-      </View>
-    )
-  }
+    </View>
+  )
 }
 
-const AddPlayer = props => {
+const AddPlayer = () => {
   const {t} = useTranslation()
   const [showAddNewPlayer, setShowAddNewPlayer] = React.useState(false)
-  const [loading, setLoading] = React.useState(false)
-  const [err, setErr] = React.useState('')
-  const [data, setData] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
+  const [data, setData] = React.useState<PlayerHit[]>([])
   const league = useLeague()
   const teams = useTeams()
   const navigation = useNavigation()
   const [query, setQuery] = React.useState('')
   const {state, UpdateFramePlayers}: any = useMatchContext()
-  const colorScheme = useColorScheme()
-
   const bgColor = useThemeColor({}, 'background')
   const {params} = useLocalSearchParams()
 
@@ -242,14 +217,22 @@ const AddPlayer = props => {
     params as string,
   )
 
-  const trie = React.useRef(new TrieSearch('nickname', {splitOnRegEx: false}))
+  const trie = React.useRef(
+    new TrieSearch(['nickname', 'firstname', 'lastname', 'id_str'], {
+      splitOnRegEx: false,
+    }),
+  )
 
   React.useEffect(() => {
     ;(async () => {
       try {
         setLoading(true)
         const res = await league.GetUniquePlayers()
-        trie.current.addAll(res.data ?? [])
+        const indexed = (res.data ?? []).map((player: PlayerHit) => ({
+          ...player,
+          id_str: String(player.id),
+        }))
+        trie.current.addAll(indexed)
       } catch (e) {
         console.log(e)
       } finally {
@@ -259,17 +242,24 @@ const AddPlayer = props => {
   }, [])
 
   React.useEffect(() => {
-    const res = trie.current.search(query)
-    setData(res)
+    if (query.trim().length > 0) {
+      setData(trie.current.search(query.trim()) as PlayerHit[])
+    } else {
+      setData([])
+    }
   }, [query])
 
   React.useEffect(() => {
     navigation.setOptions({title: t('add_new_player')})
   }, [])
 
-  async function HandleSelect(playerId = 0, nickname = '', newplayer = false) {
+  async function HandleSelect(
+    playerId = 0,
+    nickname = '',
+    newplayer = false,
+  ) {
     try {
-      const res = await teams.AddExistingPlayerToTeam(
+      await teams.AddExistingPlayerToTeam(
         side === 'home'
           ? state.matchInfo.home_team_id
           : state.matchInfo.away_team_id,
@@ -292,48 +282,90 @@ const AddPlayer = props => {
   }
 
   return (
-    <FlatList
-      className="px-2"
-      ListHeaderComponent={
-        !showAddNewPlayer ? (
-          <>
-            <View className="m-10">
-              <Text type="subtitle">add_existing_player</Text>
-              <TextInput
-                className="border border-gray-600 dark:border-gray-300 rounded p-5 dark:text-white"
-                placeholderTextColor={colorScheme === 'dark' ? '#999' : '#333'}
-                readOnly={loading}
-                placeholder={loading ? t('loading') : t('search_name')}
-                onChangeText={text => setQuery(text)}
-              />
+    <ThemedView className="flex-1" style={{backgroundColor: bgColor}}>
+      <FlatList
+        className="flex-1"
+        contentContainerStyle={{paddingBottom: 24}}
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={
+          !showAddNewPlayer ? (
+            <View className="px-4 pt-5 pb-2">
+              <View className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-900/40 p-4 mb-4">
+                <View className="flex-row items-center gap-2 mb-1">
+                  <MaterialCommunityIcons
+                    name="account-search"
+                    size={22}
+                    color="#3b82f6"
+                  />
+                  <Text type="defaultSemiBold">add_existing_player</Text>
+                </View>
+                <Text className="mb-3 opacity-70 text-sm">
+                  search_player
+                </Text>
+                <CustomTextInput
+                  value={query}
+                  disabled={loading}
+                  onChangeText={setQuery}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="default"
+                  leftIcon={MaterialCommunityIcons}
+                  leftIconProps={{name: 'magnify'}}
+                  rightIcon={
+                    query.length > 0 ? MaterialCommunityIcons : undefined
+                  }
+                  rightIconProps={
+                    query.length > 0 ? {name: 'close-circle'} : undefined
+                  }
+                  onRightIconPress={
+                    query.length > 0 ? () => setQuery('') : undefined
+                  }
+                  placeholder={loading ? t('loading') : t('search_player')}
+                />
+                {query.trim().length > 0 && data.length === 0 && !loading && (
+                  <Text className="text-center mt-3 opacity-60">
+                    no_players_found
+                  </Text>
+                )}
+              </View>
+
+              <View className="flex-row items-center gap-3 mb-4 px-2">
+                <View className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+                <Text className="opacity-50 text-xs uppercase tracking-widest">
+                  or
+                </Text>
+                <View className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+              </View>
             </View>
-            <View className="mb-10">
-              <Text className="text-center"> - OR -</Text>
-            </View>
-          </>
-        ) : null
-      }
-      data={data}
-      renderItem={({item, index}) => (
-        <PlayerCard
-          player={item}
-          slot={slot}
-          side={side as string}
-          frameIndex={frameIndex}
-          frameNumber={frameNumber}
-          frameType={frameType as string}
-          disabled={false}
-          isExisting={true}
-        />
-      )}
-      ListFooterComponent={
-        <AddNewPlayer
-          setShowAddNewPlayer={setShowAddNewPlayer}
-          showAddNewPlayer={showAddNewPlayer}
-          handleSelect={HandleSelect}
-        />
-      }
-    />
+          ) : null
+        }
+        data={showAddNewPlayer ? [] : data}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        renderItem={({item, index}) => (
+          <View className="px-2">
+            <PlayerCard
+              player={item}
+              slot={slot}
+              side={side as string}
+              frameIndex={frameIndex}
+              frameNumber={frameNumber}
+              frameType={frameType as string}
+              disabled={false}
+              isExisting={true}
+              mfpp={1}
+              accentIndex={index}
+            />
+          </View>
+        )}
+        ListFooterComponent={
+          <AddNewPlayer
+            setShowAddNewPlayer={setShowAddNewPlayer}
+            showAddNewPlayer={showAddNewPlayer}
+            handleSelect={HandleSelect}
+          />
+        }
+      />
+    </ThemedView>
   )
 }
 

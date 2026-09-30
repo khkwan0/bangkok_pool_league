@@ -1,5 +1,8 @@
 import {MatchInfoDataType} from '@/components/Match/types'
 import {ThemedText as Text} from '@/components/ThemedText'
+import CupMatchBanner, {
+  formatCupBannerLabel,
+} from '@/components/upcoming/CupMatchBanner'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
 import {useMatch} from '@/hooks/useMatch'
@@ -385,7 +388,13 @@ export default function MatchCardOld({
   if (!isMounted || !matchInfo) return null
 
   const isTournament = Number(matchInfo.tournament_id) > 0
-  const divisionName = String(matchInfo.division_name || '').trim()
+  const cupBannerLabel = formatCupBannerLabel({
+    round: matchInfo.round,
+    stage_label: matchInfo.stage_label,
+    stage_key: matchInfo.stage_key,
+    division_name: matchInfo.division_name,
+    fallback: t('cup_match'),
+  })
   const bothConfirmed =
     matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0
   const dateLabel = formatMatchDate(getMatchDisplayDate(matchInfo))
@@ -528,11 +537,15 @@ export default function MatchCardOld({
           styles.board,
           {
             borderColor: isTournament
-              ? 'rgba(251,191,36,0.55)'
+              ? 'rgba(251,191,36,0.85)'
               : theme.boardBorder,
+            borderWidth: isTournament ? 2 : 1,
+            paddingTop: isTournament ? 0 : 16,
           },
         ]}>
         <View style={[styles.stripe, {backgroundColor: accent}]} />
+
+        {isTournament ? <CupMatchBanner label={cupBannerLabel} /> : null}
 
         <Link
           href={{
@@ -540,7 +553,11 @@ export default function MatchCardOld({
             params: {params: JSON.stringify(matchInfo)},
           }}
           asChild>
-          <Pressable style={({pressed}) => ({opacity: pressed ? 0.96 : 1})}>
+          <Pressable
+            style={({pressed}) => ({
+              opacity: pressed ? 0.96 : 1,
+              paddingTop: isTournament ? 14 : 0,
+            })}>
             <View style={styles.metaRow}>
               <View style={styles.chipsWrap}>
                 <Chip
@@ -549,14 +566,6 @@ export default function MatchCardOld({
                   color={theme.chipText}
                   background={theme.chipBg}
                 />
-                {isTournament ? (
-                  <Chip
-                    icon="trophy"
-                    label={divisionName || t('tournament_match')}
-                    color="#B45309"
-                    background="rgba(251,191,36,0.2)"
-                  />
-                ) : null}
                 {bothConfirmed ? (
                   <Chip
                     icon="check-decagram"

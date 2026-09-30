@@ -1,6 +1,9 @@
 import Button from '@/components/Button'
 import {MatchInfoDataType} from '@/components/Match/types'
 import {ThemedText as Text} from '@/components/ThemedText'
+import CupMatchBanner, {
+  formatCupBannerLabel,
+} from '@/components/upcoming/CupMatchBanner'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatch} from '@/hooks/useMatch'
 import {useTeams} from '@/hooks/useTeams'
@@ -40,7 +43,6 @@ const ACCENTS = [
 ] as const
 
 const CUP_ACCENT = '#F59E0B'
-const CUP_BORDER = 'rgba(251,191,36,0.55)'
 const CUP_BOARD_BG = 'rgba(69,40,8,0.55)'
 const CUP_GLOW = 'rgba(245,158,11,0.28)'
 
@@ -316,7 +318,13 @@ export default function MatchCard({
 
   const isTournament = Number(matchInfo.tournament_id) > 0
   const divisionName = String(matchInfo.division_name || '').trim()
-  const cupLabel = divisionName || t('cup_match')
+  const cupBannerLabel = formatCupBannerLabel({
+    round: matchInfo.round,
+    stage_label: matchInfo.stage_label,
+    stage_key: matchInfo.stage_key,
+    division_name: matchInfo.division_name,
+    fallback: t('cup_match'),
+  })
   const accent = isTournament ? CUP_ACCENT : ACCENTS[idx % ACCENTS.length]
   const bothConfirmed =
     matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0
@@ -364,23 +372,20 @@ export default function MatchCard({
                 styles.board,
                 isTournament
                   ? {
-                      borderColor: CUP_BORDER,
+                      borderColor: '#F59E0B',
+                      borderWidth: 2,
                       backgroundColor: CUP_BOARD_BG,
+                      paddingTop: 0,
                     }
                   : null,
               ]}>
-              <View style={[styles.stripe, {backgroundColor: accent}]} />
-
-              {isTournament ? (
-                <View style={styles.cupBanner}>
-                  <MCI name="trophy" size={16} color="#FDE68A" />
-                  <Text style={styles.cupBannerText} numberOfLines={1}>
-                    {cupLabel}
-                  </Text>
-                  <Text style={styles.cupBannerTag}>{t('tournament_match')}</Text>
-                </View>
+              {!isTournament ? (
+                <View style={[styles.stripe, {backgroundColor: accent}]} />
               ) : null}
 
+              {isTournament ? <CupMatchBanner label={cupBannerLabel} /> : null}
+
+              <View style={isTournament ? {paddingTop: 14} : null}>
               <View style={styles.metaRow}>
                 <View style={styles.chipsWrap}>
                   <Chip
@@ -537,6 +542,7 @@ export default function MatchCard({
                   {matchInfo.location}
                 </Text>
               </Pressable>
+              </View>
             </View>
           </Pressable>
         </Link>
@@ -662,31 +668,6 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 4,
-  },
-  cupBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    backgroundColor: 'rgba(251,191,36,0.14)',
-    borderWidth: 1,
-    borderColor: 'rgba(251,191,36,0.35)',
-  },
-  cupBannerText: {
-    flex: 1,
-    color: '#FDE68A',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  cupBannerTag: {
-    color: '#FBBF24',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
   },
   metaRow: {
     marginBottom: 14,
