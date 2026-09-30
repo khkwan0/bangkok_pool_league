@@ -469,11 +469,30 @@ function MatchBox({
             letterSpacing: 0.4,
           }}
           numberOfLines={1}>
-          {editable
-            ? `R${match.round} · drag to swap`
-            : `R${match.round} · ${match.bracket_side}`}
-          {!editable && match.venue_name ? ` · ${match.venue_name}` : ''}
-          {!editable && match.date ? ` · ${String(match.date).slice(0, 10)}` : ''}
+          {(() => {
+            // bracket_side is winners/losers/… (bracket half), not match result.
+            // Omit default "winners" — it reads like someone already won.
+            if (editable) return `R${match.round} · drag to swap`
+            const side = String(match.bracket_side || '')
+            const sideLabel =
+              side === 'losers'
+                ? 'Losers'
+                : side === 'third_place'
+                  ? '3rd'
+                  : side === 'grand_final'
+                    ? 'Grand final'
+                    : side && side !== 'winners'
+                      ? side.replace(/_/g, ' ')
+                      : null
+            return [
+              `R${match.round}`,
+              sideLabel,
+              match.venue_name || null,
+              match.date ? String(match.date).slice(0, 10) : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')
+          })()}
         </Text>
         {tableLabel ? (
           <Pressable
