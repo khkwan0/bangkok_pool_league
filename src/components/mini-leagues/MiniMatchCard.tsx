@@ -130,6 +130,8 @@ export function MiniMatchCard({item, onPress, opening, miniLeagueId}: Props) {
   const showRound =
     isTournament && item.round != null && Number(item.round) > 0
   const radius = 18
+  const cupBorder = isDark ? 'rgba(251,191,36,0.55)' : 'rgba(180,83,9,0.4)'
+  const cupStripe = isDark ? '#FBBF24' : '#D97706'
 
   return (
     <View
@@ -157,14 +159,20 @@ export function MiniMatchCard({item, onPress, opening, miniLeagueId}: Props) {
           transform: [{scale: pressed && !opening ? 0.985 : 1}],
         })}>
         <LinearGradient
-          colors={[...theme.gradient]}
+          colors={
+            isTournament
+              ? isDark
+                ? (['#3d2808', '#24180c', '#1a1a1a'] as const)
+                : (['#ffedd5', '#fff7ed', '#ffffff'] as const)
+              : ([...theme.gradient] as [string, string, string])
+          }
           locations={[0, 0.55, 1]}
           start={{x: 0, y: 0.5}}
           end={{x: 1, y: 0.5}}
           style={{
             borderRadius: radius,
-            borderWidth: 1,
-            borderColor: theme.border,
+            borderWidth: isTournament ? 1.5 : 1,
+            borderColor: isTournament ? cupBorder : theme.border,
           }}>
           <View
             style={{
@@ -173,7 +181,7 @@ export function MiniMatchCard({item, onPress, opening, miniLeagueId}: Props) {
               top: 0,
               bottom: 0,
               width: 4,
-              backgroundColor: theme.stripe,
+              backgroundColor: isTournament ? cupStripe : theme.stripe,
             }}
           />
 
@@ -183,8 +191,14 @@ export function MiniMatchCard({item, onPress, opening, miniLeagueId}: Props) {
                 <Chip
                   icon="calendar"
                   label={dateLabel}
-                  color={theme.color}
-                  background={theme.softAccent ?? theme.soft}
+                  color={isTournament ? cupStripe : theme.color}
+                  background={
+                    isTournament
+                      ? isDark
+                        ? 'rgba(251, 191, 36, 0.16)'
+                        : 'rgba(180, 83, 9, 0.12)'
+                      : (theme.softAccent ?? theme.soft)
+                  }
                 />
                 <Chip
                   icon={theme.icon}
@@ -204,7 +218,7 @@ export function MiniMatchCard({item, onPress, opening, miniLeagueId}: Props) {
                 ) : null}
                 {isTournament ? (
                   <Chip
-                    icon="trophy-outline"
+                    icon="trophy"
                     label="Tournament"
                     color={isDark ? '#fbbf24' : '#b45309'}
                     background={

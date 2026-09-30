@@ -13,6 +13,9 @@ export type MatchInfoDataType = {
   match_id: number
   date: string
   original_date?: string
+  /** >0 for cup / tournament fixtures (no division). */
+  tournament_id?: number
+  division_name?: string | null
   home_confirmed: number
   away_confirmed: number
   team_role_id: number

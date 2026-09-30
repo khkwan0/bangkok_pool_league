@@ -338,6 +338,8 @@
   "match": "การแข่งขัน",
   "matches": "การแข่งขันหลายรายการ",
   "match_confirmed": "ยืนยันการแข่งขันแล้ว",
+  "cup_match": "แมตช์ถ้วย",
+  "tournament_match": "ทัวร์นาเมนต์",
   "match_details": "รายละเอียด",
   "match_info": "ข้อมูลการแข่งขัน",
   "match_performance": "ผลงานการแข่งขัน",

@@ -336,6 +336,8 @@
   "match": "Match",
   "matches": "Matches",
   "match_confirmed": "Match Right You Are",
+  "cup_match": "Cup match",
+  "tournament_match": "Tournament",
   "match_details": "Match details",
   "match_info": "Match Info",
   "match_performance": "Match Performance",

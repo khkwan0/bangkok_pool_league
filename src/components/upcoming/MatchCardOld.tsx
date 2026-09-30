@@ -236,7 +236,10 @@ export default function MatchCardOld({
   const [isMounted, setIsMounted] = React.useState(false)
   const [showInfo, setShowInfo] = React.useState(false)
   const {width} = Dimensions.get('window')
-  const accent = ACCENTS[idx % ACCENTS.length]
+  const isTournamentPreview = Number(propsMatchInfo?.tournament_id) > 0
+  const accent = isTournamentPreview
+    ? '#F59E0B'
+    : ACCENTS[idx % ACCENTS.length]
   const theme = getCardTheme(isDark, accent)
   const logoSize = Math.min(width * 0.16, 68)
 
@@ -381,6 +384,8 @@ export default function MatchCardOld({
 
   if (!isMounted || !matchInfo) return null
 
+  const isTournament = Number(matchInfo.tournament_id) > 0
+  const divisionName = String(matchInfo.division_name || '').trim()
   const bothConfirmed =
     matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0
   const dateLabel = formatMatchDate(getMatchDisplayDate(matchInfo))
@@ -522,7 +527,9 @@ export default function MatchCardOld({
         style={[
           styles.board,
           {
-            borderColor: theme.boardBorder,
+            borderColor: isTournament
+              ? 'rgba(251,191,36,0.55)'
+              : theme.boardBorder,
           },
         ]}>
         <View style={[styles.stripe, {backgroundColor: accent}]} />
@@ -542,6 +549,14 @@ export default function MatchCardOld({
                   color={theme.chipText}
                   background={theme.chipBg}
                 />
+                {isTournament ? (
+                  <Chip
+                    icon="trophy"
+                    label={divisionName || t('tournament_match')}
+                    color="#B45309"
+                    background="rgba(251,191,36,0.2)"
+                  />
+                ) : null}
                 {bothConfirmed ? (
                   <Chip
                     icon="check-decagram"

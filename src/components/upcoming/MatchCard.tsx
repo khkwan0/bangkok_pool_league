@@ -39,6 +39,11 @@ const ACCENTS = [
   '#8B5CF6',
 ] as const
 
+const CUP_ACCENT = '#F59E0B'
+const CUP_BORDER = 'rgba(251,191,36,0.55)'
+const CUP_BOARD_BG = 'rgba(69,40,8,0.55)'
+const CUP_GLOW = 'rgba(245,158,11,0.28)'
+
 function calculateWinProbability(
   homeStats: {won?: number; lost?: number; tied?: number} | null | undefined,
   awayStats: {won?: number; lost?: number; tied?: number} | null | undefined,
@@ -107,7 +112,6 @@ export default function MatchCard({
   )
   const [isMounted, setIsMounted] = React.useState(false)
   const {width} = Dimensions.get('window')
-  const accent = ACCENTS[idx % ACCENTS.length]
   const pad = Math.max(16, width * 0.04)
   const logoSize = Math.min(width * 0.22, 96)
 
@@ -310,10 +314,10 @@ export default function MatchCard({
 
   if (!isMounted || !matchInfo) return null
 
-  const isTournament = Number((matchInfo as any).tournament_id) > 0
-  const divisionName = String(
-    (matchInfo as any).division_name || '',
-  ).trim()
+  const isTournament = Number(matchInfo.tournament_id) > 0
+  const divisionName = String(matchInfo.division_name || '').trim()
+  const cupLabel = divisionName || t('cup_match')
+  const accent = isTournament ? CUP_ACCENT : ACCENTS[idx % ACCENTS.length]
   const bothConfirmed =
     matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0
   const dateLabel = formatMatchDate(getMatchDisplayDate(matchInfo))
@@ -330,13 +334,22 @@ export default function MatchCard({
       contentContainerStyle={{width, paddingBottom: 200}}
       showsVerticalScrollIndicator={false}>
       <LinearGradient
-        colors={['#0B1220', '#111827', '#0F172A']}
+        colors={
+          isTournament
+            ? ['#1A1205', '#1C1408', '#0F172A']
+            : ['#0B1220', '#111827', '#0F172A']
+        }
         locations={[0, 0.55, 1]}
         start={{x: 0.2, y: 0}}
         end={{x: 0.9, y: 1}}
         style={StyleSheet.absoluteFillObject}
       />
-      <View style={[styles.accentGlow, {backgroundColor: accent}]} />
+      <View
+        style={[
+          styles.accentGlow,
+          {backgroundColor: isTournament ? CUP_GLOW : accent},
+        ]}
+      />
 
       <View style={{paddingHorizontal: pad, paddingTop: pad}}>
         <Link
@@ -346,8 +359,27 @@ export default function MatchCard({
           }}
           asChild>
           <Pressable style={({pressed}) => ({opacity: pressed ? 0.96 : 1})}>
-            <View style={styles.board}>
+            <View
+              style={[
+                styles.board,
+                isTournament
+                  ? {
+                      borderColor: CUP_BORDER,
+                      backgroundColor: CUP_BOARD_BG,
+                    }
+                  : null,
+              ]}>
               <View style={[styles.stripe, {backgroundColor: accent}]} />
+
+              {isTournament ? (
+                <View style={styles.cupBanner}>
+                  <MCI name="trophy" size={16} color="#FDE68A" />
+                  <Text style={styles.cupBannerText} numberOfLines={1}>
+                    {cupLabel}
+                  </Text>
+                  <Text style={styles.cupBannerTag}>{t('tournament_match')}</Text>
+                </View>
+              ) : null}
 
               <View style={styles.metaRow}>
                 <View style={styles.chipsWrap}>
@@ -357,20 +389,12 @@ export default function MatchCard({
                     color="#E2E8F0"
                     background="rgba(148,163,184,0.16)"
                   />
-                  {divisionName ? (
+                  {!isTournament && divisionName ? (
                     <Chip
                       icon="shield-outline"
                       label={divisionName}
                       color={accent}
                       background={`${accent}22`}
-                    />
-                  ) : null}
-                  {isTournament ? (
-                    <Chip
-                      icon="trophy-outline"
-                      label="Tournament"
-                      color="#FBBF24"
-                      background="rgba(251,191,36,0.14)"
                     />
                   ) : null}
                   {bothConfirmed ? (
@@ -638,6 +662,31 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 4,
+  },
+  cupBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(251,191,36,0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(251,191,36,0.35)',
+  },
+  cupBannerText: {
+    flex: 1,
+    color: '#FDE68A',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  cupBannerTag: {
+    color: '#FBBF24',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
   },
   metaRow: {
     marginBottom: 14,
