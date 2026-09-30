@@ -366,29 +366,38 @@ const PRESETS: PresetDefinition[] = [
     key: 'gold_silver_bronze',
     label: 'Gold / Silver / Bronze',
     description:
-      '32-team redraw cups: Gold losers drop to Silver, Silver losers to Bronze; random draw each round.',
+      'CPBA redraw cups with byes: Gold losers drop to Silver, Silver losers to Bronze.',
     explanation:
-      'CPBA-style ladder: everyone starts in Gold. Round-1 and round-2 losers drop into Silver (merging into Silver R2); Silver R1/R2 losers pool into Bronze R2 (Bronze R1 is a bye week). Each cup has its own final and 3rd-place match. Pairings are a random redraw every round — first drawn is home; if two homes share a venue, the first keeps home and the other flips away. Quarters losers are knocked out. Set field size below (power of two).',
+      'Everyone starts in Gold. Early-round losers drop into the next cup (Gold R1–R3 → Silver, Silver R1–R3 → Bronze). Each round is a random redraw draft — accept to save. First drawn is home. Venue table limits are enforced; byes can relieve pressure. Admin sets bye count per draw and max byes per team for the whole cup (default 1). Late rounds include a 3rd-place match per cup.',
     configFields: [
       {
-        key: 'field_size',
-        label: 'Field size',
+        key: 'r1_byes',
+        label: 'Default Gold R1 byes',
         type: 'number',
-        default: 32,
-        min: 8,
-        max: 64,
+        default: 7,
+        min: 0,
+        max: 32,
+      },
+      {
+        key: 'max_byes_per_team',
+        label: 'Max byes per team',
+        type: 'number',
+        default: 1,
+        min: 0,
+        max: 5,
       },
     ],
     build: cfg => {
-      const fieldSize = num(cfg, 'field_size', 32)
-      const size = [8, 16, 32, 64].includes(fieldSize) ? fieldSize : 32
-      const finalRound = Math.round(Math.log2(size))
+      const r1Byes = Math.max(0, num(cfg, 'r1_byes', 7))
+      const maxByesPerTeam = Math.max(0, num(cfg, 'max_byes_per_team', 1))
       const cupRules = {
-        final_round: finalRound,
-        semis_round: Math.max(1, finalRound - 1),
-        ko_from_round: Math.max(1, finalRound - 2),
+        final_round: 6,
+        semis_round: 5,
+        ko_from_round: 4,
         third_place: true,
-        field_size: size,
+        field_size: 0,
+        r1_byes: r1Byes,
+        max_byes_per_team: maxByesPerTeam,
       }
       return {
         version: 1 as const,
@@ -404,6 +413,7 @@ const PRESETS: PresetDefinition[] = [
               drops: [
                 {from_round: 1, to_stage: 'silver', to_round: 1},
                 {from_round: 2, to_stage: 'silver', to_round: 2},
+                {from_round: 3, to_stage: 'silver', to_round: 3},
               ],
             },
           },
@@ -416,8 +426,9 @@ const PRESETS: PresetDefinition[] = [
               ...cupRules,
               entry_round: 1,
               drops: [
-                {from_round: 1, to_stage: 'bronze', to_round: 2},
+                {from_round: 1, to_stage: 'bronze', to_round: 1},
                 {from_round: 2, to_stage: 'bronze', to_round: 2},
+                {from_round: 3, to_stage: 'bronze', to_round: 3},
               ],
             },
           },
@@ -428,7 +439,9 @@ const PRESETS: PresetDefinition[] = [
             kind: 'redraw_elimination' as const,
             config: {
               ...cupRules,
-              entry_round: 2,
+              entry_round: 1,
+              // Bronze losers are KO'd from R1 onward (no further drop)
+              ko_from_round: 1,
               drops: [],
             },
           },

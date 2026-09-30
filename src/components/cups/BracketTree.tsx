@@ -1,5 +1,6 @@
 import {ThemedText as Text} from '@/components/ThemedText'
 import React from 'react'
+import {useTranslation} from 'react-i18next'
 import {
   Dimensions,
   Modal,
@@ -707,6 +708,7 @@ export default function BracketTree({
   verticalScrollRef,
   verticalScrollOffsetRef,
 }: Props) {
+  const {t} = useTranslation()
   const isDark = useColorScheme() === 'dark'
   const slotsRef = React.useRef<Map<string, SlotEntry>>(new Map())
   const hScrollsRef = React.useRef<Map<string, HScrollEntry>>(new Map())
@@ -956,7 +958,13 @@ export default function BracketTree({
         return (
           <View key={stage.stage_key} style={{marginTop: 24}}>
             <Text style={{fontSize: 17, fontWeight: '700', marginBottom: 10}}>
-              {stage.label}
+              {stage.stage_key === 'gold'
+                ? t('cups_gold')
+                : stage.stage_key === 'silver'
+                  ? t('cups_silver')
+                  : stage.stage_key === 'bronze'
+                    ? t('cups_bronze')
+                    : stage.label}
             </Text>
             {hasDe ? (
               <View>

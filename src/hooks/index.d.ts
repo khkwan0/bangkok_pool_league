@@ -23,6 +23,32 @@ export interface League {
   GetSeason(): Promise<{status: string; data: string}>
   GetStandings(seasonId?: number | null): Promise<DivisionData[]>
   GetTeams(): Promise<Team[]>
+  GetTeamsBySeason(
+    season?: number | null,
+    options?: {includeInactive?: boolean; includeNoDivision?: boolean},
+  ): Promise<Team[]>
+  GetPlayerTeamsForSeason(
+    playerId: number,
+    season?: number | null,
+  ): Promise<{id: number}[]>
+  GetTeamSeasonLineage(teamId: number): Promise<
+    {
+      season_id: number
+      team_id: number
+      season_name: string
+      short_name?: string
+      is_active: boolean
+    }[]
+  >
+  GetSeasons(): Promise<{
+    status?: string
+    data?: {
+      id: number
+      name?: string
+      short_name?: string
+      status_id?: number
+    }[]
+  }>
   GetCompletedMatchesByTeamId(
     teams: {id: number}[],
   ): Promise<{data: CompletedMatchType[]}>

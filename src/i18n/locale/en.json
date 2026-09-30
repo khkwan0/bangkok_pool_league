@@ -652,5 +652,13 @@
   "home_panels_use_league_default": "Use league default",
   "home_panels_reset_sport_default": "Reset to sport default",
   "hide": "Hide",
-  "total": "Total"
+  "total": "Total",
+  "format_gold_silver_bronze": "Gold / Silver / Bronze",
+  "cups_gold": "Gold Cup",
+  "cups_silver": "Silver Cup",
+  "cups_bronze": "Bronze Cup",
+  "cups_bye": "BYE",
+  "cups_unplaced": "Unplaced",
+  "cups_draw": "Draw",
+  "cups_third_place": "3rd place"
 }
