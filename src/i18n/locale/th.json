@@ -445,7 +445,7 @@
   "search": "ค้นหา",
   "search_by_name": "ค้นหาตามชื่อ",
   "search_name": "ค้นหาชื่อ",
-  "search_player": "ค้นหาผู้เล่น",
+  "search_player": "ค้นหาตามชื่อหรือรหัสผู้เล่น",
   "search_users": "ค้นหาผู้ใช้",
   "season": "ฤดูกาล",
   "season_number": "ฤดูกาล{n}",

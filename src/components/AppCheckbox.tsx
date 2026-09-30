@@ -1,5 +1,6 @@
 import {Checkbox, Host} from '@expo/ui'
 import React from 'react'
+import {useColorScheme} from 'react-native'
 
 type AppCheckboxProps = {
   value: boolean
@@ -16,8 +17,12 @@ export default function AppCheckbox({
   disabled,
   testID,
 }: AppCheckboxProps) {
+  // Host defaults to the *device* scheme; pass RN Appearance so in-app
+  // dark/light overrides keep Compose label text readable.
+  const colorScheme = useColorScheme()
+
   return (
-    <Host matchContents>
+    <Host matchContents colorScheme={colorScheme ?? undefined}>
       <Checkbox
         value={value}
         onValueChange={onValueChange}
