@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bangkok Pool League",
     "slug": "bangkok_pool_league",
-    "version": "2.15",
+    "version": "2.16",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "bangkokpoolleague",
@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "buildNumber": "181",
+      "buildNumber": "182",
       "googleServicesFile": "./GoogleService-Info.plist",
       "usesAppleSignIn": true,
       "associatedDomains": [
@@ -41,7 +41,7 @@
     },
     "android": {
       "package": "com.bangkok_pool_league",
-      "versionCode": 181,
+      "versionCode": 182,
       "googleServicesFile": "./firebase.google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
