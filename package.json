@@ -13,6 +13,8 @@
     "export_ios": "bash ./scripts/export_ios.sh",
     "unlock_signing_keychain": "bash ./scripts/unlock_signing_keychain.sh",
     "archive_android": "bash ./scripts/archive_android.sh",
+    "ota_check": "bash ./scripts/ota_manifest_check.sh",
+    "ota_publish": "bash ./scripts/ota_publish.sh",
     "web": "expo start --web",
     "lint": "expo lint"
   },

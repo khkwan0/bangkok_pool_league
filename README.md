@@ -285,6 +285,122 @@ MAX_CPUS=2 MAX_HEAP_MB=2048 npm run archive_android
 
 Create `.env.local` in the project root (gitignored). Both archive scripts `source` it automatically. Never commit keystores, `.p8` keys, or service account JSON — keep them under `private_keys/` or outside the repo.
 
+## Over-the-air updates (xprem)
+
+JS/asset updates are published to a self-hosted [xprem](https://mercure-technologies.gitbook.io/xprem) server at **https://ota.bkkleague.com**. The app uses `expo-updates` with code signing. Native changes still need a store build.
+
+OTA only reaches binaries that were built **after** the update URL and signing cert were configured. Existing store installs will not pull updates until users upgrade to that new binary.
+
+### Baseline (one-time per app)
+
+Do this once when wiring a new Expo app (pool is already done; darts needs its own dashboard app).
+
+1. Open **https://ota.bkkleague.com/dashboard** and sign in.
+2. **Create app** → copy the **App ID**.
+3. **Download certificate** → save as `certs/certificate.pem` in the Expo project (commit this file).
+4. **API tokens** → create a token → copy it once. Export it as `EOO_TOKEN` when publishing (do not commit it).
+5. Install client deps and init (if starting from scratch):
+
+   ```bash
+   npx expo install expo-updates
+   npx eoas init
+   ```
+
+   | Prompt | Answer |
+   |--------|--------|
+   | Project id | Dashboard App ID |
+   | Update server URL | `https://ota.bkkleague.com` |
+   | Already have certificates? | **Yes** |
+
+6. **Fix config nesting if needed.** This repo uses `app.config.js` with an `{ expo: … }` wrapper. `updates` and `runtimeVersion` **must** live under `expo` — top-level siblings are ignored and `eoas publish` will say the update URL is not set. Current shape:
+
+   ```js
+   // app.config.js
+   module.exports = () => ({
+     expo: {
+       ...applyEnvConfig(appJson.expo),
+       runtimeVersion: { policy: 'appVersion' },
+       updates: {
+         url: 'https://ota.bkkleague.com/manifest',
+         // code signing + requestHeaders (expo-channel-name, expo-app-id, xprem-branch)
+       },
+     },
+   })
+   ```
+
+   Keep `expo-channel-name` as a literal or `process.env.RELEASE_CHANNEL || 'production'`. An unset env-only value is stripped at export time.
+
+7. Publish the first update and map the channel:
+
+   ```bash
+   export EOO_TOKEN=eoo_your_api_key   # or put it in .env.local
+   npm run ota_publish -- -m "Initial OTA baseline"
+   ```
+
+   Do **not** use bare `npx eoas publish` with the default `--platform all`: that also exports **web**, and native-only packages (e.g. Apple Auth) fail the export. `ota_publish` runs iOS then Android separately.
+
+   In the dashboard: **Channels → Create Channel** `production` → point it at branch `production`.
+
+8. Verify the manifest (reads URL / app id / runtime from Expo config):
+
+   ```bash
+   npm run ota_check
+   # optional: PLATFORM=android CHANNEL=production npm run ota_check
+   ```
+
+   `runtimeVersion` must match the resolved app version (`appVersion` policy → `expo.version` in `app.json`).
+
+9. **Ship a new native binary** so devices embed the update URL and cert:
+
+   ```bash
+   npm run deploy_ios          # device test
+   npm run deploy_android
+   # then store:
+   npm run archive_ios
+   npm run archive_android
+   ```
+
+### Publish an update (day-to-day)
+
+For JavaScript / styling / asset-only changes:
+
+```bash
+# EOO_TOKEN from .env.local is sourced by the script
+npm run ota_publish -- -m "Describe the fix"
+
+# or one platform:
+export EOO_TOKEN=eoo_your_api_key
+npx eoas publish --branch production --platform ios -m "Describe the fix"
+npx eoas publish --branch production --platform android -m "Describe the fix"
+```
+
+Notes:
+
+- Prefer `npm run ota_publish` over default `eoas publish` (`--platform all` tries web and fails on native-only imports).
+- `eoas` does **not** load `.env` files itself; `ota_publish` sources `.env.local` for `EOO_TOKEN`.
+- A dirty git working tree blocks publish (untracked files count). Commit first, or pass `--disableRepositoryCheck` when you intentionally publish with local-only files.
+- Unchanged bundles are not republished (`no changes detected`).
+- Users typically need to force-quit and reopen the app (up to twice) for an update to download and apply.
+- After publishing: `npm run ota_check`
+
+### When you still need a store build
+
+Bump `expo.version` in `app.json` (runtime version follows `appVersion`) and run `archive_*` when you change:
+
+- Native dependencies / Expo SDK
+- Config plugins, permissions, Firebase / LINE native config
+- `updates.url`, signing certificate, or request headers that must be baked into the binary
+
+### Related files
+
+| Path | Purpose |
+|------|---------|
+| `app.config.js` | `updates.url`, headers, code signing, `runtimeVersion` |
+| `certs/certificate.pem` | Public cert embedded in the app (committed) |
+| `EOO_TOKEN` (env) | Dashboard API token for `eoas publish` (secret) |
+
+Docs: [xprem configure app](https://mercure-technologies.gitbook.io/xprem/installation-guide/configure-your-application), [publish](https://mercure-technologies.gitbook.io/xprem/eoas/publish-an-update).
+
 ## Get a fresh project
 
 When you're ready, run:
