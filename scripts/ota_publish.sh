@@ -55,11 +55,12 @@ echo
 
 for platform in ios android; do
   echo "── eoas publish --platform $platform ──"
+  # "${EXTRA[@]+…}" avoids unbound-variable under `set -u` when EXTRA is empty (bash 3.2).
   npx eoas publish \
     --branch "$BRANCH" \
     --platform "$platform" \
     -m "$MESSAGE" \
-    "${EXTRA[@]}"
+    ${EXTRA[@]+"${EXTRA[@]}"}
   echo
 done
 
