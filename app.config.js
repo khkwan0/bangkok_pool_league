@@ -38,4 +38,21 @@ function applyEnvConfig(expo) {
 /** @type {import('expo/config').ExpoConfig} */
 module.exports = () => ({
   expo: applyEnvConfig(appJson.expo),
+
+  updates: {
+    "url": "https://ota.bkkleague.com/manifest",
+    "codeSigningMetadata": (process.env.DISABLE_CODE_SIGNING ? undefined : { keyid: 'main', alg: 'rsa-v1_5-sha256' }),
+    "codeSigningCertificate": (process.env.DISABLE_CODE_SIGNING ? undefined : './certs/certificate.pem'),
+    "enabled": true,
+
+    "requestHeaders": {
+      // Declare as a literal if you surf branches: see xprem-branch below.
+      "expo-channel-name": process.env.RELEASE_CHANNEL,
+
+      "expo-app-id": "bd2821b1-58ee-4362-94bc-9cf6609b2e24",
+
+      // Branch surfing — the branch to serve; empty means the channel decides.
+      "xprem-branch": "",
+    },
+  },
 })
