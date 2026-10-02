@@ -119,18 +119,23 @@ export default function Settings() {
             <View className="flex-row items-center">
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={t('profile')}
+                accessibilityLabel={t('press_image_to_update')}
                 onPress={() => router.push('/Settings/Preferences/Profile')}
-                className="h-24 w-24 rounded-full bg-gray-700/50 items-center justify-center overflow-hidden">
-                {user.profile_picture ? (
-                  <Image
-                    source={{uri: config.profileUrl + user.profile_picture}}
-                    className="h-24 w-24"
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <MCI name="account" size={32} color={colors.text} />
-                )}
+                className="items-center">
+                <View className="h-24 w-24 rounded-full bg-gray-700/50 items-center justify-center overflow-hidden">
+                  {user.profile_picture ? (
+                    <Image
+                      source={{uri: config.profileUrl + user.profile_picture}}
+                      className="h-24 w-24"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <MCI name="account" size={32} color={colors.text} />
+                  )}
+                </View>
+                <Text className="text-xs mt-1.5 opacity-60 text-center max-w-24">
+                  {t('press_image_to_update')}
+                </Text>
               </Pressable>
               <View className="flex-1 ml-4">
                 <Text className="text-lg font-semibold text-right">

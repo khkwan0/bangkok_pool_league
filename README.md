@@ -291,6 +291,8 @@ JS/asset updates are published to a self-hosted [xprem](https://mercure-technolo
 
 OTA only reaches binaries that were built **after** the update URL and signing cert were configured. Existing store installs will not pull updates until users upgrade to that new binary.
 
+In release builds, `OTAUpdatePrompt` checks for updates on launch and when returning to the foreground, shows a download modal, then asks the user to **Restart** (or **Later**). Dev builds skip this (`expo-updates` is disabled in `__DEV__`).
+
 ### Baseline (one-time per app)
 
 Do this once when wiring a new Expo app (pool is already done; darts needs its own dashboard app).
