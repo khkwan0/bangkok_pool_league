@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useTheme, useNavigation} from "expo-router/react-navigation"
+import {useRouter} from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import config from '@/config.js'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -42,6 +43,7 @@ export default function Settings() {
   const [isDark, setIsDark] = useState(useColorScheme() === 'dark')
   const insets = useSafeAreaInsets()
   const navigation = useNavigation()
+  const router = useRouter()
   const {t} = useTranslation()
   const account = useAccount()
 
@@ -115,7 +117,11 @@ export default function Settings() {
         {typeof user.id !== 'undefined' && (
           <View className="bg-gray-800/20 dark:bg-gray-200/20 rounded-xl p-4 mb-4">
             <View className="flex-row items-center">
-              <View className="h-24 w-24 rounded-full bg-gray-700/50 items-center justify-center overflow-hidden">
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('profile')}
+                onPress={() => router.push('/Settings/Preferences/Profile')}
+                className="h-24 w-24 rounded-full bg-gray-700/50 items-center justify-center overflow-hidden">
                 {user.profile_picture ? (
                   <Image
                     source={{uri: config.profileUrl + user.profile_picture}}
@@ -125,7 +131,7 @@ export default function Settings() {
                 ) : (
                   <MCI name="account" size={32} color={colors.text} />
                 )}
-              </View>
+              </Pressable>
               <View className="flex-1 ml-4">
                 <Text className="text-lg font-semibold text-right">
                   {user.nickname}
