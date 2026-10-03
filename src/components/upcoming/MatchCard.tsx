@@ -386,32 +386,28 @@ export default function MatchCard({
               {isTournament ? <CupMatchBanner label={cupBannerLabel} /> : null}
 
               <View style={isTournament ? {paddingTop: 14} : null}>
-              <View style={styles.metaRow}>
-                <View style={styles.chipsWrap}>
-                  <Chip
-                    icon="calendar"
-                    label={dateLabel}
-                    color="#E2E8F0"
-                    background="rgba(148,163,184,0.16)"
-                  />
-                  {!isTournament && divisionName ? (
-                    <Chip
-                      icon="shield-outline"
-                      label={divisionName}
-                      color={accent}
-                      background={`${accent}22`}
-                    />
-                  ) : null}
-                  {bothConfirmed ? (
-                    <Chip
-                      icon="check-decagram"
-                      label={t('match_confirmed')}
-                      color="#34D399"
-                      background="rgba(52,211,153,0.16)"
-                    />
-                  ) : null}
+              {(!isTournament && divisionName) || bothConfirmed ? (
+                <View style={styles.metaRow}>
+                  <View style={styles.chipsWrap}>
+                    {!isTournament && divisionName ? (
+                      <Chip
+                        icon="shield-outline"
+                        label={divisionName}
+                        color={accent}
+                        background={`${accent}22`}
+                      />
+                    ) : null}
+                    {bothConfirmed ? (
+                      <Chip
+                        icon="check-decagram"
+                        label={t('match_confirmed')}
+                        color="#34D399"
+                        background="rgba(52,211,153,0.16)"
+                      />
+                    ) : null}
+                  </View>
                 </View>
-              </View>
+              ) : null}
 
               {postponedProposal?.newDate ? (
                 <Text style={styles.postponeNote}>
@@ -432,6 +428,10 @@ export default function MatchCard({
                   </Text>
                 </View>
               ) : null}
+
+              <Text style={styles.matchDate} numberOfLines={2}>
+                {dateLabel}
+              </Text>
 
               <View style={styles.teamsRow}>
                 <View style={styles.teamCol}>
@@ -711,6 +711,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     textAlign: 'center',
+  },
+  matchDate: {
+    color: '#E2E8F0',
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
   },
   teamsRow: {
     flexDirection: 'row',

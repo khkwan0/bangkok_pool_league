@@ -560,12 +560,6 @@ export default function MatchCardOld({
             })}>
             <View style={styles.metaRow}>
               <View style={styles.chipsWrap}>
-                <Chip
-                  icon="calendar"
-                  label={dateLabel}
-                  color={theme.chipText}
-                  background={theme.chipBg}
-                />
                 {bothConfirmed ? (
                   <Chip
                     icon="check-decagram"
@@ -638,6 +632,12 @@ export default function MatchCardOld({
                 </Text>
               </View>
             ) : null}
+
+            <Text
+              style={[styles.matchDate, {color: theme.chipText}]}
+              numberOfLines={2}>
+              {dateLabel}
+            </Text>
 
             <View style={styles.teamsRow}>
               <View style={styles.teamCol}>
@@ -1074,6 +1074,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     textAlign: 'center',
+  },
+  matchDate: {
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
   },
   teamsRow: {
     flexDirection: 'row',
