@@ -94,6 +94,50 @@ function Chip({
   )
 }
 
+function hasLogoUri(uri?: string | null) {
+  return typeof uri === 'string' && uri.trim().length > 0
+}
+
+function TeamLogoMark({
+  uri,
+  name,
+  size,
+  accent,
+}: {
+  uri?: string | null
+  name?: string | null
+  size: number
+  accent: string
+}) {
+  const initial = (name || '?').trim().charAt(0).toUpperCase() || '?'
+
+  return (
+    <View style={styles.logoRing}>
+      {hasLogoUri(uri) ? (
+        <Image
+          source={{uri: uri!}}
+          resizeMode="contain"
+          style={{width: size, height: size}}
+        />
+      ) : (
+        <View
+          style={[
+            styles.logoInitialWell,
+            {
+              width: size,
+              height: size,
+              backgroundColor: `${accent}22`,
+            },
+          ]}>
+          <Text style={[styles.logoInitial, {color: accent, fontSize: size * 0.48}]}>
+            {initial}
+          </Text>
+        </View>
+      )}
+    </View>
+  )
+}
+
 export default function MatchCard({
   matchInfo: propsMatchInfo,
   idx,
@@ -435,13 +479,12 @@ export default function MatchCard({
 
               <View style={styles.teamsRow}>
                 <View style={styles.teamCol}>
-                  <View style={styles.logoRing}>
-                    <Image
-                      source={{uri: matchInfo.home_logo}}
-                      resizeMode="contain"
-                      style={{width: logoSize, height: logoSize}}
-                    />
-                  </View>
+                  <TeamLogoMark
+                    uri={matchInfo.home_logo}
+                    name={matchInfo.home_team_short_name}
+                    size={logoSize}
+                    accent={accent}
+                  />
                   {matchInfo?.homeStats?.rank != null ? (
                     <Text style={[styles.rank, {color: accent}]}>
                       #{matchInfo.homeStats.rank}
@@ -475,13 +518,12 @@ export default function MatchCard({
                 </View>
 
                 <View style={styles.teamCol}>
-                  <View style={styles.logoRing}>
-                    <Image
-                      source={{uri: matchInfo.away_logo}}
-                      resizeMode="contain"
-                      style={{width: logoSize, height: logoSize}}
-                    />
-                  </View>
+                  <TeamLogoMark
+                    uri={matchInfo.away_logo}
+                    name={matchInfo.away_team_short_name}
+                    size={logoSize}
+                    accent={accent}
+                  />
                   {matchInfo?.awayStats?.rank != null ? (
                     <Text style={[styles.rank, {color: accent}]}>
                       #{matchInfo.awayStats.rank}
@@ -736,6 +778,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.2)',
     marginBottom: 10,
+  },
+  logoInitialWell: {
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoInitial: {
+    fontWeight: '800',
   },
   rank: {
     fontSize: 13,

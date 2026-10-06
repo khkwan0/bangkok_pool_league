@@ -57,7 +57,11 @@ export default function CompletedMatchesOther({
     return matchDates
       .map(group => ({
         ...group,
-        matches: filterMatchesByScope(group.matches, scope),
+        matches: filterMatchesByScope(
+          // Completed tab: never surface unfinished fixtures from the season API.
+          group.matches.filter(m => Number(m.match_status_id) === 3),
+          scope,
+        ),
       }))
       .filter(group => group.matches.length > 0)
   }, [matchDates, scope])
