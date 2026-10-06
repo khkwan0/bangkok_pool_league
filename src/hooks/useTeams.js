@@ -1,7 +1,9 @@
-import { useNetwork } from '@/hooks/useNetwork'
+import {useNetwork} from '@/hooks/useNetwork'
+import {useStatsScope} from '@/context/StatsScopeContext'
 
 export const useTeams = () => {
   const {Get, Post, Patch} = useNetwork()
+  const {scope} = useStatsScope()
 
   const GetPlayers = async (
     teamid = -1,
@@ -54,7 +56,9 @@ export const useTeams = () => {
   const GetTeamInternalStats = async teamId => {
     try {
       if (teamId) {
-        const res = await Get('/stats/team/players/internal/' + teamId)
+        const res = await Get(
+          '/stats/team/players/internal/' + teamId + '?scope=' + scope,
+        )
         return res
       } else {
         return {status: 'error', error: 'invalid_paramters'}
