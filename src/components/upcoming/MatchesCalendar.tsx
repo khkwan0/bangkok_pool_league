@@ -1,13 +1,18 @@
+import {formatCupBannerLabel} from '@/components/upcoming/CupMatchBanner'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {BANGKOK_ZONE, nowInBangkok, toBangkok} from '@/lib/bangkokTime'
 import {
   getMatchDisplayDate,
   isPostponedDateLabel,
 } from '@/lib/postponedProposal'
-import {MaterialIcons} from '@expo/vector-icons'
+import {Ionicons, MaterialIcons} from '@expo/vector-icons'
+import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import {LinearGradient} from 'expo-linear-gradient'
 import {DateTime} from 'luxon'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -19,6 +24,15 @@ import {
 } from 'react-native'
 
 const ACCENT = '#37003C'
+const CARD_ACCENTS = [
+  '#3B82F6',
+  '#06B6D4',
+  '#10B981',
+  '#F59E0B',
+  '#F43F5E',
+  '#8B5CF6',
+] as const
+const CUP_ACCENT = '#F59E0B'
 
 export type CalendarFixture = {
   date?: string
@@ -33,6 +47,15 @@ export type CalendarFixture = {
   name?: string
   location?: string
   tournament_id?: number | string
+  round?: number | null
+  stage_label?: string | null
+  stage_key?: string | null
+  home_logo?: string | null
+  away_logo?: string | null
+  home_confirmed?: number | string
+  away_confirmed?: number | string
+  homeStats?: {rank?: number; won?: number; lost?: number; tied?: number}
+  awayStats?: {rank?: number; won?: number; lost?: number; tied?: number}
 }
 
 type IndexedMatch = {index: number; match: CalendarFixture}
@@ -402,13 +425,9 @@ export default function MatchesCalendar({
         </Text>
       ) : (
         selectedMatches.map(item => (
-          <MatchRow
+          <CalendarMatchCard
             key={`${item.index}-${item.match.home_team_id}-${item.match.away_team_id}`}
             item={item}
-            isDark={isDark}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            cardBg={cardBg}
             onPress={() => onOpenMatch(item.index)}
           />
         ))
@@ -422,13 +441,9 @@ export default function MatchesCalendar({
             {t('unscheduled_matches')}
           </Text>
           {unscheduled.map(item => (
-            <MatchRow
+            <CalendarMatchCard
               key={`unscheduled-${item.index}`}
               item={item}
-              isDark={isDark}
-              textColor={textColor}
-              mutedColor={mutedColor}
-              cardBg={cardBg}
               onPress={() => onOpenMatch(item.index)}
             />
           ))}
@@ -476,30 +491,56 @@ function NavButton({
   )
 }
 
-function MatchRow({
+function hasLogoUri(uri?: string | null) {
+  if (typeof uri !== 'string') return false
+  const trimmed = uri.trim()
+  if (!trimmed) return false
+  if (/\/logos\/?$/i.test(trimmed)) return false
+  if (/\/(null|undefined)(\?|$)/i.test(trimmed)) return false
+  return true
+}
+
+function recordLabel(stats?: {
+  won?: number
+  lost?: number
+  tied?: number
+}): string | null {
+  if (!stats) return null
+  if (stats.won == null && stats.lost == null && stats.tied == null) return null
+  return `${stats.won ?? 0}-${stats.lost ?? 0}-${stats.tied ?? 0}`
+}
+
+function CalendarMatchCard({
   item,
-  isDark,
-  textColor,
-  mutedColor,
-  cardBg,
   onPress,
 }: {
   item: IndexedMatch
-  isDark: boolean
-  textColor: string
-  mutedColor: string
-  cardBg: string
   onPress: () => void
 }) {
+  const {t} = useTranslation()
+  const {state} = useLeagueContext()
   const match = item.match
+  const cup = isCup(match)
+  const accent = cup ? CUP_ACCENT : CARD_ACCENTS[item.index % CARD_ACCENTS.length]
   const home = match.home_team_short_name || '—'
   const away = match.away_team_short_name || '—'
   const time = matchTimeLabel(match)
-  const meta = [match.division_name, match.name || match.location]
-    .map(value => (typeof value === 'string' ? value.trim() : ''))
-    .filter(Boolean)
-    .join(' · ')
-  const cup = isCup(match)
+  const venue = typeof match.name === 'string' ? match.name.trim() : ''
+  const address = typeof match.location === 'string' ? match.location.trim() : ''
+  const division =
+    typeof match.division_name === 'string' ? match.division_name.trim() : ''
+  const bothConfirmed =
+    Number(match.home_confirmed) > 0 && Number(match.away_confirmed) > 0
+  const sportIcon = state.sport === 'darts' ? 'dart' : 'billiards-rack'
+  const cupLabel = cup
+    ? formatCupBannerLabel({
+        round: match.round,
+        stage_label: match.stage_label,
+        stage_key: match.stage_key,
+        division_name: match.division_name,
+        fallback: t('cup_match', {defaultValue: 'Cup'}),
+      })
+    : ''
 
   return (
     <Pressable
@@ -507,39 +548,288 @@ function MatchRow({
       accessibilityLabel={`${home} vs ${away}`}
       onPress={onPress}
       style={({pressed}) => ({
+        marginBottom: 14,
+        borderRadius: 20,
+        opacity: pressed ? 0.94 : 1,
+        transform: [{scale: pressed ? 0.985 : 1}],
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 8},
+        shadowOpacity: 0.28,
+        shadowRadius: 14,
+        elevation: 6,
+      })}>
+      <View
+        style={{
+          borderRadius: 20,
+          overflow: 'hidden',
+          borderWidth: cup ? 1.5 : 0,
+          borderColor: 'rgba(245,158,11,0.75)',
+        }}>
+      <LinearGradient
+        colors={
+          cup
+            ? ['#1A1205', '#1C1408', '#0F172A']
+            : ['#0B1220', '#111827', '#0F172A']
+        }
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}>
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: -36,
+            right: -24,
+            width: 140,
+            height: 140,
+            borderRadius: 70,
+            backgroundColor: accent,
+            opacity: 0.2,
+          }}
+        />
+        {cup ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              backgroundColor: CUP_ACCENT,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+            }}>
+            <MCI name="trophy" size={16} color="#FFFBEB" />
+            <Text
+              style={{flex: 1, color: '#FFFBEB', fontWeight: '800'}}
+              numberOfLines={1}>
+              {cupLabel}
+            </Text>
+          </View>
+        ) : (
+          <View style={{height: 4, backgroundColor: accent}} />
+        )}
+
+        <View style={{paddingHorizontal: 14, paddingTop: 12, paddingBottom: 14}}>
+          {(!cup && division) || time || bothConfirmed ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: 6,
+                marginBottom: 12,
+              }}>
+              {!cup && division ? (
+                <CardChip icon="shield-outline" label={division} color={accent} />
+              ) : null}
+              {time ? (
+                <CardChip icon="clock-outline" label={time} color="#E2E8F0" />
+              ) : null}
+              {bothConfirmed ? (
+                <CardChip
+                  icon="check-decagram"
+                  label={t('match_confirmed')}
+                  color="#34D399"
+                />
+              ) : null}
+            </View>
+          ) : null}
+
+          <View style={{flexDirection: 'row', alignItems: 'flex-start'}}>
+            <TeamSide
+              name={home}
+              logo={match.home_logo}
+              accent={accent}
+              rank={match.homeStats?.rank}
+              record={recordLabel(match.homeStats)}
+            />
+            <View style={{width: 52, alignItems: 'center', paddingTop: 10}}>
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: `${accent}22`,
+                  borderWidth: 1,
+                  borderColor: `${accent}66`,
+                }}>
+                <MCI name={sportIcon} size={22} color={accent} />
+              </View>
+              <Text
+                style={{
+                  marginTop: 6,
+                  fontSize: 11,
+                  fontWeight: '800',
+                  letterSpacing: 1.4,
+                  color: 'rgba(226,232,240,0.55)',
+                }}>
+                VS
+              </Text>
+            </View>
+            <TeamSide
+              name={away}
+              logo={match.away_logo}
+              accent={accent}
+              rank={match.awayStats?.rank}
+              record={recordLabel(match.awayStats)}
+            />
+          </View>
+
+          {venue || address ? (
+            <View
+              style={{
+                marginTop: 14,
+                borderRadius: 14,
+                backgroundColor: 'rgba(255,255,255,0.06)',
+                borderWidth: 1,
+                borderColor: 'rgba(148,163,184,0.16)',
+                paddingHorizontal: 10,
+                paddingVertical: 9,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+              <Ionicons name="location-outline" size={16} color={accent} />
+              <View style={{flex: 1}}>
+                {venue ? (
+                  <Text
+                    style={{color: '#F8FAFC', fontWeight: '700', fontSize: 14}}
+                    numberOfLines={1}>
+                    {venue}
+                  </Text>
+                ) : null}
+                {address ? (
+                  <Text
+                    style={{
+                      color: 'rgba(226,232,240,0.68)',
+                      fontSize: 12,
+                      marginTop: venue ? 2 : 0,
+                    }}
+                    numberOfLines={1}>
+                    {address}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+          ) : null}
+        </View>
+      </LinearGradient>
+      </View>
+    </Pressable>
+  )
+}
+
+function CardChip({
+  icon,
+  label,
+  color,
+}: {
+  icon: React.ComponentProps<typeof MCI>['name']
+  label: string
+  color: string
+}) {
+  return (
+    <View
+      style={{
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: pressed ? (isDark ? '#2A2A2A' : '#F3F4F6') : cardBg,
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        marginBottom: 8,
-        borderWidth: isDark ? 0 : 1,
-        borderColor: '#E5E7EB',
-        borderLeftWidth: 4,
-        borderLeftColor: cup ? '#F59E0B' : ACCENT,
-      })}>
-      <View style={{flex: 1}}>
-        <Text className="font-semibold" style={{color: textColor}}>
-          {home} vs {away}
-        </Text>
-        {meta ? (
-          <Text style={{color: mutedColor, marginTop: 2}} numberOfLines={1}>
-            {meta}
-          </Text>
-        ) : null}
-      </View>
-      {time ? (
-        <Text
-          style={{
-            color: mutedColor,
-            marginRight: 6,
-            fontVariant: ['tabular-nums'],
-          }}>
-          {time}
+        gap: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 999,
+        backgroundColor: `${color}22`,
+      }}>
+      <MCI name={icon} size={13} color={color} />
+      <Text style={{color, fontSize: 11, fontWeight: '700'}} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
+  )
+}
+
+function TeamSide({
+  name,
+  logo,
+  accent,
+  rank,
+  record,
+}: {
+  name: string
+  logo?: string | null
+  accent: string
+  rank?: number
+  record: string | null
+}) {
+  return (
+    <View style={{flex: 1, alignItems: 'center'}}>
+      <TeamMark uri={logo} name={name} accent={accent} />
+      {rank != null ? (
+        <Text style={{color: accent, fontSize: 12, fontWeight: '800', marginTop: 6}}>
+          #{rank}
         </Text>
       ) : null}
-      <MaterialIcons name="chevron-right" size={22} color={mutedColor} />
-    </Pressable>
+      <Text
+        style={{
+          color: '#F8FAFC',
+          fontWeight: '800',
+          fontSize: 16,
+          textAlign: 'center',
+          marginTop: rank != null ? 2 : 8,
+        }}
+        numberOfLines={2}>
+        {name}
+      </Text>
+      {record ? (
+        <Text
+          style={{
+            marginTop: 4,
+            color: 'rgba(226,232,240,0.7)',
+            fontSize: 12,
+            fontWeight: '600',
+          }}>
+          {record}
+        </Text>
+      ) : null}
+    </View>
+  )
+}
+
+function TeamMark({
+  uri,
+  name,
+  accent,
+}: {
+  uri?: string | null
+  name: string
+  accent: string
+}) {
+  const [failed, setFailed] = React.useState(false)
+  const initial = name.trim().charAt(0).toUpperCase() || '?'
+  const showImage = hasLogoUri(uri) && !failed
+
+  return (
+    <View
+      style={{
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderWidth: 1,
+        borderColor: 'rgba(148,163,184,0.22)',
+      }}>
+      {showImage ? (
+        <Image
+          source={{uri: uri!}}
+          resizeMode="contain"
+          style={{width: 48, height: 48}}
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <Text style={{color: accent, fontSize: 26, fontWeight: '800'}}>
+          {initial}
+        </Text>
+      )}
+    </View>
   )
 }
