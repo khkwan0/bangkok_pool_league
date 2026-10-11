@@ -29,6 +29,7 @@ import {
   ScrollView,
   Share,
   StyleSheet,
+  useColorScheme,
   View,
 } from 'react-native'
 import {showLocation} from 'react-native-map-link'
@@ -45,6 +46,63 @@ const ACCENTS = [
 const CUP_ACCENT = '#F59E0B'
 const CUP_BOARD_BG = 'rgba(69,40,8,0.55)'
 const CUP_GLOW = 'rgba(245,158,11,0.28)'
+
+function getCardTheme(isDark: boolean) {
+  if (isDark) {
+    return {
+      page: ['#0B1220', '#111827', '#0F172A'] as const,
+      cupPage: ['#1A1205', '#1C1408', '#0F172A'] as const,
+      boardBg: 'rgba(15,23,42,0.72)',
+      boardBorder: 'rgba(148,163,184,0.22)',
+      text: '#F8FAFC',
+      textSecondary: 'rgba(226,232,240,0.72)',
+      textMuted: 'rgba(226,232,240,0.55)',
+      icon: '#E2E8F0',
+      logoRingBg: 'rgba(255,255,255,0.06)',
+      logoRingBorder: 'rgba(148,163,184,0.2)',
+      venueBg: 'rgba(2,6,23,0.45)',
+      venueBorder: 'rgba(148,163,184,0.2)',
+      venueName: '#F1F5F9',
+      shareBg: 'rgba(15,23,42,0.55)',
+      shareBorder: 'rgba(226,232,240,0.35)',
+      probTrack: 'rgba(148,163,184,0.15)',
+      probAway: 'rgba(148,163,184,0.35)',
+      confirm: '#34D399',
+      confirmBg: 'rgba(52,211,153,0.16)',
+      postponeText: '#FDE68A',
+      indefiniteBg: 'rgba(239,68,68,0.14)',
+      indefiniteBorder: 'rgba(248,113,113,0.35)',
+      indefiniteText: '#FCA5A5',
+      cupBoardBg: CUP_BOARD_BG,
+    }
+  }
+  return {
+    page: ['#F8FAFC', '#FFFFFF', '#F1F5F9'] as const,
+    cupPage: ['#FFFBEB', '#FFFFFF', '#F8FAFC'] as const,
+    boardBg: '#FFFFFF',
+    boardBorder: 'rgba(15,23,42,0.1)',
+    text: '#0F172A',
+    textSecondary: 'rgba(15,23,42,0.68)',
+    textMuted: 'rgba(15,23,42,0.45)',
+    icon: '#334155',
+    logoRingBg: 'rgba(15,23,42,0.04)',
+    logoRingBorder: 'rgba(15,23,42,0.1)',
+    venueBg: 'rgba(15,23,42,0.04)',
+    venueBorder: 'rgba(15,23,42,0.1)',
+    venueName: '#0F172A',
+    shareBg: '#FFFFFF',
+    shareBorder: 'rgba(15,23,42,0.16)',
+    probTrack: 'rgba(15,23,42,0.08)',
+    probAway: 'rgba(15,23,42,0.18)',
+    confirm: '#059669',
+    confirmBg: 'rgba(5,150,105,0.12)',
+    postponeText: '#B45309',
+    indefiniteBg: 'rgba(239,68,68,0.08)',
+    indefiniteBorder: 'rgba(220,38,38,0.28)',
+    indefiniteText: '#DC2626',
+    cupBoardBg: '#FFFBEB',
+  }
+}
 
 function calculateWinProbability(
   homeStats: {won?: number; lost?: number; tied?: number} | null | undefined,
@@ -108,18 +166,26 @@ function TeamLogoMark({
   name,
   size,
   accent,
+  ringBg,
+  ringBorder,
 }: {
   uri?: string | null
   name?: string | null
   size: number
   accent: string
+  ringBg: string
+  ringBorder: string
 }) {
   const [failed, setFailed] = React.useState(false)
   const initial = (name || '?').trim().charAt(0).toUpperCase() || '?'
   const showImage = hasLogoUri(uri) && !failed
 
   return (
-    <View style={styles.logoRing}>
+    <View
+      style={[
+        styles.logoRing,
+        {backgroundColor: ringBg, borderColor: ringBorder},
+      ]}>
       {showImage ? (
         <Image
           source={{uri: uri!}}
@@ -149,11 +215,14 @@ function TeamLogoMark({
 export default function MatchCard({
   matchInfo: propsMatchInfo,
   idx,
+  embedded = false,
 }: {
   matchInfo: MatchInfoDataType
   idx: number
   handlePress?: (idx: number) => void
   showMineOnly?: boolean
+  /** Calendar day: one card, not a full-screen pager page. */
+  embedded?: boolean
 }) {
   const router = useRouter()
   const {t} = useTranslation()
@@ -168,6 +237,8 @@ export default function MatchCard({
   const {width} = Dimensions.get('window')
   const pad = Math.max(16, width * 0.04)
   const logoSize = Math.min(width * 0.22, 96)
+  const isDark = useColorScheme() === 'dark'
+  const theme = getCardTheme(isDark)
 
   React.useEffect(() => {
     setMatchInfo(propsMatchInfo)
@@ -402,22 +473,19 @@ export default function MatchCard({
   }
   const homeNameSize = teamNameSize(matchInfo.home_team_short_name)
   const awayNameSize = teamNameSize(matchInfo.away_team_short_name)
+  const pageColors = isTournament ? theme.cupPage : theme.page
 
-  return (
-    <ScrollView
-      contentContainerStyle={{width, paddingBottom: 200}}
-      showsVerticalScrollIndicator={false}>
+  const cardBody = (
+    <>
+      {embedded ? null : (
       <LinearGradient
-        colors={
-          isTournament
-            ? ['#1A1205', '#1C1408', '#0F172A']
-            : ['#0B1220', '#111827', '#0F172A']
-        }
+        colors={[...pageColors]}
         locations={[0, 0.55, 1]}
         start={{x: 0.2, y: 0}}
         end={{x: 0.9, y: 1}}
         style={StyleSheet.absoluteFillObject}
       />
+      )}
       <View
         style={[
           styles.accentGlow,
@@ -436,11 +504,15 @@ export default function MatchCard({
             <View
               style={[
                 styles.board,
+                {
+                  backgroundColor: isTournament
+                    ? theme.cupBoardBg
+                    : theme.boardBg,
+                  borderColor: isTournament ? '#F59E0B' : theme.boardBorder,
+                },
                 isTournament
                   ? {
-                      borderColor: '#F59E0B',
                       borderWidth: 2,
-                      backgroundColor: CUP_BOARD_BG,
                       paddingTop: 0,
                     }
                   : null,
@@ -467,8 +539,8 @@ export default function MatchCard({
                       <Chip
                         icon="check-decagram"
                         label={t('match_confirmed')}
-                        color="#34D399"
-                        background="rgba(52,211,153,0.16)"
+                        color={theme.confirm}
+                        background={theme.confirmBg}
                       />
                     ) : null}
                   </View>
@@ -476,26 +548,43 @@ export default function MatchCard({
               ) : null}
 
               {postponedProposal?.newDate ? (
-                <Text style={styles.postponeNote}>
+                <Text style={[styles.postponeNote, {color: theme.postponeText}]}>
                   {t('postponed_to')}{' '}
                   {formatProposedDate(postponedProposal.newDate)}
                 </Text>
               ) : null}
 
               {indefinitePostponement ? (
-                <View style={styles.postponeBanner}>
+                <View
+                  style={[
+                    styles.postponeBanner,
+                    {
+                      backgroundColor: theme.indefiniteBg,
+                      borderColor: theme.indefiniteBorder,
+                    },
+                  ]}>
                   {indefinitePostponement.proposingTeamName ? (
-                    <Text style={styles.postponeBannerText}>
+                    <Text
+                      style={[
+                        styles.postponeBannerText,
+                        {color: theme.indefiniteText},
+                      ]}>
                       {indefinitePostponement.proposingTeamName}
                     </Text>
                   ) : null}
-                  <Text style={styles.postponeBannerText}>
+                  <Text
+                    style={[
+                      styles.postponeBannerText,
+                      {color: theme.indefiniteText},
+                    ]}>
                     {t('postponed_indefinitely')}
                   </Text>
                 </View>
               ) : null}
 
-              <Text style={styles.matchDate} numberOfLines={2}>
+              <Text
+                style={[styles.matchDate, {color: theme.text}]}
+                numberOfLines={2}>
                 {dateLabel}
               </Text>
 
@@ -506,6 +595,8 @@ export default function MatchCard({
                     name={matchInfo.home_team_short_name}
                     size={logoSize}
                     accent={accent}
+                    ringBg={theme.logoRingBg}
+                    ringBorder={theme.logoRingBorder}
                   />
                   {matchInfo?.homeStats?.rank != null ? (
                     <Text style={[styles.rank, {color: accent}]}>
@@ -516,6 +607,7 @@ export default function MatchCard({
                     style={[
                       styles.teamName,
                       {
+                        color: theme.text,
                         fontSize: homeNameSize,
                         lineHeight: Math.round(homeNameSize * 1.25),
                       },
@@ -523,7 +615,7 @@ export default function MatchCard({
                     numberOfLines={2}>
                     {matchInfo.home_team_short_name}
                   </Text>
-                  <Text style={styles.record}>
+                  <Text style={[styles.record, {color: theme.textSecondary}]}>
                     {matchInfo?.homeStats?.won ?? 0}-
                     {matchInfo?.homeStats?.lost ?? 0}-
                     {matchInfo?.homeStats?.tied ?? 0}
@@ -539,7 +631,7 @@ export default function MatchCard({
                     ]}>
                     <MCI name="billiards-rack" size={22} color={accent} />
                   </View>
-                  <Text style={styles.vsHint}>VS</Text>
+                  <Text style={[styles.vsHint, {color: theme.textMuted}]}>VS</Text>
                 </View>
 
                 <View style={styles.teamCol}>
@@ -548,6 +640,8 @@ export default function MatchCard({
                     name={matchInfo.away_team_short_name}
                     size={logoSize}
                     accent={accent}
+                    ringBg={theme.logoRingBg}
+                    ringBorder={theme.logoRingBorder}
                   />
                   {matchInfo?.awayStats?.rank != null ? (
                     <Text style={[styles.rank, {color: accent}]}>
@@ -558,6 +652,7 @@ export default function MatchCard({
                     style={[
                       styles.teamName,
                       {
+                        color: theme.text,
                         fontSize: awayNameSize,
                         lineHeight: Math.round(awayNameSize * 1.25),
                       },
@@ -565,7 +660,7 @@ export default function MatchCard({
                     numberOfLines={2}>
                     {matchInfo.away_team_short_name}
                   </Text>
-                  <Text style={styles.record}>
+                  <Text style={[styles.record, {color: theme.textSecondary}]}>
                     {matchInfo?.awayStats?.won ?? 0}-
                     {matchInfo?.awayStats?.lost ?? 0}-
                     {matchInfo?.awayStats?.tied ?? 0}
@@ -575,7 +670,7 @@ export default function MatchCard({
               </View>
 
               {winProb ? (
-                <View style={styles.probTrack}>
+                <View style={[styles.probTrack, {backgroundColor: theme.probTrack}]}>
                   <View
                     style={[
                       styles.probHome,
@@ -590,7 +685,7 @@ export default function MatchCard({
                       styles.probAway,
                       {
                         flex: Math.max(winProb.away, 8),
-                        backgroundColor: 'rgba(148,163,184,0.35)',
+                        backgroundColor: theme.probAway,
                       },
                     ]}
                   />
@@ -605,14 +700,24 @@ export default function MatchCard({
                     matchInfo.location ?? matchInfo.name,
                   )
                 }
-                style={styles.venueCard}>
+                style={[
+                  styles.venueCard,
+                  {
+                    backgroundColor: theme.venueBg,
+                    borderColor: theme.venueBorder,
+                  },
+                ]}>
                 <View style={styles.venueTitleRow}>
                   <Ionicons name="location-outline" size={18} color={accent} />
-                  <Text style={styles.venueName} numberOfLines={1}>
+                  <Text
+                    style={[styles.venueName, {color: theme.venueName}]}
+                    numberOfLines={1}>
                     {matchInfo.name}
                   </Text>
                 </View>
-                <Text style={styles.venueAddress} numberOfLines={2}>
+                <Text
+                  style={[styles.venueAddress, {color: theme.textSecondary}]}
+                  numberOfLines={2}>
                   {matchInfo.location}
                 </Text>
               </Pressable>
@@ -626,10 +731,16 @@ export default function MatchCard({
             onPress={HandleShare}
             style={({pressed}) => [
               styles.shareBtn,
-              {borderColor: `${accent}66`, opacity: pressed ? 0.85 : 1},
+              {
+                borderColor: `${accent}66`,
+                backgroundColor: theme.shareBg,
+                opacity: pressed ? 0.85 : 1,
+              },
             ]}>
-            <MCI name="share-outline" size={18} color="#E2E8F0" />
-            <Text style={styles.shareText}>{t('share')}</Text>
+            <MCI name="share-outline" size={18} color={theme.icon} />
+            <Text style={[styles.shareText, {color: theme.icon}]}>
+              {t('share')}
+            </Text>
           </Pressable>
 
           {bothConfirmed ? (
@@ -653,15 +764,15 @@ export default function MatchCard({
               type="outline"
               onPress={() => HandlePostpone()}
               icon={
-                <MaterialIcons name="date-range" size={18} color="#E2E8F0" />
+                <MaterialIcons name="date-range" size={18} color={theme.icon} />
               }
               style={{
-                borderColor: 'rgba(226,232,240,0.35)',
+                borderColor: theme.shareBorder,
                 marginTop: 12,
               }}>
               <Text
                 style={{
-                  color: '#E2E8F0',
+                  color: theme.icon,
                   fontSize: 15,
                   fontWeight: '600',
                   textAlign: 'center',
@@ -691,15 +802,15 @@ export default function MatchCard({
                 type="outline"
                 onPress={() => HandlePostpone()}
                 icon={
-                  <MaterialIcons name="schedule" size={18} color="#E2E8F0" />
+                  <MaterialIcons name="schedule" size={18} color={theme.icon} />
                 }
                 style={{
-                  borderColor: 'rgba(226,232,240,0.35)',
+                  borderColor: theme.shareBorder,
                   flex: 1,
                 }}>
                 <Text
                   style={{
-                    color: '#E2E8F0',
+                    color: theme.icon,
                     fontSize: 14,
                     fontWeight: '600',
                     textAlign: 'center',
@@ -711,6 +822,32 @@ export default function MatchCard({
           ) : null}
         </View>
       </View>
+    </>
+  )
+
+  if (embedded) {
+    return (
+      <LinearGradient
+        colors={[...pageColors]}
+        locations={[0, 0.55, 1]}
+        start={{x: 0.2, y: 0}}
+        end={{x: 0.9, y: 1}}
+        style={{
+          marginHorizontal: 12,
+          marginBottom: 12,
+          borderRadius: 20,
+          overflow: 'hidden',
+        }}>
+        {cardBody}
+      </LinearGradient>
+    )
+  }
+
+  return (
+    <ScrollView
+      contentContainerStyle={{width, paddingBottom: 200}}
+      showsVerticalScrollIndicator={false}>
+      {cardBody}
     </ScrollView>
   )
 }
