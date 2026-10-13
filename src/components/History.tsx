@@ -47,51 +47,90 @@ export default function History() {
   const {t} = useTranslation()
   const [history, setHistory] = React.useState<HistoryItem[]>([])
   const {params} = useLocalSearchParams()
-  const match = useMatch()
+  const {GetMatchInfo} = useMatch()
   const insets = useSafeAreaInsets()
   const [refreshing, setRefreshing] = React.useState(false)
   const {state}: any = useMatchContext()
   const matchId = resolveMatchId(params, state?.matchInfo?.match_id)
+  const getMatchInfoRef = React.useRef(GetMatchInfo)
+  getMatchInfoRef.current = GetMatchInfo
 
   React.useEffect(() => {
     navigation.setOptions({title: t('history')})
   }, [navigation, t])
 
-  const fetchMatch = React.useCallback(async () => {
-    if (!matchId) {
-      setHistory([])
-      return
-    }
-    try {
-      setRefreshing(true)
-      const res = await match.GetMatchInfo(matchId)
-      const _history = res?.data?.history ?? []
-      const _historySorted = [..._history].sort(
-        (a: HistoryItem, b: HistoryItem) => {
-          if (a?.timestamp && b?.timestamp) {
-            return b.timestamp - a.timestamp
-          }
-          return 0
-        },
-      )
-      setHistory(_historySorted)
-    } catch (error) {
-      console.error('Error fetching match by ID:', error)
-    } finally {
-      setRefreshing(false)
-    }
-  }, [match, matchId])
+  const loadHistory = React.useCallback(
+    async (showRefreshSpinner: boolean) => {
+      if (!matchId) {
+        setHistory([])
+        return
+      }
+      try {
+        if (showRefreshSpinner) {
+          setRefreshing(true)
+        }
+        const res = await getMatchInfoRef.current(matchId)
+        const _history = res?.data?.history ?? []
+        const _historySorted = [..._history].sort(
+          (a: HistoryItem, b: HistoryItem) => {
+            if (a?.timestamp && b?.timestamp) {
+              return b.timestamp - a.timestamp
+            }
+            return 0
+          },
+        )
+        setHistory(_historySorted)
+      } catch (error) {
+        console.error('Error fetching match by ID:', error)
+      } finally {
+        if (showRefreshSpinner) {
+          setRefreshing(false)
+        }
+      }
+    },
+    [matchId],
+  )
 
   React.useEffect(() => {
-    fetchMatch()
-  }, [fetchMatch])
+    let cancelled = false
+
+    async function load() {
+      if (!matchId) {
+        setHistory([])
+        return
+      }
+      try {
+        const res = await getMatchInfoRef.current(matchId)
+        if (cancelled) return
+        const _history = res?.data?.history ?? []
+        const _historySorted = [..._history].sort(
+          (a: HistoryItem, b: HistoryItem) => {
+            if (a?.timestamp && b?.timestamp) {
+              return b.timestamp - a.timestamp
+            }
+            return 0
+          },
+        )
+        setHistory(_historySorted)
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Error fetching match by ID:', error)
+        }
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [matchId])
 
   return (
     <FlatList
       contentContainerStyle={{paddingBottom: insets.bottom}}
       data={history}
       refreshing={refreshing}
-      onRefresh={() => fetchMatch()}
+      onRefresh={() => loadHistory(true)}
       renderItem={({item}) => {
         if (item !== null) {
           return (
