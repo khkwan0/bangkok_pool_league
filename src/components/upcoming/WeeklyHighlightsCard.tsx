@@ -319,7 +319,9 @@ export default function WeeklyHighlightsCard() {
             <Ionicons name="chevron-up" size={18} color={theme.title} />
           </Pressable>
           <Pressable
-            onPress={() => router.push('/statistics/highlights' as any)}
+            onPress={() =>
+              router.push('/statistics/Highlights' as any, {withAnchor: true})
+            }
             hitSlop={8}
             style={[
               styles.actionBtn,
