@@ -356,6 +356,15 @@ export default function Settings() {
             iconBackground="rgba(16, 185, 129, 0.15)"
           />
         ) : null}
+        {state.predictionsEnabled ? (
+          <NavDest
+            icon="crystal-ball"
+            text={t('predictions_settings')}
+            url={'/Settings/Predictions'}
+            iconColor="#0EA5E9"
+            iconBackground="rgba(14, 165, 233, 0.15)"
+          />
+        ) : null}
         <NavDest
           icon="cog"
           text={t('preferences')}

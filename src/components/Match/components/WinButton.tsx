@@ -16,6 +16,8 @@ interface WinButtonProps {
   teamId?: number | string
   side: string
   goldenBreak: boolean
+  /** Long-press records a golden break (9-ball only). */
+  allowGoldenBreak?: boolean
   accent: string
   onAccent: string
 }
@@ -27,6 +29,7 @@ export default function WinButton({
   teamId,
   side,
   goldenBreak,
+  allowGoldenBreak = false,
   accent,
   onAccent,
 }: WinButtonProps) {
@@ -140,10 +143,26 @@ export default function WinButton({
             borderWidth: 1.5,
             borderColor: accent,
             backgroundColor: isPressed ? accent : 'transparent',
+            paddingVertical: allowGoldenBreak ? 6 : 0,
           }}
+          accessibilityRole="button"
+          accessibilityLabel={t('win')}
+          accessibilityHint={
+            allowGoldenBreak ? t('golden_break_long_press_hint') : undefined
+          }
           onPressIn={() => setIsPressed(true)}
           onPressOut={() => setIsPressed(false)}
-          onLongPress={() => tryWin(true)}
+          onLongPress={
+            allowGoldenBreak
+              ? () => {
+                  Haptics.notificationAsync(
+                    Haptics.NotificationFeedbackType.Success,
+                  )
+                  tryWin(true)
+                }
+              : undefined
+          }
+          delayLongPress={450}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
             tryWin()
@@ -157,6 +176,19 @@ export default function WinButton({
             }}>
             {t('win').toUpperCase()}
           </Text>
+          {allowGoldenBreak ? (
+            <Text
+              style={{
+                marginTop: 2,
+                color: isPressed ? onAccent : accent,
+                fontSize: 10,
+                fontWeight: '600',
+                letterSpacing: 0.2,
+                opacity: isPressed ? 0.9 : 0.75,
+              }}>
+              {t('golden_break_long_press_hint')}
+            </Text>
+          ) : null}
         </Pressable>
       )}
       {winner !== teamId && winner !== 0 && (

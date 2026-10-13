@@ -66,6 +66,8 @@ interface LeagueState {
   bettingBalance: number
   /** Display style for posted decimal odds. */
   bettingOddsFormat: 'european' | 'american'
+  /** League-level switch from /branding for match predictions. */
+  predictionsEnabled: boolean
   refreshUpcoming: boolean
   competition: Competition
   competitionPickerOpen: boolean
@@ -111,6 +113,7 @@ const initialState: LeagueState = {
   bettingEnabled: false,
   bettingBalance: 0,
   bettingOddsFormat: 'european',
+  predictionsEnabled: false,
   refreshUpcoming: false,
   competition: CANONICAL_COMPETITION,
   competitionPickerOpen: false,
@@ -309,6 +312,12 @@ const LeagueReducer = (state: any, action: any) => {
         ...state,
         bettingOddsFormat:
           action.payload === 'american' ? 'american' : 'european',
+      }
+    }
+    case 'SET_PREDICTIONS_ENABLED': {
+      return {
+        ...state,
+        predictionsEnabled: Boolean(action.payload),
       }
     }
     case 'SET_REFRESH_UPCOMING': {
@@ -559,6 +568,10 @@ export const LeagueProvider = ({children}: any) => {
         dispatch({
           type: 'SET_BETTING_ENABLED',
           payload: json?.data?.betting_enabled === true,
+        })
+        dispatch({
+          type: 'SET_PREDICTIONS_ENABLED',
+          payload: json?.data?.predictions_enabled === true,
         })
         applyScoreUnitToI18n(normalized)
       } catch (e) {

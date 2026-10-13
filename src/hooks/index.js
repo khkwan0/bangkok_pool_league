@@ -12,6 +12,7 @@ import {useThemeColor} from './useThemeColor'
 import {useColorScheme} from './useColorScheme'
 import {useAd} from './useAd'
 import {useBetting} from './useBetting'
+import {useWeeklyHighlights} from './useWeeklyHighlights'
 
 export {
   useAccount,
@@ -28,4 +29,5 @@ export {
   useThemeColor,
   useTwitter,
   useWebsocket,
+  useWeeklyHighlights,
 }

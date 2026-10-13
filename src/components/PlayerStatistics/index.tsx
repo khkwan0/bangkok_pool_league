@@ -53,6 +53,7 @@ type StatBucket = {
   played: number
   won: number
   winp: number | string
+  goldenBreaks?: number
 }
 
 export default function PlayerStatistics({
@@ -324,7 +325,12 @@ export default function PlayerStatistics({
       ) : (
         <>
           {seasonRows.map(row => (
-            <StatCard key={row.key} label={row.label} bucket={row.bucket} />
+            <StatCard
+              key={row.key}
+              label={row.label}
+              bucket={row.bucket}
+              showGoldenBreaks={row.key.startsWith('9 Ball')}
+            />
           ))}
           {total && total.played > 0 ? <TotalCard bucket={total} /> : null}
         </>
@@ -404,10 +410,19 @@ function LoadingCard({label}: {label: string}) {
   )
 }
 
-function StatCard({label, bucket}: {label: string; bucket: StatBucket}) {
+function StatCard({
+  label,
+  bucket,
+  showGoldenBreaks = false,
+}: {
+  label: string
+  bucket: StatBucket
+  showGoldenBreaks?: boolean
+}) {
   const {t} = useTranslation()
   const colors = useStatColors()
   const percent = winRatePercent(bucket.played, bucket.won, bucket.winp)
+  const goldenBreaks = Number(bucket.goldenBreaks) || 0
   return (
     <Surface style={{padding: 14, marginBottom: 8}}>
       <RNView
@@ -434,7 +449,9 @@ function StatCard({label, bucket}: {label: string; bucket: StatBucket}) {
         </RNText>
       </RNView>
       <RNText style={{color: colors.muted, fontSize: 13, marginBottom: 8}}>
-        {`${t('played')} ${bucket.played}  ·  ${t('won')} ${bucket.won}`}
+        {showGoldenBreaks && goldenBreaks > 0
+          ? `${t('played')} ${bucket.played}  ·  ${t('won')} ${bucket.won}  ·  ${t('golden_breaks')} ${goldenBreaks}`
+          : `${t('played')} ${bucket.played}  ·  ${t('won')} ${bucket.won}`}
       </RNText>
       <WinRateBar played={bucket.played} won={bucket.won} winp={bucket.winp} />
     </Surface>
@@ -470,6 +487,12 @@ function TotalCard({bucket}: {bucket: StatBucket}) {
           value={formatWinLabel(percent)}
           valueColor={winRateColor(percent)}
         />
+        {(Number(bucket.goldenBreaks) || 0) > 0 ? (
+          <TotalStat
+            label={t('golden_breaks')}
+            value={String(bucket.goldenBreaks)}
+          />
+        ) : null}
       </RNView>
       <WinRateBar played={bucket.played} won={bucket.won} winp={bucket.winp} />
     </Surface>

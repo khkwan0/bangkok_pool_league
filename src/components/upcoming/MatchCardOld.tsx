@@ -1,4 +1,5 @@
 import MatchBettingRow from '@/components/betting/MatchBettingRow'
+import MatchPredictionRow from '@/components/predictions/MatchPredictionRow'
 import {MatchInfoDataType} from '@/components/Match/types'
 import {ThemedText as Text} from '@/components/ThemedText'
 import CupMatchBanner, {
@@ -839,6 +840,10 @@ export default function MatchCardOld({
             matchId={Number(matchInfo.match_id ?? 0)}
             homeShort={matchInfo.home_team_short_name}
             awayShort={matchInfo.away_team_short_name}
+            accent={accent}
+          />
+          <MatchPredictionRow
+            matchId={Number(matchInfo.match_id ?? 0)}
             accent={accent}
           />
         </View>

@@ -100,6 +100,10 @@ export default function Frame({item, index, refreshing}: FrameProps) {
   const homeWon = winner === homeTeamId
   const awayWon = winner === awayTeamId
   const kind = frameKindLabel(item.noPlayers ?? noPlayers, t)
+  const allowGoldenBreak = String(frameType ?? item.type ?? '')
+    .trim()
+    .toLowerCase()
+    .startsWith('9')
 
   function panel(side: 'home' | 'away') {
     const palette = side === 'home' ? theme.home : theme.away
@@ -151,11 +155,23 @@ export default function Frame({item, index, refreshing}: FrameProps) {
           }}>
           {t('frame')} {item.frameNumber}
         </Text>
-        {kind ? (
-          <Text style={{color: theme.muted, fontSize: 12, fontWeight: '600'}}>
-            {kind}
-          </Text>
-        ) : null}
+        <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+          {allowGoldenBreak && !winner ? (
+            <Text
+              style={{
+                color: theme.gold,
+                fontSize: 11,
+                fontWeight: '700',
+              }}>
+              {t('golden_break_long_press_short')}
+            </Text>
+          ) : null}
+          {kind ? (
+            <Text style={{color: theme.muted, fontSize: 12, fontWeight: '600'}}>
+              {kind}
+            </Text>
+          ) : null}
+        </View>
       </View>
       <View
         style={{
@@ -185,6 +201,7 @@ export default function Frame({item, index, refreshing}: FrameProps) {
             teamId={homeTeamId}
             ClearWinner={ClearWinner}
             goldenBreak={item.goldenBreak ?? false}
+            allowGoldenBreak={allowGoldenBreak}
             accent={theme.home.button}
             onAccent={theme.home.onButton}
           />
@@ -209,6 +226,7 @@ export default function Frame({item, index, refreshing}: FrameProps) {
             teamId={awayTeamId}
             ClearWinner={ClearWinner}
             goldenBreak={item.goldenBreak ?? false}
+            allowGoldenBreak={allowGoldenBreak}
             accent={theme.away.button}
             onAccent={theme.away.onButton}
           />

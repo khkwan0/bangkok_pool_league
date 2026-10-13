@@ -37,6 +37,14 @@ export default function MatchLayout() {
         }}
       />
       <Stack.Screen
+        name="Predictions/[matchId]"
+        options={{
+          title: t('predictions_title'),
+          headerRight: () => <SettingsButton />,
+          headerBackTitle: t('back'),
+        }}
+      />
+      <Stack.Screen
         name="PostponeScreen/index"
         options={{headerRight: () => <SettingsButton />}}
       />
