@@ -24,6 +24,14 @@ export type MatchPrediction = {
   away_frames?: number | null
 }
 
+export type PredictionTeamStats = {
+  wins: number
+  losses: number
+  ties: number
+  frames_for: number
+  frames_against: number
+}
+
 export type PredictionMatchup = {
   match_id: number
   home_team_id: number
@@ -35,6 +43,8 @@ export type PredictionMatchup = {
   home_logo: string | null
   away_logo: string | null
   date: string | null
+  home: PredictionTeamStats
+  away: PredictionTeamStats
 }
 
 export type PredictionMatchPayload = {
