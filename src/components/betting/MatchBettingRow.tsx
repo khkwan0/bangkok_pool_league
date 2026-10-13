@@ -5,6 +5,7 @@ import {
   type BettingSelectionKey,
 } from '@/hooks/useBetting'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {formatBettingOdds} from '@/lib/bettingOddsFormat'
 import {ThemedText as Text} from '@/components/ThemedText'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
@@ -24,10 +25,6 @@ type Props = {
   homeShort?: string
   awayShort?: string
   accent?: string
-}
-
-function formatOdds(n: number) {
-  return Number(n).toFixed(2)
 }
 
 function formatLine(market: BettingMarket) {
@@ -50,6 +47,11 @@ export default function MatchBettingRow({
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const {state} = useLeagueContext()
+  const oddsFormat = state.bettingOddsFormat ?? 'european'
+  const formatOdds = React.useCallback(
+    (n: number) => formatBettingOdds(n, oddsFormat),
+    [oddsFormat],
+  )
   const betting = useBetting()
   const [markets, setMarkets] = React.useState<BettingMarket[]>([])
   const [loading, setLoading] = React.useState(true)
