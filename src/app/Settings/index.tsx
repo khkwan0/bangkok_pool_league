@@ -101,7 +101,7 @@ export default function Settings() {
       ref.count = 0
       ref.timer = null
     }, 2000)
-    if (ref.count < 5) return
+    if (ref.count < 8) return
     ref.count = 0
     if (ref.timer) {
       clearTimeout(ref.timer)

@@ -3,7 +3,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {useLeagueContext} from '@/context/LeagueContext'
 import type {BettingOddsFormat} from '@/lib/bettingOddsFormat'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {useNavigation} from 'expo-router'
+import {useNavigation, useRouter} from 'expo-router'
 import {useTheme} from 'expo-router/react-navigation'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
@@ -13,6 +13,7 @@ export default function BettingSettingsScreen() {
   const {t} = useTranslation()
   const {colors} = useTheme()
   const navigation = useNavigation()
+  const router = useRouter()
   const {state, dispatch} = useLeagueContext()
 
   React.useEffect(() => {
@@ -50,6 +51,36 @@ export default function BettingSettingsScreen() {
       <Text className="text-sm opacity-75 mb-4">
         {t('betting_balance', {count: state.bettingBalance})}
       </Text>
+
+      <Pressable
+        onPress={() => router.push('/Settings/Betting/History' as any)}
+        style={{
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 10,
+          paddingVertical: 14,
+          paddingHorizontal: 12,
+          marginBottom: 20,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+        <View style={{flex: 1, paddingRight: 12}}>
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: 'bold',
+              color: colors.text,
+              marginBottom: 4,
+            }}>
+            {t('betting_history')}
+          </Text>
+          <Text style={{color: colors.text, opacity: 0.7}}>
+            {t('betting_history_description')}
+          </Text>
+        </View>
+        <Text style={{color: colors.primary, fontWeight: '700'}}>›</Text>
+      </Pressable>
 
       <View
         style={{
