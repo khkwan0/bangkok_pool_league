@@ -8,13 +8,16 @@ import {
   Pressable,
 } from 'react-native'
 import {useLeague} from '@/hooks/useLeague'
+import {useAchievements} from '@/hooks/useAchievements'
 import {ThemedText as Text} from '@/components/ThemedText'
+import PlayerAchievementsCard from '@/components/PlayerAchievementsCard'
 import config from '@/config'
 import {router} from 'expo-router'
 import {useNavigation} from 'expo-router'
 import {useTranslation} from 'react-i18next'
 import {LinearGradient} from 'expo-linear-gradient'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import type {PlayerAchievements} from '@/types/achievements'
 
 const ACCENTS = [
   '#3B82F6',
@@ -87,8 +90,11 @@ function roleLabel(
 
 export default function PlayerDetails({playerId}: PlayerDetailsProps) {
   const league = useLeague()
+  const {getPlayerAchievements} = useAchievements()
   const {t} = useTranslation()
   const [playerInfo, setPlayerInfo] = React.useState<any>(null)
+  const [achievements, setAchievements] =
+    React.useState<PlayerAchievements | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
   const navigation = useNavigation()
@@ -99,8 +105,12 @@ export default function PlayerDetails({playerId}: PlayerDetailsProps) {
       try {
         setIsLoading(true)
         setError('')
-        const info = await league.GetPlayerStatsInfo(playerId)
+        const [info, achievementData] = await Promise.all([
+          league.GetPlayerStatsInfo(playerId),
+          getPlayerAchievements(playerId),
+        ])
         setPlayerInfo(info)
+        setAchievements(achievementData)
       } catch (e) {
         setError(t('failed_to_load_player_info'))
         console.error(e)
@@ -247,6 +257,8 @@ export default function PlayerDetails({playerId}: PlayerDetailsProps) {
             />
           </View>
         </View>
+
+        <PlayerAchievementsCard data={achievements} />
 
         <Pressable
           onPress={() =>

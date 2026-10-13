@@ -11,6 +11,10 @@ export function useWeeklyHighlights() {
     async (opts?: {
       seasonId?: number | null
       date?: string | null
+      gameType?: string | null
+      divisionId?: number | null
+      teamId?: number | null
+      includeCandidates?: boolean
     }): Promise<WeeklyHighlights | null> => {
       const params = new URLSearchParams()
       if (opts?.seasonId != null && opts.seasonId > 0) {
@@ -18,6 +22,18 @@ export function useWeeklyHighlights() {
       }
       if (opts?.date && /^\d{4}-\d{2}-\d{2}$/.test(opts.date)) {
         params.set('date', opts.date)
+      }
+      if (opts?.gameType && opts.gameType !== 'all') {
+        params.set('gameType', opts.gameType)
+      }
+      if (opts?.divisionId != null && opts.divisionId > 0) {
+        params.set('divisionId', String(opts.divisionId))
+      }
+      if (opts?.teamId != null && opts.teamId > 0) {
+        params.set('teamId', String(opts.teamId))
+      }
+      if (opts?.includeCandidates) {
+        params.set('includeCandidates', '1')
       }
       const qs = params.toString()
       const path = qs

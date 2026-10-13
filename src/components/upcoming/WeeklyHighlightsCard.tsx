@@ -7,6 +7,7 @@ import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {Image, Pressable, ScrollView, useColorScheme} from 'react-native'
 import type {
+  HighlightGameTypeOption,
   WeeklyHighlightPlayer,
   WeeklyHighlights,
   WeeklySpotlight,
@@ -22,7 +23,7 @@ const SPOTLIGHT_I18N: Record<string, string> = {
   golden_break: 'weekly_spotlight_golden_break',
 }
 
-function formatNightDate(dateStr: string): string {
+function formatWeekDay(dateStr: string): string {
   try {
     const [y, m, d] = dateStr.split('-').map(Number)
     const date = new Date(y, m - 1, d)
@@ -36,12 +37,26 @@ function formatNightDate(dateStr: string): string {
   }
 }
 
+function formatWeekRange(weekStart: string, weekEnd: string): string {
+  return `${formatWeekDay(weekStart)} – ${formatWeekDay(weekEnd)}`
+}
+
+function gameTypeLabel(
+  opt: HighlightGameTypeOption,
+  t: (key: string) => string,
+): string {
+  if (opt.code === 'all') return t('weekly_highlights_all')
+  return opt.label
+}
+
 function Avatar({
   player,
   size = 52,
+  isDark,
 }: {
   player: WeeklyHighlightPlayer
   size?: number
+  isDark: boolean
 }) {
   const uri = player.pic ? config.profileUrl + player.pic : null
   return (
@@ -51,7 +66,7 @@ function Avatar({
         height: size,
         borderRadius: size / 2,
         overflow: 'hidden',
-        backgroundColor: '#CFCFCF',
+        backgroundColor: isDark ? '#3A3A3A' : '#CFCFCF',
         alignItems: 'center',
         justifyContent: 'center',
       }}>
@@ -62,7 +77,12 @@ function Avatar({
           accessibilityIgnoresInvertColors
         />
       ) : (
-        <Text style={{fontWeight: '700', fontSize: size * 0.4}}>
+        <Text
+          style={{
+            fontWeight: '700',
+            fontSize: size * 0.4,
+            color: isDark ? '#F0F0F0' : undefined,
+          }}>
           {(player.nickname || '?').slice(0, 1).toUpperCase()}
         </Text>
       )}
@@ -80,10 +100,17 @@ function openPlayer(playerId: number) {
 function SpotlightRow({
   spotlight,
   label,
+  isDark,
 }: {
   spotlight: WeeklySpotlight
   label: string
+  isDark: boolean
 }) {
+  const chipBg = isDark ? '#2A2A2A' : '#F7F7F7'
+  const chipBorder = isDark ? '#4A4A4A' : '#E0E0E0'
+  const muted = isDark ? '#B0B0B0' : '#666666'
+  const primary = isDark ? '#F5F5F5' : '#1A1A1A'
+
   return (
     <Pressable
       onPress={() => openPlayer(spotlight.player.playerId)}
@@ -94,16 +121,18 @@ function SpotlightRow({
         paddingHorizontal: 10,
         borderRadius: 10,
         borderWidth: 1,
-        borderColor: '#E0E0E0',
-        backgroundColor: 'rgba(255,255,255,0.7)',
+        borderColor: chipBorder,
+        backgroundColor: chipBg,
       }}>
-      <Text style={{fontSize: 11, opacity: 0.6, fontWeight: '600'}}>
+      <Text style={{fontSize: 11, color: muted, fontWeight: '600'}}>
         {label}
       </Text>
-      <Text style={{fontWeight: '700', marginTop: 2}} numberOfLines={1}>
+      <Text
+        style={{fontWeight: '700', marginTop: 2, color: primary}}
+        numberOfLines={1}>
         {spotlight.player.nickname}
       </Text>
-      <Text style={{fontSize: 12, opacity: 0.65}} numberOfLines={1}>
+      <Text style={{fontSize: 12, color: muted}} numberOfLines={1}>
         {spotlight.detail}
       </Text>
     </Pressable>
@@ -114,6 +143,8 @@ export default function WeeklyHighlightsCard() {
   const {t} = useTranslation()
   const {getWeeklyHighlights} = useWeeklyHighlights()
   const colorScheme = useColorScheme()
+  const isDark = colorScheme === 'dark'
+  const [gameType, setGameType] = React.useState('all')
   const [data, setData] = React.useState<WeeklyHighlights | null>(null)
   const [loading, setLoading] = React.useState(true)
 
@@ -122,7 +153,7 @@ export default function WeeklyHighlightsCard() {
     ;(async () => {
       setLoading(true)
       try {
-        const res = await getWeeklyHighlights()
+        const res = await getWeeklyHighlights({gameType})
         if (!cancelled) setData(res)
       } finally {
         if (!cancelled) setLoading(false)
@@ -131,13 +162,21 @@ export default function WeeklyHighlightsCard() {
     return () => {
       cancelled = true
     }
-  }, [getWeeklyHighlights])
+  }, [getWeeklyHighlights, gameType])
 
-  if (loading || !data?.playerOfTheWeek) return null
+  if (loading && !data?.playerOfTheWeek) return null
+  if (!data?.playerOfTheWeek) return null
 
   const potw = data.playerOfTheWeek
-  const cardBg = colorScheme === 'dark' ? '#1E1E1E' : '#FFFFFF'
-  const border = colorScheme === 'dark' ? '#37003C' : '#E0E0E0'
+  const cardBg = isDark ? '#1E1E1E' : '#FFFFFF'
+  const border = isDark ? '#3A3A3A' : '#E0E0E0'
+  const muted = isDark ? '#B0B0B0' : '#666666'
+  const primary = isDark ? '#F5F5F5' : '#1A1A1A'
+  const options =
+    data.gameTypes?.length > 0
+      ? data.gameTypes
+      : [{code: 'all', label: 'All'}]
+  const activeGameType = data.gameType || gameType
 
   return (
     <View
@@ -147,28 +186,102 @@ export default function WeeklyHighlightsCard() {
         borderWidth: 1,
         borderColor: border,
       }}>
-      <Text style={{fontSize: 12, opacity: 0.6, fontWeight: '600'}}>
-        {t('player_of_the_week')}
+      <View
+        className="flex-row items-center justify-between"
+        style={{marginBottom: 2, backgroundColor: 'transparent'}}>
+        <Text style={{fontSize: 12, color: muted, fontWeight: '600'}}>
+          {t('player_of_the_week')}
+        </Text>
+        <Pressable
+          onPress={() => router.push('/statistics/highlights' as any)}
+          hitSlop={8}
+          style={{
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: isDark ? '#5A5A5A' : '#D0D0D0',
+            backgroundColor: isDark ? '#2A2A2A' : '#F5F5F5',
+          }}>
+          <Text style={{fontSize: 12, fontWeight: '700', color: primary}}>
+            {t('more')}
+          </Text>
+        </Pressable>
+      </View>
+      <Text style={{fontSize: 12, color: muted, marginBottom: 8}}>
+        {formatWeekRange(
+          data.weekStart || data.matchDate,
+          data.weekEnd || data.matchDate,
+        )}
       </Text>
-      <Text style={{fontSize: 12, opacity: 0.5, marginBottom: 8}}>
-        {t('match_night')} · {formatNightDate(data.matchDate)}
-      </Text>
+
+      {options.length > 1 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{marginBottom: 10}}>
+          {options.map(opt => {
+            const active = activeGameType === opt.code
+            return (
+              <Pressable
+                key={opt.code}
+                onPress={() => setGameType(opt.code)}
+                style={{
+                  marginRight: 6,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: active
+                    ? isDark
+                      ? '#FFFFFF'
+                      : '#37003C'
+                    : isDark
+                      ? '#4A4A4A'
+                      : '#D0D0D0',
+                  backgroundColor: active
+                    ? isDark
+                      ? '#FFFFFF'
+                      : '#37003C'
+                    : isDark
+                      ? '#2A2A2A'
+                      : '#F5F5F5',
+                }}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '600',
+                    color: active
+                      ? isDark
+                        ? '#1A1A1A'
+                        : '#FFFFFF'
+                      : muted,
+                  }}>
+                  {gameTypeLabel(opt, t)}
+                </Text>
+              </Pressable>
+            )
+          })}
+        </ScrollView>
+      ) : null}
 
       <Pressable
         onPress={() => openPlayer(potw.playerId)}
         className="flex-row items-center"
-        style={{gap: 12}}>
-        <Avatar player={potw} size={56} />
-        <View style={{flex: 1}}>
-          <Text style={{fontSize: 18, fontWeight: '700'}} numberOfLines={1}>
+        style={{gap: 12, opacity: loading ? 0.6 : 1}}>
+        <Avatar player={potw} size={56} isDark={isDark} />
+        <View style={{flex: 1, backgroundColor: 'transparent'}}>
+          <Text
+            style={{fontSize: 18, fontWeight: '700', color: primary}}
+            numberOfLines={1}>
             {potw.nickname}
           </Text>
           {potw.team ? (
-            <Text style={{opacity: 0.65}} numberOfLines={1}>
+            <Text style={{color: muted}} numberOfLines={1}>
               {potw.team.shortName || potw.team.name}
             </Text>
           ) : null}
-          <Text style={{opacity: 0.55, marginTop: 2}}>
+          <Text style={{color: muted, marginTop: 2}}>
             {potw.won}–{potw.lost}
             {potw.played > 0 ? ` · ${potw.winPct}%` : ''}
           </Text>
@@ -185,6 +298,7 @@ export default function WeeklyHighlightsCard() {
               key={s.id}
               spotlight={s}
               label={t(SPOTLIGHT_I18N[s.id] || s.label)}
+              isDark={isDark}
             />
           ))}
         </ScrollView>

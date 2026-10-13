@@ -13,9 +13,11 @@ import {useColorScheme} from './useColorScheme'
 import {useAd} from './useAd'
 import {useBetting} from './useBetting'
 import {useWeeklyHighlights} from './useWeeklyHighlights'
+import {useAchievements} from './useAchievements'
 
 export {
   useAccount,
+  useAchievements,
   useAd,
   useBetting,
   useColorScheme,
