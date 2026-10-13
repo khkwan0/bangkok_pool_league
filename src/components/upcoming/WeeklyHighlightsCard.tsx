@@ -1,6 +1,5 @@
 import config from '@/config'
 import {useWeeklyHighlights} from '@/hooks/useWeeklyHighlights'
-import {ThemedText as Text} from '@/components/ThemedText'
 import {
   loadHomeHighlightsCollapsed,
   saveHomeHighlightsCollapsed,
@@ -15,6 +14,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
   useColorScheme,
   View,
 } from 'react-native'
@@ -51,49 +51,39 @@ const SPOTLIGHT_ICON: Record<
 function getTheme(isDark: boolean) {
   if (isDark) {
     return {
-      gradient: ['#2A102F', '#1A0A1E', '#141018'] as const,
-      border: 'rgba(232, 198, 240, 0.22)',
+      gradient: ['#2A1830', '#1C1220'] as const,
+      border: 'rgba(232, 198, 240, 0.25)',
       title: '#F8FAFC',
-      muted: 'rgba(226,232,240,0.65)',
+      muted: 'rgba(226,232,240,0.7)',
       accent: '#E8C6F0',
-      accentSoft: 'rgba(232, 198, 240, 0.14)',
-      chipBg: 'rgba(255,255,255,0.06)',
-      chipBorder: 'rgba(148,163,184,0.25)',
+      chipBg: 'rgba(255,255,255,0.08)',
+      chipBorder: 'rgba(148,163,184,0.28)',
       chipActiveBg: '#F8FAFC',
-      chipActiveText: '#1A0A1E',
-      heroBg: 'rgba(0,0,0,0.22)',
-      heroBorder: 'rgba(232, 198, 240, 0.18)',
-      ring: '#F5D76E',
-      ringOuter: 'rgba(245, 215, 110, 0.28)',
-      pillBg: 'rgba(245, 215, 110, 0.16)',
+      chipActiveText: '#1A1220',
+      pillBg: 'rgba(245, 215, 110, 0.18)',
       pillText: '#F5D76E',
-      spotlightBg: 'rgba(255,255,255,0.06)',
-      spotlightBorder: 'rgba(148,163,184,0.2)',
-      moreBg: 'rgba(255,255,255,0.1)',
-      moreBorder: 'rgba(248,250,252,0.28)',
+      spotlightBg: 'rgba(255,255,255,0.07)',
+      spotlightBorder: 'rgba(148,163,184,0.22)',
+      btnBg: 'rgba(255,255,255,0.12)',
+      btnBorder: 'rgba(248,250,252,0.3)',
     }
   }
   return {
-    gradient: ['#4A1054', '#37003C', '#2A002E'] as const,
-    border: 'rgba(55, 0, 60, 0.35)',
+    gradient: ['#3F0A48', '#37003C'] as const,
+    border: 'rgba(55, 0, 60, 0.3)',
     title: '#FFFFFF',
-    muted: 'rgba(255,255,255,0.72)',
+    muted: 'rgba(255,255,255,0.75)',
     accent: '#F3D9F8',
-    accentSoft: 'rgba(255,255,255,0.12)',
     chipBg: 'rgba(255,255,255,0.12)',
-    chipBorder: 'rgba(255,255,255,0.22)',
+    chipBorder: 'rgba(255,255,255,0.24)',
     chipActiveBg: '#FFFFFF',
     chipActiveText: '#37003C',
-    heroBg: 'rgba(0,0,0,0.18)',
-    heroBorder: 'rgba(255,255,255,0.16)',
-    ring: '#F5D76E',
-    ringOuter: 'rgba(245, 215, 110, 0.35)',
-    pillBg: 'rgba(245, 215, 110, 0.2)',
+    pillBg: 'rgba(245, 215, 110, 0.22)',
     pillText: '#FFE9A8',
     spotlightBg: 'rgba(255,255,255,0.12)',
-    spotlightBorder: 'rgba(255,255,255,0.2)',
-    moreBg: 'rgba(255,255,255,0.16)',
-    moreBorder: 'rgba(255,255,255,0.3)',
+    spotlightBorder: 'rgba(255,255,255,0.22)',
+    btnBg: 'rgba(255,255,255,0.16)',
+    btnBorder: 'rgba(255,255,255,0.32)',
   }
 }
 
@@ -124,66 +114,34 @@ function gameTypeLabel(
 
 function Avatar({
   player,
-  size = 52,
-  ring,
-  ringOuter,
+  size = 44,
 }: {
   player: WeeklyHighlightPlayer
   size?: number
-  ring?: string
-  ringOuter?: string
 }) {
   const uri = player.pic ? config.profileUrl + player.pic : null
-  const outer = ring ? size + 10 : size
   return (
     <View
       style={{
-        width: outer,
-        height: outer,
-        borderRadius: outer / 2,
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        overflow: 'hidden',
+        backgroundColor: 'rgba(255,255,255,0.2)',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: ringOuter || 'transparent',
       }}>
-      <View
-        style={{
-          width: ring ? size + 4 : size,
-          height: ring ? size + 4 : size,
-          borderRadius: (ring ? size + 4 : size) / 2,
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderWidth: ring ? 2 : 0,
-          borderColor: ring || 'transparent',
-          overflow: 'hidden',
-          backgroundColor: 'rgba(255,255,255,0.2)',
-        }}>
-        {uri ? (
-          <Image
-            source={{uri}}
-            style={{width: size, height: size, borderRadius: size / 2}}
-            accessibilityIgnoresInvertColors
-          />
-        ) : (
-          <View
-            style={{
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(255,255,255,0.18)',
-            }}>
-            <Text
-              style={{
-                fontWeight: '800',
-                fontSize: size * 0.38,
-                color: '#FFFFFF',
-              }}>
-              {(player.nickname || '?').slice(0, 1).toUpperCase()}
-            </Text>
-          </View>
-        )}
-      </View>
+      {uri ? (
+        <Image
+          source={{uri}}
+          style={{width: size, height: size}}
+          accessibilityIgnoresInvertColors
+        />
+      ) : (
+        <Text style={{fontWeight: '800', fontSize: size * 0.38, color: '#FFF'}}>
+          {(player.nickname || '?').slice(0, 1).toUpperCase()}
+        </Text>
+      )}
     </View>
   )
 }
@@ -208,36 +166,25 @@ function SpotlightRow({
   return (
     <Pressable
       onPress={() => openPlayer(spotlight.player.playerId)}
-      style={({pressed}) => [
+      style={[
         styles.spotlight,
         {
           backgroundColor: theme.spotlightBg,
           borderColor: theme.spotlightBorder,
-          opacity: pressed ? 0.88 : 1,
-          transform: [{scale: pressed ? 0.98 : 1}],
         },
       ]}>
       <View style={styles.spotlightTop}>
-        <MaterialCommunityIcons name={icon} size={14} color={theme.pillText} />
-        <Text
-          style={{fontSize: 11, color: theme.muted, fontWeight: '700', flex: 1}}
-          numberOfLines={1}>
+        <MaterialCommunityIcons name={icon} size={13} color={theme.pillText} />
+        <Text style={[styles.spotlightLabel, {color: theme.muted}]} numberOfLines={1}>
           {label}
         </Text>
       </View>
-      <View style={styles.spotlightBody}>
-        <Avatar player={spotlight.player} size={34} />
-        <View style={{flex: 1}}>
-          <Text
-            style={{fontWeight: '800', color: theme.title, fontSize: 13}}
-            numberOfLines={1}>
-            {spotlight.player.nickname}
-          </Text>
-          <Text style={{fontSize: 11, color: theme.muted}} numberOfLines={1}>
-            {spotlight.detail}
-          </Text>
-        </View>
-      </View>
+      <Text style={[styles.spotlightName, {color: theme.title}]} numberOfLines={1}>
+        {spotlight.player.nickname}
+      </Text>
+      <Text style={{fontSize: 11, color: theme.muted}} numberOfLines={1}>
+        {spotlight.detail}
+      </Text>
     </Pressable>
   )
 }
@@ -245,22 +192,17 @@ function SpotlightRow({
 export default function WeeklyHighlightsCard() {
   const {t} = useTranslation()
   const {getWeeklyHighlights} = useWeeklyHighlights()
-  const colorScheme = useColorScheme()
-  const isDark = colorScheme === 'dark'
+  const isDark = useColorScheme() === 'dark'
   const theme = getTheme(isDark)
   const [gameType, setGameType] = React.useState('all')
   const [data, setData] = React.useState<WeeklyHighlights | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [collapsed, setCollapsed] = React.useState(false)
-  const [collapseReady, setCollapseReady] = React.useState(false)
 
   React.useEffect(() => {
     let cancelled = false
     loadHomeHighlightsCollapsed().then(value => {
-      if (!cancelled) {
-        setCollapsed(value)
-        setCollapseReady(true)
-      }
+      if (!cancelled) setCollapsed(value)
     })
     return () => {
       cancelled = true
@@ -273,7 +215,15 @@ export default function WeeklyHighlightsCard() {
       setLoading(true)
       try {
         const res = await getWeeklyHighlights({gameType})
-        if (!cancelled) setData(res)
+        if (cancelled) return
+        if (res?.playerOfTheWeek) {
+          setData(res)
+        } else if (gameType !== 'all') {
+          // Empty filter — keep the card up and fall back to All.
+          setGameType('all')
+        } else {
+          setData(null)
+        }
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -288,12 +238,10 @@ export default function WeeklyHighlightsCard() {
     try {
       await saveHomeHighlightsCollapsed(next)
     } catch {
-      // ignore persistence failures
+      // ignore
     }
   }
 
-  if (!collapseReady) return null
-  if (loading && !data?.playerOfTheWeek) return null
   if (!data?.playerOfTheWeek) return null
 
   const potw = data.playerOfTheWeek
@@ -306,6 +254,7 @@ export default function WeeklyHighlightsCard() {
     potw.played > 0 ? ` · ${potw.winPct}%` : ''
   }`
 
+  // Collapsed strip: always visible with Expand — never unmount the card.
   if (collapsed) {
     return (
       <View style={styles.wrap}>
@@ -313,42 +262,26 @@ export default function WeeklyHighlightsCard() {
           colors={[...theme.gradient]}
           start={{x: 0, y: 0}}
           end={{x: 1, y: 1}}
-          style={[styles.card, styles.cardCollapsed, {borderColor: theme.border}]}>
-          <Pressable
-            onPress={() => openPlayer(potw.playerId)}
-            style={styles.collapsedLeft}
-            hitSlop={4}>
-            <View style={[styles.badge, {backgroundColor: theme.accentSoft}]}>
-              <Ionicons name="trophy" size={14} color={theme.pillText} />
-            </View>
-            <View style={{flex: 1, minWidth: 0}}>
-              <Text style={[styles.kicker, {color: theme.accent}]} numberOfLines={1}>
-                {t('player_of_the_week')}
-              </Text>
-              <Text
-                style={[styles.collapsedName, {color: theme.title}]}
-                numberOfLines={1}>
-                {potw.nickname}
-              </Text>
-            </View>
-          </Pressable>
+          style={[styles.collapsedCard, {borderColor: theme.border}]}>
+          <View style={styles.collapsedLeft}>
+            <Ionicons name="trophy" size={16} color={theme.pillText} />
+            <Text style={[styles.collapsedName, {color: theme.title}]} numberOfLines={1}>
+              {potw.nickname}
+            </Text>
+          </View>
           <Pressable
             onPress={() => void setCollapsedPersisted(false)}
-            hitSlop={8}
+            hitSlop={10}
             accessibilityRole="button"
             accessibilityLabel={t('expand')}
-            style={({pressed}) => [
-              styles.moreBtn,
-              {
-                backgroundColor: theme.moreBg,
-                borderColor: theme.moreBorder,
-                opacity: pressed ? 0.85 : 1,
-              },
+            style={[
+              styles.actionBtn,
+              {backgroundColor: theme.btnBg, borderColor: theme.btnBorder},
             ]}>
-            <Text style={{fontSize: 12, fontWeight: '800', color: theme.title}}>
+            <Text style={[styles.actionBtnText, {color: theme.title}]}>
               {t('expand')}
             </Text>
-            <Ionicons name="chevron-down" size={14} color={theme.title} />
+            <Ionicons name="chevron-down" size={15} color={theme.title} />
           </Pressable>
         </LinearGradient>
       </View>
@@ -363,66 +296,47 @@ export default function WeeklyHighlightsCard() {
         end={{x: 1, y: 1}}
         style={[styles.card, {borderColor: theme.border}]}>
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <View
-              style={[styles.badge, {backgroundColor: theme.accentSoft}]}>
-              <Ionicons name="trophy" size={14} color={theme.pillText} />
-            </View>
-            <View style={{flex: 1}}>
-              <Text style={[styles.kicker, {color: theme.accent}]}>
-                {t('player_of_the_week')}
-              </Text>
-              <Text style={{fontSize: 12, color: theme.muted, marginTop: 1}}>
-                {formatWeekRange(
-                  data.weekStart || data.matchDate,
-                  data.weekEnd || data.matchDate,
-                )}
-              </Text>
-            </View>
+          <View style={{flex: 1, minWidth: 0}}>
+            <Text style={[styles.kicker, {color: theme.accent}]}>
+              {t('player_of_the_week')}
+            </Text>
+            <Text style={{fontSize: 12, color: theme.muted, marginTop: 2}}>
+              {formatWeekRange(
+                data.weekStart || data.matchDate,
+                data.weekEnd || data.matchDate,
+              )}
+            </Text>
           </View>
-          <View style={styles.headerActions}>
-            <Pressable
-              onPress={() => void setCollapsedPersisted(true)}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={t('hide')}
-              style={({pressed}) => [
-                styles.moreBtn,
-                {
-                  backgroundColor: theme.moreBg,
-                  borderColor: theme.moreBorder,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}>
-              <Text style={{fontSize: 12, fontWeight: '800', color: theme.title}}>
-                {t('hide')}
-              </Text>
-              <Ionicons name="chevron-up" size={14} color={theme.title} />
-            </Pressable>
-            <Pressable
-              onPress={() => router.push('/statistics/highlights' as any)}
-              hitSlop={8}
-              style={({pressed}) => [
-                styles.moreBtn,
-                {
-                  backgroundColor: theme.moreBg,
-                  borderColor: theme.moreBorder,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}>
-              <Text style={{fontSize: 12, fontWeight: '800', color: theme.title}}>
-                {t('more')}
-              </Text>
-              <Ionicons name="chevron-forward" size={14} color={theme.title} />
-            </Pressable>
-          </View>
+          <Pressable
+            onPress={() => void setCollapsedPersisted(true)}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={t('hide')}
+            style={[
+              styles.iconBtn,
+              {backgroundColor: theme.btnBg, borderColor: theme.btnBorder},
+            ]}>
+            <Ionicons name="chevron-up" size={18} color={theme.title} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/statistics/highlights' as any)}
+            hitSlop={8}
+            style={[
+              styles.actionBtn,
+              {backgroundColor: theme.btnBg, borderColor: theme.btnBorder},
+            ]}>
+            <Text style={[styles.actionBtnText, {color: theme.title}]}>
+              {t('more')}
+            </Text>
+            <Ionicons name="chevron-forward" size={14} color={theme.title} />
+          </Pressable>
         </View>
 
         {options.length > 1 ? (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={{marginBottom: 12}}
+            style={{marginBottom: 10}}
             contentContainerStyle={{paddingRight: 4}}>
             {options.map(opt => {
               const active = activeGameType === opt.code
@@ -455,47 +369,30 @@ export default function WeeklyHighlightsCard() {
 
         <Pressable
           onPress={() => openPlayer(potw.playerId)}
-          style={({pressed}) => [
-            styles.hero,
-            {
-              backgroundColor: theme.heroBg,
-              borderColor: theme.heroBorder,
-              opacity: loading ? 0.7 : pressed ? 0.92 : 1,
-            },
-          ]}>
-          <Avatar
-            player={potw}
-            size={64}
-            ring={theme.ring}
-            ringOuter={theme.ringOuter}
-          />
+          style={[styles.hero, {opacity: loading ? 0.75 : 1}]}>
+          <Avatar player={potw} size={52} />
           <View style={{flex: 1, minWidth: 0}}>
             <Text style={[styles.heroName, {color: theme.title}]} numberOfLines={1}>
               {potw.nickname}
             </Text>
             {potw.team ? (
-              <Text style={{color: theme.muted, marginTop: 2}} numberOfLines={1}>
+              <Text style={{color: theme.muted, fontSize: 13, marginTop: 1}} numberOfLines={1}>
                 {potw.team.shortName || potw.team.name}
               </Text>
             ) : null}
-            <View
-              style={[
-                styles.recordPill,
-                {backgroundColor: theme.pillBg, marginTop: 8},
-              ]}>
-              <Text style={{color: theme.pillText, fontWeight: '800', fontSize: 12}}>
-                {record}
-              </Text>
-            </View>
           </View>
-          <Ionicons name="chevron-forward" size={18} color={theme.muted} />
+          <View style={[styles.recordPill, {backgroundColor: theme.pillBg}]}>
+            <Text style={{color: theme.pillText, fontWeight: '800', fontSize: 12}}>
+              {record}
+            </Text>
+          </View>
         </Pressable>
 
         {data.spotlights.length > 0 ? (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={{marginTop: 12}}
+            style={{marginTop: 10}}
             contentContainerStyle={{paddingRight: 4}}>
             {data.spotlights.map(s => (
               <SpotlightRow
@@ -518,111 +415,107 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   card: {
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 14,
+    padding: 12,
     overflow: 'hidden',
   },
-  cardCollapsed: {
+  collapsedCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    minHeight: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
-    paddingVertical: 10,
   },
   collapsedLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 10,
+    gap: 8,
     minWidth: 0,
   },
   collapsedName: {
     fontSize: 16,
     fontWeight: '800',
-    marginTop: 1,
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-    gap: 10,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 10,
-    minWidth: 0,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  badge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 10,
+    gap: 8,
   },
   kicker: {
     fontSize: 13,
     fontWeight: '800',
-    letterSpacing: 0.2,
   },
-  moreBtn: {
+  iconBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: 999,
     borderWidth: 1,
   },
+  actionBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
   chip: {
     marginRight: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
     borderRadius: 999,
     borderWidth: 1,
   },
   hero: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 12,
+    gap: 10,
   },
   heroName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
   },
   recordPill: {
-    alignSelf: 'flex-start',
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 999,
   },
   spotlight: {
-    width: 168,
+    width: 140,
     marginRight: 8,
-    padding: 10,
-    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
     borderWidth: 1,
   },
   spotlightTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
+    gap: 4,
+    marginBottom: 4,
   },
-  spotlightBody: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  spotlightLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    flex: 1,
+  },
+  spotlightName: {
+    fontWeight: '800',
+    fontSize: 13,
   },
 })
