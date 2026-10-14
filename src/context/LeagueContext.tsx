@@ -54,6 +54,10 @@ interface LeagueState {
   isNewMatchCard: boolean
   showLiveScores: boolean
   showForumFabBadge: boolean
+  /** Local preference: Predictions row on upcoming match cards. */
+  showPredictionsOnMatchCards: boolean
+  /** Local preference: Player of the Week card on home. */
+  showPlayerOfTheWeek: boolean
   /** Server opt-in for virtual betting. */
   bettingOptedIn: boolean
   /** Local-only hide for betting UI (does not clear server opt-in). */
@@ -108,6 +112,8 @@ const initialState: LeagueState = {
   isNewMatchCard: false,
   showLiveScores: true,
   showForumFabBadge: true,
+  showPredictionsOnMatchCards: true,
+  showPlayerOfTheWeek: true,
   bettingOptedIn: false,
   hideBettingUi: false,
   bettingEnabled: false,
@@ -281,6 +287,18 @@ const LeagueReducer = (state: any, action: any) => {
       return {
         ...state,
         showForumFabBadge: action.payload,
+      }
+    }
+    case 'SET_SHOW_PREDICTIONS_ON_MATCH_CARDS': {
+      return {
+        ...state,
+        showPredictionsOnMatchCards: action.payload,
+      }
+    }
+    case 'SET_SHOW_PLAYER_OF_THE_WEEK': {
+      return {
+        ...state,
+        showPlayerOfTheWeek: action.payload,
       }
     }
     case 'SET_BETTING_OPTED_IN': {
@@ -486,6 +504,40 @@ export const LeagueProvider = ({children}: any) => {
         console.error(e)
       }
     }
+    const getShowPredictionsOnMatchCards = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(
+          'show_predictions_on_match_cards',
+        )
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (typeof parsed?.show === 'boolean') {
+            dispatch({
+              type: 'SET_SHOW_PREDICTIONS_ON_MATCH_CARDS',
+              payload: parsed.show,
+            })
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    const getShowPlayerOfTheWeek = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('show_player_of_the_week')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (typeof parsed?.show === 'boolean') {
+            dispatch({
+              type: 'SET_SHOW_PLAYER_OF_THE_WEEK',
+              payload: parsed.show,
+            })
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
     const getBettingOddsFormat = async () => {
       try {
         const stored = await AsyncStorage.getItem('betting_odds_format')
@@ -506,6 +558,8 @@ export const LeagueProvider = ({children}: any) => {
     getShowLiveScores()
     getShowForumFabBadge()
     getHideBettingUi()
+    getShowPredictionsOnMatchCards()
+    getShowPlayerOfTheWeek()
     getBettingOddsFormat()
   }, [])
 

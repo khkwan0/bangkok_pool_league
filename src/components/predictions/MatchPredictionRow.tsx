@@ -53,7 +53,10 @@ export default function MatchPredictionRow({
   const [loading, setLoading] = React.useState(true)
 
   const show =
-    state.predictionsEnabled && !!state.user?.id && Number(matchId) > 0
+    state.predictionsEnabled &&
+    (state.showPredictionsOnMatchCards ?? true) &&
+    !!state.user?.id &&
+    Number(matchId) > 0
 
   React.useEffect(() => {
     if (!show) return

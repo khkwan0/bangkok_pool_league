@@ -332,48 +332,6 @@ export default function WeeklyHighlightsCard() {
           </View>
         </View>
 
-        <Text style={[styles.title, {color: theme.title}]}>
-          {t('player_of_the_week')}
-        </Text>
-
-        <Pressable
-          onPress={() => openPlayer(potw.playerId)}
-          style={[styles.hero, {opacity: loading ? 0.75 : 1}]}>
-          <Avatar player={potw} size={72} />
-          <Text style={[styles.heroName, {color: theme.title}]} numberOfLines={1}>
-            {potw.nickname}
-          </Text>
-          {potw.team ? (
-            <Text
-              style={[styles.heroTeam, {color: theme.muted}]}
-              numberOfLines={1}>
-              {potw.team.shortName || potw.team.name}
-            </Text>
-          ) : null}
-          <View style={[styles.recordPill, {backgroundColor: theme.pillBg}]}>
-            <Text style={{color: theme.pillText, fontWeight: '800', fontSize: 13}}>
-              {record}
-            </Text>
-          </View>
-        </Pressable>
-
-        {Array.isArray(data.spotlights) && data.spotlights.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{marginTop: 14}}
-            contentContainerStyle={{paddingRight: 4}}>
-            {data.spotlights.map(s => (
-              <SpotlightRow
-                key={s.id}
-                spotlight={s}
-                label={t(SPOTLIGHT_I18N[s.id] || s.label)}
-                theme={theme}
-              />
-            ))}
-          </ScrollView>
-        ) : null}
-
         {options.length > 1 ? (
           <ScrollView
             horizontal
@@ -406,6 +364,55 @@ export default function WeeklyHighlightsCard() {
                 </Pressable>
               )
             })}
+          </ScrollView>
+        ) : null}
+
+        <Text style={[styles.title, {color: theme.title}]}>
+          {t('player_of_the_week')}
+        </Text>
+
+        <Pressable
+          onPress={() => openPlayer(potw.playerId)}
+          style={[styles.hero, {opacity: loading ? 0.75 : 1}]}>
+          <View style={styles.heroRow}>
+            <Avatar player={potw} size={64} />
+            <View style={styles.heroMeta}>
+              <Text
+                style={[styles.heroName, {color: theme.title}]}
+                numberOfLines={1}>
+                {potw.nickname}
+              </Text>
+              {potw.team ? (
+                <Text
+                  style={[styles.heroTeam, {color: theme.muted}]}
+                  numberOfLines={1}>
+                  {potw.team.shortName || potw.team.name}
+                </Text>
+              ) : null}
+              <View style={[styles.recordPill, {backgroundColor: theme.pillBg}]}>
+                <Text
+                  style={{color: theme.pillText, fontWeight: '800', fontSize: 13}}>
+                  {record}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </Pressable>
+
+        {Array.isArray(data.spotlights) && data.spotlights.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{marginTop: 14}}
+            contentContainerStyle={{paddingRight: 4}}>
+            {data.spotlights.map(s => (
+              <SpotlightRow
+                key={s.id}
+                spotlight={s}
+                label={t(SPOTLIGHT_I18N[s.id] || s.label)}
+                theme={theme}
+              />
+            ))}
           </ScrollView>
         ) : null}
       </LinearGradient>
@@ -493,12 +500,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   chipsRow: {
-    marginTop: 14,
+    marginTop: 10,
   },
   chipsContent: {
     paddingRight: 4,
-    justifyContent: 'center',
-    flexGrow: 1,
   },
   chip: {
     marginRight: 6,
@@ -510,20 +515,29 @@ const styles = StyleSheet.create({
   hero: {
     marginTop: 14,
     alignItems: 'center',
-    gap: 6,
+  },
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    maxWidth: '100%',
+    paddingHorizontal: 8,
+  },
+  heroMeta: {
+    flexShrink: 1,
+    minWidth: 0,
+    gap: 3,
   },
   heroName: {
-    marginTop: 4,
     fontSize: 20,
     fontWeight: '800',
-    textAlign: 'center',
   },
   heroTeam: {
     fontSize: 14,
     fontWeight: '600',
-    textAlign: 'center',
   },
   recordPill: {
+    alignSelf: 'flex-start',
     marginTop: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
