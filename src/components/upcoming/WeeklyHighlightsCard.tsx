@@ -147,10 +147,14 @@ function Avatar({
 }
 
 function openPlayer(playerId: number) {
-  router.push({
-    pathname: '/statistics/PlayerStatistics/Player' as any,
-    params: {params: JSON.stringify({playerId})},
-  })
+  // Cross-tab into Statistics — keep stats home under this screen so Back works.
+  router.push(
+    {
+      pathname: '/statistics/PlayerStatistics/Player' as any,
+      params: {params: JSON.stringify({playerId})},
+    },
+    {withAnchor: true},
+  )
 }
 
 function SpotlightRow({

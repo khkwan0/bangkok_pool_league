@@ -1,7 +1,9 @@
 import PlayerStatistics from '@/components/PlayerStatistics'
+import StatShortcuts from '@/components/Statistics/StatShortcuts'
+import {useLeague} from '@/hooks/useLeague'
 import {useLocalSearchParams, useNavigation} from 'expo-router'
 import React from 'react'
-import {useLeague} from '@/hooks/useLeague'
+import {useTranslation} from 'react-i18next'
 import {ActivityIndicator, View} from 'react-native'
 
 interface PlayerInfo {
@@ -23,12 +25,15 @@ export default function PlayerStats() {
   const [playerInfo, setPlayerInfo] = React.useState<PlayerInfo | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
   const navigation = useNavigation()
+  const {t} = useTranslation()
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: playerInfo?.name ?? '',
+      title: playerInfo?.name || t('player_statistics'),
+      headerBackTitle: t('back'),
+      headerBackVisible: true,
     })
-  }, [playerInfo])
+  }, [navigation, playerInfo, t])
 
   async function getPlayerInfo(playerId: number) {
     try {
@@ -55,6 +60,14 @@ export default function PlayerStats() {
       </View>
     )
   } else if (playerInfo) {
-    return <PlayerStatistics playerInfo={playerInfo} />
+    return (
+      <View className="flex-1">
+        <StatShortcuts variant="compact" />
+        <PlayerStatistics
+          playerInfo={playerInfo}
+          path="/statistics/PlayerStatistics"
+        />
+      </View>
+    )
   }
 }
