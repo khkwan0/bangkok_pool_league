@@ -9,6 +9,7 @@ import {Ionicons} from '@expo/vector-icons'
 import {
   useLocalSearchParams,
   useNavigation,
+  useRouter,
 } from 'expo-router'
 import {useTheme} from 'expo-router/react-navigation'
 import React from 'react'
@@ -27,6 +28,7 @@ export default function MatchPredictionsScreen() {
   const {t} = useTranslation()
   const {colors} = useTheme()
   const navigation = useNavigation()
+  const router = useRouter()
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const params = useLocalSearchParams<{matchId?: string}>()
@@ -366,6 +368,27 @@ export default function MatchPredictionsScreen() {
           {t('predictions_locked_body')}
         </Text>
       )}
+
+      <Pressable
+        onPress={() => router.push('/Settings/Predictions')}
+        style={{
+          marginTop: 16,
+          paddingVertical: 14,
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: border,
+          backgroundColor: cardBg,
+          alignItems: 'center',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: 8,
+        }}>
+        <Ionicons name="trophy-outline" size={18} color={accent} />
+        <Text style={{color: colors.text, fontWeight: '700', fontSize: 15}}>
+          {t('predictions_settings')}
+        </Text>
+        <Ionicons name="chevron-forward" size={18} color={muted} />
+      </Pressable>
     </ScrollView>
   )
 }
