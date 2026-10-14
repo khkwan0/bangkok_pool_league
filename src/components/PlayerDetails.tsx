@@ -11,6 +11,7 @@ import {useLeague} from '@/hooks/useLeague'
 import {useAchievements} from '@/hooks/useAchievements'
 import {ThemedText as Text} from '@/components/ThemedText'
 import PlayerAchievementsCard from '@/components/PlayerAchievementsCard'
+import PlayerAchievementsHero from '@/components/PlayerAchievementsHero'
 import config from '@/config'
 import {router} from 'expo-router'
 import {useNavigation} from 'expo-router'
@@ -234,6 +235,7 @@ export default function PlayerDetails({playerId}: PlayerDetailsProps) {
                 />
               ) : null}
             </View>
+            <PlayerAchievementsHero data={achievements} />
           </View>
 
           <View style={styles.infoCard}>

@@ -424,6 +424,8 @@
   "achievements_locked": "ยังไม่ได้ปลดล็อก",
   "achievements_earned": "ได้รับแล้ว",
   "achievements_progress": "เหรียญ {badges} · ถ้วย {trophies}",
+  "achievements_hero_count": "ได้รับ {count}/{available}",
+  "achievements_empty_short": "ยังไม่มีรางวัล",
   "achievements_login_required": "เข้าสู่ระบบเพื่อดูความสำเร็จของคุณ",
   "achievements_load_failed": "โหลดความสำเร็จไม่สำเร็จ",
   "achievement_badge": "เหรียญ",

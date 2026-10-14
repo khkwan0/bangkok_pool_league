@@ -425,6 +425,8 @@
   "achievements_locked": "Locked",
   "achievements_earned": "Earned",
   "achievements_progress": "{badges} badges · {trophies} trophies",
+  "achievements_hero_count": "{count}/{available} earned",
+  "achievements_empty_short": "No awards yet",
   "achievements_login_required": "Sign in to view your achievements.",
   "achievements_load_failed": "Could not load achievements.",
   "achievement_badge": "Badge",
