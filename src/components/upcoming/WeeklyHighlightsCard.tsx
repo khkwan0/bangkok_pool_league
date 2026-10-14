@@ -147,11 +147,12 @@ function Avatar({
 }
 
 function openPlayer(playerId: number) {
-  // Cross-tab into Statistics — keep stats home under this screen so Back works.
+  // Flat playerId (not nested JSON) — withAnchor walks params and crashes if a
+  // string value is treated as a nested params object.
   router.push(
     {
       pathname: '/statistics/PlayerStatistics/Player' as any,
-      params: {params: JSON.stringify({playerId})},
+      params: {playerId: String(playerId)},
     },
     {withAnchor: true},
   )
@@ -394,7 +395,7 @@ export default function WeeklyHighlightsCard() {
           </View>
         </Pressable>
 
-        {data.spotlights.length > 0 ? (
+        {Array.isArray(data.spotlights) && data.spotlights.length > 0 ? (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}

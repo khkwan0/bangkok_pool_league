@@ -18,9 +18,28 @@ interface PlayerInfo {
   pic?: string | null
 }
 
+function resolvePlayerId(raw: Record<string, unknown>): number | null {
+  const direct = raw.playerId
+  if (typeof direct === 'string' || typeof direct === 'number') {
+    const n = Number(direct)
+    return Number.isFinite(n) && n > 0 ? n : null
+  }
+  const bundled = raw.params
+  if (typeof bundled === 'string') {
+    try {
+      const parsed = JSON.parse(bundled) as {playerId?: number | string}
+      const n = Number(parsed?.playerId)
+      return Number.isFinite(n) && n > 0 ? n : null
+    } catch {
+      return null
+    }
+  }
+  return null
+}
+
 export default function PlayerStats() {
-  const {params} = useLocalSearchParams()
-  const {playerId} = JSON.parse(params as string)
+  const raw = useLocalSearchParams()
+  const playerId = resolvePlayerId(raw as Record<string, unknown>)
   const league = useLeague()
   const [playerInfo, setPlayerInfo] = React.useState<PlayerInfo | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
@@ -35,10 +54,10 @@ export default function PlayerStats() {
     })
   }, [navigation, playerInfo, t])
 
-  async function getPlayerInfo(playerId: number) {
+  async function getPlayerInfo(id: number) {
     try {
       setIsLoading(true)
-      const info = await league.GetPlayerStatsInfo(playerId)
+      const info = await league.GetPlayerStatsInfo(id)
       setPlayerInfo(info)
     } catch (e) {
       console.error(e)
@@ -49,9 +68,17 @@ export default function PlayerStats() {
 
   React.useEffect(() => {
     if (playerId) {
-      getPlayerInfo(playerId)
+      void getPlayerInfo(playerId)
     }
   }, [playerId])
+
+  if (!playerId) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <StatShortcuts variant="compact" />
+      </View>
+    )
+  }
 
   if (isLoading) {
     return (
