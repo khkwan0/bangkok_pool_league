@@ -424,7 +424,7 @@
   "achievements_empty": "No badges or trophies yet — play matches to earn them.",
   "achievements_locked": "Locked",
   "achievements_earned": "Earned",
-  "achievements_progress": "{{badges}} badges · {{trophies}} trophies",
+  "achievements_progress": "{badges} badges · {trophies} trophies",
   "achievements_login_required": "Sign in to view your achievements.",
   "achievements_load_failed": "Could not load achievements.",
   "achievement_badge": "Badge",
