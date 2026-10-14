@@ -147,15 +147,11 @@ function Avatar({
 }
 
 function openPlayer(playerId: number) {
-  // Flat playerId (not nested JSON) — withAnchor walks params and crashes if a
-  // string value is treated as a nested params object.
-  router.push(
-    {
-      pathname: '/statistics/PlayerStatistics/Player' as any,
-      params: {playerId: String(playerId)},
-    },
-    {withAnchor: true},
-  )
+  // Stay on the Home stack so Back returns to this screen (not Statistics).
+  router.push({
+    pathname: '/Player' as any,
+    params: {playerId: String(playerId)},
+  })
 }
 
 function SpotlightRow({
@@ -301,50 +297,89 @@ export default function WeeklyHighlightsCard() {
         end={{x: 1, y: 1}}
         style={[styles.card, {borderColor: theme.border}]}>
         <View style={styles.header}>
-          <View style={{flex: 1, minWidth: 0}}>
-            <Text style={[styles.kicker, {color: theme.accent}]}>
-              {t('player_of_the_week')}
+          <Text style={[styles.dateRange, {color: theme.muted}]} numberOfLines={1}>
+            {formatWeekRange(
+              data.weekStart || data.matchDate,
+              data.weekEnd || data.matchDate,
+            )}
+          </Text>
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={() => void setCollapsedPersisted(true)}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t('hide')}
+              style={[
+                styles.iconBtn,
+                {backgroundColor: theme.btnBg, borderColor: theme.btnBorder},
+              ]}>
+              <Ionicons name="chevron-up" size={18} color={theme.title} />
+            </Pressable>
+            <Pressable
+              onPress={() =>
+                router.push('/statistics/Highlights' as any, {withAnchor: true})
+              }
+              hitSlop={8}
+              style={[
+                styles.actionBtn,
+                {backgroundColor: theme.btnBg, borderColor: theme.btnBorder},
+              ]}>
+              <Text style={[styles.actionBtnText, {color: theme.title}]}>
+                {t('more')}
+              </Text>
+              <Ionicons name="chevron-forward" size={14} color={theme.title} />
+            </Pressable>
+          </View>
+        </View>
+
+        <Text style={[styles.title, {color: theme.title}]}>
+          {t('player_of_the_week')}
+        </Text>
+
+        <Pressable
+          onPress={() => openPlayer(potw.playerId)}
+          style={[styles.hero, {opacity: loading ? 0.75 : 1}]}>
+          <Avatar player={potw} size={72} />
+          <Text style={[styles.heroName, {color: theme.title}]} numberOfLines={1}>
+            {potw.nickname}
+          </Text>
+          {potw.team ? (
+            <Text
+              style={[styles.heroTeam, {color: theme.muted}]}
+              numberOfLines={1}>
+              {potw.team.shortName || potw.team.name}
             </Text>
-            <Text style={{fontSize: 12, color: theme.muted, marginTop: 2}}>
-              {formatWeekRange(
-                data.weekStart || data.matchDate,
-                data.weekEnd || data.matchDate,
-              )}
+          ) : null}
+          <View style={[styles.recordPill, {backgroundColor: theme.pillBg}]}>
+            <Text style={{color: theme.pillText, fontWeight: '800', fontSize: 13}}>
+              {record}
             </Text>
           </View>
-          <Pressable
-            onPress={() => void setCollapsedPersisted(true)}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel={t('hide')}
-            style={[
-              styles.iconBtn,
-              {backgroundColor: theme.btnBg, borderColor: theme.btnBorder},
-            ]}>
-            <Ionicons name="chevron-up" size={18} color={theme.title} />
-          </Pressable>
-          <Pressable
-            onPress={() =>
-              router.push('/statistics/Highlights' as any, {withAnchor: true})
-            }
-            hitSlop={8}
-            style={[
-              styles.actionBtn,
-              {backgroundColor: theme.btnBg, borderColor: theme.btnBorder},
-            ]}>
-            <Text style={[styles.actionBtnText, {color: theme.title}]}>
-              {t('more')}
-            </Text>
-            <Ionicons name="chevron-forward" size={14} color={theme.title} />
-          </Pressable>
-        </View>
+        </Pressable>
+
+        {Array.isArray(data.spotlights) && data.spotlights.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{marginTop: 14}}
+            contentContainerStyle={{paddingRight: 4}}>
+            {data.spotlights.map(s => (
+              <SpotlightRow
+                key={s.id}
+                spotlight={s}
+                label={t(SPOTLIGHT_I18N[s.id] || s.label)}
+                theme={theme}
+              />
+            ))}
+          </ScrollView>
+        ) : null}
 
         {options.length > 1 ? (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={{marginBottom: 10}}
-            contentContainerStyle={{paddingRight: 4}}>
+            style={styles.chipsRow}
+            contentContainerStyle={styles.chipsContent}>
             {options.map(opt => {
               const active = activeGameType === opt.code
               return (
@@ -371,44 +406,6 @@ export default function WeeklyHighlightsCard() {
                 </Pressable>
               )
             })}
-          </ScrollView>
-        ) : null}
-
-        <Pressable
-          onPress={() => openPlayer(potw.playerId)}
-          style={[styles.hero, {opacity: loading ? 0.75 : 1}]}>
-          <Avatar player={potw} size={52} />
-          <View style={{flex: 1, minWidth: 0}}>
-            <Text style={[styles.heroName, {color: theme.title}]} numberOfLines={1}>
-              {potw.nickname}
-            </Text>
-            {potw.team ? (
-              <Text style={{color: theme.muted, fontSize: 13, marginTop: 1}} numberOfLines={1}>
-                {potw.team.shortName || potw.team.name}
-              </Text>
-            ) : null}
-          </View>
-          <View style={[styles.recordPill, {backgroundColor: theme.pillBg}]}>
-            <Text style={{color: theme.pillText, fontWeight: '800', fontSize: 12}}>
-              {record}
-            </Text>
-          </View>
-        </Pressable>
-
-        {Array.isArray(data.spotlights) && data.spotlights.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{marginTop: 10}}
-            contentContainerStyle={{paddingRight: 4}}>
-            {data.spotlights.map(s => (
-              <SpotlightRow
-                key={s.id}
-                spotlight={s}
-                label={t(SPOTLIGHT_I18N[s.id] || s.label)}
-                theme={theme}
-              />
-            ))}
           </ScrollView>
         ) : null}
       </LinearGradient>
@@ -453,12 +450,26 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    justifyContent: 'space-between',
     gap: 8,
   },
-  kicker: {
-    fontSize: 13,
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dateRange: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    minWidth: 0,
+  },
+  title: {
+    marginTop: 10,
+    fontSize: 20,
     fontWeight: '800',
+    letterSpacing: 0.2,
+    textAlign: 'center',
   },
   iconBtn: {
     width: 34,
@@ -481,6 +492,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
   },
+  chipsRow: {
+    marginTop: 14,
+  },
+  chipsContent: {
+    paddingRight: 4,
+    justifyContent: 'center',
+    flexGrow: 1,
+  },
   chip: {
     marginRight: 6,
     paddingHorizontal: 11,
@@ -489,17 +508,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   hero: {
-    flexDirection: 'row',
+    marginTop: 14,
     alignItems: 'center',
-    gap: 10,
+    gap: 6,
   },
   heroName: {
-    fontSize: 18,
+    marginTop: 4,
+    fontSize: 20,
     fontWeight: '800',
+    textAlign: 'center',
+  },
+  heroTeam: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   recordPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    marginTop: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 999,
   },
   spotlight: {
