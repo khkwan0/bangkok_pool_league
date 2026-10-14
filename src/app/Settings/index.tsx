@@ -228,6 +228,13 @@ export default function Settings() {
         )}
 
         <NavDest
+          icon="trophy-variant"
+          text={t('achievements')}
+          url={'/Settings/Achievements'}
+          iconColor="#EAB308"
+          iconBackground="rgba(234, 179, 8, 0.15)"
+        />
+        <NavDest
           icon="robot-outline"
           text={t('ai_assistant')}
           url={'/Settings/CueChat'}
