@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bangkok Pool League",
     "slug": "bangkok_pool_league",
-    "version": "2.17",
+    "version": "2.18",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "bangkokpoolleague",
@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "buildNumber": "183",
+      "buildNumber": "184",
       "googleServicesFile": "./GoogleService-Info.plist",
       "usesAppleSignIn": true,
       "associatedDomains": [
@@ -41,7 +41,7 @@
     },
     "android": {
       "package": "com.bangkok_pool_league",
-      "versionCode": 183,
+      "versionCode": 184,
       "googleServicesFile": "./firebase.google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
@@ -99,10 +99,12 @@
           },
           "android": {
             "enableMinifyInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-keep class expo.modules.gl.** { *; }\n-keepclassmembers class expo.modules.gl.** { *; }\n-dontwarn expo.modules.gl.**"
           }
         }
       ],
+      "./plugins/withAndroidKeepCoinFlipResources",
       [
         "expo-notifications",
         {
