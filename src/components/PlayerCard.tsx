@@ -207,6 +207,8 @@ export default function PlayerCard({
         styles.wrap,
         {
           opacity: disabled ? 0.58 : 1,
+          // Solid fill required for efficient iOS shadows (gradient is the child).
+          backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
           shadowColor: isDark ? '#000' : '#0F172A',
           shadowOpacity: isDark ? 0.35 : 0.12,
         },

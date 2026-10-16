@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bangkok Pool League",
     "slug": "bangkok_pool_league",
-    "version": "2.16",
+    "version": "2.17",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "bangkokpoolleague",
@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bangkok-pool-league",
-      "buildNumber": "182",
+      "buildNumber": "183",
       "googleServicesFile": "./GoogleService-Info.plist",
       "usesAppleSignIn": true,
       "associatedDomains": [
@@ -41,7 +41,7 @@
     },
     "android": {
       "package": "com.bangkok_pool_league",
-      "versionCode": 182,
+      "versionCode": 183,
       "googleServicesFile": "./firebase.google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
@@ -63,10 +63,6 @@
     },
     "androidStatusBar": {
       "backgroundColor": "#F5F5F5"
-    },
-    "androidNavigationBar": {
-      "backgroundColor": "#F5F5F5",
-      "barStyle": "dark-content"
     },
     "web": {
       "output": "static",
@@ -99,8 +95,7 @@
         {
           "ios": {
             "useFrameworks": "static",
-            "forceStaticLinking": ["RNFBApp", "RNFBMessaging"],
-            "enableSceneSupport": true
+            "forceStaticLinking": ["RNFBApp", "RNFBMessaging"]
           },
           "android": {
             "enableMinifyInReleaseBuilds": true,
@@ -126,7 +121,8 @@
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
-      "@xmartlabs/react-native-line",
+      "./plugins/withFirebaseAppDelegate",
+      "./plugins/withLineSDK",
       "expo-web-browser",
       "expo-font",
       "expo-image",

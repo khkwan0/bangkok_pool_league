@@ -78,6 +78,8 @@ function getCardTheme(isDark: boolean, accent: string) {
       indefiniteBg: 'rgba(239,68,68,0.14)',
       indefiniteBorder: 'rgba(248,113,113,0.35)',
       indefiniteText: '#FCA5A5',
+      // Opaque surface for the shadow host (gradients alone don't satisfy RN).
+      cardSurface: '#0F172A',
       shadow: '#000000',
       shadowOpacity: 0.35,
     }
@@ -114,6 +116,7 @@ function getCardTheme(isDark: boolean, accent: string) {
     indefiniteBg: 'rgba(239,68,68,0.1)',
     indefiniteBorder: 'rgba(220,38,38,0.3)',
     indefiniteText: '#DC2626',
+    cardSurface: '#FFFFFF',
     shadow: '#0F172A',
     shadowOpacity: 0.12,
   }
@@ -604,6 +607,7 @@ export default function MatchCardOld({
       style={[
         styles.wrap,
         {
+          backgroundColor: theme.cardSurface,
           shadowColor: theme.shadow,
           shadowOpacity: theme.shadowOpacity,
         },
@@ -1077,6 +1081,7 @@ const styles = StyleSheet.create({
   wrap: {
     marginHorizontal: 12,
     marginVertical: 8,
+    borderRadius: 20,
     overflow: 'visible',
     shadowOffset: {width: 0, height: 4},
     shadowRadius: 10,

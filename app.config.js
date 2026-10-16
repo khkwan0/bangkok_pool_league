@@ -1,6 +1,7 @@
-const appJson = require('./app.json')
-
 const SENTRY_PLUGIN = '@sentry/react-native/expo'
+
+/** Same UUID as updates.requestHeaders['expo-app-id'] / xprem app id. */
+const EAS_PROJECT_ID = 'bd2821b1-58ee-4362-94bc-9cf6609b2e24'
 
 function applyEnvConfig(expo) {
   const plugins = (expo.plugins ?? []).filter((entry) => {
@@ -28,38 +29,46 @@ function applyEnvConfig(expo) {
     delete ios.appleTeamId
   }
 
+  // expo-observe Android crashes at native OnCreate without this
+  // ("Project ID is required to send observability metrics").
+  const extra = {
+    ...(expo.extra ?? {}),
+    eas: {
+      ...(expo.extra?.eas ?? {}),
+      projectId: expo.extra?.eas?.projectId ?? EAS_PROJECT_ID,
+    },
+  }
+
   return {
     ...expo,
     ios,
     plugins,
+    extra,
   }
 }
 
-/** @type {import('expo/config').ExpoConfig} */
-module.exports = () => ({
-  // Must nest updates/runtimeVersion under `expo` — top-level siblings are ignored.
-  expo: {
-    ...applyEnvConfig(appJson.expo),
-    runtimeVersion: {
-      policy: 'appVersion',
-    },
-    updates: {
-      url: 'https://ota.bkkleague.com/manifest',
-      enabled: true,
-      codeSigningMetadata: process.env.DISABLE_CODE_SIGNING
-        ? undefined
-        : {keyid: 'main', alg: 'rsa-v1_5-sha256'},
-      codeSigningCertificate: process.env.DISABLE_CODE_SIGNING
-        ? undefined
-        : './certs/certificate.pem',
-      requestHeaders: {
-        // Literal (or RELEASE_CHANNEL with a default). An unset env key is
-        // stripped at export time and breaks channel resolution.
-        'expo-channel-name': process.env.RELEASE_CHANNEL || 'production',
-        'expo-app-id': 'bd2821b1-58ee-4362-94bc-9cf6609b2e24',
-        // Branch surfing — empty means the channel decides.
-        'xprem-branch': '',
-      },
+/** @type {(ctx: import('expo/config').ConfigContext) => import('expo/config').ExpoConfig} */
+module.exports = ({config}) => ({
+  ...applyEnvConfig(config),
+  runtimeVersion: {
+    policy: 'appVersion',
+  },
+  updates: {
+    url: 'https://ota.bkkleague.com/manifest',
+    enabled: true,
+    codeSigningMetadata: process.env.DISABLE_CODE_SIGNING
+      ? undefined
+      : {keyid: 'main', alg: 'rsa-v1_5-sha256'},
+    codeSigningCertificate: process.env.DISABLE_CODE_SIGNING
+      ? undefined
+      : './certs/certificate.pem',
+    requestHeaders: {
+      // Literal (or RELEASE_CHANNEL with a default). An unset env key is
+      // stripped at export time and breaks channel resolution.
+      'expo-channel-name': process.env.RELEASE_CHANNEL || 'production',
+      'expo-app-id': EAS_PROJECT_ID,
+      // Branch surfing — empty means the channel decides.
+      'xprem-branch': '',
     },
   },
 })
