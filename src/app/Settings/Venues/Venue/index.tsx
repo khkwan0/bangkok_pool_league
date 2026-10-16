@@ -59,7 +59,7 @@ function Chip({
 }) {
   return (
     <View style={[styles.chip, {backgroundColor: background}]}>
-      <MCI name={icon} size={13} color={color} />
+      <MCI name={icon} size={12} color={color} />
       <Text style={[styles.chipText, {color}]} numberOfLines={1}>
         {label}
       </Text>
@@ -67,7 +67,7 @@ function Chip({
   )
 }
 
-function ContactRow({
+function ContactAction({
   icon,
   label,
   value,
@@ -78,30 +78,22 @@ function ContactRow({
   label: string
   value: string
   accent: string
-  onPress?: () => void
+  onPress: () => void
 }) {
   return (
     <Pressable
       onPress={onPress}
-      disabled={!onPress}
       style={({pressed}) => [
-        styles.contactRow,
-        {opacity: pressed && onPress ? 0.85 : 1},
+        styles.actionTile,
+        {opacity: pressed ? 0.85 : 1},
       ]}>
-      <View style={[styles.contactIcon, {backgroundColor: `${accent}22`}]}>
+      <View style={[styles.actionIcon, {backgroundColor: `${accent}22`}]}>
         <MCI name={icon} size={18} color={accent} />
       </View>
-      <View style={{flex: 1, minWidth: 0}}>
-        <Text style={styles.contactLabel}>{label}</Text>
-        <Text
-          style={[styles.contactValue, onPress ? styles.contactLink : null]}
-          numberOfLines={2}>
-          {value}
-        </Text>
-      </View>
-      {onPress ? (
-        <MCI name="open-in-new" size={16} color="rgba(226,232,240,0.45)" />
-      ) : null}
+      <Text style={styles.actionLabel}>{label}</Text>
+      <Text style={styles.actionValue} numberOfLines={1}>
+        {value}
+      </Text>
     </Pressable>
   )
 }
@@ -162,7 +154,18 @@ export default function Venue() {
       Linking.openURL(
         `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.plus)}`,
       )
+    } else if (venue?.location) {
+      Linking.openURL(
+        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.location)}`,
+      )
     }
+  }
+
+  const handleOpenWebsite = (raw: string) => {
+    const trimmed = raw.trim()
+    if (!trimmed) return
+    const url = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+    void Linking.openURL(url)
   }
 
   const ScreenBackdrop = (
@@ -204,6 +207,46 @@ export default function Venue() {
   )
   const teamCount = venue.teams.length
 
+  const actions = [
+    venue.phone
+      ? {
+          key: 'phone',
+          icon: 'phone' as const,
+          label: t('phone'),
+          value: venue.phone,
+          accent: '#10B981',
+          onPress: () => Linking.openURL(`tel:${venue.phone}`),
+        }
+      : null,
+    venue.email
+      ? {
+          key: 'email',
+          icon: 'email' as const,
+          label: t('email'),
+          value: venue.email,
+          accent: '#06B6D4',
+          onPress: () => Linking.openURL(`mailto:${venue.email}`),
+        }
+      : null,
+    venue.website
+      ? {
+          key: 'web',
+          icon: 'web' as const,
+          label: t('venue_website'),
+          value: venue.website.replace(/^https?:\/\//i, ''),
+          accent: '#8B5CF6',
+          onPress: () => handleOpenWebsite(venue.website!),
+        }
+      : null,
+  ].filter(Boolean) as Array<{
+    key: string
+    icon: React.ComponentProps<typeof MCI>['name']
+    label: string
+    value: string
+    accent: string
+    onPress: () => void
+  }>
+
   return (
     <View style={{flex: 1, backgroundColor: '#0B1220'}}>
       {ScreenBackdrop}
@@ -213,7 +256,7 @@ export default function Venue() {
         <View style={styles.board}>
           <View style={[styles.stripe, {backgroundColor: accent}]} />
 
-          <View style={styles.hero}>
+          <View style={styles.heroRow}>
             {venue.logo ? (
               <View style={styles.logoRing}>
                 <Image
@@ -229,62 +272,78 @@ export default function Venue() {
                 </Text>
               </View>
             )}
-            <Text style={styles.venueTitle}>{venue.name}</Text>
-            <View style={styles.chipsWrap}>
-              <Chip
-                icon="calendar"
-                label={`${t('season')} ${currentSeason}`}
-                color="#E2E8F0"
-                background="rgba(148,163,184,0.16)"
-              />
-              <Chip
-                icon="account-group"
-                label={`${teamCount} ${t('teams').toLowerCase()}`}
-                color={accent}
-                background={`${accent}22`}
-              />
+            <View style={styles.heroMeta}>
+              <Text style={styles.venueTitle} numberOfLines={2}>
+                {venue.name}
+              </Text>
+              <View style={styles.chipsWrap}>
+                <Chip
+                  icon="calendar"
+                  label={`${t('season')} ${currentSeason}`}
+                  color="#E2E8F0"
+                  background="rgba(148,163,184,0.16)"
+                />
+                <Chip
+                  icon="account-group"
+                  label={`${teamCount} ${t('teams').toLowerCase()}`}
+                  color={accent}
+                  background={`${accent}22`}
+                />
+              </View>
             </View>
           </View>
 
-          {(locationText || venue.phone || venue.email || venue.website) && (
-            <View style={styles.contactCard}>
+          {(locationText || actions.length > 0) && (
+            <View style={styles.contactBlock}>
               {locationText ? (
-                <ContactRow
-                  icon="map-marker-radius"
-                  label={t('venue_address')}
-                  value={locationText}
-                  accent="#F59E0B"
+                <Pressable
                   onPress={canOpenMaps ? handleOpenMaps : undefined}
-                />
+                  disabled={!canOpenMaps}
+                  style={({pressed}) => [
+                    styles.addressRow,
+                    {opacity: pressed && canOpenMaps ? 0.85 : 1},
+                  ]}>
+                  <View
+                    style={[
+                      styles.addressIcon,
+                      {backgroundColor: 'rgba(245,158,11,0.14)'},
+                    ]}>
+                    <MCI name="map-marker-radius" size={18} color="#F59E0B" />
+                  </View>
+                  <View style={{flex: 1, minWidth: 0}}>
+                    <Text style={styles.contactLabel}>{t('venue_address')}</Text>
+                    <Text
+                      style={[
+                        styles.addressValue,
+                        canOpenMaps ? styles.contactLink : null,
+                      ]}
+                      numberOfLines={2}>
+                      {locationText}
+                    </Text>
+                  </View>
+                  {canOpenMaps ? (
+                    <MCI
+                      name="directions"
+                      size={18}
+                      color="rgba(226,232,240,0.45)"
+                    />
+                  ) : null}
+                </Pressable>
               ) : null}
-              {venue.phone ? (
-                <ContactRow
-                  icon="phone"
-                  label={t('phone')}
-                  value={venue.phone}
-                  accent="#10B981"
-                  onPress={() => Linking.openURL(`tel:${venue.phone}`)}
-                />
-              ) : null}
-              {venue.email ? (
-                <ContactRow
-                  icon="email"
-                  label={t('email')}
-                  value={venue.email}
-                  accent="#06B6D4"
-                  onPress={() => Linking.openURL(`mailto:${venue.email}`)}
-                />
-              ) : null}
-              {venue.website ? (
-                <ContactRow
-                  icon="web"
-                  label={t('venue_website')}
-                  value={venue.website}
-                  accent="#8B5CF6"
-                  onPress={() =>
-                    venue.website ? Linking.openURL(venue.website) : undefined
-                  }
-                />
+
+              {actions.length > 0 ? (
+                <View style={styles.actionsGrid}>
+                  {actions.map(action => (
+                    <ContactAction
+                      key={action.key}
+                      icon={action.icon}
+                      label={action.label}
+                      value={action.value}
+                      accent={action.accent}
+                      onPress={action.onPress}
+                    />
+                  ))}
+                </View>
               ) : null}
             </View>
           )}
@@ -301,49 +360,49 @@ export default function Venue() {
         </View>
 
         {teamCount > 0 ? (
-          venue.teams.map((team, index) => {
-            const teamAccent = ACCENTS[index % ACCENTS.length]
-            return (
-              <Pressable
-                key={team.id}
-                onPress={() =>
-                  router.push({
-                    pathname: './Venue/Team',
-                    params: {params: JSON.stringify({teamId: team.id})},
-                  })
-                }
-                style={({pressed}) => ({
-                  opacity: pressed ? 0.92 : 1,
-                  transform: [{scale: pressed ? 0.985 : 1}],
-                  marginBottom: 10,
-                })}>
-                <View style={styles.teamBoard}>
+          <View style={styles.teamsGrid}>
+            {venue.teams.map((team, index) => {
+              const teamAccent = ACCENTS[index % ACCENTS.length]
+              return (
+                <Pressable
+                  key={team.id}
+                  onPress={() =>
+                    router.push({
+                      pathname: './Venue/Team',
+                      params: {params: JSON.stringify({teamId: team.id})},
+                    })
+                  }
+                  style={({pressed}) => [
+                    styles.teamTile,
+                    {
+                      opacity: pressed ? 0.92 : 1,
+                      transform: [{scale: pressed ? 0.985 : 1}],
+                    },
+                  ]}>
                   <View
-                    style={[styles.stripe, {backgroundColor: teamAccent}]}
+                    style={[styles.teamStripe, {backgroundColor: teamAccent}]}
                   />
-                  <View style={styles.teamRow}>
-                    <View
-                      style={[
-                        styles.teamMark,
-                        {backgroundColor: `${teamAccent}22`},
-                      ]}>
-                      <Text style={[styles.teamLetter, {color: teamAccent}]}>
-                        {team.name.charAt(0).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={styles.teamName} numberOfLines={2}>
-                      {team.name}
+                  <View
+                    style={[
+                      styles.teamMark,
+                      {backgroundColor: `${teamAccent}22`},
+                    ]}>
+                    <Text style={[styles.teamLetter, {color: teamAccent}]}>
+                      {team.name.charAt(0).toUpperCase()}
                     </Text>
-                    <MCI
-                      name="chevron-right"
-                      size={22}
-                      color="rgba(226,232,240,0.45)"
-                    />
                   </View>
-                </View>
-              </Pressable>
-            )
-          })
+                  <Text style={styles.teamName} numberOfLines={2}>
+                    {team.name}
+                  </Text>
+                  <MCI
+                    name="chevron-right"
+                    size={18}
+                    color="rgba(226,232,240,0.4)"
+                  />
+                </Pressable>
+              )
+            })}
+          </View>
         ) : (
           <View style={styles.emptyTeams}>
             <MCI
@@ -364,20 +423,20 @@ export default function Venue() {
 const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 14,
     paddingBottom: 32,
   },
   board: {
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.22)',
     backgroundColor: 'rgba(15,23,42,0.92)',
     overflow: 'hidden',
-    paddingHorizontal: 16,
-    paddingTop: 18,
-    paddingBottom: 16,
-    paddingLeft: 18,
-    marginBottom: 20,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 14,
+    paddingLeft: 16,
+    marginBottom: 18,
   },
   stripe: {
     position: 'absolute',
@@ -386,55 +445,57 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 4,
   },
-  hero: {
+  heroRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 4,
+    gap: 14,
   },
   logoRing: {
     backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 999,
-    padding: 14,
+    borderRadius: 16,
+    padding: 8,
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.2)',
-    marginBottom: 4,
   },
   logo: {
-    width: 88,
-    height: 88,
-    borderRadius: 16,
+    width: 64,
+    height: 64,
+    borderRadius: 10,
   },
   logoPlaceholder: {
-    width: 116,
-    height: 116,
+    width: 80,
+    height: 80,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 0,
   },
   logoLetter: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: '800',
     color: '#E2E8F0',
   },
+  heroMeta: {
+    flex: 1,
+    minWidth: 0,
+    gap: 8,
+  },
   venueTitle: {
     color: '#F8FAFC',
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
-    textAlign: 'center',
     letterSpacing: -0.3,
   },
   chipsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    justifyContent: 'center',
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     borderRadius: 999,
     maxWidth: '100%',
   },
@@ -442,97 +503,142 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
-  contactCard: {
-    marginTop: 16,
-    borderRadius: 14,
+  contactBlock: {
+    marginTop: 14,
+    gap: 10,
+  },
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.2)',
     backgroundColor: 'rgba(2,6,23,0.45)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  contactRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    paddingHorizontal: 10,
     paddingVertical: 10,
   },
-  contactIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+  addressIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   contactLabel: {
     color: 'rgba(226,232,240,0.55)',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     marginBottom: 2,
   },
-  contactValue: {
+  addressValue: {
     color: '#F1F5F9',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
   contactLink: {
     color: '#93C5FD',
   },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  actionTile: {
+    flexGrow: 1,
+    flexBasis: '30%',
+    minWidth: 96,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(148,163,184,0.2)',
+    backgroundColor: 'rgba(2,6,23,0.45)',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    gap: 4,
+  },
+  actionIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  actionLabel: {
+    color: 'rgba(226,232,240,0.5)',
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  actionValue: {
+    color: '#E2E8F0',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   sectionTitle: {
     color: '#F8FAFC',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
   },
-  teamBoard: {
-    borderRadius: 16,
+  teamsGrid: {
+    gap: 8,
+  },
+  teamTile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.22)',
     backgroundColor: 'rgba(15,23,42,0.92)',
     overflow: 'hidden',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    paddingLeft: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    paddingLeft: 14,
   },
-  teamRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  teamStripe: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
   },
   teamMark: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.2)',
   },
   teamLetter: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '800',
   },
   teamName: {
     flex: 1,
     color: '#F8FAFC',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   emptyTeams: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.22)',
     backgroundColor: 'rgba(15,23,42,0.92)',
-    padding: 28,
+    padding: 24,
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   emptyTeamsText: {
     color: 'rgba(226,232,240,0.6)',
