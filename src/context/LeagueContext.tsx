@@ -43,6 +43,10 @@ interface User {
     enabledPushNotifications?: boolean
     soundNotifications?: boolean
     home_panels?: string[] | null
+    /** Ordered FAB quick-action ids; null/absent = app default. */
+    fab_quick_actions?: string[] | null
+    /** Venue ids the user has starred for quick access. */
+    favorite_venues?: number[]
   }
 }
 

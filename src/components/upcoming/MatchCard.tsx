@@ -218,6 +218,7 @@ export default function MatchCard({
   matchInfo: propsMatchInfo,
   idx,
   embedded = false,
+  scoresheetPathname = '/Match',
 }: {
   matchInfo: MatchInfoDataType
   idx: number
@@ -225,6 +226,8 @@ export default function MatchCard({
   showMineOnly?: boolean
   /** Calendar day: one card, not a full-screen pager page. */
   embedded?: boolean
+  /** Route for the scoresheet Link (Settings stack needs its own path). */
+  scoresheetPathname?: string
 }) {
   const router = useRouter()
   const {t} = useTranslation()
@@ -498,7 +501,7 @@ export default function MatchCard({
       <View style={{paddingHorizontal: pad, paddingTop: pad}}>
         <Link
           href={{
-            pathname: '/Match',
+            pathname: scoresheetPathname as any,
             params: {params: JSON.stringify(matchInfo)},
           }}
           asChild>
