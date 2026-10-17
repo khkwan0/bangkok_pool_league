@@ -62,6 +62,8 @@ interface LeagueState {
   showPredictionsOnMatchCards: boolean
   /** Local preference: Player of the Week card on home. */
   showPlayerOfTheWeek: boolean
+  /** Local preference: download OTA and reload without a prompt. */
+  otaAutoReload: boolean
   /** Server opt-in for virtual betting. */
   bettingOptedIn: boolean
   /** Local-only hide for betting UI (does not clear server opt-in). */
@@ -118,6 +120,7 @@ const initialState: LeagueState = {
   showForumFabBadge: true,
   showPredictionsOnMatchCards: true,
   showPlayerOfTheWeek: true,
+  otaAutoReload: false,
   bettingOptedIn: false,
   hideBettingUi: false,
   bettingEnabled: false,
@@ -303,6 +306,12 @@ const LeagueReducer = (state: any, action: any) => {
       return {
         ...state,
         showPlayerOfTheWeek: action.payload,
+      }
+    }
+    case 'SET_OTA_AUTO_RELOAD': {
+      return {
+        ...state,
+        otaAutoReload: action.payload,
       }
     }
     case 'SET_BETTING_OPTED_IN': {
@@ -542,6 +551,22 @@ export const LeagueProvider = ({children}: any) => {
         console.error(e)
       }
     }
+    const getOtaAutoReload = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('ota_auto_reload')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (typeof parsed?.enabled === 'boolean') {
+            dispatch({
+              type: 'SET_OTA_AUTO_RELOAD',
+              payload: parsed.enabled,
+            })
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
     const getBettingOddsFormat = async () => {
       try {
         const stored = await AsyncStorage.getItem('betting_odds_format')
@@ -564,6 +589,7 @@ export const LeagueProvider = ({children}: any) => {
     getHideBettingUi()
     getShowPredictionsOnMatchCards()
     getShowPlayerOfTheWeek()
+    getOtaAutoReload()
     getBettingOddsFormat()
   }, [])
 
