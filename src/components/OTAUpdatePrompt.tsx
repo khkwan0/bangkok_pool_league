@@ -18,11 +18,11 @@ const OTA_AUTO_RELOAD_KEY = 'ota_auto_reload'
 async function readAutoReloadPreference(): Promise<boolean> {
   try {
     const stored = await AsyncStorage.getItem(OTA_AUTO_RELOAD_KEY)
-    if (!stored) return false
+    if (!stored) return true
     const parsed = JSON.parse(stored)
-    return typeof parsed?.enabled === 'boolean' ? parsed.enabled : false
+    return typeof parsed?.enabled === 'boolean' ? parsed.enabled : true
   } catch {
-    return false
+    return true
   }
 }
 

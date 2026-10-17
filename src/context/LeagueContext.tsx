@@ -120,7 +120,7 @@ const initialState: LeagueState = {
   showForumFabBadge: true,
   showPredictionsOnMatchCards: true,
   showPlayerOfTheWeek: true,
-  otaAutoReload: false,
+  otaAutoReload: true,
   bettingOptedIn: false,
   hideBettingUi: false,
   bettingEnabled: false,
