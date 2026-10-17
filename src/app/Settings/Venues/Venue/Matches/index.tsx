@@ -147,27 +147,40 @@ function isMatchAtVenue(
   row: VenueMatch,
   venueId: number,
   homeTeamIdsAtVenue: Set<number>,
+  venueName?: string,
 ): boolean {
   const effective = Number(row.effective_venue_id ?? 0)
   if (effective > 0) return effective === venueId
 
-  const override = Number(row.venue_id ?? 0)
-  if (override > 0) return override === venueId
-
-  // Upcoming /matches joins venues as v.* so `id` is the venue id while
-  // the fixture id lives in `match_id`.
-  if (
+  // Match-level venue override (not the home-team default).
+  // Skip when the upcoming /matches shape put venue columns on the row as
+  // v.* — then `id` is the venue id and `match_id` is the fixture id.
+  const upcomingVenueShape =
     row.match_id != null &&
     row.id != null &&
     Number(row.match_id) > 0 &&
     Number(row.match_id) !== Number(row.id)
-  ) {
+
+  if (upcomingVenueShape) {
     return Number(row.id) === venueId
   }
 
+  const override = Number(row.venue_id ?? 0)
+  if (override > 0) return override === venueId
+
   // League (and cups without an override): home side's home venue.
   const homeId = Number(row.home_team_id ?? 0)
-  return homeId > 0 && homeTeamIdsAtVenue.has(homeId)
+  if (homeId > 0 && homeTeamIdsAtVenue.has(homeId)) return true
+
+  // Last resort: venue name from the join (covers missing team maps).
+  if (venueName) {
+    const rowName = String(row.venue_name || row.name || '')
+      .trim()
+      .toLowerCase()
+    if (rowName && rowName === venueName.trim().toLowerCase()) return true
+  }
+
+  return false
 }
 
 function sortByDate(a: VenueMatch, b: VenueMatch) {
@@ -176,9 +189,16 @@ function sortByDate(a: VenueMatch, b: VenueMatch) {
   return aDate - bDate
 }
 
-/** Upcoming = not finalized, and display date is today-or-later (or unscheduled). */
+/**
+ * Upcoming = not finalized. Includes overdue/unplayed (status 1) and live (2).
+ * Turn the toggle off to also include completed (status 3).
+ */
 function isUpcomingMatch(row: VenueMatch): boolean {
-  if (Number(row.status_id) === 3) return false
+  const status = Number(row.status_id)
+  if (status === 3) return false
+  if (status === 1 || status === 2) return true
+
+  // Rows without status_id: today-or-later, or unscheduled/postponed.
   const raw = getMatchDisplayDate({
     date: row.date ?? '',
     original_date: row.original_date,
@@ -196,7 +216,9 @@ export default function VenueMatches() {
   const params = useLocalSearchParams()
   const parsed = useMemo(() => {
     try {
-      return params.params ? JSON.parse(params.params as string) : {}
+      const raw = params.params
+      const str = Array.isArray(raw) ? raw[0] : raw
+      return str ? JSON.parse(String(str)) : {}
     } catch {
       return {}
     }
@@ -253,29 +275,26 @@ export default function VenueMatches() {
     const {league: leagueApi, season: seasonApi} = fetchRef.current
     if (!venueId || !currentSeason) return []
 
-    const seasonId = Number(currentSeason)
     const homeTeamIdsAtVenue = new Set<number>()
     const logoByTeamId = new Map<number, string>()
     let venueLogo: string | undefined
 
+    // Load venue teams separately from season logos so a teams-API failure
+    // cannot wipe venue matching (which would hide all league fixtures).
     try {
-      const [venues, seasonTeams] = await Promise.all([
-        leagueApi.GetVenues(),
-        leagueApi.GetTeamsBySeason(currentSeason, {includeNoDivision: true}),
-      ])
-
+      const venues = await leagueApi.GetVenues()
       const list = Array.isArray(venues) ? venues : []
       const venue = list.find((v: {id?: number}) => Number(v.id) === venueId)
       venueLogo = resolveLogoUrl(
         (venue as {logo?: string | null} | undefined)?.logo,
       )
       const venueTeams = Array.isArray(venue?.teams) ? venue.teams : []
+      // GetVenues already scopes teams to the current season — do not also
+      // require team.season_id === state.season (FK aliases can differ).
       for (const team of venueTeams) {
-        if (
-          Number(team?.season_id) === seasonId &&
-          Number(team?.status_id) === 1 &&
-          Number(team?.id) > 0
-        ) {
+        const active =
+          team?.status_id == null || Number(team.status_id) === 1
+        if (active && Number(team?.id) > 0) {
           homeTeamIdsAtVenue.add(Number(team.id))
         }
         const logo = teamLogoFromRecord(team)
@@ -283,29 +302,49 @@ export default function VenueMatches() {
           logoByTeamId.set(Number(team.id), logo)
         }
       }
+    } catch (e) {
+      console.log('Failed to load venues for match filter', e)
+    }
 
-      // Season roster covers home + away sides (and cup teams with no division).
+    try {
+      const seasonTeams = await leagueApi.GetTeamsBySeason(currentSeason, {
+        includeNoDivision: true,
+      })
       const teams = Array.isArray(seasonTeams) ? seasonTeams : []
       for (const team of teams) {
         const id = Number(team?.id)
         if (!(id > 0)) continue
+        // Season roster covers home teams when the venues payload omitted them.
+        if (
+          Number(team?.venue_id) === venueId &&
+          (team?.status_id == null || Number(team.status_id) === 1)
+        ) {
+          homeTeamIdsAtVenue.add(id)
+        }
         const logo = teamLogoFromRecord(team)
-        // Prefer explicit team logos over an earlier venue-team fallback.
         if (logo) logoByTeamId.set(id, logo)
       }
     } catch (e) {
-      console.log('Failed to load venue/teams for match logos', e)
+      console.log('Failed to load season teams for match logos', e)
     }
 
     let rows: VenueMatch[] = []
+    let seasonFetchOk = false
     try {
       const bySeason = await leagueApi.GetMatchesBySeason(currentSeason)
       if (Array.isArray(bySeason)) {
         rows = bySeason
+        seasonFetchOk = true
       } else if (Array.isArray((bySeason as {data?: VenueMatch[]})?.data)) {
         rows = (bySeason as {data: VenueMatch[]}).data
+        seasonFetchOk = true
       }
     } catch {
+      seasonFetchOk = false
+    }
+
+    // Get() returns error objects without throwing — fall back to /matches.
+    if (!seasonFetchOk) {
       const upcoming = await seasonApi.GetMatches([
         'noteam=true',
         'newonly=false',
@@ -314,7 +353,9 @@ export default function VenueMatches() {
     }
 
     return rows
-      .filter(row => isMatchAtVenue(row, venueId, homeTeamIdsAtVenue))
+      .filter(row =>
+        isMatchAtVenue(row, venueId, homeTeamIdsAtVenue, venueName),
+      )
       .map(row => normalizeVenueMatch(row, logoByTeamId, venueLogo))
       .filter(row => Number(row.match_id) > 0)
       .sort(sortByDate)
@@ -546,7 +587,9 @@ export default function VenueMatches() {
               <Text
                 className="text-center text-base opacity-70"
                 style={{color: colors.text, maxWidth: 280}}>
-                {t('no_matches_this_season')}
+                {upcomingOnly && allFixtures.length > 0
+                  ? t('no_upcoming_matches')
+                  : t('no_matches_this_season')}
               </Text>
             </View>
           }

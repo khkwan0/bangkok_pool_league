@@ -17,7 +17,8 @@ type CrudButtonProps = {
   disabled?: boolean
   label: string
   labelColor: string
-  highlight: string
+  background: string
+  pressedBackground: string
   style?: StyleProp<ViewStyle>
 }
 
@@ -26,7 +27,8 @@ function CrudButton({
   disabled,
   label,
   labelColor,
-  highlight,
+  background,
+  pressedBackground,
   style,
 }: CrudButtonProps) {
   return (
@@ -34,18 +36,18 @@ function CrudButton({
       accessibilityRole="button"
       onPress={onPress}
       disabled={disabled}
-      hitSlop={4}
       style={({pressed}) => [
         {
-          minWidth: 40,
-          minHeight: 40,
-          paddingHorizontal: 10,
-          paddingVertical: 6,
-          borderRadius: 8,
+          minWidth: 52,
+          minHeight: 52,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 12,
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: disabled ? 0.3 : 1,
-          backgroundColor: pressed && !disabled ? highlight : 'transparent',
+          opacity: disabled ? 0.35 : 1,
+          backgroundColor:
+            pressed && !disabled ? pressedBackground : background,
           transform: [{scale: pressed && !disabled ? 0.96 : 1}],
         },
         style,
@@ -54,8 +56,8 @@ function CrudButton({
         <Text
           style={{
             color: labelColor,
-            fontSize: 18,
-            lineHeight: 22,
+            fontSize: 20,
+            lineHeight: 24,
             fontWeight: pressed && !disabled ? '700' : '600',
           }}>
           {label}
@@ -85,8 +87,10 @@ export default function QuickActionsPreference() {
   }, [initial])
 
   const selected = new Set(actions)
-  const moveHighlight = 'rgba(37, 99, 235, 0.18)'
-  const hideHighlight = 'rgba(220, 38, 38, 0.18)'
+  const moveBg = 'rgba(37, 99, 235, 0.12)'
+  const movePressed = 'rgba(37, 99, 235, 0.28)'
+  const hideBg = 'rgba(220, 38, 38, 0.12)'
+  const hidePressed = 'rgba(220, 38, 38, 0.28)'
   const addHighlight = 'rgba(37, 99, 235, 0.15)'
   const resetHighlight = 'rgba(37, 99, 235, 0.12)'
 
@@ -153,9 +157,9 @@ export default function QuickActionsPreference() {
               flexDirection: 'row',
               alignItems: 'center',
               marginBottom: 10,
-              paddingVertical: 6,
+              paddingVertical: 8,
               paddingHorizontal: 10,
-              borderRadius: 10,
+              borderRadius: 12,
               backgroundColor: colors.card,
             }}>
             <Text
@@ -169,18 +173,20 @@ export default function QuickActionsPreference() {
               }}>
               {t(def.labelKey)}
             </Text>
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
               <CrudButton
                 label="↑"
                 labelColor={colors.text}
-                highlight={moveHighlight}
+                background={moveBg}
+                pressedBackground={movePressed}
                 onPress={() => move(id, -1)}
                 disabled={index === 0}
               />
               <CrudButton
                 label="↓"
                 labelColor={colors.text}
-                highlight={moveHighlight}
+                background={moveBg}
+                pressedBackground={movePressed}
                 onPress={() => move(id, 1)}
                 disabled={index === actions.length - 1}
               />
@@ -188,9 +194,10 @@ export default function QuickActionsPreference() {
             <CrudButton
               label={t('hide')}
               labelColor="#dc2626"
-              highlight={hideHighlight}
+              background={hideBg}
+              pressedBackground={hidePressed}
               onPress={() => toggle(id)}
-              style={{marginLeft: 36, minWidth: 56}}
+              style={{marginLeft: 28, minWidth: 72}}
             />
           </View>
         )
@@ -216,7 +223,7 @@ export default function QuickActionsPreference() {
                 borderColor: pressed
                   ? '#2563eb'
                   : colors.border || colors.text,
-                borderRadius: 8,
+                borderRadius: 12,
                 paddingHorizontal: 12,
                 paddingVertical: 10,
                 justifyContent: 'center',
@@ -247,7 +254,7 @@ export default function QuickActionsPreference() {
           alignSelf: 'flex-start',
           paddingHorizontal: 8,
           paddingVertical: 10,
-          borderRadius: 8,
+          borderRadius: 12,
           backgroundColor: pressed ? resetHighlight : 'transparent',
           transform: [{scale: pressed ? 0.98 : 1}],
         })}>
