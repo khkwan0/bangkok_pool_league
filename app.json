@@ -128,6 +128,7 @@
       "expo-web-browser",
       "expo-font",
       "expo-image",
+      "expo-video",
       "expo-status-bar",
       "./plugins/withIosMarketingVersion",
       "./plugins/withIosSignEmbeddedFrameworks",

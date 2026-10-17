@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react'
-import {Pressable, Text, View} from 'react-native'
+import {Pressable, Text, View, type StyleProp, type ViewStyle} from 'react-native'
 import {useTranslation} from 'react-i18next'
 import {useTheme} from 'expo-router/react-navigation'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -11,6 +11,59 @@ import {
   resolveFabQuickActions,
   type QuickActionId,
 } from '@/lib/quickActions'
+
+type CrudButtonProps = {
+  onPress: () => void
+  disabled?: boolean
+  label: string
+  labelColor: string
+  highlight: string
+  style?: StyleProp<ViewStyle>
+}
+
+function CrudButton({
+  onPress,
+  disabled,
+  label,
+  labelColor,
+  highlight,
+  style,
+}: CrudButtonProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={4}
+      style={({pressed}) => [
+        {
+          minWidth: 40,
+          minHeight: 40,
+          paddingHorizontal: 10,
+          paddingVertical: 6,
+          borderRadius: 8,
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: disabled ? 0.3 : 1,
+          backgroundColor: pressed && !disabled ? highlight : 'transparent',
+          transform: [{scale: pressed && !disabled ? 0.96 : 1}],
+        },
+        style,
+      ]}>
+      {({pressed}) => (
+        <Text
+          style={{
+            color: labelColor,
+            fontSize: 18,
+            lineHeight: 22,
+            fontWeight: pressed && !disabled ? '700' : '600',
+          }}>
+          {label}
+        </Text>
+      )}
+    </Pressable>
+  )
+}
 
 /**
  * Show/hide + reorder FAB quick-action items; persists via user preferences API.
@@ -32,6 +85,10 @@ export default function QuickActionsPreference() {
   }, [initial])
 
   const selected = new Set(actions)
+  const moveHighlight = 'rgba(37, 99, 235, 0.18)'
+  const hideHighlight = 'rgba(220, 38, 38, 0.18)'
+  const addHighlight = 'rgba(37, 99, 235, 0.15)'
+  const resetHighlight = 'rgba(37, 99, 235, 0.12)'
 
   async function persist(next: QuickActionId[] | null) {
     if (next != null && next.length === 0) {
@@ -69,14 +126,21 @@ export default function QuickActionsPreference() {
     <View style={{flex: 1, padding: 16}}>
       <Text
         style={{
-          fontSize: 16,
+          fontSize: 20,
           fontWeight: 'bold',
           color: colors.text,
-          marginBottom: 4,
+          marginBottom: 6,
         }}>
         {t('fab_quick_actions_settings')}
       </Text>
-      <Text style={{color: colors.text, opacity: 0.7, marginBottom: 12}}>
+      <Text
+        style={{
+          color: colors.text,
+          opacity: 0.7,
+          fontSize: 16,
+          lineHeight: 22,
+          marginBottom: 20,
+        }}>
         {t('fab_quick_actions_settings_description')}
       </Text>
 
@@ -88,64 +152,116 @@ export default function QuickActionsPreference() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              marginBottom: 8,
-              paddingVertical: 8,
+              marginBottom: 10,
+              paddingVertical: 6,
               paddingHorizontal: 10,
-              borderRadius: 8,
+              borderRadius: 10,
               backgroundColor: colors.card,
             }}>
-            <Text style={{flex: 1, color: colors.text}}>
+            <Text
+              style={{
+                flex: 1,
+                color: colors.text,
+                fontSize: 17,
+                lineHeight: 22,
+                fontWeight: '600',
+                paddingRight: 8,
+              }}>
               {t(def.labelKey)}
             </Text>
-            <Pressable
-              onPress={() => move(id, -1)}
-              disabled={index === 0}
-              style={{opacity: index === 0 ? 0.3 : 1, paddingHorizontal: 8}}>
-              <Text style={{color: colors.text}}>↑</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => move(id, 1)}
-              disabled={index === actions.length - 1}
-              style={{
-                opacity: index === actions.length - 1 ? 0.3 : 1,
-                paddingHorizontal: 8,
-              }}>
-              <Text style={{color: colors.text}}>↓</Text>
-            </Pressable>
-            <Pressable onPress={() => toggle(id)} style={{paddingHorizontal: 8}}>
-              <Text style={{color: '#dc2626'}}>{t('hide')}</Text>
-            </Pressable>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+              <CrudButton
+                label="↑"
+                labelColor={colors.text}
+                highlight={moveHighlight}
+                onPress={() => move(id, -1)}
+                disabled={index === 0}
+              />
+              <CrudButton
+                label="↓"
+                labelColor={colors.text}
+                highlight={moveHighlight}
+                onPress={() => move(id, 1)}
+                disabled={index === actions.length - 1}
+              />
+            </View>
+            <CrudButton
+              label={t('hide')}
+              labelColor="#dc2626"
+              highlight={hideHighlight}
+              onPress={() => toggle(id)}
+              style={{marginLeft: 36, minWidth: 56}}
+            />
           </View>
         )
       })}
 
-      <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 10,
+          marginTop: 8,
+        }}>
         {ALL_QUICK_ACTIONS.filter(id => !selected.has(id)).map(id => {
           const def = QUICK_ACTION_DEFS[id]
           return (
             <Pressable
               key={id}
+              accessibilityRole="button"
               onPress={() => toggle(id)}
-              style={{
+              style={({pressed}) => ({
                 borderWidth: 1,
                 borderStyle: 'dashed',
-                borderColor: colors.border || colors.text,
+                borderColor: pressed
+                  ? '#2563eb'
+                  : colors.border || colors.text,
                 borderRadius: 8,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-              }}>
-              <Text style={{color: colors.text}}>+ {t(def.labelKey)}</Text>
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                justifyContent: 'center',
+                backgroundColor: pressed ? addHighlight : 'transparent',
+                transform: [{scale: pressed ? 0.97 : 1}],
+              })}>
+              {({pressed}) => (
+                <Text
+                  style={{
+                    color: pressed ? '#2563eb' : colors.text,
+                    fontSize: 16,
+                    lineHeight: 20,
+                    fontWeight: pressed ? '600' : '500',
+                  }}>
+                  + {t(def.labelKey)}
+                </Text>
+              )}
             </Pressable>
           )
         })}
       </View>
 
       <Pressable
+        accessibilityRole="button"
         onPress={() => void persist(null)}
-        style={{marginTop: 16}}>
-        <Text style={{color: '#2563eb'}}>
-          {t('fab_quick_actions_reset_default')}
-        </Text>
+        style={({pressed}) => ({
+          marginTop: 16,
+          alignSelf: 'flex-start',
+          paddingHorizontal: 8,
+          paddingVertical: 10,
+          borderRadius: 8,
+          backgroundColor: pressed ? resetHighlight : 'transparent',
+          transform: [{scale: pressed ? 0.98 : 1}],
+        })}>
+        {({pressed}) => (
+          <Text
+            style={{
+              color: '#2563eb',
+              fontSize: 16,
+              lineHeight: 20,
+              fontWeight: pressed ? '700' : '600',
+            }}>
+            {t('fab_quick_actions_reset_default')}
+          </Text>
+        )}
       </Pressable>
     </View>
   )
