@@ -852,6 +852,11 @@ export default function MatchCardOld({
           <MatchPredictionRow
             matchId={Number(matchInfo.match_id ?? 0)}
             accent={accent}
+            pathname={
+              scoresheetPathname === '/Match'
+                ? '/Predictions/[matchId]'
+                : `${scoresheetPathname}/Predictions/[matchId]`
+            }
           />
         </View>
 
