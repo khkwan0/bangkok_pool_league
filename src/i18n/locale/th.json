@@ -452,6 +452,8 @@
   "postpone_indefinitely": "เลื่อนไม่มีกำหนด",
   "postpone_match": "คุณต้องการเลื่อนการแข่งขันนี้อย่างไร?",
   "postponed": "เลื่อนออกไป",
+  "postponed_by_player": "เลื่อนโดย {{name}} ({{team}})",
+  "postponed_by_player_no_team": "เลื่อนโดย {{name}}",
   "postponed_count": "เลื่อน {{count}} นัด",
   "preferences": "การตั้งค่า",
   "privacy_policy": "นโยบายความเป็นส่วนตัว",

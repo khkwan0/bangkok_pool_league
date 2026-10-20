@@ -453,6 +453,8 @@
   "postpone_indefinitely": "Postpone Indefinitely",
   "postpone_match": "How would you like to reschedule this match?",
   "postponed": "Postponed",
+  "postponed_by_player": "Postponed by {{name}} ({{team}})",
+  "postponed_by_player_no_team": "Postponed by {{name}}",
   "postponed_count": "{{count}} postponed",
   "preferences": "Preferences",
   "privacy_policy": "Privacy Policy",

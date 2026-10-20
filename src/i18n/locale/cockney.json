@@ -436,6 +436,8 @@
   "postpone_indefinitely": "Put Off For Good",
   "postpone_match": "How would you like to put this match off?",
   "postponed": "Put off",
+  "postponed_by_player": "Put off by {{name}} ({{team}})",
+  "postponed_by_player_no_team": "Put off by {{name}}",
   "postponed_count": "{{count}} put off",
   "preferences": "Preferences",
   "privacy_policy": "Privacy Policy",
