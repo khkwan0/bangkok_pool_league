@@ -463,6 +463,11 @@ export default function MatchCard({
     stage_key: matchInfo.stage_key,
     division_name: matchInfo.division_name,
     fallback: t('cup_match'),
+    stageKeyLabels: {
+      gold: t('cups_gold'),
+      silver: t('cups_silver'),
+      bronze: t('cups_bronze'),
+    },
   })
   const accent = isTournament ? CUP_ACCENT : ACCENTS[idx % ACCENTS.length]
   const bothConfirmed =

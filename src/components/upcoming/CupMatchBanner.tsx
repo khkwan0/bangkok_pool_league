@@ -11,17 +11,27 @@ const STAGE_KEY_LABELS: Record<string, string> = {
   main: 'Main Cup',
 }
 
+const KNOWN_STAGE_KEYS = new Set(Object.keys(STAGE_KEY_LABELS))
+
 export function formatCupBannerLabel(args: {
   round?: number | null
   stage_label?: string | null
   stage_key?: string | null
   division_name?: string | null
   fallback?: string
+  /** Localized labels for known stage keys (gold/silver/bronze/…). */
+  stageKeyLabels?: Partial<Record<string, string>>
 }): string {
   const key = String(args.stage_key || '')
     .trim()
     .toLowerCase()
+  const known =
+    (key &&
+      KNOWN_STAGE_KEYS.has(key) &&
+      (args.stageKeyLabels?.[key] || STAGE_KEY_LABELS[key])) ||
+    ''
   const stage =
+    known ||
     String(args.stage_label || '').trim() ||
     STAGE_KEY_LABELS[key] ||
     String(args.division_name || '').trim() ||
@@ -29,7 +39,7 @@ export function formatCupBannerLabel(args: {
 
   const round = Number(args.round)
   if (Number.isFinite(round) && round > 0 && stage) {
-    return `Round ${round} ${stage}`
+    return `Round ${round} · ${stage}`
   }
   return stage
 }

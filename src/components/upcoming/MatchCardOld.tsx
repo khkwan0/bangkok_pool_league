@@ -477,6 +477,11 @@ export default function MatchCardOld({
     stage_key: matchInfo.stage_key,
     division_name: matchInfo.division_name,
     fallback: t('cup_match'),
+    stageKeyLabels: {
+      gold: t('cups_gold'),
+      silver: t('cups_silver'),
+      bronze: t('cups_bronze'),
+    },
   })
   const bothConfirmed =
     matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0
