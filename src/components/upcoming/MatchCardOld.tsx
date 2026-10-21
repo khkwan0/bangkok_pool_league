@@ -4,6 +4,7 @@ import {MatchInfoDataType} from '@/components/Match/types'
 import {ThemedText as Text} from '@/components/ThemedText'
 import CupMatchBanner, {
   formatCupBannerLabel,
+  getCupTierTheme,
 } from '@/components/upcoming/CupMatchBanner'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
@@ -243,6 +244,32 @@ function mixAccent(hex: string, toward: 0 | 255, amount: number) {
   return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`
 }
 
+/** Apply captain/player team role synchronously so cards don't grow after remount. */
+function withUserTeamRole(
+  info: MatchInfoDataType,
+  user: {teams?: Array<{id: number; team_role_id: number}>} | null | undefined,
+): MatchInfoDataType {
+  const teams = user?.teams
+  if (!Array.isArray(teams) || teams.length === 0) return info
+  for (const team of teams) {
+    if (team.id === info.home_team_id) {
+      return {
+        ...info,
+        team_role_id: team.team_role_id,
+        player_team_id: info.home_team_id,
+      }
+    }
+    if (team.id === info.away_team_id) {
+      return {
+        ...info,
+        team_role_id: team.team_role_id,
+        player_team_id: info.away_team_id,
+      }
+    }
+  }
+  return info
+}
+
 function AccentButton({
   accent,
   onPress,
@@ -305,51 +332,30 @@ export default function MatchCardOld({
   const match = useMatch()
   const user = state.user
   const isDark = useColorScheme() === 'dark'
-  const [matchInfo, setMatchInfo] = React.useState<MatchInfoDataType | null>(
-    null,
+  const [matchInfo, setMatchInfo] = React.useState<MatchInfoDataType>(() =>
+    withUserTeamRole(propsMatchInfo, state.user),
   )
-  const [isMounted, setIsMounted] = React.useState(false)
   const [showInfo, setShowInfo] = React.useState(false)
   const {width} = Dimensions.get('window')
   const isTournamentPreview = Number(propsMatchInfo?.tournament_id) > 0
+  const previewTier = getCupTierTheme(propsMatchInfo?.stage_key)
   const accent = isTournamentPreview
-    ? '#F59E0B'
+    ? previewTier.accent
     : ACCENTS[idx % ACCENTS.length]
   const theme = getCardTheme(isDark, accent)
   const logoSize = Math.min(width * 0.16, 68)
 
-  React.useEffect(() => {
-    setMatchInfo(propsMatchInfo)
-    setIsMounted(true)
-  }, [propsMatchInfo])
+  const teamRoleKey =
+    user?.teams?.map((t: {id: number; team_role_id: number}) =>
+      `${t.id}:${t.team_role_id}`,
+    ).join('|') ?? ''
 
   React.useEffect(() => {
-    if (
-      isMounted &&
-      matchInfo &&
-      typeof user?.teams !== 'undefined' &&
-      user.teams.length > 0
-    ) {
-      let i = 0
-      let found = false
-      while (i < user.teams.length && !found) {
-        if (user.teams[i].id === matchInfo.home_team_id) {
-          const next = {...matchInfo}
-          next.team_role_id = user.teams[i].team_role_id
-          next.player_team_id = matchInfo.home_team_id
-          setMatchInfo({...next})
-          found = true
-        } else if (user.teams[i].id === matchInfo.away_team_id) {
-          const next = {...matchInfo}
-          next.team_role_id = user.teams[i].team_role_id
-          next.player_team_id = matchInfo.away_team_id
-          setMatchInfo({...next})
-          found = true
-        }
-        i++
-      }
-    }
-  }, [isMounted])
+    setMatchInfo(withUserTeamRole(propsMatchInfo, user))
+    // Intentionally keyed by teamRoleKey so a new user object identity alone
+    // does not wipe local confirm/postpone state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propsMatchInfo, user?.id, teamRoleKey])
 
   function ShowLocation(
     lat: number | undefined,
@@ -468,9 +474,8 @@ export default function MatchCardOld({
     [matchInfo?.homeStats, matchInfo?.awayStats],
   )
 
-  if (!isMounted || !matchInfo) return null
-
   const isTournament = Number(matchInfo.tournament_id) > 0
+  const cupTier = getCupTierTheme(matchInfo.stage_key)
   const cupBannerLabel = formatCupBannerLabel({
     round: matchInfo.round,
     stage_label: matchInfo.stage_label,
@@ -628,16 +633,19 @@ export default function MatchCardOld({
         style={[
           styles.board,
           {
-            borderColor: isTournament
-              ? 'rgba(251,191,36,0.85)'
-              : theme.boardBorder,
+            borderColor: isTournament ? cupTier.border : theme.boardBorder,
             borderWidth: isTournament ? 2 : 1,
             paddingTop: isTournament ? 0 : 16,
           },
         ]}>
         <View style={[styles.stripe, {backgroundColor: accent}]} />
 
-        {isTournament ? <CupMatchBanner label={cupBannerLabel} /> : null}
+        {isTournament ? (
+          <CupMatchBanner
+            label={cupBannerLabel}
+            stageKey={matchInfo.stage_key}
+          />
+        ) : null}
 
         <Link
           href={{

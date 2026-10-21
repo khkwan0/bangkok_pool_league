@@ -5,6 +5,7 @@ import {MatchInfoDataType} from '@/components/Match/types'
 import {ThemedText as Text} from '@/components/ThemedText'
 import CupMatchBanner, {
   formatCupBannerLabel,
+  getCupTierTheme,
 } from '@/components/upcoming/CupMatchBanner'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {useMatch} from '@/hooks/useMatch'
@@ -45,10 +46,6 @@ const ACCENTS = [
   '#8B5CF6',
 ] as const
 
-const CUP_ACCENT = '#F59E0B'
-const CUP_BOARD_BG = 'rgba(69,40,8,0.55)'
-const CUP_GLOW = 'rgba(245,158,11,0.28)'
-
 function getCardTheme(isDark: boolean) {
   if (isDark) {
     return {
@@ -75,7 +72,6 @@ function getCardTheme(isDark: boolean) {
       indefiniteBg: 'rgba(239,68,68,0.14)',
       indefiniteBorder: 'rgba(248,113,113,0.35)',
       indefiniteText: '#FCA5A5',
-      cupBoardBg: CUP_BOARD_BG,
     }
   }
   return {
@@ -102,7 +98,6 @@ function getCardTheme(isDark: boolean) {
     indefiniteBg: 'rgba(239,68,68,0.08)',
     indefiniteBorder: 'rgba(220,38,38,0.28)',
     indefiniteText: '#DC2626',
-    cupBoardBg: '#FFFBEB',
   }
 }
 
@@ -161,6 +156,32 @@ function hasLogoUri(uri?: string | null) {
   if (/\/logos\/?$/i.test(trimmed)) return false
   if (/\/(null|undefined)(\?|$)/i.test(trimmed)) return false
   return true
+}
+
+/** Apply captain/player team role synchronously so cards don't grow after remount. */
+function withUserTeamRole(
+  info: MatchInfoDataType,
+  user: {teams?: Array<{id: number; team_role_id: number}>} | null | undefined,
+): MatchInfoDataType {
+  const teams = user?.teams
+  if (!Array.isArray(teams) || teams.length === 0) return info
+  for (const team of teams) {
+    if (team.id === info.home_team_id) {
+      return {
+        ...info,
+        team_role_id: team.team_role_id,
+        player_team_id: info.home_team_id,
+      }
+    }
+    if (team.id === info.away_team_id) {
+      return {
+        ...info,
+        team_role_id: team.team_role_id,
+        player_team_id: info.away_team_id,
+      }
+    }
+  }
+  return info
 }
 
 function TeamLogoMark({
@@ -235,56 +256,46 @@ export default function MatchCard({
   const match = useMatch()
   const teams = useTeams()
   const user = state.user
-  const [matchInfo, setMatchInfo] = React.useState<MatchInfoDataType | null>(
-    null,
+  const [matchInfo, setMatchInfo] = React.useState<MatchInfoDataType>(() =>
+    withUserTeamRole(propsMatchInfo, state.user),
   )
-  const [isMounted, setIsMounted] = React.useState(false)
   const {width} = Dimensions.get('window')
   const pad = Math.max(16, width * 0.04)
   const logoSize = Math.min(width * 0.22, 96)
   const isDark = useColorScheme() === 'dark'
   const theme = getCardTheme(isDark)
 
-  React.useEffect(() => {
-    setMatchInfo(propsMatchInfo)
-    setIsMounted(true)
-  }, [propsMatchInfo])
+  const teamRoleKey =
+    user?.teams?.map((t: {id: number; team_role_id: number}) =>
+      `${t.id}:${t.team_role_id}`,
+    ).join('|') ?? ''
 
   React.useEffect(() => {
-    if (!isMounted || !matchInfo || !user?.id) return
+    setMatchInfo(withUserTeamRole(propsMatchInfo, user))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propsMatchInfo, user?.id, teamRoleKey])
+
+  React.useEffect(() => {
+    if (!user?.id) return
+    // Already resolved from user.teams — skip roster fetch that can resize the card.
+    if (
+      Array.isArray(user.teams) &&
+      user.teams.some(
+        (team: {id: number}) =>
+          team.id === matchInfo.home_team_id ||
+          team.id === matchInfo.away_team_id,
+      )
+    ) {
+      return
+    }
 
     let cancelled = false
 
     async function resolveMembership() {
-      if (Array.isArray(user.teams) && user.teams.length > 0) {
-        for (const team of user.teams) {
-          if (team.id === matchInfo!.home_team_id) {
-            if (!cancelled) {
-              setMatchInfo({
-                ...matchInfo!,
-                team_role_id: team.team_role_id,
-                player_team_id: matchInfo!.home_team_id,
-              })
-            }
-            return
-          }
-          if (team.id === matchInfo!.away_team_id) {
-            if (!cancelled) {
-              setMatchInfo({
-                ...matchInfo!,
-                team_role_id: team.team_role_id,
-                player_team_id: matchInfo!.away_team_id,
-              })
-            }
-            return
-          }
-        }
-      }
-
-      const homeId = Number(matchInfo!.home_team_id)
-      const awayId = Number(matchInfo!.away_team_id)
+      const homeId = Number(matchInfo.home_team_id)
+      const awayId = Number(matchInfo.away_team_id)
       if (!homeId || !awayId) return
-      const matchId = Number(matchInfo!.match_id ?? 0) || null
+      const matchId = Number(matchInfo.match_id ?? 0) || null
 
       const [homeRes, awayRes] = await Promise.all([
         teams.GetPlayers(homeId, true, matchId),
@@ -309,11 +320,11 @@ export default function MatchCard({
           Number(p.playerId ?? p.player_id ?? p.id) === uid,
       )
       if (onHome) {
-        setMatchInfo({
-          ...matchInfo!,
+        setMatchInfo(prev => ({
+          ...prev,
           team_role_id: Number(onHome.team_role_id ?? 0),
           player_team_id: homeId,
-        })
+        }))
         return
       }
       const onAway = awayPlayers.find(
@@ -321,11 +332,11 @@ export default function MatchCard({
           Number(p.playerId ?? p.player_id ?? p.id) === uid,
       )
       if (onAway) {
-        setMatchInfo({
-          ...matchInfo!,
+        setMatchInfo(prev => ({
+          ...prev,
           team_role_id: Number(onAway.team_role_id ?? 0),
           player_team_id: awayId,
-        })
+        }))
       }
     }
 
@@ -334,7 +345,7 @@ export default function MatchCard({
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted, user?.id, matchInfo?.home_team_id, matchInfo?.away_team_id])
+  }, [user?.id, matchInfo.home_team_id, matchInfo.away_team_id])
 
   function ShowLocation(
     lat: number | undefined,
@@ -453,8 +464,6 @@ export default function MatchCard({
     [matchInfo?.homeStats, matchInfo?.awayStats],
   )
 
-  if (!isMounted || !matchInfo) return null
-
   const isTournament = Number(matchInfo.tournament_id) > 0
   const divisionName = String(matchInfo.division_name || '').trim()
   const cupBannerLabel = formatCupBannerLabel({
@@ -469,7 +478,8 @@ export default function MatchCard({
       bronze: t('cups_bronze'),
     },
   })
-  const accent = isTournament ? CUP_ACCENT : ACCENTS[idx % ACCENTS.length]
+  const cupTier = getCupTierTheme(matchInfo.stage_key)
+  const accent = isTournament ? cupTier.accent : ACCENTS[idx % ACCENTS.length]
   const bothConfirmed =
     matchInfo.home_confirmed > 0 && matchInfo.away_confirmed > 0
   const dateLabel = formatMatchDate(getMatchDisplayDate(matchInfo))
@@ -484,6 +494,7 @@ export default function MatchCard({
   const homeNameSize = teamNameSize(matchInfo.home_team_short_name)
   const awayNameSize = teamNameSize(matchInfo.away_team_short_name)
   const pageColors = isTournament ? theme.cupPage : theme.page
+  const cupBoardBg = isDark ? cupTier.boardBgDark : cupTier.boardBgLight
 
   const cardBody = (
     <>
@@ -499,7 +510,7 @@ export default function MatchCard({
       <View
         style={[
           styles.accentGlow,
-          {backgroundColor: isTournament ? CUP_GLOW : accent},
+          {backgroundColor: isTournament ? cupTier.glow : accent},
         ]}
       />
 
@@ -515,10 +526,8 @@ export default function MatchCard({
               style={[
                 styles.board,
                 {
-                  backgroundColor: isTournament
-                    ? theme.cupBoardBg
-                    : theme.boardBg,
-                  borderColor: isTournament ? '#F59E0B' : theme.boardBorder,
+                  backgroundColor: isTournament ? cupBoardBg : theme.boardBg,
+                  borderColor: isTournament ? cupTier.border : theme.boardBorder,
                 },
                 isTournament
                   ? {
@@ -531,7 +540,12 @@ export default function MatchCard({
                 <View style={[styles.stripe, {backgroundColor: accent}]} />
               ) : null}
 
-              {isTournament ? <CupMatchBanner label={cupBannerLabel} /> : null}
+              {isTournament ? (
+                <CupMatchBanner
+                  label={cupBannerLabel}
+                  stageKey={matchInfo.stage_key}
+                />
+              ) : null}
 
               <View style={isTournament ? {paddingTop: 14} : null}>
               {(!isTournament && divisionName) || bothConfirmed ? (
