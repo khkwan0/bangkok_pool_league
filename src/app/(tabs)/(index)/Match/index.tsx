@@ -16,17 +16,28 @@ import {
   resolveFormatSubsections,
   resolveNoPlayers,
 } from '@/lib/matchFormat'
+import {resolveMatchInfoFromParams} from '@/lib/matchRouteParams'
 import {router, useLocalSearchParams} from 'expo-router'
 import {useNavigation} from 'expo-router/react-navigation'
 import React from 'react'
 import {AppState, FlatList, View} from 'react-native'
 
-export default function ScoreSheet() {
+export type ScoreSheetProps = {
+  /** When set, show this match in a parent AdaptiveSplit instead of reading the route. */
+  embedMatchInfo?: Record<string, unknown>
+  /** Embedded in a split detail pane: skip stack title / back navigation. */
+  embedded?: boolean
+}
+
+export default function ScoreSheet({
+  embedMatchInfo,
+  embedded = false,
+}: ScoreSheetProps = {}) {
   const {state, dispatch, SocketConnect, SocketDisconnect, UpdateTeams}: any =
     useMatchContext()
   const {RefreshUpcoming}: any = useLeagueContext()
   const match = useMatch()
-  const {params} = useLocalSearchParams()
+  const routeParams = useLocalSearchParams()
   const [isMounted, setIsMounted] = React.useState(false)
   const [headerSticky, setHeaderSticky] = React.useState(true)
   const navigation = useNavigation()
@@ -34,16 +45,14 @@ export default function ScoreSheet() {
   const listContentStyle = useTabListContentContainerStyle({paddingBottom: 16})
   // Route params can be cleared (e.g. dismissTo('/Match') after picking a
   // player) while MatchContext still holds the active scoresheet.
-  const routeMatchInfo = React.useMemo(() => {
-    try {
-      if (typeof params === 'string') {
-        return JSON.parse(params)
-      }
-    } catch {
-      // ignore malformed route params
-    }
-    return {}
-  }, [params])
+  const routeMatchInfo = React.useMemo(
+    () =>
+      resolveMatchInfoFromParams(
+        routeParams as Record<string, unknown>,
+        embedMatchInfo,
+      ),
+    [routeParams, embedMatchInfo],
+  )
   const matchInfo =
     routeMatchInfo?.match_id != null
       ? routeMatchInfo
@@ -59,12 +68,13 @@ export default function ScoreSheet() {
   const [refreshing, setRefreshing] = React.useState(false)
 
   React.useEffect(() => {
+    if (embedded) return
     if (resolvedMatchId) {
       navigation.setOptions({title: '#' + resolvedMatchId})
     } else if (!state?.matchInfo?.match_id) {
       router.back()
     }
-  }, [resolvedMatchId])
+  }, [resolvedMatchId, embedded, navigation, state?.matchInfo?.match_id])
 
   React.useEffect(() => {
     // Listen for app state changes (background to foreground)

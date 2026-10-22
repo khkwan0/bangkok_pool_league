@@ -1,7 +1,9 @@
 import type {MatchInfoDataType} from '@/components/Match/types'
+import {AdaptiveSplit} from '@/components/layout/AdaptiveSplit'
 import MatchCard from '@/components/upcoming/MatchCard'
 import MatchCardOld from '@/components/upcoming/MatchCardOld'
 import {useLeagueContext} from '@/context/LeagueContext'
+import {useIsRegularLayout} from '@/hooks/useLayoutMode'
 import {BANGKOK_ZONE, nowInBangkok, toBangkok} from '@/lib/bangkokTime'
 import {
   getMatchDisplayDate,
@@ -17,6 +19,7 @@ import {
   ScrollView,
   Text,
   useColorScheme,
+  useWindowDimensions,
   View,
   type StyleProp,
   type ViewStyle,
@@ -76,19 +79,6 @@ function matchDayKey(match: CalendarFixture): string | null {
   return null
 }
 
-function matchTimeLabel(match: CalendarFixture): string | null {
-  const raw = getMatchDisplayDate({
-    date: match.date ?? '',
-    original_date: match.original_date,
-  })
-  if (!raw || isPostponedDateLabel(raw)) return null
-  const dt = toBangkok(raw)
-  if (!dt.isValid || (dt.hour === 0 && dt.minute === 0 && dt.second === 0)) {
-    return null
-  }
-  return dt.toFormat('h:mm a')
-}
-
 function groupFixtures(fixtures: CalendarFixture[]) {
   const byDay = new Map<string, IndexedMatch[]>()
   const unscheduled: IndexedMatch[] = []
@@ -124,12 +114,14 @@ function groupFixtures(fixtures: CalendarFixture[]) {
   return {byDay, unscheduled}
 }
 
+/** Prefer today if it has matches, else the next upcoming match day. */
 function initialFocus(fixtures: CalendarFixture[]) {
   const {byDay} = groupFixtures(fixtures)
   const today = nowInBangkok()
   const todayKey = today.toFormat('yyyy-MM-dd')
   const keys = [...byDay.keys()].sort()
-  const pick = keys.find(key => key >= todayKey) ?? todayKey
+  const pick =
+    keys.find(key => key >= todayKey) ?? keys[keys.length - 1] ?? todayKey
   const month = DateTime.fromISO(pick, {zone: BANGKOK_ZONE})
   return {
     selectedKey: pick,
@@ -173,6 +165,10 @@ export default function MatchesCalendar({
   const textColor = isDark ? '#F8FAFC' : '#111827'
   const mutedColor = isDark ? '#94A3B8' : '#64748B'
   const gridBorder = isDark ? '#2A2A2A' : '#E5E7EB'
+  const isRegular = useIsRegularLayout()
+  const {width, height} = useWindowDimensions()
+  // Duo open landscape (and other regular-width landscape): calendar | matches.
+  const useSplit = isRegular && width > height
 
   const {byDay, unscheduled} = React.useMemo(
     () => groupFixtures(fixtures),
@@ -184,6 +180,50 @@ export default function MatchesCalendar({
   const [visibleMonth, setVisibleMonth] = React.useState(
     () => initialFocus(fixtures).visibleMonth,
   )
+  const userPickedRef = React.useRef(false)
+  const compactScrollRef = React.useRef<ScrollView>(null)
+  const detailScrollRef = React.useRef<ScrollView>(null)
+  const matchesOffsetY = React.useRef(0)
+  const pendingScrollRef = React.useRef(false)
+
+  const scrollMatchesIntoView = React.useCallback(() => {
+    pendingScrollRef.current = true
+    const run = () => {
+      if (!pendingScrollRef.current) return
+      pendingScrollRef.current = false
+      if (useSplit) {
+        detailScrollRef.current?.scrollTo({y: 0, animated: true})
+        return
+      }
+      compactScrollRef.current?.scrollTo({
+        y: Math.max(0, matchesOffsetY.current),
+        animated: true,
+      })
+    }
+    // Defer so month-grid height / day cards can relayout first.
+    requestAnimationFrame(() => {
+      setTimeout(run, 32)
+    })
+  }, [useSplit])
+
+  // Fixtures often load after mount — auto-select next upcoming (until the user picks a day).
+  React.useEffect(() => {
+    if (fixtures.length === 0) return
+    const focus = initialFocus(fixtures)
+    const grouped = groupFixtures(fixtures)
+    setSelectedKey(prev => {
+      if (!userPickedRef.current) return focus.selectedKey
+      if (!grouped.byDay.has(prev)) {
+        userPickedRef.current = false
+        return focus.selectedKey
+      }
+      return prev
+    })
+    if (!userPickedRef.current) {
+      setVisibleMonth(focus.visibleMonth)
+    }
+  }, [fixtures])
+
   const days = React.useMemo(
     () => monthGrid(visibleMonth),
     [visibleMonth],
@@ -223,26 +263,8 @@ export default function MatchesCalendar({
     return count
   }, [byDay, visibleMonth])
 
-  const scrollRef = React.useRef<ScrollView>(null)
-  const matchesOffsetY = React.useRef(0)
-  const pendingScrollRef = React.useRef(false)
-
-  const scrollMatchesIntoView = React.useCallback(() => {
-    pendingScrollRef.current = true
-    const run = () => {
-      if (!pendingScrollRef.current) return
-      pendingScrollRef.current = false
-      scrollRef.current?.scrollTo({
-        y: Math.max(0, matchesOffsetY.current),
-        animated: true,
-      })
-    }
-    requestAnimationFrame(() => {
-      setTimeout(run, 32)
-    })
-  }, [])
-
   function selectDay(day: DateTime) {
+    userPickedRef.current = true
     setSelectedKey(day.toFormat('yyyy-MM-dd'))
     if (!day.hasSame(visibleMonth, 'month')) {
       setVisibleMonth(day.startOf('month'))
@@ -251,6 +273,7 @@ export default function MatchesCalendar({
   }
 
   function goToToday() {
+    userPickedRef.current = true
     const now = nowInBangkok()
     setVisibleMonth(now.startOf('month'))
     setSelectedKey(now.toFormat('yyyy-MM-dd'))
@@ -259,9 +282,288 @@ export default function MatchesCalendar({
 
   const todayKey = nowInBangkok().toFormat('yyyy-MM-dd')
 
+  const monthHeader = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+        gap: 8,
+      }}>
+      <View style={{flex: 1, minWidth: 0}}>
+        <Text className="text-xl font-bold" style={{color: textColor}}>
+          {visibleMonth.setLocale(locale).toFormat('LLLL yyyy')}
+        </Text>
+        <Text style={{color: mutedColor, marginTop: 2}}>
+          {monthCount} {monthCount === 1 ? t('match') : t('matches')}
+        </Text>
+      </View>
+      <NavButton
+        icon="chevron-left"
+        label={t('previous_month')}
+        isDark={isDark}
+        onPress={() => setVisibleMonth(month => month.minus({months: 1}))}
+      />
+      <Pressable
+        accessibilityRole="button"
+        onPress={goToToday}
+        style={({pressed}) => ({
+          backgroundColor: pressed ? '#2A002E' : ACCENT,
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+        })}>
+        <Text className="font-semibold" style={{color: '#FFFFFF'}}>
+          {t('today')}
+        </Text>
+      </Pressable>
+      <NavButton
+        icon="chevron-right"
+        label={t('next_month')}
+        isDark={isDark}
+        onPress={() => setVisibleMonth(month => month.plus({months: 1}))}
+      />
+    </View>
+  )
+
+  const monthGridView = (
+    <View
+      style={{
+        backgroundColor: cardBg,
+        borderRadius: 12,
+        overflow: 'hidden',
+        borderWidth: isDark ? 0 : 1,
+        borderColor: gridBorder,
+      }}>
+      <View style={{flexDirection: 'row'}}>
+        {weekdayLabels.map(label => (
+          <View
+            key={label}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              paddingVertical: 8,
+            }}>
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 12,
+                fontWeight: '600',
+                color: mutedColor,
+              }}>
+              {label}
+            </Text>
+          </View>
+        ))}
+      </View>
+      {weeks.map((week, weekIndex) => (
+        <View key={`week-${weekIndex}`} style={{flexDirection: 'row'}}>
+          {week.map(day => {
+            const key = day.toFormat('yyyy-MM-dd')
+            const items = byDay.get(key) ?? []
+            const inMonth = day.hasSame(visibleMonth, 'month')
+            const selected = key === selectedKey
+            const isToday = key === todayKey
+            const hasCup = items.some(item => isCup(item.match))
+            const count = items.length
+            return (
+              <Pressable
+                key={key}
+                accessibilityRole="button"
+                accessibilityState={{selected}}
+                accessibilityLabel={`${day.setLocale(locale).toLocaleString(DateTime.DATE_MED)}, ${count} ${count === 1 ? t('match') : t('matches')}`}
+                onPress={() => selectDay(day)}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  aspectRatio: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderTopWidth: 1,
+                  borderTopColor: gridBorder,
+                  backgroundColor: selected
+                    ? ACCENT
+                    : count > 0
+                      ? isDark
+                        ? '#2A1230'
+                        : '#F6EEF7'
+                      : 'transparent',
+                  opacity: inMonth ? 1 : 0.38,
+                }}>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: isToday || selected ? '700' : '500',
+                    color: selected
+                      ? '#FFFFFF'
+                      : isToday
+                        ? isDark
+                          ? '#F0ABFC'
+                          : ACCENT
+                        : textColor,
+                  }}>
+                  {day.day}
+                </Text>
+                {count > 0 ? (
+                  <View
+                    style={{
+                      marginTop: 2,
+                      minWidth: 18,
+                      paddingHorizontal: 4,
+                      borderRadius: 999,
+                      backgroundColor: selected
+                        ? 'rgba(255,255,255,0.22)'
+                        : ACCENT,
+                      alignItems: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        fontWeight: '700',
+                        color: '#FFFFFF',
+                      }}>
+                      {count > 9 ? '9+' : String(count)}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{height: 14, marginTop: 2}} />
+                )}
+                {hasCup ? (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      width: 6,
+                      height: 6,
+                      borderRadius: 3,
+                      backgroundColor: '#F59E0B',
+                    }}
+                  />
+                ) : null}
+              </Pressable>
+            )
+          })}
+        </View>
+      ))}
+    </View>
+  )
+
+  const dayMatchesList = (
+    <View
+      collapsable={false}
+      onLayout={event => {
+        matchesOffsetY.current = event.nativeEvent.layout.y
+        if (pendingScrollRef.current) {
+          pendingScrollRef.current = false
+          if (useSplit) {
+            detailScrollRef.current?.scrollTo({y: 0, animated: true})
+          } else {
+            compactScrollRef.current?.scrollTo({
+              y: Math.max(0, matchesOffsetY.current),
+              animated: true,
+            })
+          }
+        }
+      }}>
+      <Text
+        className="font-bold"
+        style={{
+          color: textColor,
+          marginTop: useSplit ? 0 : 18,
+          marginBottom: 8,
+          paddingHorizontal: useSplit ? 16 : 0,
+        }}>
+        {selectedLabel}
+      </Text>
+      {selectedMatches.length === 0 ? (
+        <Text
+          style={{
+            color: mutedColor,
+            marginBottom: 12,
+            paddingHorizontal: useSplit ? 16 : 0,
+          }}>
+          {t('no_matches_on_day')}
+        </Text>
+      ) : null}
+      {selectedMatches.map(item => (
+        <DayMatchCard
+          key={`${item.index}-${item.match.home_team_id}-${item.match.away_team_id}`}
+          match={item.match}
+          index={item.index}
+          isNewMatchCard={state.isNewMatchCard}
+          onOpenMatch={onOpenMatch}
+          scoresheetPathname={scoresheetPathname}
+        />
+      ))}
+      {unscheduled.length > 0 ? (
+        <View style={{marginTop: 8}}>
+          <Text
+            className="font-bold"
+            style={{
+              color: textColor,
+              marginBottom: 8,
+              paddingHorizontal: 16,
+            }}>
+            {t('unscheduled_matches')}
+          </Text>
+          {unscheduled.map(item => (
+            <DayMatchCard
+              key={`unscheduled-${item.index}`}
+              match={item.match}
+              index={item.index}
+              isNewMatchCard={state.isNewMatchCard}
+              onOpenMatch={onOpenMatch}
+              scoresheetPathname={scoresheetPathname}
+            />
+          ))}
+        </View>
+      ) : null}
+    </View>
+  )
+
+  if (useSplit) {
+    return (
+      <AdaptiveSplit
+        split
+        keepEmptyDetail={false}
+        listWidth={400}
+        list={
+          <ScrollView
+            style={{flex: 1, backgroundColor: screenBg}}
+            contentContainerStyle={{padding: 16, paddingBottom: 24}}
+            showsVerticalScrollIndicator={false}
+            onScrollBeginDrag={onScrollBeginDrag}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
+            {monthHeader}
+            {monthGridView}
+          </ScrollView>
+        }
+        detail={
+          <ScrollView
+            ref={detailScrollRef}
+            style={{flex: 1, backgroundColor: screenBg}}
+            contentContainerStyle={[
+              {paddingTop: 16, paddingBottom: 24},
+              contentContainerStyle,
+            ]}
+            showsVerticalScrollIndicator={false}
+            onScrollBeginDrag={onScrollBeginDrag}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
+            {dayMatchesList}
+          </ScrollView>
+        }
+      />
+    )
+  }
+
   return (
     <ScrollView
-      ref={scrollRef}
+      ref={compactScrollRef}
       style={{flex: 1, backgroundColor: screenBg}}
       contentContainerStyle={contentContainerStyle}
       showsVerticalScrollIndicator={false}
@@ -270,232 +572,10 @@ export default function MatchesCalendar({
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
       <View style={{paddingHorizontal: 16}}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginBottom: 12,
-          gap: 8,
-        }}>
-        <View style={{flex: 1}}>
-          <Text
-            className="text-xl font-bold"
-            style={{color: textColor}}>
-            {visibleMonth.setLocale(locale).toFormat('LLLL yyyy')}
-          </Text>
-          <Text style={{color: mutedColor, marginTop: 2}}>
-            {monthCount}{' '}
-            {monthCount === 1 ? t('match') : t('matches')}
-          </Text>
-        </View>
-        <NavButton
-          icon="chevron-left"
-          label={t('previous_month')}
-          isDark={isDark}
-          onPress={() => setVisibleMonth(month => month.minus({months: 1}))}
-        />
-        <Pressable
-          accessibilityRole="button"
-          onPress={goToToday}
-          style={({pressed}) => ({
-            backgroundColor: pressed ? '#2A002E' : ACCENT,
-            borderRadius: 8,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-          })}>
-          <Text className="font-semibold" style={{color: '#FFFFFF'}}>
-            {t('today')}
-          </Text>
-        </Pressable>
-        <NavButton
-          icon="chevron-right"
-          label={t('next_month')}
-          isDark={isDark}
-          onPress={() => setVisibleMonth(month => month.plus({months: 1}))}
-        />
+        {monthHeader}
+        {monthGridView}
       </View>
-
-      <View
-        style={{
-          backgroundColor: cardBg,
-          borderRadius: 12,
-          overflow: 'hidden',
-          borderWidth: isDark ? 0 : 1,
-          borderColor: gridBorder,
-        }}>
-        <View style={{flexDirection: 'row'}}>
-          {weekdayLabels.map(label => (
-            <View
-              key={label}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                paddingVertical: 8,
-              }}>
-              <Text
-                style={{
-                  textAlign: 'center',
-                  fontSize: 12,
-                  fontWeight: '600',
-                  color: mutedColor,
-                }}>
-                {label}
-              </Text>
-            </View>
-          ))}
-        </View>
-        {weeks.map((week, weekIndex) => (
-          <View key={`week-${weekIndex}`} style={{flexDirection: 'row'}}>
-            {week.map(day => {
-              const key = day.toFormat('yyyy-MM-dd')
-              const items = byDay.get(key) ?? []
-              const inMonth = day.hasSame(visibleMonth, 'month')
-              const selected = key === selectedKey
-              const isToday = key === todayKey
-              const hasCup = items.some(item => isCup(item.match))
-              const count = items.length
-              return (
-                <Pressable
-                  key={key}
-                  accessibilityRole="button"
-                  accessibilityState={{selected}}
-                  accessibilityLabel={`${day.setLocale(locale).toLocaleString(DateTime.DATE_MED)}, ${count} ${count === 1 ? t('match') : t('matches')}`}
-                  onPress={() => selectDay(day)}
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                    aspectRatio: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderTopWidth: 1,
-                    borderTopColor: gridBorder,
-                    backgroundColor: selected
-                      ? ACCENT
-                      : count > 0
-                        ? isDark
-                          ? '#2A1230'
-                          : '#F6EEF7'
-                        : 'transparent',
-                    opacity: inMonth ? 1 : 0.38,
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      fontWeight: isToday || selected ? '700' : '500',
-                      color: selected
-                        ? '#FFFFFF'
-                        : isToday
-                          ? isDark
-                            ? '#F0ABFC'
-                            : ACCENT
-                          : textColor,
-                    }}>
-                    {day.day}
-                  </Text>
-                  {count > 0 ? (
-                    <View
-                      style={{
-                        marginTop: 2,
-                        minWidth: 18,
-                        paddingHorizontal: 4,
-                        borderRadius: 999,
-                        backgroundColor: selected
-                          ? 'rgba(255,255,255,0.22)'
-                          : ACCENT,
-                        alignItems: 'center',
-                      }}>
-                      <Text
-                        style={{
-                          fontSize: 10,
-                          fontWeight: '700',
-                          color: '#FFFFFF',
-                        }}>
-                        {count > 9 ? '9+' : String(count)}
-                      </Text>
-                    </View>
-                  ) : (
-                    <View style={{height: 14, marginTop: 2}} />
-                  )}
-                  {hasCup ? (
-                    <View
-                      style={{
-                        position: 'absolute',
-                        top: 6,
-                        right: 6,
-                        width: 6,
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor: '#F59E0B',
-                      }}
-                    />
-                  ) : null}
-                </Pressable>
-              )
-            })}
-          </View>
-        ))}
-      </View>
-
-      </View>
-      <View
-        collapsable={false}
-        onLayout={event => {
-          matchesOffsetY.current = event.nativeEvent.layout.y
-          if (pendingScrollRef.current) {
-            pendingScrollRef.current = false
-            scrollRef.current?.scrollTo({
-              y: Math.max(0, matchesOffsetY.current),
-              animated: true,
-            })
-          }
-        }}>
-        <View style={{paddingHorizontal: 16}}>
-          <Text
-            className="font-bold"
-            style={{color: textColor, marginTop: 18, marginBottom: 8}}>
-            {selectedLabel}
-          </Text>
-          {selectedMatches.length === 0 ? (
-            <Text style={{color: mutedColor, marginBottom: 12}}>
-              {t('no_matches_on_day')}
-            </Text>
-          ) : null}
-        </View>
-        {selectedMatches.map(item => (
-          <DayMatchCard
-            key={`${item.index}-${item.match.home_team_id}-${item.match.away_team_id}`}
-            match={item.match}
-            index={item.index}
-            isNewMatchCard={state.isNewMatchCard}
-            onOpenMatch={onOpenMatch}
-            scoresheetPathname={scoresheetPathname}
-          />
-        ))}
-
-        {unscheduled.length > 0 ? (
-          <View style={{marginTop: 8}}>
-            <Text
-              className="font-bold"
-              style={{
-                color: textColor,
-                marginBottom: 8,
-                paddingHorizontal: 16,
-              }}>
-              {t('unscheduled_matches')}
-            </Text>
-            {unscheduled.map(item => (
-              <DayMatchCard
-                key={`unscheduled-${item.index}`}
-                match={item.match}
-                index={item.index}
-                isNewMatchCard={state.isNewMatchCard}
-                onOpenMatch={onOpenMatch}
-                scoresheetPathname={scoresheetPathname}
-              />
-            ))}
-          </View>
-        ) : null}
-      </View>
+      {dayMatchesList}
     </ScrollView>
   )
 }
@@ -537,7 +617,6 @@ function NavButton({
     </Pressable>
   )
 }
-
 
 function DayMatchCard({
   match,

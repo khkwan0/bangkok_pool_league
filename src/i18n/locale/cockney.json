@@ -818,5 +818,13 @@
   "admin_support_deleted_badge": "Deleted",
   "admin_support_deleted_at": "Deleted {date}",
   "signing_you_in": "Signin' you in…",
-  "signing_you_in_hint": "Finishin' login with the server. Might take a mo."
+  "signing_you_in_hint": "Finishin' login with the server. Might take a mo.",
+  "settings_select_item": "Pick a setting",
+  "my_statistics": "My Statistics",
+  "stats_home_me_hint": "Your season record and how you're getting on",
+  "grid_view": "Grid",
+  "select_a_conversation": "Pick a natter",
+  "select_a_match": "Pick a match",
+  "select_an_item": "Pick something",
+  "open_scoresheet": "Open the scoresheet"
 }
