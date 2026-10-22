@@ -275,7 +275,13 @@ const AddPlayer = () => {
         frameType,
         frameNumber,
       )
-      router.dismissTo('/Match')
+      // Pop AddPlayer + ChoosePlayer so Match keeps its original route params.
+      // dismissTo('/Match') can remount Match without params.
+      if (router.canDismiss()) {
+        router.dismiss(2)
+      } else {
+        router.back()
+      }
     } catch (e) {
       console.log(e)
     }
