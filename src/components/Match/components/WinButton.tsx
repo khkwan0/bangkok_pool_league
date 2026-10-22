@@ -97,8 +97,7 @@ export default function WinButton({
     marginTop: 10,
   }
 
-  const showGoldenAction =
-    allowGoldenBreak && !goldenBreak && (!winner || winner === teamId)
+  const showGoldenAction = allowGoldenBreak && !winner
   const goldenInk = goldenPressed
     ? theme.goldInk
     : theme.isDark
