@@ -16,7 +16,7 @@ interface WinButtonProps {
   teamId?: number | string
   side: string
   goldenBreak: boolean
-  /** Long-press records a golden break (9-ball only). */
+  /** Shows a Golden break button (9-ball only). */
   allowGoldenBreak?: boolean
   accent: string
   onAccent: string
@@ -41,11 +41,15 @@ export default function WinButton({
   const {state: leagueState}: any = useLeagueContext()
   const user = leagueState.user
   const [isPressed, setIsPressed] = React.useState(false)
+  const [goldenPressed, setGoldenPressed] = React.useState(false)
   const [trackedWinner, setTrackedWinner] = React.useState(winner)
+  const [trackedGolden, setTrackedGolden] = React.useState(goldenBreak)
 
-  if (winner !== trackedWinner) {
+  if (winner !== trackedWinner || goldenBreak !== trackedGolden) {
     setTrackedWinner(winner)
+    setTrackedGolden(goldenBreak)
     setIsPressed(false)
+    setGoldenPressed(false)
   }
 
   function canRecord(): boolean {
@@ -93,6 +97,14 @@ export default function WinButton({
     marginTop: 10,
   }
 
+  const showGoldenAction =
+    allowGoldenBreak && !goldenBreak && (!winner || winner === teamId)
+  const goldenInk = goldenPressed
+    ? theme.goldInk
+    : theme.isDark
+      ? theme.gold
+      : theme.goldInk
+
   return (
     <>
       {showConfirm && (
@@ -125,15 +137,48 @@ export default function WinButton({
             if (!canRecord()) return
             setShowConfirmUndo(true)
           }}
+          accessibilityRole="button"
+          accessibilityLabel={
+            goldenBreak ? t('golden_break_action') : t('win')
+          }
+          accessibilityHint={
+            goldenBreak ? t('golden_break_undo_hint') : undefined
+          }
           style={{
             ...bar,
             backgroundColor: goldenBreak ? theme.gold : theme.win,
+            paddingVertical: goldenBreak ? 6 : 0,
           }}>
           <MCI
             name={goldenBreak ? 'star' : 'check'}
             color={goldenBreak ? theme.goldInk : '#FFFFFF'}
-            size={20}
+            size={goldenBreak ? 16 : 20}
           />
+          {goldenBreak ? (
+            <>
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+                style={{
+                  marginTop: 1,
+                  color: theme.goldInk,
+                  fontSize: 12,
+                  fontWeight: '800',
+                }}>
+                {t('golden_break_action')}
+              </Text>
+              <Text
+                style={{
+                  color: theme.goldInk,
+                  fontSize: 10,
+                  fontWeight: '600',
+                  opacity: 0.8,
+                }}>
+                {t('golden_break_undo_hint')}
+              </Text>
+            </>
+          ) : null}
         </Pressable>
       )}
       {winner !== teamId && !winner && (
@@ -143,26 +188,11 @@ export default function WinButton({
             borderWidth: 1.5,
             borderColor: accent,
             backgroundColor: isPressed ? accent : 'transparent',
-            paddingVertical: allowGoldenBreak ? 6 : 0,
           }}
           accessibilityRole="button"
           accessibilityLabel={t('win')}
-          accessibilityHint={
-            allowGoldenBreak ? t('golden_break_long_press_hint') : undefined
-          }
           onPressIn={() => setIsPressed(true)}
           onPressOut={() => setIsPressed(false)}
-          onLongPress={
-            allowGoldenBreak
-              ? () => {
-                  Haptics.notificationAsync(
-                    Haptics.NotificationFeedbackType.Success,
-                  )
-                  tryWin(true)
-                }
-              : undefined
-          }
-          delayLongPress={450}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
             tryWin()
@@ -176,19 +206,6 @@ export default function WinButton({
             }}>
             {t('win').toUpperCase()}
           </Text>
-          {allowGoldenBreak ? (
-            <Text
-              style={{
-                marginTop: 2,
-                color: isPressed ? onAccent : accent,
-                fontSize: 10,
-                fontWeight: '600',
-                letterSpacing: 0.2,
-                opacity: isPressed ? 0.9 : 0.75,
-              }}>
-              {t('golden_break_long_press_hint')}
-            </Text>
-          ) : null}
         </Pressable>
       )}
       {winner !== teamId && winner !== 0 && (
@@ -201,6 +218,46 @@ export default function WinButton({
           <MCI name="close" color={theme.muted} size={18} />
         </Pressable>
       )}
+      {showGoldenAction ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('golden_break_action')}
+          onPressIn={() => setGoldenPressed(true)}
+          onPressOut={() => setGoldenPressed(false)}
+          onPress={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+            tryWin(true)
+          }}
+          style={{
+            ...bar,
+            marginTop: 6,
+            minHeight: 34,
+            flexDirection: 'row',
+            gap: 5,
+            paddingHorizontal: 8,
+            borderWidth: 1.5,
+            borderColor: theme.gold,
+            backgroundColor: goldenPressed
+              ? theme.gold
+              : theme.isDark
+                ? 'rgba(245,197,66,0.16)'
+                : 'rgba(245,197,66,0.28)',
+          }}>
+          <MCI name="star" color={goldenInk} size={14} />
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.75}
+            style={{
+              flexShrink: 1,
+              color: goldenInk,
+              fontSize: 12,
+              fontWeight: '800',
+            }}>
+            {t('golden_break_action')}
+          </Text>
+        </Pressable>
+      ) : null}
     </>
   )
 }

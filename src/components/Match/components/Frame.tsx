@@ -156,16 +156,6 @@ export default function Frame({item, index, refreshing}: FrameProps) {
           {t('frame')} {item.frameNumber}
         </Text>
         <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
-          {allowGoldenBreak && !winner ? (
-            <Text
-              style={{
-                color: theme.gold,
-                fontSize: 11,
-                fontWeight: '700',
-              }}>
-              {t('golden_break_long_press_short')}
-            </Text>
-          ) : null}
           {kind ? (
             <Text style={{color: theme.muted, fontSize: 12, fontWeight: '600'}}>
               {kind}

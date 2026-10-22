@@ -122,6 +122,7 @@ const MatchReducer = (state: StateType, action: any) => {
       const {frameIdx} = action.payload
       const frame = {...state.frameData[frameIdx]}
       frame.winner = 0
+      frame.goldenBreak = false
       const _frameData = [...state.frameData]
       _frameData[frameIdx] = frame
       return {
