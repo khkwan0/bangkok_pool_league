@@ -3,7 +3,7 @@
     "name": "Bangkok Pool League",
     "slug": "bangkok_pool_league",
     "version": "2.21",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "bangkokpoolleague",
     "userInterfaceStyle": "automatic",
