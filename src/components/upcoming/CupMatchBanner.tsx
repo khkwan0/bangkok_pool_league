@@ -126,12 +126,16 @@ export function formatCupBannerLabel(args: {
 export default function CupMatchBanner({
   label,
   stageKey,
+  gameType,
 }: {
   label: string
   stageKey?: string | null
+  /** Game type label (e.g. "8-Ball") shown beside the stage. */
+  gameType?: string | null
 }) {
   const tier = getCupTierTheme(stageKey)
   const pulse = React.useRef(new Animated.Value(1)).current
+  const gameTypeLabel = String(gameType || '').trim()
 
   React.useEffect(() => {
     // Opacity-only + native driver: avoids JS-thread color flicker when FlatList recycles.
@@ -163,6 +167,19 @@ export default function CupMatchBanner({
       <Text style={[styles.label, {color: tier.bannerText[0]}]} numberOfLines={1}>
         {label}
       </Text>
+      {gameTypeLabel ? (
+        <View
+          style={[
+            styles.gameTypePill,
+            {backgroundColor: 'rgba(255,255,255,0.22)'},
+          ]}>
+          <Text
+            style={[styles.gameTypeText, {color: tier.bannerText[0]}]}
+            numberOfLines={1}>
+            {gameTypeLabel}
+          </Text>
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -183,5 +200,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     letterSpacing: 0.3,
+  },
+  gameTypePill: {
+    flexShrink: 0,
+    maxWidth: '42%',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  gameTypeText: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
 })
