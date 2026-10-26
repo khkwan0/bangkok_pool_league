@@ -9,22 +9,14 @@ export type DivisionFormatLite = {
   mode?: MatchPlayMode
   target?: number
   frames?: number
-  /** Match-score weight per completed frame. Default 1. */
-  valuePerLeg?: number
 }
 
-/** Points awarded per completed frame. Always ≥ 1. */
+/** Points awarded per completed frame/row. Always ≥ 1. */
 export function resolveValuePerLeg(
-  format:
-    | DivisionFormatLite
-    | {valuePerLeg?: unknown; value_per_leg?: unknown}
-    | null
-    | undefined,
+  source: {valuePerLeg?: unknown; value_per_leg?: unknown} | null | undefined,
 ): number {
-  if (!format || typeof format !== 'object') return 1
-  const raw =
-    (format as {valuePerLeg?: unknown}).valuePerLeg ??
-    (format as {value_per_leg?: unknown}).value_per_leg
+  if (!source || typeof source !== 'object') return 1
+  const raw = source.valuePerLeg ?? source.value_per_leg
   const n = Math.trunc(Number(raw))
   return Number.isFinite(n) && n >= 1 ? n : 1
 }
@@ -53,7 +45,6 @@ export function parseMatchFormat(raw: unknown): DivisionFormatLite | null {
       mode,
       target: Number.isFinite(target) && (target as number) > 0 ? target : undefined,
       frames: Number.isFinite(frames) ? frames : undefined,
-      valuePerLeg: resolveValuePerLeg(record),
     }
   } catch {
     return null
@@ -65,6 +56,8 @@ export type FormatSubsection = {
   type: string
   mfpp: number
   noPlayers?: number
+  /** Match-score weight of each completed row in this section. Default 1. */
+  valuePerLeg?: number
 }
 
 /** Map frame_types.short_name → no_players for scoresheet slot counts. */
@@ -111,7 +104,9 @@ export function resolveFormatSubsections(raw: unknown): FormatSubsection[] {
     }
     const obj = Array.isArray(parsed) ? parsed[0] : parsed
     if (!obj || typeof obj !== 'object') return []
-    const subsections = (obj as {subsections?: unknown}).subsections
+    const root = obj as Record<string, unknown>
+    const legacyRootValue = resolveValuePerLeg(root)
+    const subsections = root.subsections
     if (!Array.isArray(subsections)) return []
     return subsections
       .filter(item => item && typeof item === 'object')
@@ -123,6 +118,11 @@ export function resolveFormatSubsections(raw: unknown): FormatSubsection[] {
           frames: Number(section.frames) || 0,
           type: String(section.type ?? ''),
           mfpp: Number(section.mfpp) || 1,
+          valuePerLeg: resolveValuePerLeg(
+            section.valuePerLeg != null || section.value_per_leg != null
+              ? section
+              : {valuePerLeg: legacyRootValue},
+          ),
           noPlayers:
             Number.isFinite(noPlayers) && noPlayers > 0
               ? Math.trunc(noPlayers)

@@ -1,5 +1,5 @@
 import {useMatchContext} from '@/context/MatchContext'
-import {parseMatchFormat, resolveValuePerLeg} from '@/lib/matchFormat'
+import {resolveValuePerLeg} from '@/lib/matchFormat'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {Text, View} from 'react-native'
@@ -41,17 +41,20 @@ export default function Frame({item, index, refreshing}: FrameProps) {
   }, [refreshing])
 
   if (item.frameNumber === -1) {
-    const valuePerLeg = resolveValuePerLeg(
-      parseMatchFormat(state.matchInfo?.format),
-    )
     let homeScore = 0
     let awayScore = 0
     let i = 0
     while (i < index) {
-      if (state.frameData[i].winner === homeTeamId) {
+      const f = state.frameData[i]
+      const valuePerLeg = resolveValuePerLeg(
+        f.valuePerLeg != null
+          ? f
+          : state.matchInfo?.initialFrames?.[i],
+      )
+      if (f.winner === homeTeamId) {
         homeScore += valuePerLeg
       }
-      if (state.frameData[i].winner === awayTeamId) {
+      if (f.winner === awayTeamId) {
         awayScore += valuePerLeg
       }
       i++

@@ -121,6 +121,7 @@ export default function ScoreSheet({
             mfpp: section.mfpp,
             type: section.type,
             noPlayers,
+            valuePerLeg: section.valuePerLeg ?? 1,
             winner: 0,
             homePlayerIds: [],
             awayPlayerIds: [],

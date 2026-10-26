@@ -78,6 +78,8 @@ export type FrameType = {
   type?: string
   /** Players required per side from frame_types.no_players */
   noPlayers?: number
+  /** Match-score weight for this row. Default 1. */
+  valuePerLeg?: number
   frameIdx?: number
   frameIndex?: number
   goldenBreak?: boolean
