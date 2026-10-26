@@ -39,7 +39,7 @@ export default function ScoreSheet({
   const match = useMatch()
   const routeParams = useLocalSearchParams()
   const [isMounted, setIsMounted] = React.useState(false)
-  const [headerSticky, setHeaderSticky] = React.useState(true)
+  const [headerSticky, setHeaderSticky] = React.useState(false)
   const navigation = useNavigation()
   const theme = useScoresheetTheme()
   const listContentStyle = useTabListContentContainerStyle({paddingBottom: 16})
