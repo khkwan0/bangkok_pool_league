@@ -189,10 +189,9 @@ export function SettingsRootList({showPaneTitle = false}: Props) {
     }
   }
 
-  const teamsUrl =
-    competition?.type === 'mini'
-      ? `/teams/mini-leagues/${competition.id}`
-      : '/teams'
+  // Stay inside Settings so landscape split keeps the menu on the left.
+  // TeamList handles both league and mini competitions.
+  const teamsUrl = '/Settings/Teams'
 
   return (
     <ScrollView
@@ -200,7 +199,10 @@ export function SettingsRootList({showPaneTitle = false}: Props) {
       contentContainerStyle={{
         flexGrow: 1,
         paddingHorizontal: 16,
-        paddingTop: 8,
+        // Split sidebar sits outside the stack header. On Android the root
+        // Settings header is hidden, so clear the status bar / toolbar.
+        paddingTop:
+          showPaneTitle && Platform.OS === 'android' ? insets.top + 8 : 8,
       }}>
       <View className="flex-1">
         {showPaneTitle ? (
@@ -318,6 +320,7 @@ export function SettingsRootList({showPaneTitle = false}: Props) {
           url={teamsUrl}
           iconColor="#4CAF50"
           iconBackground="rgba(76, 175, 80, 0.15)"
+          selected={hrefIsSelected(pathname, teamsUrl)}
           onPress={() => openHref(teamsUrl)}
         />
         <NavDest
