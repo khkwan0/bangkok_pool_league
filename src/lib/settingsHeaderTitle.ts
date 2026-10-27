@@ -19,6 +19,7 @@ export function settingsHeaderTitleKey(pathname: string): string {
     ['/Settings/Players', 'players'],
     ['/Settings/Betting', 'betting_settings'],
     ['/Settings/Predictions', 'predictions_settings'],
+    ['/Settings/Preferences/ProfileQr', 'my_qr_code'],
     ['/Settings/Preferences', 'preferences'],
     ['/Settings/Teams', 'teams'],
     ['/Settings/Tournaments', 'tournaments'],
