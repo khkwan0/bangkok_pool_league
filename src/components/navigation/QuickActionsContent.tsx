@@ -132,6 +132,7 @@ export function QuickActionsContent({
         return state.bettingEnabled && state.bettingOptedIn
       }
       if (id === 'predictions') return state.predictionsEnabled
+      if (id === 'forums') return state.forumsEnabled !== false
       if (id === 'login') return !loggedIn
       if (id === 'logout') return loggedIn
       return true
@@ -142,6 +143,7 @@ export function QuickActionsContent({
     state.bettingEnabled,
     state.bettingOptedIn,
     state.predictionsEnabled,
+    state.forumsEnabled,
     loggedIn,
   ])
 

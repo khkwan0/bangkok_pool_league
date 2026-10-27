@@ -251,10 +251,15 @@ export function resolveFabQuickActions(
  * Actions offered in Settings → Preferences → Quick actions.
  * Betting is hidden from the catalog; Admin only for league admins.
  */
-export function getPreferenceQuickActionIds(isAdmin: boolean): QuickActionId[] {
+export function getPreferenceQuickActionIds(
+  isAdmin: boolean,
+  options?: {forumsEnabled?: boolean},
+): QuickActionId[] {
+  const forumsEnabled = options?.forumsEnabled !== false
   return ALL_QUICK_ACTIONS.filter(id => {
     if (id === 'betting') return false
     if (id === 'admin') return isAdmin
+    if (id === 'forums') return forumsEnabled
     return true
   })
 }
@@ -263,7 +268,8 @@ export function getPreferenceQuickActionIds(isAdmin: boolean): QuickActionId[] {
 export function filterPreferenceQuickActions(
   ids: QuickActionId[],
   isAdmin: boolean,
+  options?: {forumsEnabled?: boolean},
 ): QuickActionId[] {
-  const allowed = new Set(getPreferenceQuickActionIds(isAdmin))
+  const allowed = new Set(getPreferenceQuickActionIds(isAdmin, options))
   return ids.filter(id => allowed.has(id))
 }
