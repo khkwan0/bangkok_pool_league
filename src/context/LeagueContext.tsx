@@ -640,15 +640,10 @@ export const LeagueProvider = ({children}: any) => {
         const json = await res.json()
         const sportRaw = json?.data?.sport
         const unitRaw = json?.data?.score_unit
-        const configuredId = configuredLeagueId()
-        const leagueIdRaw = Number(json?.data?.id)
         const brandingName = String(json?.data?.name || '').trim()
         if (cancelled) return
-        if (configuredId != null) {
-          dispatch({type: 'SET_LEAGUE_ID', payload: configuredId})
-        } else if (Number.isFinite(leagueIdRaw) && leagueIdRaw > 0) {
-          dispatch({type: 'SET_LEAGUE_ID', payload: leagueIdRaw})
-        }
+        // Always prefer the league baked into this build (pool = 1).
+        dispatch({type: 'SET_LEAGUE_ID', payload: configuredLeagueId()})
         const sport =
           sportRaw === 'darts' || sportRaw === 'dart'
             ? 'darts'
