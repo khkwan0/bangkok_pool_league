@@ -352,7 +352,7 @@ export default function PlayerStatistics({
         </View>
       </Modal>
       <View className="flex-1 p-4 bg-gray-50 dark:bg-gray-950">
-        <StatsScopeChips />
+        <StatsScopeChips hideBoth />
         <View className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden flex-1">
           <FlatList
             data={playerStats}

@@ -9,10 +9,17 @@ import {useStatsScope} from '@/context/StatsScopeContext'
 import {useLeagueSeasonSelection} from '@/hooks/useLeagueSeasonSelection'
 import {useNetwork} from '@/hooks/useNetwork'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
+import {useTheme} from 'expo-router/react-navigation'
 import {router, usePathname} from 'expo-router'
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
-import {ActivityIndicator, FlatList, Pressable} from 'react-native'
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  ScrollView,
+  type ViewToken,
+} from 'react-native'
 
 type PlayerRanking = {
   playerId: number
@@ -37,6 +44,57 @@ type DivisionPlayerRankings = {
 
 function formatPoints(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1)
+}
+
+function DivisionJumpChips({
+  divisions,
+  selectedName,
+  onSelect,
+}: {
+  divisions: DivisionPlayerRankings[]
+  selectedName: string | null
+  onSelect: (name: string, index: number) => void
+}) {
+  const {colors} = useTheme()
+
+  if (divisions.length <= 1) return null
+
+  return (
+    <View className="mb-1 mt-1">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {divisions.map((division, index) => {
+          const active = division.division_name === selectedName
+          return (
+            <Pressable
+              key={`division-chip-${division.division_name}-${index}`}
+              accessibilityRole="button"
+              accessibilityState={{selected: active}}
+              accessibilityLabel={division.division_name}
+              onPress={() => onSelect(division.division_name, index)}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 16,
+                marginRight: 8,
+                backgroundColor: active ? colors.primary : colors.background,
+                borderWidth: 1,
+                borderColor: active ? colors.primary : '#8884',
+              }}>
+              <Text
+                numberOfLines={1}
+                style={{
+                  color: active ? '#fff' : colors.text,
+                  fontWeight: active ? '700' : '500',
+                  fontSize: 13,
+                }}>
+                {division.division_name}
+              </Text>
+            </Pressable>
+          )
+        })}
+      </ScrollView>
+    </View>
+  )
 }
 
 function PlayerRow({
@@ -120,13 +178,13 @@ function DivisionRankings({data}: {data: DivisionPlayerRankings}) {
           </View>
         </Row>
       </View>
-      <FlatList
-        data={data.players}
-        renderItem={({item, index}) => (
-          <PlayerRow player={item} index={index} />
-        )}
-        scrollEnabled={false}
-      />
+      {data.players.map((player, index) => (
+        <PlayerRow
+          key={`player-${player.playerId}-${index}`}
+          player={player}
+          index={index}
+        />
+      ))}
     </View>
   )
 }
@@ -144,10 +202,22 @@ export default function PlayerRankings({
   const [rankings, setRankings] = useState<DivisionPlayerRankings[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedDivision, setSelectedDivision] = useState<string | null>(null)
+  const listRef = React.useRef<FlatList<DivisionPlayerRankings>>(null)
+  const jumpingRef = React.useRef(false)
   const listContentStyle = useTabListContentContainerStyle({paddingTop: 10})
   const {seasons, seasonId, setSeasonId, pastSeasonId} =
     useLeagueSeasonSelection(season)
   const effectiveSeason = seasons.length > 0 ? pastSeasonId : season
+
+  const visibleDivisions = React.useMemo(
+    () => rankings.filter(division => division.players.length > 0),
+    [rankings],
+  )
+
+  React.useEffect(() => {
+    setSelectedDivision(visibleDivisions[0]?.division_name ?? null)
+  }, [visibleDivisions])
 
   React.useEffect(() => {
     async function fetchRankings() {
@@ -203,6 +273,36 @@ export default function PlayerRankings({
     fetchRankings()
   }, [effectiveSeason, divisionId, scope])
 
+  const scrollToDivision = React.useCallback(
+    (name: string, index: number) => {
+      setSelectedDivision(name)
+      jumpingRef.current = true
+      listRef.current?.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0,
+      })
+      setTimeout(() => {
+        jumpingRef.current = false
+      }, 450)
+    },
+    [],
+  )
+
+  const onViewableItemsChanged = React.useRef(
+    ({viewableItems}: {viewableItems: ViewToken[]}) => {
+      if (jumpingRef.current) return
+      const first = viewableItems.find(item => item.isViewable && item.item)
+      const name = (first?.item as DivisionPlayerRankings | undefined)
+        ?.division_name
+      if (name) setSelectedDivision(name)
+    },
+  ).current
+
+  const viewabilityConfig = React.useRef({
+    itemVisiblePercentThreshold: 40,
+  }).current
+
   return (
     <View className="flex-1">
       <View className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -214,11 +314,16 @@ export default function PlayerRankings({
             gap: 8,
           }}>
           <View style={{flex: 1}}>
-            <StatsScopeChips />
+            <StatsScopeChips hideBoth />
             <MiniSeasonChips
               seasons={seasons}
               seasonId={seasonId}
               onSelect={setSeasonId}
+            />
+            <DivisionJumpChips
+              divisions={visibleDivisions}
+              selectedName={selectedDivision}
+              onSelect={scrollToDivision}
             />
           </View>
           <RankingScoreInfoButton size={22} />
@@ -237,7 +342,7 @@ export default function PlayerRankings({
             Please check the console for more details.
           </Text>
         </View>
-      ) : rankings.length === 0 ? (
+      ) : visibleDivisions.length === 0 ? (
         <View className="flex-1 justify-center items-center px-4">
           <Text className="text-center mb-2">
             {t('no_data_available') || 'No data available'}
@@ -248,12 +353,24 @@ export default function PlayerRankings({
         </View>
       ) : (
         <FlatList
+          ref={listRef}
           contentContainerStyle={listContentStyle}
-          data={rankings}
+          data={visibleDivisions}
           renderItem={({item}) => <DivisionRankings data={item} />}
           keyExtractor={(item, index) =>
-            `division-${item.division_id || index}`
+            `division-${item.division_id || item.division_name || index}`
           }
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          onScrollToIndexFailed={info => {
+            setTimeout(() => {
+              listRef.current?.scrollToIndex({
+                index: info.index,
+                animated: true,
+                viewPosition: 0,
+              })
+            }, 100)
+          }}
         />
       )}
     </View>
