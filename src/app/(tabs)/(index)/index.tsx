@@ -64,7 +64,6 @@ export default function UpcomingMatches(props: any) {
   const [seasonNumber, setSeasonNumber] = React.useState('')
   const [showFilters, setShowFilters] = React.useState(false)
   const [headerSticky, setHeaderSticky] = React.useState(false)
-  const [potwPresent, setPotwPresent] = React.useState(false)
   const [matchesView, setMatchesView] = React.useState<HomeMatchesView | null>(
     null,
   )
@@ -423,10 +422,6 @@ export default function UpcomingMatches(props: any) {
     setHeaderSticky(value => !value)
   }, [])
 
-  const handlePotwPresenceChange = React.useCallback((present: boolean) => {
-    setPotwPresent(present)
-  }, [])
-
   if (isMounted && isMiniCompetition(state.competition)) {
     return <MiniLeagueHome miniLeagueId={state.competition.id} />
   }
@@ -480,13 +475,7 @@ export default function UpcomingMatches(props: any) {
                 </View>
               )}
               {(typeof state.showPlayerOfTheWeek === 'undefined' ||
-                state.showPlayerOfTheWeek) && (
-                <WeeklyHighlightsCard
-                  headerSticky={headerSticky}
-                  onToggleHeaderSticky={toggleHeaderSticky}
-                  onPresenceChange={handlePotwPresenceChange}
-                />
-              )}
+                state.showPlayerOfTheWeek) && <WeeklyHighlightsCard />}
               {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
                 user.id && (
                   <View className="my-2 mx-2">
@@ -552,7 +541,7 @@ export default function UpcomingMatches(props: any) {
                     showFilters ? t('hide_filters') : t('show_filters')
                   }
                   onPress={toggleFilters}
-                  className="flex-row items-center justify-center rounded-lg px-3"
+                  className="mr-2 flex-row items-center justify-center rounded-lg px-3"
                   style={({pressed}) => {
                     const isDark = colorScheme === 'dark'
                     const active = showFilters
@@ -569,7 +558,6 @@ export default function UpcomingMatches(props: any) {
                       borderWidth: isDark ? 0 : 1,
                       borderColor: active ? '#37003C' : '#E0E0E0',
                       minWidth: 48,
-                      marginRight: potwPresent ? 0 : 8,
                     }
                   }}>
                   <MaterialIcons
@@ -592,50 +580,48 @@ export default function UpcomingMatches(props: any) {
                     }
                   />
                 </Pressable>
-                {!potwPresent ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityState={{selected: headerSticky}}
-                    accessibilityLabel={
-                      headerSticky
-                        ? 'Unpin matches header'
-                        : 'Pin matches header'
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{selected: headerSticky}}
+                  accessibilityLabel={
+                    headerSticky
+                      ? 'Unpin matches header'
+                      : 'Pin matches header'
+                  }
+                  onPress={toggleHeaderSticky}
+                  className="flex-row items-center justify-center rounded-lg px-3"
+                  style={({pressed}) => {
+                    const isDark = colorScheme === 'dark'
+                    const active = headerSticky
+                    return {
+                      backgroundColor: active
+                        ? '#37003C'
+                        : isDark
+                          ? pressed
+                            ? '#2A2A2A'
+                            : '#1E1E1E'
+                          : pressed
+                            ? '#F0F0F0'
+                            : '#FFFFFF',
+                      borderWidth: isDark ? 0 : 1,
+                      borderColor: active ? '#37003C' : '#E0E0E0',
+                      minWidth: 48,
                     }
-                    onPress={toggleHeaderSticky}
-                    className="flex-row items-center justify-center rounded-lg px-3"
-                    style={({pressed}) => {
-                      const isDark = colorScheme === 'dark'
-                      const active = headerSticky
-                      return {
-                        backgroundColor: active
-                          ? '#37003C'
-                          : isDark
-                            ? pressed
-                              ? '#2A2A2A'
-                              : '#1E1E1E'
-                            : pressed
-                              ? '#F0F0F0'
-                              : '#FFFFFF',
-                        borderWidth: isDark ? 0 : 1,
-                        borderColor: active ? '#37003C' : '#E0E0E0',
-                        minWidth: 48,
+                  }}>
+                  {({pressed}) => (
+                    <MaterialCommunityIcons
+                      name={headerSticky ? 'pin' : 'pin-off'}
+                      size={20}
+                      color={
+                        pressed && !headerSticky
+                          ? '#22c55e'
+                          : headerSticky || colorScheme === 'dark'
+                            ? '#FFFFFF'
+                            : '#37003C'
                       }
-                    }}>
-                    {({pressed}) => (
-                      <MaterialCommunityIcons
-                        name={headerSticky ? 'pin' : 'pin-off'}
-                        size={20}
-                        color={
-                          pressed && !headerSticky
-                            ? '#22c55e'
-                            : headerSticky || colorScheme === 'dark'
-                              ? '#FFFFFF'
-                              : '#37003C'
-                        }
-                      />
-                    )}
-                  </Pressable>
-                ) : null}
+                    />
+                  )}
+                </Pressable>
               </View>
               <Animated.View
                 style={{
