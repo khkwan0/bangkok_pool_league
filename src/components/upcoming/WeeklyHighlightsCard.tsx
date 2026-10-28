@@ -173,7 +173,19 @@ function SpotlightRow({
   )
 }
 
-export default function WeeklyHighlightsCard() {
+type WeeklyHighlightsCardProps = {
+  /** When set, shows a pin control on the POTW card for the home sticky header. */
+  headerSticky?: boolean
+  onToggleHeaderSticky?: () => void
+  /** Fires when the card mounts/unmounts content so parents can hide a fallback pin. */
+  onPresenceChange?: (present: boolean) => void
+}
+
+export default function WeeklyHighlightsCard({
+  headerSticky = false,
+  onToggleHeaderSticky,
+  onPresenceChange,
+}: WeeklyHighlightsCardProps) {
   const {t} = useTranslation()
   const {getWeeklyHighlights} = useWeeklyHighlights()
   const isDark = useColorScheme() === 'dark'
@@ -209,6 +221,14 @@ export default function WeeklyHighlightsCard() {
     }
   }, [getWeeklyHighlights])
 
+  React.useEffect(() => {
+    const present = Boolean(data?.playerOfTheWeek)
+    onPresenceChange?.(present)
+    return () => {
+      onPresenceChange?.(false)
+    }
+  }, [data?.playerOfTheWeek, onPresenceChange])
+
   async function setCollapsedPersisted(next: boolean) {
     setCollapsed(next)
     try {
@@ -217,6 +237,33 @@ export default function WeeklyHighlightsCard() {
       // ignore
     }
   }
+
+  const pinButton =
+    onToggleHeaderSticky != null ? (
+      <Pressable
+        onPress={onToggleHeaderSticky}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityState={{selected: headerSticky}}
+        accessibilityLabel={
+          headerSticky ? 'Unpin matches header' : 'Pin matches header'
+        }
+        style={[
+          styles.iconBtn,
+          {
+            backgroundColor: headerSticky
+              ? 'rgba(255,255,255,0.28)'
+              : theme.btnBg,
+            borderColor: theme.btnBorder,
+          },
+        ]}>
+        <MaterialCommunityIcons
+          name={headerSticky ? 'pin' : 'pin-off'}
+          size={16}
+          color={theme.title}
+        />
+      </Pressable>
+    ) : null
 
   if (!data?.playerOfTheWeek) return null
 
@@ -240,20 +287,23 @@ export default function WeeklyHighlightsCard() {
               {potw.nickname}
             </Text>
           </View>
-          <Pressable
-            onPress={() => void setCollapsedPersisted(false)}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel={t('expand')}
-            style={[
-              styles.actionBtn,
-              {backgroundColor: theme.btnBg, borderColor: theme.btnBorder},
-            ]}>
-            <Text style={[styles.actionBtnText, {color: theme.title}]}>
-              {t('expand')}
-            </Text>
-            <Ionicons name="chevron-down" size={15} color={theme.title} />
-          </Pressable>
+          <View style={styles.headerActions}>
+            {pinButton}
+            <Pressable
+              onPress={() => void setCollapsedPersisted(false)}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t('expand')}
+              style={[
+                styles.actionBtn,
+                {backgroundColor: theme.btnBg, borderColor: theme.btnBorder},
+              ]}>
+              <Text style={[styles.actionBtnText, {color: theme.title}]}>
+                {t('expand')}
+              </Text>
+              <Ionicons name="chevron-down" size={15} color={theme.title} />
+            </Pressable>
+          </View>
         </LinearGradient>
       </View>
     )
@@ -274,6 +324,7 @@ export default function WeeklyHighlightsCard() {
             )}
           </Text>
           <View style={styles.headerActions}>
+            {pinButton}
             <Pressable
               onPress={() => void setCollapsedPersisted(true)}
               hitSlop={10}
