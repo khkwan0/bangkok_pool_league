@@ -218,6 +218,17 @@ function TeamCard({team, rank}: {team: Team; rank: number}) {
   const [open, setOpen] = useState(false)
   const matches = (team.matches || []) as StandingMatch[]
 
+  function HandleInternalStats() {
+    if (team.teamId == null) return
+    // Absolute path: embedded standings live on /statistics, not LeagueStandings.
+    router.push({
+      pathname: '/statistics/LeagueStandings/Internal',
+      params: {
+        params: JSON.stringify({teamId: team.teamId, teamName: team.name}),
+      },
+    })
+  }
+
   return (
     <View style={{paddingHorizontal: 16, paddingBottom: 12}}>
       <View
@@ -265,6 +276,31 @@ function TeamCard({team, rank}: {team: Team; rank: number}) {
             {matches.map((match, index) => (
               <MatchRow key={match.matchId ?? index} match={match} />
             ))}
+            {team.teamId != null ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('internal_stats')}
+                onPress={HandleInternalStats}
+                style={({pressed}) => ({
+                  opacity: pressed ? 0.75 : 1,
+                  marginTop: 8,
+                  marginBottom: 10,
+                  borderRadius: 10,
+                  backgroundColor: colors.chip,
+                  paddingVertical: 12,
+                  paddingHorizontal: 12,
+                })}>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 14,
+                    fontWeight: '700',
+                    color: colors.accent,
+                  }}>
+                  {t('internal_stats')}
+                </Text>
+              </Pressable>
+            ) : null}
           </>
         ) : null}
       </View>

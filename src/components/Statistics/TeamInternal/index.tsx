@@ -64,7 +64,7 @@ function Stat(props: StatProps) {
 
   function HandlePlayerPress(playerId: number) {
     router.push({
-      pathname: './Player',
+      pathname: '../Player',
       params: {params: JSON.stringify({playerId})},
     })
   }

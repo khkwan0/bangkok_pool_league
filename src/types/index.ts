@@ -10,6 +10,7 @@ export interface Team {
   played: number
   points: number
   frames: number
+  teamId?: number
   matches: Match[]
 }
 

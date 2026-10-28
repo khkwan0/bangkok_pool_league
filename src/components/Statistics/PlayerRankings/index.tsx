@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import Row from '@/components/Row'
+import {RankingScoreInfoButton} from '@/components/Statistics/RankingScoreInfo'
 import StatsScopeChips from '@/components/Statistics/StatsScopeChips'
-import TextInput from '@/components/TextInput'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {MiniSeasonChips} from '@/components/mini-leagues/MiniSeasonChips'
@@ -22,6 +22,10 @@ type PlayerRanking = {
   won: number
   points: number
   win_percentage?: number
+  winRatio?: number
+  winRatioDisp?: string
+  score?: number
+  scoreDisp?: string
   rank?: number
 }
 
@@ -29,6 +33,10 @@ type DivisionPlayerRankings = {
   division_id: number
   division_name: string
   players: PlayerRanking[]
+}
+
+function formatPoints(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1)
 }
 
 function PlayerRow({
@@ -39,23 +47,24 @@ function PlayerRow({
   index: number
 }) {
   const currentPath = usePathname()
-  const {t} = useTranslation()
 
   function handlePress(playerId: number) {
     router.push({
       pathname: (currentPath + '/Player') as any,
       params: {
-        params: JSON.stringify({playerId})
+        params: JSON.stringify({playerId}),
       },
     })
   }
 
-  const winPercentage =
-    player.win_percentage !== undefined
-      ? player.win_percentage
-      : player.played > 0
-        ? ((player.won / player.played) * 100).toFixed(1)
-        : '0.0'
+  const score =
+    player.scoreDisp ??
+    player.winRatioDisp ??
+    (player.score !== undefined
+      ? player.score.toFixed(2)
+      : player.winRatio !== undefined
+        ? player.winRatio.toFixed(2)
+        : '0.00')
 
   return (
     <Pressable
@@ -68,34 +77,22 @@ function PlayerRow({
         <Text className="font-medium">{player.nickname}</Text>
       </View>
       <View style={{flex: 1}} className="items-center">
-        <Text>{player.played.toString()}</Text>
+        <Text>{formatPoints(player.played)}</Text>
       </View>
       <View style={{flex: 1}} className="items-center">
-        <Text>{player.won.toString()}</Text>
+        <Text>{formatPoints(player.won)}</Text>
       </View>
       <View style={{flex: 1}} className="items-center">
-        <Text>{winPercentage}%</Text>
+        <Text>{score}</Text>
       </View>
     </Pressable>
   )
 }
 
-function DivisionRankings({
-  data,
-  minimumGames,
-}: {
-  data: DivisionPlayerRankings
-  minimumGames: number
-}) {
+function DivisionRankings({data}: {data: DivisionPlayerRankings}) {
   const {t} = useTranslation()
 
-  // Filter players based on minimum games
-  const filteredPlayers = data.players.filter(
-    player => player.played >= minimumGames,
-  )
-
-  // Don't render division if no players meet the minimum
-  if (filteredPlayers.length === 0) {
+  if (data.players.length === 0) {
     return null
   }
 
@@ -119,12 +116,12 @@ function DivisionRankings({
             <Text className="font-bold text-sm">{t('won')}</Text>
           </View>
           <View style={{flex: 1}} className="items-center">
-            <Text className="font-bold text-sm">%</Text>
+            <Text className="font-bold text-sm">{t('score')}</Text>
           </View>
         </Row>
       </View>
       <FlatList
-        data={filteredPlayers}
+        data={data.players}
         renderItem={({item, index}) => (
           <PlayerRow player={item} index={index} />
         )}
@@ -147,17 +144,10 @@ export default function PlayerRankings({
   const [rankings, setRankings] = useState<DivisionPlayerRankings[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [minimumGames, setMinimumGames] = useState<string>('20')
   const listContentStyle = useTabListContentContainerStyle({paddingTop: 10})
   const {seasons, seasonId, setSeasonId, pastSeasonId} =
     useLeagueSeasonSelection(season)
   const effectiveSeason = seasons.length > 0 ? pastSeasonId : season
-
-  // Parse minimum games as number, default to 20 if invalid
-  const minimumGamesNum = React.useMemo(() => {
-    const parsed = parseInt(minimumGames, 10)
-    return isNaN(parsed) || parsed < 0 ? 20 : parsed
-  }, [minimumGames])
 
   React.useEffect(() => {
     async function fetchRankings() {
@@ -165,7 +155,6 @@ export default function PlayerRankings({
         setIsLoading(true)
         setError(null)
 
-        // Build query string with optional parameters
         const queryParams: string[] = [`scope=${scope}`]
         if (effectiveSeason !== undefined && effectiveSeason !== null) {
           queryParams.push(`season=${effectiveSeason}`)
@@ -178,19 +167,19 @@ export default function PlayerRankings({
         const endpoint = `/league/0/division/players/stats${queryString}`
 
         const res = await Get(endpoint)
-        // console.log('Player rankings API response:', JSON.stringify(res, null, 2))
 
-        // Check if response is empty (likely an error from useNetwork)
         if (!res || (typeof res === 'object' && Object.keys(res).length === 0)) {
-          console.warn('Empty response from API - endpoint may not exist or returned error')
-          setError('No data available. The API endpoint may not be available or returned an error.')
+          console.warn(
+            'Empty response from API - endpoint may not exist or returned error',
+          )
+          setError(
+            'No data available. The API endpoint may not be available or returned an error.',
+          )
           setRankings([])
           return
         }
 
-        // Handle different response formats
         if (res && res.status === 'ok' && res.data) {
-          // Response with status: { status: 'ok', data: [...] }
           const _rankings = Object.keys(res.data).map(key => ({
             division_name: key,
             players: res.data[key],
@@ -214,52 +203,28 @@ export default function PlayerRankings({
     fetchRankings()
   }, [effectiveSeason, divisionId, scope])
 
-  // Filter out divisions with no players meeting minimum games
-  const filteredRankings = rankings.filter(division => {
-    const hasPlayers = division.players.some(
-      player => player.played >= minimumGamesNum,
-    )
-    return hasPlayers
-  })
-
   return (
     <View className="flex-1">
-      {/* Filter Input */}
       <View className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <View className="flex-row items-center gap-3">
-          <View className="flex-1">
-            <Text className="font-bold text-sm mb-1">
-              {t('minimum_games') || 'Minimum Games'}
-            </Text>
-            <TextInput
-              className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
-              value={minimumGames}
-              onChangeText={setMinimumGames}
-              keyboardType="numeric"
-              placeholder="20"
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 8,
+          }}>
+          <View style={{flex: 1}}>
+            <StatsScopeChips />
+            <MiniSeasonChips
+              seasons={seasons}
+              seasonId={seasonId}
+              onSelect={setSeasonId}
             />
           </View>
-          <View className="pt-6">
-            <Pressable
-              onPress={() => setMinimumGames('20')}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
-              <Text className="text-center text-sm">
-                {t('reset') || 'Reset'}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-        <View className="mt-3">
-          <StatsScopeChips />
-          <MiniSeasonChips
-            seasons={seasons}
-            seasonId={seasonId}
-            onSelect={setSeasonId}
-          />
+          <RankingScoreInfoButton size={22} />
         </View>
       </View>
 
-      {/* Rankings List */}
       {isLoading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" />
@@ -274,27 +239,18 @@ export default function PlayerRankings({
         </View>
       ) : rankings.length === 0 ? (
         <View className="flex-1 justify-center items-center px-4">
-          <Text className="text-center mb-2">{t('no_data_available') || 'No data available'}</Text>
+          <Text className="text-center mb-2">
+            {t('no_data_available') || 'No data available'}
+          </Text>
           <Text className="text-gray-500 text-center text-sm">
             Try adjusting the season or division filters.
-          </Text>
-        </View>
-      ) : filteredRankings.length === 0 ? (
-        <View className="flex-1 justify-center items-center px-4">
-          <Text className="text-center mb-2">
-            No players found with at least {minimumGamesNum} games played.
-          </Text>
-          <Text className="text-gray-500 text-center text-sm">
-            Try lowering the minimum games filter.
           </Text>
         </View>
       ) : (
         <FlatList
           contentContainerStyle={listContentStyle}
-          data={filteredRankings}
-          renderItem={({item}) => (
-            <DivisionRankings data={item} minimumGames={minimumGamesNum} />
-          )}
+          data={rankings}
+          renderItem={({item}) => <DivisionRankings data={item} />}
           keyExtractor={(item, index) =>
             `division-${item.division_id || index}`
           }
@@ -303,4 +259,3 @@ export default function PlayerRankings({
     </View>
   )
 }
-

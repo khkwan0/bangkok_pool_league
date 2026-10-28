@@ -28,15 +28,6 @@ const SHORTCUTS: Shortcut[] = [
     color: '#C8960C',
   },
   {
-    key: 'teams',
-    href: '/statistics/TeamStatistics',
-    labelKey: 'team_statistics',
-    shortKey: 'team_statistics_short',
-    hintKey: 'stats_home_teams_hint',
-    icon: 'people',
-    color: '#16a34a',
-  },
-  {
     key: 'players',
     href: '/statistics/PlayerStatistics',
     labelKey: 'player_statistics',

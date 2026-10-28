@@ -8,6 +8,10 @@ import MatchCard from '@/components/upcoming/MatchCard'
 import MatchCardOld from '@/components/upcoming/MatchCardOld'
 import MatchesCalendar from '@/components/upcoming/MatchesCalendar'
 import {
+  loadHomeHeaderSticky,
+  saveHomeHeaderSticky,
+} from '@/lib/homeHeaderSticky'
+import {
   loadHomeMatchesView,
   saveHomeMatchesView,
   type HomeMatchesView,
@@ -417,9 +421,23 @@ export default function UpcomingMatches(props: any) {
     }
   }
 
+  React.useEffect(() => {
+    let cancelled = false
+    loadHomeHeaderSticky().then(sticky => {
+      if (!cancelled) setHeaderSticky(sticky)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const toggleHeaderSticky = React.useCallback(() => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    setHeaderSticky(value => !value)
+    setHeaderSticky(value => {
+      const next = !value
+      void saveHomeHeaderSticky(next).catch(() => {})
+      return next
+    })
   }, [])
 
   if (isMounted && isMiniCompetition(state.competition)) {

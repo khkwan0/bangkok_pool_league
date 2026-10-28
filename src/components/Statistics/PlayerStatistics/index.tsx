@@ -7,9 +7,10 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
+import {RankingScoreInfoButton} from '@/components/Statistics/RankingScoreInfo'
 import StatsScopeChips from '@/components/Statistics/StatsScopeChips'
 import React from 'react'
-import {useNavigation} from "expo-router/react-navigation"
+import {useNavigation} from 'expo-router/react-navigation'
 import {useTranslation} from 'react-i18next'
 import {useLeague} from '@/hooks/useLeague'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -27,8 +28,14 @@ type PlayerStatsType = {
   rank: number
   played: number
   won: number
-  rawPerfDisp: number
-  adjPerfDisp: number
+  score?: number
+  scoreDisp?: string
+  adjPerfDisp?: string | number
+  rawPerfDisp?: string | number
+}
+
+function formatPoints(value: number) {
+  return Number.isInteger(value) ? String(value) : Number(value).toFixed(1)
 }
 
 function StatsHeader({
@@ -38,8 +45,6 @@ function StatsHeader({
   gameType,
   setGameVariety,
   gameVariety,
-  setMinimumGames,
-  minimumGames,
   setNameFilter,
   nameFilter,
   loading,
@@ -50,8 +55,6 @@ function StatsHeader({
   gameType: string
   setGameVariety: (gameVariety: string) => void
   gameVariety: string
-  setMinimumGames: (minimumGames: string) => void
-  minimumGames: string
   setNameFilter: (nameFilter: string) => void
   nameFilter: string
   loading: boolean
@@ -79,8 +82,6 @@ function StatsHeader({
           gameType={gameType}
           setGameVariety={setGameVariety}
           gameVariety={gameVariety}
-          setMinimumGames={setMinimumGames}
-          minimumGames={minimumGames}
           setNameFilter={setNameFilter}
           nameFilter={nameFilter}
           loading={loading}
@@ -99,11 +100,15 @@ function StatsHeader({
         <View style={{flex: 1}}>
           <Text className="font-bold">{t('won')}</Text>
         </View>
-        <View style={{flex: 1}}>
-          <Text className="font-bold">{t('raw_perf')}</Text>
-        </View>
-        <View style={{flex: 1}}>
-          <Text className="font-bold">{t('adj_perf')}</Text>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 2,
+          }}>
+          <Text className="font-bold">{t('score')}</Text>
+          <RankingScoreInfoButton size={16} />
         </View>
       </View>
     </>
@@ -121,16 +126,24 @@ function PlayerListing({data, idx}: {data: PlayerStatsType; idx: number}) {
     textStyle = `font-bold text-red-500 dark:text-red-500 text-base`
   }
 
-  function handlePress(data: PlayerStatsType) {
+  function handlePress(row: PlayerStatsType) {
     router.push({
       pathname: currentPath + '/Player',
       params: {
         params: JSON.stringify({
-          playerId: data.playerId,
+          playerId: row.playerId,
         }),
       },
     })
   }
+
+  const score =
+    data.scoreDisp ??
+    (data.score !== undefined
+      ? Number(data.score).toFixed(2)
+      : data.adjPerfDisp != null
+        ? String(data.adjPerfDisp)
+        : '0.00')
 
   const rowClass =
     idx % 2 === 0
@@ -157,16 +170,13 @@ function PlayerListing({data, idx}: {data: PlayerStatsType; idx: number}) {
         <Text className={textStyle}>{data.name}</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text className={textStyle}>{data.played.toString()}</Text>
+        <Text className={textStyle}>{formatPoints(data.played)}</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text className={textStyle}>{data.won.toString()}</Text>
+        <Text className={textStyle}>{formatPoints(data.won)}</Text>
       </View>
       <View style={{flex: 1}}>
-        <Text className={textStyle}>{data.rawPerfDisp.toString()}</Text>
-      </View>
-      <View style={{flex: 1}}>
-        <Text className={textStyle}>{data.adjPerfDisp.toString()}</Text>
+        <Text className={textStyle}>{score}</Text>
       </View>
     </Pressable>
   )
@@ -177,8 +187,6 @@ function PlayerStatsHeader({
   gameType,
   setGameVariety,
   gameVariety,
-  setMinimumGames,
-  minimumGames,
   setNameFilter,
   nameFilter,
   loading,
@@ -187,8 +195,6 @@ function PlayerStatsHeader({
   gameType: string
   setGameVariety: (gameVariety: string) => void
   gameVariety: string
-  setMinimumGames: (minimumGames: string) => void
-  minimumGames: string
   setNameFilter: (nameFilter: string) => void
   nameFilter: string
   loading: boolean
@@ -271,41 +277,13 @@ function PlayerStatsHeader({
         </View>
       </View>
       <View className="bg-white dark:bg-gray-900 p-4 rounded-lg mb-2">
-        <View className="flex-row">
-          <View className="flex-1">
-            <View className="mb-2">
-              <Text className="text-xl font-bold">{t('minimum_games')}</Text>
-            </View>
-            <View className="flex-row items-center gap-2">
-              <View className="flex-1">
-                <TextInput
-                  disabled={loading}
-                  className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-700"
-                  value={minimumGames}
-                  onChangeText={setMinimumGames}
-                />
-              </View>
-              <View className="flex-1">
-                <Pressable
-                  onPress={() => setMinimumGames('20')}
-                  className="py-4 border border-gray-300 dark:border-gray-700 rounded-lg mr-4">
-                  <Text className="text-center">{t('reset')}: 20</Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-          <View className="flex-1">
-            <Text className="text-xl font-bold mb-2">
-              {t('filter_by_name')}
-            </Text>
-            <TextInput
-              disabled={loading}
-              className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-700"
-              value={nameFilter}
-              onChangeText={setNameFilter}
-            />
-          </View>
-        </View>
+        <Text className="text-xl font-bold mb-2">{t('filter_by_name')}</Text>
+        <TextInput
+          disabled={loading}
+          className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-700"
+          value={nameFilter}
+          onChangeText={setNameFilter}
+        />
       </View>
     </View>
   )
@@ -319,7 +297,6 @@ export default function PlayerStatistics({
   const navigation = useNavigation()
   const {t} = useTranslation()
   const {scope} = useStatsScope()
-  const [minimumGames, setMinimumGames] = React.useState('20')
   const [nameFilter, setNameFilter] = React.useState('')
   const [gameVariety, setGameVariety] = React.useState('both')
   const [playerStats, setPlayerStats] = React.useState<PlayerStatsType[]>([])
@@ -329,17 +306,12 @@ export default function PlayerStatistics({
   const [loading, setLoading] = React.useState(false)
 
   const trie = React.useRef(new TrieSearch<any>('name'))
-  const originalStats = React.useRef([])
+  const originalStats = React.useRef<PlayerStatsType[]>([])
 
   async function getPlayerStats() {
     try {
       setLoading(true)
-      const res = await league.GetPlayerStats(
-        null,
-        parseInt(minimumGames),
-        gameType,
-        gameVariety,
-      )
+      const res = await league.GetPlayerStats(null, 1, gameType, gameVariety)
       setPlayerStats(res)
       originalStats.current = res
       trie.current.reset()
@@ -361,7 +333,7 @@ export default function PlayerStatistics({
 
   React.useEffect(() => {
     getPlayerStats()
-  }, [gameType, gameVariety, minimumGames, scope])
+  }, [gameType, gameVariety, scope])
 
   React.useEffect(() => {
     if (nameFilter) {
@@ -392,8 +364,6 @@ export default function PlayerStatistics({
                 gameType={gameType}
                 setGameVariety={setGameVariety}
                 gameVariety={gameVariety}
-                setMinimumGames={setMinimumGames}
-                minimumGames={minimumGames}
                 setNameFilter={setNameFilter}
                 nameFilter={nameFilter}
                 loading={loading}

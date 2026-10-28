@@ -24,7 +24,6 @@ import {useLeague} from '@/hooks/useLeague'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {isMiniCompetition} from '@/types/competition'
 import type {PlayerInfo} from '@/types/player'
-import TeamStatistics from '@/app/(tabs)/statistics/TeamStatistics'
 import {Ionicons} from '@expo/vector-icons'
 import {useTheme} from 'expo-router/react-navigation'
 import {router, type Href} from 'expo-router'
@@ -176,8 +175,6 @@ function StatsDetailPane({
       )
     case 'standings':
       return <LeagueStandings embedded />
-    case 'teams':
-      return <TeamStatistics embedded />
     case 'players':
       return <LeaguePlayerStatistics embedded />
     case 'rankings':
