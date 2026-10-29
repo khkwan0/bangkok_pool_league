@@ -44,6 +44,16 @@ export default function Admin() {
         url="/Settings/Admin/PlayerMerges"
       />
       <NavDest
+        icon="palette"
+        text={t('admin_branding')}
+        url="/Settings/Admin/Branding"
+      />
+      <NavDest
+        icon="trophy-outline"
+        text={t('admin_league')}
+        url="/Settings/Admin/League"
+      />
+      <NavDest
         icon="cash-multiple"
         text={t('admin_betting')}
         url="/Settings/Admin/Betting"
