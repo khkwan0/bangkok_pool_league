@@ -18,6 +18,7 @@ type AdPayload = {
   message?: string
   id?: string | number
   background?: string | null
+  clickUrl?: string | null
   empty?: boolean
 }
 
@@ -25,6 +26,15 @@ type AdPayload = {
 const adCache = new Map<number, AdPayload>()
 
 const COLLAPSED_MIN_HEIGHT = 56
+
+function ensureHttpUrl(raw: string | null | undefined): string | null {
+  if (typeof raw !== 'string') return null
+  const trimmed = raw.trim()
+  if (!trimmed) return null
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  if (trimmed.startsWith('//')) return `https:${trimmed}`
+  return `https://${trimmed}`
+}
 
 export default function AdSpot(props: any) {
   const index = Number(props.item?.index ?? 0)
@@ -35,6 +45,9 @@ export default function AdSpot(props: any) {
   const [adId, setAdId] = React.useState<string | number | ''>(cached?.id ?? '')
   const [image, setImage] = React.useState<string | null>(
     cached?.background ?? null,
+  )
+  const [clickUrl, setClickUrl] = React.useState<string | null>(
+    cached?.clickUrl ?? null,
   )
   const [noAd, setNoAd] = React.useState(Boolean(cached?.empty))
   const [loading, setLoading] = React.useState(!cached)
@@ -66,17 +79,22 @@ export default function AdSpot(props: any) {
           rawBackground && apiUrl
             ? absoluteSiteUrl(rawBackground, apiUrl)
             : rawBackground
+        const resolvedClick = ensureHttpUrl(
+          typeof res?.click_url === 'string' ? res.click_url : null,
+        )
         const payload: AdPayload = {
           title: collapsedTitle,
           message: typeof res?.message === 'string' ? res.message : '',
           id: res?.id,
           background: resolvedBackground,
+          clickUrl: resolvedClick,
         }
         adCache.set(index, payload)
         setTitle(payload.title ?? '')
         setMessage(payload.message ?? '')
         if (typeof payload.id !== 'undefined') setAdId(payload.id)
         if (payload.background) setImage(payload.background)
+        setClickUrl(payload.clickUrl ?? null)
         setLoading(false)
       } catch (e) {
         console.log(e)
@@ -99,16 +117,33 @@ export default function AdSpot(props: any) {
     return <View style={{height: 0}} />
   }
 
-  async function HandleClick() {
-    if (typeof adId !== 'undefined' && adId !== '') {
-      const res = await adHook.HandleClick(adId)
-      if (
-        typeof res?.status === 'string' &&
-        res.status === 'ok' &&
-        typeof res.url === 'string'
-      ) {
-        Linking.openURL(res.url)
+  async function openClickThrough() {
+    let url = clickUrl
+    if (adId !== '' && adId != null) {
+      // Record the click; prefer the destination returned by the API.
+      void adHook.HandleClick(String(adId)).then(res => {
+        const tracked = ensureHttpUrl(
+          typeof res?.url === 'string' ? res.url : null,
+        )
+        if (tracked && tracked !== clickUrl) {
+          setClickUrl(tracked)
+        }
+      })
+      if (!url) {
+        const res = await adHook.HandleClick(String(adId))
+        url = ensureHttpUrl(typeof res?.url === 'string' ? res.url : null)
       }
+    }
+    if (!url) return
+    try {
+      const canOpen = await Linking.canOpenURL(url)
+      if (canOpen) {
+        await Linking.openURL(url)
+      } else {
+        await Linking.openURL(url)
+      }
+    } catch (e) {
+      console.log('Ad click-through failed', url, e)
     }
   }
 
@@ -144,12 +179,17 @@ export default function AdSpot(props: any) {
           </View>
         </Pressable>
       ) : (
-        <Pressable onPress={() => HandleClick()}>
+        <View>
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <View style={{flex: 4, alignItems: 'center'}}>
+            <Pressable
+              onPress={() => void openClickThrough()}
+              style={{flex: 4, alignItems: 'center'}}>
               <Text>{title}</Text>
-            </View>
-            <Pressable onPress={() => setShowFull(false)}>
+            </Pressable>
+            <Pressable
+              onPress={() => setShowFull(false)}
+              hitSlop={12}
+              accessibilityLabel="Collapse ad">
               <MCI
                 name="minus-circle"
                 size={24}
@@ -158,23 +198,27 @@ export default function AdSpot(props: any) {
             </Pressable>
           </View>
           {message ? (
-            <View style={{marginTop: 8}}>
-              <Text>{message}</Text>
-            </View>
+            <Pressable onPress={() => void openClickThrough()}>
+              <View style={{marginTop: 8}}>
+                <Text>{message}</Text>
+              </View>
+            </Pressable>
           ) : null}
           {image ? (
-            <Image
-              resizeMode="contain"
-              source={{uri: image}}
-              style={{
-                width: imageWidth,
-                height: imageWidth,
-                marginTop: 12,
-                alignSelf: 'center',
-              }}
-            />
+            <Pressable onPress={() => void openClickThrough()}>
+              <Image
+                resizeMode="contain"
+                source={{uri: image}}
+                style={{
+                  width: imageWidth,
+                  height: imageWidth,
+                  marginTop: 12,
+                  alignSelf: 'center',
+                }}
+              />
+            </Pressable>
           ) : null}
-        </Pressable>
+        </View>
       )}
     </View>
   )
