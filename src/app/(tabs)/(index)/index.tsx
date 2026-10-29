@@ -33,8 +33,6 @@ import {
   ActivityIndicator,
   Animated,
   FlatList,
-  Linking,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -79,7 +77,6 @@ export default function UpcomingMatches(props: any) {
   const account = useAccount()
   const adHook = useAd()
   const {t} = useTranslation()
-  const [needsUpdate, setNeedsUpdate] = React.useState(false)
   const router = useRouter()
   const isRegular = useIsRegularLayout()
   const {width, height} = useWindowDimensions()
@@ -118,10 +115,6 @@ export default function UpcomingMatches(props: any) {
     } finally {
       setIsMounted(true)
     }
-  }
-
-  async function CheckVersion() {
-    setNeedsUpdate(await account.CheckVersion())
   }
 
   function HandlePress(idx: number) {
@@ -227,13 +220,6 @@ export default function UpcomingMatches(props: any) {
     FetchUser()
   }, [])
 
-  React.useEffect(() => {
-    if (DEBUG_MINIMAL_MATCHES_SCREEN) {
-      return
-    }
-    CheckVersion()
-  }, [])
-
   function RefreshMatches(mode: 'initial' | 'pull' | 'silent' = 'silent') {
     if (typeof user?.teams !== 'undefined' && user.teams.length > 0) {
       if (showMineOnly) {
@@ -309,21 +295,6 @@ export default function UpcomingMatches(props: any) {
       console.log(e)
     }
   }
-  async function HandleUpdate() {
-    try {
-      const url =
-        Platform.OS === 'ios'
-          ? 'https://apps.apple.com/app/bangkok-pool-league/id6447631894'
-          : 'https://play.google.com/store/apps/details?id=com.bangkok_pool_league'
-      const supported = await Linking.canOpenURL(url)
-      if (supported) {
-        await Linking.openURL(url)
-      }
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
   React.useEffect(() => {
     if (DEBUG_MINIMAL_MATCHES_SCREEN) {
       return
@@ -853,15 +824,6 @@ export default function UpcomingMatches(props: any) {
             </View>
           )
         })()}
-        {needsUpdate && (
-          <View className="px-2">
-            <Button
-              style={{backgroundColor: 'red'}}
-              onPress={() => HandleUpdate()}>
-              <Text className="text-center">{t('update_available')}</Text>
-            </Button>
-          </View>
-        )}
       </View>
     )
 
