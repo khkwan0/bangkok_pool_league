@@ -39,6 +39,11 @@ export default function Admin() {
         messageCount={unreadCount}
       />
       <NavDest
+        icon="account-switch-outline"
+        text={t('admin_player_merges')}
+        url="/Settings/Admin/PlayerMerges"
+      />
+      <NavDest
         icon="cash-multiple"
         text={t('admin_betting')}
         url="/Settings/Admin/Betting"
