@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bangkok Pool League",
     "slug": "bangkok_pool_league",
-    "version": "2.23",
+    "version": "2.22",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "bangkokpoolleague",
