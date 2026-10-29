@@ -119,29 +119,21 @@ export default function AdSpot(props: any) {
 
   async function openClickThrough() {
     let url = clickUrl
+
     if (adId !== '' && adId != null) {
-      // Record the click; prefer the destination returned by the API.
-      void adHook.HandleClick(String(adId)).then(res => {
-        const tracked = ensureHttpUrl(
-          typeof res?.url === 'string' ? res.url : null,
-        )
-        if (tracked && tracked !== clickUrl) {
-          setClickUrl(tracked)
-        }
-      })
-      if (!url) {
+      if (url) {
+        // Open immediately; record the click in the background.
+        void adHook.HandleClick(String(adId))
+      } else {
         const res = await adHook.HandleClick(String(adId))
         url = ensureHttpUrl(typeof res?.url === 'string' ? res.url : null)
+        if (url) setClickUrl(url)
       }
     }
+
     if (!url) return
     try {
-      const canOpen = await Linking.canOpenURL(url)
-      if (canOpen) {
-        await Linking.openURL(url)
-      } else {
-        await Linking.openURL(url)
-      }
+      await Linking.openURL(url)
     } catch (e) {
       console.log('Ad click-through failed', url, e)
     }
