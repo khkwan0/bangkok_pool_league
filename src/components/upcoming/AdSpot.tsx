@@ -1,7 +1,16 @@
 import React from 'react'
-import {Pressable, useColorScheme, Linking, Image, Dimensions, View} from 'react-native'
+import {
+  Pressable,
+  useColorScheme,
+  Linking,
+  Image,
+  Dimensions,
+  View,
+} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {useAd} from '@/hooks'
+import {absoluteSiteUrl} from '@/lib/aiChatThreads'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 
 type AdPayload = {
@@ -31,7 +40,9 @@ export default function AdSpot(props: any) {
   const [loading, setLoading] = React.useState(!cached)
   const colorScheme = useColorScheme()
   const adHook = useAd()
+  const {apiUrl} = useLeagueContext() as {apiUrl?: string}
   const width = Dimensions.get('window').width
+  const imageWidth = width * 0.9
 
   React.useEffect(() => {
     if (adCache.has(index)) return
@@ -41,18 +52,25 @@ export default function AdSpot(props: any) {
       try {
         const res = await adHook.GetAdSpot(index)
         if (cancelled) return
-        if (typeof res?.title === 'undefined') {
+        const collapsedTitle =
+          typeof res?.title === 'string' ? res.title.trim() : ''
+        if (!collapsedTitle) {
           adCache.set(index, {empty: true})
           setNoAd(true)
           setLoading(false)
           return
         }
+        const rawBackground =
+          typeof res?.background === 'string' ? res.background : null
+        const resolvedBackground =
+          rawBackground && apiUrl
+            ? absoluteSiteUrl(rawBackground, apiUrl)
+            : rawBackground
         const payload: AdPayload = {
-          title: typeof res?.title === 'string' ? res.title : '',
+          title: collapsedTitle,
           message: typeof res?.message === 'string' ? res.message : '',
           id: res?.id,
-          background:
-            typeof res?.background !== 'undefined' ? res.background : null,
+          background: resolvedBackground,
         }
         adCache.set(index, payload)
         setTitle(payload.title ?? '')
@@ -75,7 +93,7 @@ export default function AdSpot(props: any) {
     }
     // adHook is stable enough for this screen; index is the cache key.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index])
+  }, [index, apiUrl])
 
   if (noAd) {
     return <View style={{height: 0}} />
@@ -139,15 +157,21 @@ export default function AdSpot(props: any) {
               />
             </Pressable>
           </View>
-          <View>
-            <Text>{message}</Text>
-          </View>
+          {message ? (
+            <View style={{marginTop: 8}}>
+              <Text>{message}</Text>
+            </View>
+          ) : null}
           {image ? (
             <Image
               resizeMode="contain"
               source={{uri: image}}
-              width={width * 0.9}
-              height={width}
+              style={{
+                width: imageWidth,
+                height: imageWidth,
+                marginTop: 12,
+                alignSelf: 'center',
+              }}
             />
           ) : null}
         </Pressable>
