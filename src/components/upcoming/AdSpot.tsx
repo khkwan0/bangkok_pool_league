@@ -23,7 +23,16 @@ type AdPayload = {
 }
 
 /** Survive FlatList recycle so remounts don't collapse/expand mid-scroll. */
-const adCache = new Map<number, AdPayload>()
+const adCache = new Map<string, AdPayload>()
+
+/** Call before rebuilding the matches list so pull-to-refresh can load new creatives. */
+export function clearAdSpotCache() {
+  adCache.clear()
+}
+
+function cacheKey(index: number, refreshGen: number | string) {
+  return `${refreshGen}:${index}`
+}
 
 const COLLAPSED_MIN_HEIGHT = 56
 
@@ -38,7 +47,9 @@ function ensureHttpUrl(raw: string | null | undefined): string | null {
 
 export default function AdSpot(props: any) {
   const index = Number(props.item?.index ?? 0)
-  const cached = adCache.get(index)
+  const refreshGen = Number(props.item?.refresh_gen ?? 0)
+  const slotKey = cacheKey(index, refreshGen)
+  const cached = adCache.get(slotKey)
   const [title, setTitle] = React.useState(cached?.title ?? '')
   const [message, setMessage] = React.useState(cached?.message ?? '')
   const [showFull, setShowFull] = React.useState(false)
@@ -66,9 +77,23 @@ export default function AdSpot(props: any) {
   }, [adHook, adId])
 
   React.useEffect(() => {
-    if (adCache.has(index)) return
+    const existing = adCache.get(slotKey)
+    if (existing) {
+      setTitle(existing.title ?? '')
+      setMessage(existing.message ?? '')
+      setAdId(existing.id ?? '')
+      setImage(existing.background ?? null)
+      setClickUrl(existing.clickUrl ?? null)
+      setNoAd(Boolean(existing.empty))
+      setLoading(false)
+      setShowFull(false)
+      return
+    }
 
     let cancelled = false
+    setLoading(true)
+    setShowFull(false)
+    setNoAd(false)
     async function GetAd() {
       try {
         const res = await adHook.GetAdSpot(index)
@@ -76,7 +101,7 @@ export default function AdSpot(props: any) {
         const collapsedTitle =
           typeof res?.title === 'string' ? res.title.trim() : ''
         if (!collapsedTitle) {
-          adCache.set(index, {empty: true})
+          adCache.set(slotKey, {empty: true})
           setNoAd(true)
           setLoading(false)
           return
@@ -97,7 +122,7 @@ export default function AdSpot(props: any) {
           background: resolvedBackground,
           clickUrl: resolvedClick,
         }
-        adCache.set(index, payload)
+        adCache.set(slotKey, payload)
         setTitle(payload.title ?? '')
         setMessage(payload.message ?? '')
         if (typeof payload.id !== 'undefined') setAdId(payload.id)
@@ -107,7 +132,7 @@ export default function AdSpot(props: any) {
       } catch (e) {
         console.log(e)
         if (!cancelled) {
-          adCache.set(index, {empty: true})
+          adCache.set(slotKey, {empty: true})
           setNoAd(true)
           setLoading(false)
         }
@@ -118,7 +143,7 @@ export default function AdSpot(props: any) {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, apiUrl])
+  }, [slotKey, index, apiUrl])
 
   if (noAd) {
     return <View style={{height: 0}} />
