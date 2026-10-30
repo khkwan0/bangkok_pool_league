@@ -24,6 +24,8 @@ type AdPayload = {
 
 /** Survive FlatList recycle so remounts don't collapse/expand mid-scroll. */
 const adCache = new Map<number, AdPayload>()
+/** One impression per placement id per app session. */
+const recordedViews = new Set<number>()
 
 const COLLAPSED_MIN_HEIGHT = 56
 
@@ -57,8 +59,24 @@ export default function AdSpot(props: any) {
   const width = Dimensions.get('window').width
   const imageWidth = width * 0.9
 
+  const recordImpression = React.useCallback(
+    (placementId: string | number | undefined) => {
+      const id = Number(placementId)
+      if (!Number.isFinite(id) || id <= 0 || recordedViews.has(id)) return
+      recordedViews.add(id)
+      void adHook.RecordView(id)
+    },
+    [adHook],
+  )
+
   React.useEffect(() => {
-    if (adCache.has(index)) return
+    if (adCache.has(index)) {
+      const hit = adCache.get(index)
+      if (hit && !hit.empty) {
+        recordImpression(hit.id)
+      }
+      return
+    }
 
     let cancelled = false
     async function GetAd() {
@@ -96,6 +114,7 @@ export default function AdSpot(props: any) {
         if (payload.background) setImage(payload.background)
         setClickUrl(payload.clickUrl ?? null)
         setLoading(false)
+        recordImpression(payload.id)
       } catch (e) {
         console.log(e)
         if (!cancelled) {
@@ -109,7 +128,6 @@ export default function AdSpot(props: any) {
     return () => {
       cancelled = true
     }
-    // adHook is stable enough for this screen; index is the cache key.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, apiUrl])
 
@@ -120,14 +138,20 @@ export default function AdSpot(props: any) {
   async function openClickThrough() {
     let url = clickUrl
 
+    // Await click tracking before leaving the app — background fetch is cancelled
+    // when Linking.openURL switches to the browser.
     if (adId !== '' && adId != null) {
-      if (url) {
-        // Open immediately; record the click in the background.
-        void adHook.HandleClick(String(adId))
-      } else {
-        const res = await adHook.HandleClick(String(adId))
-        url = ensureHttpUrl(typeof res?.url === 'string' ? res.url : null)
-        if (url) setClickUrl(url)
+      try {
+        const res = await adHook.HandleClick(adId)
+        const tracked = ensureHttpUrl(
+          typeof res?.url === 'string' ? res.url : null,
+        )
+        if (tracked) {
+          url = tracked
+          setClickUrl(tracked)
+        }
+      } catch (e) {
+        console.log('Ad click record failed', e)
       }
     }
 

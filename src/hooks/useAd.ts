@@ -3,7 +3,7 @@ import {useNetwork} from './useNetwork'
 export const useAd = () => {
   const {Get, Post} = useNetwork()
 
-  const HandleClick = async (adId: string) => {
+  const HandleClick = async (adId: string | number) => {
     try {
       const res = await Get('/ad/click/' + adId)
       return res
@@ -13,7 +13,18 @@ export const useAd = () => {
     }
   }
 
-  const GetAdSpot = async (adSpotId: string) => {
+  /** Impression / view for a campaign placement (public POST). */
+  const RecordView = async (placementId: string | number) => {
+    try {
+      const res = await Post('/ad/placement/' + placementId + '/view', {})
+      return res
+    } catch (e) {
+      console.error(e)
+      return null
+    }
+  }
+
+  const GetAdSpot = async (adSpotId: string | number) => {
     try {
       const res = await Get('/ad/spot/' + adSpotId)
       return res
@@ -33,5 +44,5 @@ export const useAd = () => {
     }
   }
 
-  return {HandleClick, GetAdSpot, GetFrequency}
+  return {HandleClick, RecordView, GetAdSpot, GetFrequency}
 }
