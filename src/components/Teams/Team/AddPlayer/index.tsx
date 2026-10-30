@@ -11,6 +11,7 @@ export default function AddPlayer() {
   const {t} = useTranslation()
   const [yesIsPressed, setYesIsPressed] = React.useState(false)
   const [noIsPressed, setNoIsPressed] = React.useState(false)
+  const [scanIsPressed, setScanIsPressed] = React.useState(false)
   const pathname = usePathname()
 
   const {teamIdParams} = useLocalSearchParams()
@@ -66,6 +67,25 @@ export default function AddPlayer() {
             }`}>
             <Text className="text-white text-base font-semibold">
               {t('no')}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPressIn={() => setScanIsPressed(true)}
+            onPressOut={() => setScanIsPressed(false)}
+            onPress={() =>
+              router.push({
+                pathname: './AddPlayer/ScanPlayerQr',
+                params: {
+                  teamIdParams: JSON.stringify({teamId}),
+                  returnPath: returnPath,
+                },
+              })
+            }
+            className={`bg-emerald-600 p-4 rounded-lg items-center my-4 ${
+              scanIsPressed ? 'bg-emerald-700' : ''
+            }`}>
+            <Text className="text-white text-base font-semibold">
+              {t('scan_player_qr')}
             </Text>
           </Pressable>
         </View>

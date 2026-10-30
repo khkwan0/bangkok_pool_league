@@ -296,6 +296,32 @@ const AddPlayer = () => {
         ListHeaderComponent={
           !showAddNewPlayer ? (
             <View className="px-4 pt-5 pb-2">
+              <Pressable
+                onPress={() =>
+                  router.push({
+                    pathname: './ScanPlayerQr',
+                    params: {
+                      params: JSON.stringify({
+                        frameIndex,
+                        slot,
+                        side,
+                        frameNumber,
+                        frameType,
+                      }),
+                    },
+                  })
+                }
+                className="mb-4 flex-row items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 active:bg-emerald-700">
+                <MaterialCommunityIcons
+                  name="qrcode-scan"
+                  size={22}
+                  color="#ffffff"
+                />
+                <Text className="text-white font-semibold">
+                  {t('scan_player_qr')}
+                </Text>
+              </Pressable>
+
               <View className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-900/40 p-4 mb-4">
                 <View className="flex-row items-center gap-2 mb-1">
                   <MaterialCommunityIcons
