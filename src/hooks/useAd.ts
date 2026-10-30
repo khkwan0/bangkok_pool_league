@@ -3,9 +3,10 @@ import {useNetwork} from './useNetwork'
 export const useAd = () => {
   const {Get, Post} = useNetwork()
 
+  /** Prefer POST so click writes are not skipped by GET caches (same pattern as views). */
   const HandleClick = async (adId: string | number) => {
     try {
-      const res = await Get('/ad/click/' + adId)
+      const res = await Post('/ad/click/' + adId, {})
       return res
     } catch (e) {
       console.error(e)

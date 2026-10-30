@@ -24,8 +24,6 @@ type AdPayload = {
 
 /** Survive FlatList recycle so remounts don't collapse/expand mid-scroll. */
 const adCache = new Map<number, AdPayload>()
-/** One impression per placement id per app session. */
-const recordedViews = new Set<number>()
 
 const COLLAPSED_MIN_HEIGHT = 56
 
@@ -59,24 +57,16 @@ export default function AdSpot(props: any) {
   const width = Dimensions.get('window').width
   const imageWidth = width * 0.9
 
-  const recordImpression = React.useCallback(
-    (placementId: string | number | undefined) => {
-      const id = Number(placementId)
-      if (!Number.isFinite(id) || id <= 0 || recordedViews.has(id)) return
-      recordedViews.add(id)
-      void adHook.RecordView(id)
-    },
-    [adHook],
-  )
+  /** A view = user expanded the collapsed card (not merely loading it in the list). */
+  const expandAd = React.useCallback(() => {
+    setShowFull(true)
+    const id = Number(adId)
+    if (!Number.isFinite(id) || id <= 0) return
+    void adHook.RecordView(id)
+  }, [adHook, adId])
 
   React.useEffect(() => {
-    if (adCache.has(index)) {
-      const hit = adCache.get(index)
-      if (hit && !hit.empty) {
-        recordImpression(hit.id)
-      }
-      return
-    }
+    if (adCache.has(index)) return
 
     let cancelled = false
     async function GetAd() {
@@ -114,7 +104,6 @@ export default function AdSpot(props: any) {
         if (payload.background) setImage(payload.background)
         setClickUrl(payload.clickUrl ?? null)
         setLoading(false)
-        recordImpression(payload.id)
       } catch (e) {
         console.log(e)
         if (!cancelled) {
@@ -180,7 +169,7 @@ export default function AdSpot(props: any) {
       {loading ? (
         <View style={{minHeight: 24}} />
       ) : !showFull ? (
-        <Pressable onPress={() => setShowFull(true)}>
+        <Pressable onPress={expandAd}>
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <View style={{flex: 4, alignItems: 'center'}}>
               <Text>{title}</Text>
