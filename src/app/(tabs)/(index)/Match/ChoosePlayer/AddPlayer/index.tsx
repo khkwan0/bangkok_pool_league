@@ -299,7 +299,7 @@ const AddPlayer = () => {
               <Pressable
                 onPress={() =>
                   router.push({
-                    pathname: './ScanPlayerQr',
+                    pathname: '/Match/ChoosePlayer/AddPlayer/ScanPlayerQr',
                     params: {
                       params: JSON.stringify({
                         frameIndex,
