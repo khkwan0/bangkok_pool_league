@@ -8,7 +8,7 @@ import {
   Modal,
   StyleSheet,
 } from 'react-native'
-import {router} from 'expo-router'
+import {useRouter} from 'expo-router'
 import config from '@/config'
 import {useTeams} from '@/hooks'
 import React from 'react'
@@ -89,6 +89,7 @@ export default function PlayerCard({
   mfpp,
   accentIndex = 0,
 }: PlayerCardPropsType) {
+  const router = useRouter()
   const {UpdateFramePlayers}: any = useMatchContext()
   const [stats, setStats] = React.useState({
     played: 0,

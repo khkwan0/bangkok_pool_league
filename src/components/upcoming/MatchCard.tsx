@@ -1,5 +1,6 @@
 import Button from '@/components/Button'
 import MatchBettingRow from '@/components/betting/MatchBettingRow'
+import RivalryStrip from '@/components/habits/RivalryStrip'
 import MatchPredictionRow from '@/components/predictions/MatchPredictionRow'
 import {MatchInfoDataType} from '@/components/Match/types'
 import {ThemedText as Text} from '@/components/ThemedText'
@@ -375,7 +376,7 @@ export default function MatchCard({
       matchInfo.match_id,
       matchInfo.player_team_id,
     )
-    if (res.status === 'ok') {
+    if (res?.status === 'ok') {
       const {confirmed, isHome} = res.data
       if (
         typeof confirmed === 'number' &&
@@ -764,6 +765,12 @@ export default function MatchCard({
           </Pressable>
 
         <View style={{paddingHorizontal: pad}}>
+          <RivalryStrip
+            matchId={Number(matchInfo.match_id ?? 0)}
+            homeShort={matchInfo.home_team_short_name}
+            awayShort={matchInfo.away_team_short_name}
+            accent={accent}
+          />
           <MatchBettingRow
             matchId={Number(matchInfo.match_id ?? 0)}
             homeShort={matchInfo.home_team_short_name}

@@ -1,7 +1,7 @@
 import {Image, Pressable, StyleSheet, View} from 'react-native'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {Player} from './types'
-import {router} from 'expo-router'
+import {useRouter} from 'expo-router'
 import config from '@/config'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 
@@ -42,6 +42,7 @@ export default function PlayerCard({
   player: Player
   index?: number
 }) {
+  const router = useRouter()
   const accent = ACCENTS[index % ACCENTS.length]
   const fullName = [player.firstname, player.lastname]
     .filter(Boolean)

@@ -13,7 +13,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import PlayerAchievementsCard from '@/components/PlayerAchievementsCard'
 import PlayerAchievementsHero from '@/components/PlayerAchievementsHero'
 import config from '@/config'
-import {router} from 'expo-router'
+import {useRouter} from 'expo-router'
 import {useNavigation} from 'expo-router'
 import {useTranslation} from 'react-i18next'
 import {LinearGradient} from 'expo-linear-gradient'
@@ -90,6 +90,7 @@ function roleLabel(
 }
 
 export default function PlayerDetails({playerId}: PlayerDetailsProps) {
+  const router = useRouter()
   const league = useLeague()
   const {getPlayerAchievements} = useAchievements()
   const {t} = useTranslation()

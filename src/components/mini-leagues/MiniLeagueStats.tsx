@@ -2,7 +2,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useMiniLeagues} from '@/hooks/useMiniLeagues'
 import {useTheme} from 'expo-router/react-navigation'
-import {router} from 'expo-router'
+import {useRouter} from 'expo-router'
 import React from 'react'
 import {ActivityIndicator, Pressable, ScrollView} from 'react-native'
 
@@ -13,6 +13,7 @@ export function MiniLeagueStats({
   miniLeagueId: number
   seasonId?: number | null
 }) {
+  const router = useRouter()
   const api = useMiniLeagues()
   const {colors} = useTheme()
   const [standings, setStandings] = React.useState<any[]>([])

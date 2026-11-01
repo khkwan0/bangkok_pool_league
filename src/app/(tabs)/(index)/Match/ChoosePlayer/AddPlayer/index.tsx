@@ -15,7 +15,7 @@ import {useLeague, useTeams} from '@/hooks'
 import {useTranslation} from 'react-i18next'
 import {MaterialCommunityIcons} from '@expo/vector-icons'
 import {useNavigation} from 'expo-router/react-navigation'
-import {router, useLocalSearchParams} from 'expo-router'
+import {useLocalSearchParams, useRouter} from 'expo-router'
 import {useThemeColor} from '@/hooks/useThemeColor'
 import {useMatchContext} from '@/context/MatchContext'
 
@@ -201,6 +201,7 @@ const AddNewPlayer = ({
 }
 
 const AddPlayer = () => {
+  const router = useRouter()
   const {t} = useTranslation()
   const [showAddNewPlayer, setShowAddNewPlayer] = React.useState(false)
   const [loading, setLoading] = React.useState(true)

@@ -1,4 +1,4 @@
-import {useLocalSearchParams, router} from 'expo-router'
+import {useLocalSearchParams, useRouter} from 'expo-router'
 import {useMatchContext} from '@/context/MatchContext'
 import {FlatList, Pressable, useColorScheme, View} from 'react-native'
 import PlayerCard from '@/components/PlayerCard'
@@ -166,6 +166,7 @@ function RosterHeader({
 }
 
 export default function ChoosePlayer() {
+  const router = useRouter()
   const {params} = useLocalSearchParams()
   const {state}: any = useMatchContext()
   const navigation = useNavigation()

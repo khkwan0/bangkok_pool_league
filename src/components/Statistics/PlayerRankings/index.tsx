@@ -10,7 +10,7 @@ import {useLeagueSeasonSelection} from '@/hooks/useLeagueSeasonSelection'
 import {useNetwork} from '@/hooks/useNetwork'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useTheme} from 'expo-router/react-navigation'
-import {router, usePathname} from 'expo-router'
+import {usePathname, useRouter} from 'expo-router'
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {
@@ -104,6 +104,7 @@ function PlayerRow({
   player: PlayerRanking
   index: number
 }) {
+  const router = useRouter()
   const currentPath = usePathname()
 
   function handlePress(playerId: number) {

@@ -81,7 +81,7 @@ export const useMatch = () => {
         matchId: matchId,
         teamId: teamId,
       })
-      if (res.status === 'ok') {
+      if (res?.status === 'ok') {
         return res
       } else {
         return null
@@ -105,7 +105,7 @@ export const useMatch = () => {
       const res = await Post('/match/confirm/' + matchId, {
         teamId: teamId,
       })
-      if (res.status === 'ok') {
+      if (res?.status === 'ok') {
         return res
       } else {
         return null

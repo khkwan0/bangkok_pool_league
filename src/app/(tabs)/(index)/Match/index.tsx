@@ -17,7 +17,7 @@ import {
   resolveNoPlayers,
 } from '@/lib/matchFormat'
 import {resolveMatchInfoFromParams} from '@/lib/matchRouteParams'
-import {router, useLocalSearchParams} from 'expo-router'
+import {useLocalSearchParams, useRouter} from 'expo-router'
 import {useNavigation} from 'expo-router/react-navigation'
 import React from 'react'
 import {AppState, FlatList, View} from 'react-native'
@@ -33,6 +33,7 @@ export default function ScoreSheet({
   embedMatchInfo,
   embedded = false,
 }: ScoreSheetProps = {}) {
+  const router = useRouter()
   const {state, dispatch, SocketConnect, SocketDisconnect, UpdateTeams}: any =
     useMatchContext()
   const {RefreshUpcoming}: any = useLeagueContext()
