@@ -8,6 +8,7 @@ import {useTranslation} from 'react-i18next'
 import {ThemedView} from '@/components/ThemedView'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {useThemeColor} from '@/hooks/useThemeColor'
+import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {MaterialCommunityIcons} from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 
@@ -173,6 +174,7 @@ export default function ChoosePlayer() {
   const {t} = useTranslation()
   const bgColor = useThemeColor({}, 'background')
   const [headerSticky, setHeaderSticky] = React.useState(true)
+  const listContentStyle = useTabListContentContainerStyle({paddingBottom: 28})
 
   const {teamId, side, frameIndex, frameNumber, frameType, slot} = JSON.parse(
     params as string,
@@ -281,7 +283,7 @@ export default function ChoosePlayer() {
       {headerSticky ? header : null}
       <FlatList
         style={{flex: 1}}
-        contentContainerStyle={{paddingBottom: 28}}
+        contentContainerStyle={listContentStyle}
         ListHeaderComponent={headerSticky ? null : header}
         data={team}
         keyExtractor={(item, index) =>

@@ -17,6 +17,7 @@ import {MaterialCommunityIcons} from '@expo/vector-icons'
 import {useNavigation} from 'expo-router/react-navigation'
 import {useLocalSearchParams, useRouter} from 'expo-router'
 import {useThemeColor} from '@/hooks/useThemeColor'
+import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useMatchContext} from '@/context/MatchContext'
 
 type PlayerHit = {
@@ -213,6 +214,7 @@ const AddPlayer = () => {
   const {state, UpdateFramePlayers}: any = useMatchContext()
   const bgColor = useThemeColor({}, 'background')
   const {params} = useLocalSearchParams()
+  const listContentStyle = useTabListContentContainerStyle({paddingBottom: 24})
 
   const {frameIndex, slot, side, frameNumber, frameType} = JSON.parse(
     params as string,
@@ -292,7 +294,7 @@ const AddPlayer = () => {
     <ThemedView className="flex-1" style={{backgroundColor: bgColor}}>
       <FlatList
         className="flex-1"
-        contentContainerStyle={{paddingBottom: 24}}
+        contentContainerStyle={listContentStyle}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           !showAddNewPlayer ? (
