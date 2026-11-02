@@ -3,8 +3,8 @@ import {useLiveScoresOptional} from '@/context/LiveScoresContext'
 import {usePathname} from 'expo-router'
 
 /**
- * BottomAccessory live crawl: Home tab (incl. mini-league home) and live Match
- * scoresheet only. Hidden on other tabs / completed match routes.
+ * BottomAccessory live crawl: Home tab upcoming matches screen only
+ * (canonical or mini-league home). Hidden on Match scoresheet and other routes.
  */
 export function useShowLiveScoresAccessory(): boolean {
   const {state} = useLeagueContext()
@@ -17,33 +17,12 @@ export function useShowLiveScoresAccessory(): boolean {
     return false
   }
 
-  // Live scoresheet (home stack)
-  if (
-    pathname === '/Match' ||
-    pathname.startsWith('/Match/') ||
-    pathname.endsWith('/Match')
-  ) {
-    // Exclude completed / stats match detail routes
-    if (
-      pathname.includes('completed') ||
-      pathname.includes('statistics') ||
-      pathname.includes('Completed')
-    ) {
-      return false
-    }
-    return true
-  }
-
-  // Home tab root (canonical or mini-league)
-  if (
+  // Home tab root — upcoming matches (canonical or mini-league)
+  return (
     pathname === '/' ||
     pathname === '' ||
     pathname === '/(tabs)/(index)' ||
     pathname.endsWith('/(index)') ||
     pathname.endsWith('/(index)/')
-  ) {
-    return true
-  }
-
-  return false
+  )
 }
