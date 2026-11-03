@@ -3,6 +3,7 @@ import Button from '@/components/Button'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import AdSpot, {clearAdSpotCache} from '@/components/upcoming/AdSpot'
+import LiveScores from '@/components/upcoming/LiveScores'
 import WeeklyHighlightsCard from '@/components/upcoming/WeeklyHighlightsCard'
 import MatchCard from '@/components/upcoming/MatchCard'
 import MatchCardOld from '@/components/upcoming/MatchCardOld'
@@ -21,6 +22,7 @@ import {useLeagueContext} from '@/context/LeagueContext'
 import {isMiniCompetition} from '@/types/competition'
 import {useAccount, useAd, useLeague, useSeason} from '@/hooks'
 import {useIsRegularLayout} from '@/hooks/useLayoutMode'
+import {useShowLiveScoresInPage} from '@/hooks/useShowLiveScoresAccessory'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {MaterialCommunityIcons, MaterialIcons} from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -89,6 +91,7 @@ export default function UpcomingMatches(props: any) {
     flexGrow: 1,
     paddingHorizontal: 0,
   })
+  const showLiveScoresInPage = useShowLiveScoresInPage()
 
   const pathname = usePathname()
 
@@ -419,7 +422,12 @@ export default function UpcomingMatches(props: any) {
   }, [])
 
   if (isMounted && isMiniCompetition(state.competition)) {
-    return <MiniLeagueHome miniLeagueId={state.competition.id} />
+    return (
+      <View style={{flex: 1, backgroundColor: screenBg}}>
+        {showLiveScoresInPage ? <LiveScores /> : null}
+        <MiniLeagueHome miniLeagueId={state.competition.id} />
+      </View>
+    )
   }
 
   if (isMounted && DEBUG_MINIMAL_MATCHES_SCREEN) {
@@ -429,9 +437,10 @@ export default function UpcomingMatches(props: any) {
           flex: 1,
           backgroundColor: screenBg,
         }}>
+        {showLiveScoresInPage ? <LiveScores /> : null}
         <View className="flex-1 items-center justify-center px-6">
           <Text style={{textAlign: 'center', opacity: 0.5}}>
-            DEBUG_MINIMAL_MATCHES_SCREEN — live scores via tab accessory
+            DEBUG_MINIMAL_MATCHES_SCREEN — only ticker visible
           </Text>
         </View>
       </View>
@@ -445,6 +454,7 @@ export default function UpcomingMatches(props: any) {
           flex: 1,
           backgroundColor: screenBg,
         }}>
+        {showLiveScoresInPage ? <LiveScores /> : null}
         {(initialLoading || matchesView == null) && (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color={colors.primary} />
