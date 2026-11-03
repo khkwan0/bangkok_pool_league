@@ -1,28 +1,8 @@
-import {
-  frameHasCompleteRosters,
-  getFinalizeBlockReason,
-  resolveNoPlayers,
-} from '@/lib/matchFormat'
+import {resolveNoPlayers} from '@/lib/matchFormat'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import {Alert} from 'react-native'
 
 export const SHOW_SCORESHEET_TIPS_KEY = 'show_scoresheet_tips'
-export const DISMISSED_SCORESHEET_TIPS_KEY = 'scoresheet_tips_dismissed'
-
-export type ScoresheetTip = {
-  id: string
-  titleKey: string
-  bodyKey: string
-  params?: Record<string, string | number>
-}
-
-type TipFrame = {
-  frameNumber?: number
-  type?: string
-  noPlayers?: number
-  winner?: number
-  homePlayerIds?: number[]
-  awayPlayerIds?: number[]
-}
 
 export async function loadShowScoresheetTips(): Promise<boolean> {
   try {
@@ -42,136 +22,73 @@ export async function saveShowScoresheetTips(show: boolean): Promise<void> {
   )
 }
 
-export async function loadDismissedScoresheetTips(): Promise<string[]> {
-  try {
-    const raw = await AsyncStorage.getItem(DISMISSED_SCORESHEET_TIPS_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed)
-      ? parsed.filter((id): id is string => typeof id === 'string')
-      : []
-  } catch {
-    return []
-  }
-}
-
-export async function dismissScoresheetTip(tipId: string): Promise<string[]> {
-  const current = await loadDismissedScoresheetTips()
-  if (current.includes(tipId)) return current
-  const next = [...current, tipId]
-  await AsyncStorage.setItem(DISMISSED_SCORESHEET_TIPS_KEY, JSON.stringify(next))
-  return next
-}
-
 function countAssigned(ids?: number[]): number {
   if (!Array.isArray(ids)) return 0
   return ids.filter(id => id != null && Number(id) > 0).length
 }
 
-export function buildWinPlayersRequiredTip(frame: {
+export function winPlayersRequiredMessage(args: {
   type?: string
   noPlayers?: number
   homePlayerIds?: number[]
   awayPlayerIds?: number[]
-}): ScoresheetTip {
-  const need = resolveNoPlayers(frame.type, null, frame.noPlayers)
-  const home = countAssigned(frame.homePlayerIds)
-  const away = countAssigned(frame.awayPlayerIds)
+  homeLabel: string
+  awayLabel: string
+  /** Pool Win needs an exact player count. */
+  exactCount?: boolean
+  t: (key: string, params?: Record<string, string | number>) => string
+}): {title: string; message: string} {
+  const need = resolveNoPlayers(args.type, null, args.noPlayers)
+  const home = countAssigned(args.homePlayerIds)
+  const away = countAssigned(args.awayPlayerIds)
   const shortSides: string[] = []
-  if (home < need) shortSides.push('home')
-  if (away < need) shortSides.push('away')
-  // Pool Win requires exact count; also flag over-filled as short for messaging.
-  if (home !== need && !shortSides.includes('home')) shortSides.push('home')
-  if (away !== need && !shortSides.includes('away')) shortSides.push('away')
+  if (args.exactCount) {
+    if (home !== need) shortSides.push(args.homeLabel)
+    if (away !== need) shortSides.push(args.awayLabel)
+  } else {
+    if (home < need) shortSides.push(args.homeLabel)
+    if (away < need) shortSides.push(args.awayLabel)
+  }
   return {
-    id: 'win_players_required',
-    titleKey: 'players_required_title',
-    bodyKey: 'players_required_message',
-    params: {
+    title: args.t('players_required_title'),
+    message: args.t('players_required_message', {
       count: need,
       home,
       away,
       sides: shortSides.join(', '),
-    },
+    }),
   }
 }
 
-export function resolveScoresheetTip(args: {
-  enabled: boolean
-  dismissed: string[]
-  override: ScoresheetTip | null
-  frames: TipFrame[] | undefined | null
-  format: unknown
-  homeTeamId: number
-  awayTeamId: number
-  firstBreak?: number | null
-}): ScoresheetTip | null {
-  const {
-    enabled,
-    dismissed,
-    override,
-    frames,
-    format,
-    homeTeamId,
-    awayTeamId,
-    firstBreak,
-  } = args
-  if (!enabled) return null
-
-  const allow = (tip: ScoresheetTip | null): ScoresheetTip | null => {
-    if (!tip) return null
-    if (dismissed.includes(tip.id)) return null
-    return tip
+/**
+ * Gate explanation dialog. When tips are on, includes "Don't show tips";
+ * disabling tips shows where to re-enable them in Preferences.
+ */
+export function showScoresheetGateDialog(opts: {
+  title: string
+  message: string
+  tipsEnabled: boolean
+  onDisableTips: () => void | Promise<void>
+  t: (key: string) => string
+}): void {
+  const {title, message, tipsEnabled, onDisableTips, t} = opts
+  if (!tipsEnabled) {
+    Alert.alert(title, message, [{text: t('ok')}])
+    return
   }
-
-  if (override) {
-    const shown = allow(override)
-    if (shown) return shown
-  }
-
-  // Proactive: current unfinished frame short of players (same gate as Win).
-  const playable = (frames ?? []).filter(
-    f =>
-      Number(f.frameNumber) > 0 &&
-      f.type !== 'section' &&
-      Number(f.frameNumber) !== -1,
-  )
-  const unfinished = playable.find(f => Number(f.winner ?? 0) <= 0)
-  if (unfinished && !frameHasCompleteRosters(unfinished)) {
-    const need = resolveNoPlayers(
-      unfinished.type,
-      null,
-      unfinished.noPlayers,
-    )
-    const rosterTip = allow({
-      id: 'frame_roster_incomplete',
-      titleKey: 'tip_frame_roster_title',
-      bodyKey: 'tip_frame_roster_body',
-      params: {
-        frame: Number(unfinished.frameNumber),
-        count: need,
-        home: countAssigned(unfinished.homePlayerIds),
-        away: countAssigned(unfinished.awayPlayerIds),
+  Alert.alert(title, message, [
+    {
+      text: t('tip_turn_off'),
+      style: 'cancel',
+      onPress: () => {
+        void (async () => {
+          await onDisableTips()
+          Alert.alert(t('tip_turned_off_title'), t('tip_turned_off_body'), [
+            {text: t('ok')},
+          ])
+        })()
       },
-    })
-    if (rosterTip) return rosterTip
-  }
-
-  const reason = getFinalizeBlockReason(
-    frames ?? [],
-    format,
-    homeTeamId,
-    awayTeamId,
-    firstBreak,
-  )
-  if (reason) {
-    return allow({
-      id: reason.key,
-      titleKey: 'tip_finalize_blocked_title',
-      bodyKey: reason.key,
-      params: reason.params,
-    })
-  }
-
-  return null
+    },
+    {text: t('ok')},
+  ])
 }

@@ -6,7 +6,6 @@ import More from './More'
 import Player from './Player'
 import Score from './Score'
 import ScoresheetHeader from './ScoresheetHeader'
-import ScoresheetTipBanner from './ScoresheetTipBanner'
 import WinButton from './WinButton'
 
 export {
@@ -17,7 +16,6 @@ export {
   Player,
   Score,
   ScoresheetHeader,
-  ScoresheetTipBanner,
   VSHeader,
   WinButton,
 }
