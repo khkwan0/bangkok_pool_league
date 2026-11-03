@@ -4,6 +4,7 @@ import {
   Frame,
   More,
   ScoresheetHeader,
+  ScoresheetTipBanner,
 } from '@/components/Match/components'
 import {useScoresheetTheme} from '@/components/Match/components/scoresheetTheme'
 import {FrameType} from '@/components/Match/types'
@@ -281,10 +282,13 @@ export default function ScoreSheet({
   }
 
   const header = (
-    <ScoresheetHeader
-      sticky={headerSticky}
-      onToggleSticky={() => setHeaderSticky(value => !value)}
-    />
+    <View>
+      <ScoresheetHeader
+        sticky={headerSticky}
+        onToggleSticky={() => setHeaderSticky(value => !value)}
+      />
+      <ScoresheetTipBanner />
+    </View>
   )
 
   return (

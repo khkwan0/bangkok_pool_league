@@ -1,6 +1,7 @@
 import {FrameType, MatchInfoDataType} from '@/components/Match/types'
 import {useMatch, useTeams} from '@/hooks'
 import i18n from '@/i18n'
+import {buildWinPlayersRequiredTip, type ScoresheetTip} from '@/lib/scoresheetTips'
 import React, {createContext, useContext, useReducer} from 'react'
 import {Alert} from 'react-native'
 import {io} from 'socket.io-client'
@@ -42,6 +43,8 @@ type StateType = {
   finalizeBusy: boolean
   /** Timestamp of last server finalize/unfinalize reject (clears local spinner). */
   finalizeRejectedAt: number
+  /** Ephemeral coaching tip from Win rejection, etc. */
+  tipOverride: ScoresheetTip | null
 }
 
 const MatchContext = createContext({})
@@ -57,6 +60,7 @@ const initialState: StateType = {
   finalizedAway: false,
   finalizeBusy: false,
   finalizeRejectedAt: 0,
+  tipOverride: null,
 }
 
 const MatchReducer = (state: StateType, action: any) => {
@@ -73,6 +77,13 @@ const MatchReducer = (state: StateType, action: any) => {
         finalizedAway: false,
         finalizeBusy: false,
         finalizeRejectedAt: 0,
+        tipOverride: null,
+      }
+    }
+    case 'SET_TIP_OVERRIDE': {
+      return {
+        ...state,
+        tipOverride: action.payload,
       }
     }
     case 'SET_MATCHINFO': {
@@ -471,27 +482,52 @@ export const MatchProvider = (props: any) => {
     winnerTeamId: string,
     goldenBreak: boolean,
   ) {
-    const frame = state.frameData[parseInt(frameIdx)]
+    const idx = parseInt(String(frameIdx), 10)
+    const frame = state.frameData[idx]
+    const initial = state.matchInfo.initialFrames?.[idx]
     const needed =
-      frame?.noPlayers ??
-      state.matchInfo.initialFrames?.[parseInt(frameIdx)]?.noPlayers ??
-      1
-    const awayPlayerCount = frame.awayPlayerIds.length
-    const homePlayerCount = frame.homePlayerIds.length
+      frame?.noPlayers ?? initial?.noPlayers ?? 1
+    const countAssigned = (ids?: number[]) =>
+      Array.isArray(ids)
+        ? ids.filter(id => id != null && Number(id) > 0).length
+        : 0
+    const awayPlayerCount = countAssigned(frame?.awayPlayerIds)
+    const homePlayerCount = countAssigned(frame?.homePlayerIds)
     const playerIds =
       side === 'home' ? frame.homePlayerIds : frame.awayPlayerIds
     if (awayPlayerCount === needed && homePlayerCount === needed) {
+      dispatch({type: 'SET_TIP_OVERRIDE', payload: null})
       const data = {
         side: side,
         matchId: state.matchInfo.match_id,
-        frameIdx: parseInt(frameIdx),
+        frameIdx: idx,
         frameNumber: frame.frameNumber,
         winnerTeamId: winnerTeamId,
         playerIds: playerIds,
         goldenBreak: goldenBreak,
       }
       SocketSend('win', data)
+      return
     }
+    const tip = buildWinPlayersRequiredTip({
+      type: frame?.type ?? initial?.type,
+      noPlayers: needed,
+      homePlayerIds: frame?.homePlayerIds,
+      awayPlayerIds: frame?.awayPlayerIds,
+    })
+    dispatch({type: 'SET_TIP_OVERRIDE', payload: tip})
+    const shortSides: string[] = []
+    if (homePlayerCount !== needed) shortSides.push(i18n.t('home'))
+    if (awayPlayerCount !== needed) shortSides.push(i18n.t('away'))
+    Alert.alert(
+      i18n.t('players_required_title'),
+      i18n.t('players_required_message', {
+        count: needed,
+        home: homePlayerCount,
+        away: awayPlayerCount,
+        sides: shortSides.join(', '),
+      }),
+    )
   }
 
   function ClearFrameWinner(frameIdx: number) {

@@ -71,6 +71,8 @@ interface LeagueState {
   showPredictionsOnMatchCards: boolean
   /** Local preference: Player of the Week card on home. */
   showPlayerOfTheWeek: boolean
+  /** Local preference: coaching tips on the live scoresheet. */
+  showScoresheetTips: boolean
   /** Server opt-in for virtual betting. */
   bettingOptedIn: boolean
   /** Local-only hide for betting UI (does not clear server opt-in). */
@@ -147,6 +149,7 @@ const initialState: LeagueState = {
   showForumFabBadge: true,
   showPredictionsOnMatchCards: true,
   showPlayerOfTheWeek: true,
+  showScoresheetTips: true,
   bettingOptedIn: false,
   hideBettingUi: false,
   bettingEnabled: false,
@@ -337,6 +340,12 @@ const LeagueReducer = (state: any, action: any) => {
       return {
         ...state,
         showPlayerOfTheWeek: action.payload,
+      }
+    }
+    case 'SET_SHOW_SCORESHEET_TIPS': {
+      return {
+        ...state,
+        showScoresheetTips: action.payload,
       }
     }
     case 'SET_BETTING_OPTED_IN': {
@@ -597,6 +606,22 @@ export const LeagueProvider = ({children}: any) => {
         console.error(e)
       }
     }
+    const getShowScoresheetTips = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('show_scoresheet_tips')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (typeof parsed?.show === 'boolean') {
+            dispatch({
+              type: 'SET_SHOW_SCORESHEET_TIPS',
+              payload: parsed.show,
+            })
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
     const getBettingOddsFormat = async () => {
       try {
         const stored = await AsyncStorage.getItem('betting_odds_format')
@@ -618,6 +643,7 @@ export const LeagueProvider = ({children}: any) => {
     getHideBettingUi()
     getShowPredictionsOnMatchCards()
     getShowPlayerOfTheWeek()
+    getShowScoresheetTips()
     getBettingOddsFormat()
   }, [])
 
