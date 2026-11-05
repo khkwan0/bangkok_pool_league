@@ -4,6 +4,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import AdSpot, {clearAdSpotCache} from '@/components/upcoming/AdSpot'
 import LiveScores from '@/components/upcoming/LiveScores'
+import GoldenBreaksHome from '@/components/GoldenBreaks/GoldenBreaksHome'
 import WeeklyHighlightsCard from '@/components/upcoming/WeeklyHighlightsCard'
 import MatchCard from '@/components/upcoming/MatchCard'
 import MatchCardOld from '@/components/upcoming/MatchCardOld'
@@ -480,6 +481,7 @@ export default function UpcomingMatches(props: any) {
                   </Button>
                 </View>
               )}
+              <GoldenBreaksHome refreshing={refreshing} />
               {(typeof state.showPlayerOfTheWeek === 'undefined' ||
                 state.showPlayerOfTheWeek) && <WeeklyHighlightsCard />}
               {(typeof user?.teams === 'undefined' || user.teams.length < 1) &&
