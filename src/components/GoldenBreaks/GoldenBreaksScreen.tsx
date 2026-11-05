@@ -1,10 +1,13 @@
 import {GoldenBreakRow} from '@/components/GoldenBreaks/GoldenBreakRow'
-import {useGoldenBreaks} from '@/hooks/useGoldenBreaks'
+import {useGoldenBreaks, useGoldenBreakReads, useMarkGoldenBreaksRead} from '@/hooks/useGoldenBreaks'
 import {useNetwork} from '@/hooks/useNetwork'
+import {useLeagueContext} from '@/context/LeagueContext'
 import {
   goldenBreakEmphasis,
   type GoldenBreakItem,
 } from '@/lib/goldenBreaks'
+import {goldenBreakIsUnread} from '@/lib/goldenBreakReads'
+import {useFocusEffect} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
 import {
@@ -26,6 +29,9 @@ type SeasonOption = {id: number; name: string}
 export default function GoldenBreaksScreen() {
   const {t} = useTranslation()
   const {getGoldenBreaks} = useGoldenBreaks()
+  const reads = useGoldenBreakReads()
+  const markRead = useMarkGoldenBreaksRead()
+  const {state} = useLeagueContext()
   const network = useNetwork()
   const isDark = useColorScheme() === 'dark'
   const [query, setQuery] = React.useState('')
@@ -46,6 +52,14 @@ export default function GoldenBreaksScreen() {
     const timer = setTimeout(() => setDebounced(query.trim()), 300)
     return () => clearTimeout(timer)
   }, [query])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (state.sport === 'darts' || state.user?.id == null) return
+      const timer = setTimeout(markRead, 700)
+      return () => clearTimeout(timer)
+    }, [markRead, state.sport, state.user?.id]),
+  )
 
   React.useEffect(() => {
     let cancelled = false
@@ -219,7 +233,11 @@ export default function GoldenBreaksScreen() {
         )
       }
       renderItem={({item, index}) => (
-        <GoldenBreakRow item={item} emphasis={goldenBreakEmphasis(index)} />
+        <GoldenBreakRow
+          item={item}
+          emphasis={goldenBreakEmphasis(searching ? 8 : index)}
+          unread={goldenBreakIsUnread(item.frameId, reads)}
+        />
       )}
     />
   )

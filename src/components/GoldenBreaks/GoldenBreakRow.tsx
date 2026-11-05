@@ -80,9 +80,11 @@ function Avatar({
 export function GoldenBreakRow({
   item,
   emphasis,
+  unread = false,
 }: {
   item: GoldenBreakItem
   emphasis: GoldenBreakEmphasis
+  unread?: boolean
 }) {
   const router = useRouter()
   const {t} = useTranslation()
@@ -117,6 +119,17 @@ export function GoldenBreakRow({
           <Text style={[styles.kicker, {color: label}]}>
             {hero ? t('golden_breaks_latest') : t('golden_break_action')}
           </Text>
+          {unread ? (
+            <View
+              accessibilityLabel={t('golden_breaks_new')}
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: '#ef4444',
+              }}
+            />
+          ) : null}
         </View>
         {item.divisionName ? (
           <Text style={[styles.division, {color: muted}]} numberOfLines={1}>

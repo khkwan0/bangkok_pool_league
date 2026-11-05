@@ -32,14 +32,6 @@ export default function MatchLayout() {
         }}
       />
       <Stack.Screen
-        name="GoldenBreaks/index"
-        options={{
-          title: t('golden_breaks_title'),
-          headerBackTitle: t('back'),
-          headerRight: () => <SettingsButton />,
-        }}
-      />
-      <Stack.Screen
         name="Match/index"
         options={{
           headerRight: () => <SettingsButton />,

@@ -58,6 +58,12 @@ export default function StatisticsLayout() {
           }}
         />
         <Stack.Screen
+          name="GoldenBreaks/index"
+          options={{
+            title: t('golden_breaks_title'),
+          }}
+        />
+        <Stack.Screen
           name="PlayerStatistics/Player/index"
           options={{
             title: t('player_statistics'),

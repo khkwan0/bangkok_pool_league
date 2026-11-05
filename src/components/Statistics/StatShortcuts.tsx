@@ -1,9 +1,12 @@
 import {useStatColors} from '@/components/PlayerStatistics/statUi'
+import {useLeagueContext} from '@/context/LeagueContext'
+import {GoldenBreakCountBadge} from '@/components/GoldenBreaks/GoldenBreaksStatsSection'
+import {useGoldenBreakReads} from '@/hooks/useGoldenBreaks'
 import {Ionicons} from '@expo/vector-icons'
 import {usePathname, useRouter, type Href} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
-import {Pressable, Text, View} from 'react-native'
+import {Pressable, ScrollView, Text, View} from 'react-native'
 
 type IonName = React.ComponentProps<typeof Ionicons>['name']
 
@@ -54,6 +57,15 @@ const SHORTCUTS: Shortcut[] = [
     icon: 'sparkles',
     color: '#db2777',
   },
+  {
+    key: 'golden-breaks',
+    href: '/statistics/GoldenBreaks' as Href,
+    labelKey: 'golden_breaks_title',
+    shortKey: 'golden_breaks_title',
+    hintKey: 'stats_home_golden_breaks_hint',
+    icon: 'star',
+    color: '#B45309',
+  },
 ]
 
 function tint(hex: string, alpha: number) {
@@ -81,6 +93,14 @@ export default function StatShortcuts({
   const {t} = useTranslation()
   const colors = useStatColors()
   const pathname = usePathname()
+  const {state} = useLeagueContext()
+  const reads = useGoldenBreakReads()
+  const shortcuts = SHORTCUTS.filter(item => {
+    if (item.key !== 'golden-breaks') return true
+    if (state.sport === 'darts') return false
+    // Phone statistics also shows the latest breaks under this chip.
+    return variant === 'list' || variant === 'compact'
+  })
 
   const open = (item: Shortcut) => {
     if (onSelectShortcut) {
@@ -93,7 +113,7 @@ export default function StatShortcuts({
   if (variant === 'list') {
     return (
       <View style={{paddingHorizontal: 12, paddingTop: 8, paddingBottom: 12}}>
-        {SHORTCUTS.map(item => {
+        {shortcuts.map(item => {
           const selected = selectedKey === item.key
           return (
             <Pressable
@@ -133,6 +153,11 @@ export default function StatShortcuts({
                     ),
                   }}>
                   <Ionicons name={item.icon} size={18} color={item.color} />
+                  {item.key === 'golden-breaks' ? (
+                    <View style={{position: 'absolute', top: -4, right: -6}}>
+                      <GoldenBreakCountBadge count={reads.unreadCount} />
+                    </View>
+                  ) : null}
                 </View>
                 <View style={{flex: 1, minWidth: 0}}>
                   <Text
@@ -225,22 +250,28 @@ export default function StatShortcuts({
 
   if (variant === 'compact') {
     return (
-      <View
-        style={{
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
           flexDirection: 'row',
           gap: 8,
           paddingHorizontal: 16,
           paddingTop: 12,
           paddingBottom: 4,
         }}>
-        {SHORTCUTS.map(item => (
+        {shortcuts.map(item => (
           <Pressable
             key={item.key}
             accessibilityRole="button"
-            accessibilityLabel={t(item.labelKey)}
+            accessibilityLabel={
+              item.key === 'golden-breaks' && reads.unreadCount > 0
+                ? t('golden_breaks_unread', {count: reads.unreadCount})
+                : t(item.labelKey)
+            }
             onPress={() => open(item)}
             style={({pressed}) => ({
-              flex: 1,
+              width: 84,
               opacity: pressed ? 0.72 : 1,
               borderWidth: selectedKey === item.key ? 2 : 0,
               borderColor: item.color,
@@ -256,30 +287,36 @@ export default function StatShortcuts({
                 paddingVertical: 10,
                 paddingHorizontal: 4,
               }}>
-              <Ionicons name={item.icon} size={20} color={item.color} />
+              <View>
+                <Ionicons name={item.icon} size={20} color={item.color} />
+                {item.key === 'golden-breaks' ? (
+                  <View style={{position: 'absolute', top: -6, right: -10}}>
+                    <GoldenBreakCountBadge count={reads.unreadCount} />
+                  </View>
+                ) : null}
+              </View>
               <Text
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.75}
+                numberOfLines={2}
                 style={{
                   marginTop: 6,
                   fontSize: 12,
                   fontWeight: '600',
                   color: colors.text,
+                  textAlign: 'center',
                 }}>
                 {t(item.shortKey)}
               </Text>
             </View>
           </Pressable>
         ))}
-      </View>
+      </ScrollView>
     )
   }
 
   return (
     <View>
       <View style={{flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6}}>
-        {SHORTCUTS.map(item => (
+        {shortcuts.map(item => (
           <View key={item.key} style={{width: '50%', padding: 6}}>
             <Pressable
               accessibilityRole="button"
