@@ -1,6 +1,5 @@
 import {useStatColors} from '@/components/PlayerStatistics/statUi'
 import {useLeagueContext} from '@/context/LeagueContext'
-import {GoldenBreakCountBadge} from '@/components/GoldenBreaks/GoldenBreaksStatsSection'
 import {useGoldenBreakReads} from '@/hooks/useGoldenBreaks'
 import {Ionicons} from '@expo/vector-icons'
 import {usePathname, useRouter, type Href} from 'expo-router'
@@ -68,6 +67,29 @@ const SHORTCUTS: Shortcut[] = [
   },
 ]
 
+function GoldenBreakCountBadge({count}: {count: number}) {
+  if (count <= 0) return null
+  const label = count > 9 ? '9+' : String(count)
+  return (
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{
+        minWidth: 18,
+        height: 18,
+        borderRadius: 9,
+        paddingHorizontal: 4,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ef4444',
+      }}>
+      <Text style={{color: '#fff', fontSize: 10, fontWeight: '800'}}>
+        {label}
+      </Text>
+    </View>
+  )
+}
+
 function tint(hex: string, alpha: number) {
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
@@ -97,9 +119,7 @@ export default function StatShortcuts({
   const reads = useGoldenBreakReads()
   const shortcuts = SHORTCUTS.filter(item => {
     if (item.key !== 'golden-breaks') return true
-    if (state.sport === 'darts') return false
-    // Phone statistics also shows the latest breaks under this chip.
-    return variant === 'list' || variant === 'compact'
+    return state.sport !== 'darts'
   })
 
   const open = (item: Shortcut) => {
@@ -253,6 +273,7 @@ export default function StatShortcuts({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={{flexGrow: 0}}
         contentContainerStyle={{
           flexDirection: 'row',
           gap: 8,
@@ -343,6 +364,11 @@ export default function StatShortcuts({
                     backgroundColor: tint(item.color, colors.isDark ? 0.22 : 0.12),
                   }}>
                   <Ionicons name={item.icon} size={24} color={item.color} />
+                  {item.key === 'golden-breaks' ? (
+                    <View style={{position: 'absolute', top: -4, right: -6}}>
+                      <GoldenBreakCountBadge count={reads.unreadCount} />
+                    </View>
+                  ) : null}
                 </View>
                 <Text
                   style={{

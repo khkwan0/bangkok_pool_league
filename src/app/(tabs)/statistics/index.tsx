@@ -4,7 +4,6 @@ import {AdaptiveSplit} from '@/components/layout/AdaptiveSplit'
 import {EmptySplitDetail} from '@/components/layout/EmptySplitDetail'
 import LeagueStandings from '@/components/Statistics/LeagueStandings'
 import HighlightsExplorer from '@/components/Statistics/Highlights'
-import GoldenBreaksStatsSection from '@/components/GoldenBreaks/GoldenBreaksStatsSection'
 import GoldenBreaksScreen from '@/components/GoldenBreaks/GoldenBreaksScreen'
 import LeaguePlayerStatistics from '@/components/Statistics/PlayerStatistics'
 import PlayerRankings from '@/components/Statistics/PlayerRankings'
@@ -90,7 +89,6 @@ function GuestStatisticsHome() {
           <Text className="mb-5" style={{opacity: 0.72}}>
             stats_home_subtitle
           </Text>
-          <GoldenBreaksStatsSection inset={false} />
           <StatShortcuts variant="grid" showSignIn />
         </ScrollView>
       </View>
@@ -325,7 +323,6 @@ export default function StatisticsHome() {
     return (
       <View className="flex-1" style={{backgroundColor: colors.background}}>
         <StatShortcuts variant="compact" />
-        <GoldenBreaksStatsSection />
         <View className="flex-1" style={{backgroundColor: 'transparent'}}>
           <MyStatsPane
             playerInfo={playerInfo}
