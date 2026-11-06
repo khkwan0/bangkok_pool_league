@@ -39,6 +39,8 @@ type PlayerCardPropsType = {
   isExisting?: boolean
   mfpp: number
   accentIndex?: number
+  /** Opens the QR merge flow for this player. Does not select them for the frame. */
+  onMerge?: () => void
 }
 
 function StatPill({
@@ -88,6 +90,7 @@ export default function PlayerCard({
   isExisting = false,
   mfpp,
   accentIndex = 0,
+  onMerge,
 }: PlayerCardPropsType) {
   const router = useRouter()
   const {UpdateFramePlayers}: any = useMatchContext()
@@ -288,6 +291,29 @@ export default function PlayerCard({
               </View>
             </View>
 
+            {onMerge ? (
+              <Pressable
+                onPress={onMerge}
+                accessibilityRole="button"
+                accessibilityLabel={t('merge_player_account')}
+                hitSlop={6}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: isDark
+                    ? 'rgba(14,165,233,0.22)'
+                    : 'rgba(14,165,233,0.14)',
+                }}>
+                <MaterialCommunityIcons
+                  name="qrcode-scan"
+                  size={20}
+                  color={isDark ? '#BAE6FD' : '#0369A1'}
+                />
+              </Pressable>
+            ) : null}
             <Pressable
               onPressIn={() => setIsPressed(true)}
               onPressOut={() => setIsPressed(false)}

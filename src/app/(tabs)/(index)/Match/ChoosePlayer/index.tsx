@@ -1,6 +1,8 @@
 import {useLocalSearchParams, useRouter} from 'expo-router'
 import {useMatchContext} from '@/context/MatchContext'
-import {FlatList, Pressable, useColorScheme, View} from 'react-native'
+import {useLeagueContext} from '@/context/LeagueContext'
+import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
+import {FlatList, Pressable, Text as RNText, useColorScheme, View} from 'react-native'
 import PlayerCard from '@/components/PlayerCard'
 import React from 'react'
 import {useNavigation} from 'expo-router/react-navigation'
@@ -33,6 +35,8 @@ type RosterHeaderProps = {
   frameMfpp: number
   availableCount: number
   onAddPlayer: () => void
+  canMerge?: boolean
+  onMergeHistory?: () => void
 }
 
 function RosterHeader({
@@ -44,6 +48,8 @@ function RosterHeader({
   frameMfpp,
   availableCount,
   onAddPlayer,
+  canMerge,
+  onMergeHistory,
 }: RosterHeaderProps) {
   const {t} = useTranslation()
   const colorScheme = useColorScheme()
@@ -162,6 +168,20 @@ function RosterHeader({
       <Text className="text-center opacity-50 text-xs mb-1 px-2">
         search_league_to_add
       </Text>
+      {canMerge ? (
+        <View className="mt-2">
+          <RNText className="text-center text-xs text-gray-600 dark:text-gray-400 mb-2 px-2">
+            {t('merge_player_roster_hint')}
+          </RNText>
+          <Pressable
+            onPress={onMergeHistory}
+            className="rounded-xl border border-gray-200 dark:border-gray-600 py-3">
+            <Text type="link" className="text-center">
+              team_merge_history
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -170,6 +190,7 @@ export default function ChoosePlayer() {
   const router = useRouter()
   const {params} = useLocalSearchParams()
   const {state}: any = useMatchContext()
+  const {state: leagueState} = useLeagueContext()
   const navigation = useNavigation()
   const {t} = useTranslation()
   const bgColor = useThemeColor({}, 'background')
@@ -242,6 +263,37 @@ export default function ChoosePlayer() {
 
   const availableCount = team.filter(p => !isDisabled(p)).length
 
+  const canMerge = React.useMemo(() => {
+    const user = leagueState.user
+    if (isLeagueAdmin(user)) return true
+    const role = user?.teams?.find(
+      team => Number(team.id) === Number(teamId),
+    )?.team_role_id
+    return role === 1 || role === 2
+  }, [leagueState.user, teamId])
+
+  function openMerge(player: RosterPlayer) {
+    const masterPlayerId = Number(player.playerId ?? player.id)
+    if (!Number.isInteger(masterPlayerId) || masterPlayerId <= 0) return
+    router.push({
+      pathname: '/Match/ChoosePlayer/MergePlayer',
+      params: {
+        mergeParams: JSON.stringify({
+          teamId,
+          masterPlayerId,
+          masterNickname: player.nickname || player.name || `#${masterPlayerId}`,
+        }),
+      },
+    })
+  }
+
+  function openMergeHistory() {
+    router.push({
+      pathname: '/Match/ChoosePlayer/MergeHistory',
+      params: {teamIdParams: JSON.stringify({teamId})},
+    })
+  }
+
   function HandleChoosePlayer() {
     router.push({
       pathname: '/Match/ChoosePlayer/AddPlayer',
@@ -275,6 +327,8 @@ export default function ChoosePlayer() {
       frameMfpp={frameMfpp}
       availableCount={availableCount}
       onAddPlayer={HandleChoosePlayer}
+      canMerge={canMerge}
+      onMergeHistory={openMergeHistory}
     />
   )
 
@@ -316,6 +370,7 @@ export default function ChoosePlayer() {
                 disabledReason={getDisabledReason(item)}
                 mfpp={frameMfpp}
                 accentIndex={index}
+                onMerge={canMerge ? () => openMerge(item) : undefined}
               />
             </View>
           )
