@@ -1,13 +1,16 @@
 {
   "mcpServers": {
     "repowise": {
-      "command": "repowise",
+      "command": "/Users/ken/.local/bin/repowise",
       "args": [
         "mcp",
         "/Users/ken/dev/bangkok_pool_league",
         "--transport",
         "stdio"
       ],
+      "env": {
+        "OLLAMA_BASE_URL": "http://vr.local.net:11434"
+      },
       "description": "repowise: codebase intelligence \u2014 docs, graph, git signals, dead code, decisions"
     }
   }

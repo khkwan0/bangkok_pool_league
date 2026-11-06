@@ -2,8 +2,9 @@ import {useLocalSearchParams, useRouter} from 'expo-router'
 import {useMatchContext} from '@/context/MatchContext'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {isLeagueAdmin} from '@/lib/isLeagueAdmin'
-import {FlatList, Pressable, Text as RNText, useColorScheme, View} from 'react-native'
+import {FlatList, Pressable, useColorScheme, View} from 'react-native'
 import PlayerCard from '@/components/PlayerCard'
+import MergeRosterHint from '@/components/MergeRosterHint'
 import React from 'react'
 import {useNavigation} from 'expo-router/react-navigation'
 import {useTranslation} from 'react-i18next'
@@ -29,6 +30,8 @@ type RosterPlayer = {
 type RosterHeaderProps = {
   sticky: boolean
   onToggleSticky: () => void
+  detailsOpen: boolean
+  onToggleDetails: () => void
   sideLabel: string
   frameNumber: number
   frameLabel: string
@@ -42,6 +45,8 @@ type RosterHeaderProps = {
 function RosterHeader({
   sticky,
   onToggleSticky,
+  detailsOpen,
+  onToggleDetails,
   sideLabel,
   frameNumber,
   frameLabel,
@@ -61,6 +66,11 @@ function RosterHeader({
     onToggleSticky()
   }
 
+  function handleToggleDetails() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    onToggleDetails()
+  }
+
   return (
     <View
       style={[
@@ -68,15 +78,30 @@ function RosterHeader({
         sticky ? {backgroundColor: bgColor} : null,
       ]}>
       <View className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-900/40 p-4 mb-3">
-        <View className="flex-row items-start justify-between mb-3">
-          <View className="flex-1 pr-3">
-            <Text type="defaultSemiBold" className="mb-0.5">
-              team_roster
-            </Text>
-            <Text className="opacity-60 text-sm">
-              <>{`${sideLabel} · ${t('frame')} ${frameNumber}`}</>
-            </Text>
-          </View>
+        <View className="flex-row items-start justify-between">
+          <Pressable
+            onPress={handleToggleDetails}
+            accessibilityRole="button"
+            accessibilityState={{expanded: detailsOpen}}
+            accessibilityLabel={
+              detailsOpen ? 'Hide frame details' : 'Show frame details'
+            }
+            className="flex-1 flex-row items-start pr-2 active:opacity-70">
+            <View className="flex-1 pr-2">
+              <Text type="defaultSemiBold" className="mb-0.5">
+                team_roster
+              </Text>
+              <Text className="opacity-60 text-sm">
+                <>{`${sideLabel} · ${t('frame')} ${frameNumber}`}</>
+              </Text>
+            </View>
+            <MaterialCommunityIcons
+              name={detailsOpen ? 'chevron-up' : 'chevron-down'}
+              size={22}
+              color={isDark ? '#94A3B8' : '#64748B'}
+              style={{marginTop: 2}}
+            />
+          </Pressable>
           <View className="flex-row items-center gap-2">
             <View className="rounded-full bg-blue-100 dark:bg-blue-900/50 px-3 py-1.5">
               <Text className="text-sm text-blue-700 dark:text-blue-300">
@@ -121,40 +146,42 @@ function RosterHeader({
           </View>
         </View>
 
-        <View className="flex-row gap-2">
-          <View className="flex-1 rounded-xl bg-indigo-600 dark:bg-indigo-500 px-3 py-3 items-center justify-center">
-            <Text
-              className="text-xs font-semibold tracking-wide mb-0.5"
-              style={{color: '#E0E7FF'}}>
-              <>
-                {t('frame_type', {defaultValue: 'Frame type'}).toUpperCase()}
-              </>
-            </Text>
-            <Text
-              type="defaultSemiBold"
-              className="text-center"
-              style={{color: '#FFFFFF', fontSize: 18}}>
-              <>{frameLabel}</>
-            </Text>
+        {detailsOpen ? (
+          <View className="flex-row gap-2 mt-3">
+            <View className="flex-1 rounded-xl bg-indigo-600 dark:bg-indigo-500 px-3 py-3 items-center justify-center">
+              <Text
+                className="text-xs font-semibold tracking-wide mb-0.5"
+                style={{color: '#E0E7FF'}}>
+                <>
+                  {t('frame_type', {defaultValue: 'Frame type'}).toUpperCase()}
+                </>
+              </Text>
+              <Text
+                type="defaultSemiBold"
+                className="text-center"
+                style={{color: '#FFFFFF', fontSize: 18}}>
+                <>{frameLabel}</>
+              </Text>
+            </View>
+            <View className="flex-1 rounded-xl bg-amber-500 dark:bg-amber-500 px-3 py-3 items-center justify-center">
+              <Text
+                className="text-xs font-semibold tracking-wide mb-0.5"
+                style={{color: '#FFFBEB'}}>
+                <>
+                  {t('max_per_section', {
+                    defaultValue: 'Max per section',
+                  }).toUpperCase()}
+                </>
+              </Text>
+              <Text
+                type="defaultSemiBold"
+                className="text-center"
+                style={{color: '#FFFFFF', fontSize: 22}}>
+                <>{String(frameMfpp)}</>
+              </Text>
+            </View>
           </View>
-          <View className="flex-1 rounded-xl bg-amber-500 dark:bg-amber-500 px-3 py-3 items-center justify-center">
-            <Text
-              className="text-xs font-semibold tracking-wide mb-0.5"
-              style={{color: '#FFFBEB'}}>
-              <>
-                {t('max_per_section', {
-                  defaultValue: 'Max per section',
-                }).toUpperCase()}
-              </>
-            </Text>
-            <Text
-              type="defaultSemiBold"
-              className="text-center"
-              style={{color: '#FFFFFF', fontSize: 22}}>
-              <>{String(frameMfpp)}</>
-            </Text>
-          </View>
-        </View>
+        ) : null}
       </View>
 
       <Pressable
@@ -168,19 +195,11 @@ function RosterHeader({
       <Text className="text-center opacity-50 text-xs mb-1 px-2">
         search_league_to_add
       </Text>
-      {canMerge ? (
-        <View className="mt-2">
-          <RNText className="text-center text-xs text-gray-600 dark:text-gray-400 mb-2 px-2">
-            {t('merge_player_roster_hint')}
-          </RNText>
-          <Pressable
-            onPress={onMergeHistory}
-            className="rounded-xl border border-gray-200 dark:border-gray-600 py-3">
-            <Text type="link" className="text-center">
-              team_merge_history
-            </Text>
-          </Pressable>
-        </View>
+      {canMerge && onMergeHistory ? (
+        <MergeRosterHint
+          className="mt-2 mb-2 px-2"
+          onMergeHistory={onMergeHistory}
+        />
       ) : null}
     </View>
   )
@@ -194,7 +213,8 @@ export default function ChoosePlayer() {
   const navigation = useNavigation()
   const {t} = useTranslation()
   const bgColor = useThemeColor({}, 'background')
-  const [headerSticky, setHeaderSticky] = React.useState(true)
+  const [headerSticky, setHeaderSticky] = React.useState(false)
+  const [detailsOpen, setDetailsOpen] = React.useState(false)
   const listContentStyle = useTabListContentContainerStyle({paddingBottom: 28})
 
   const {teamId, side, frameIndex, frameNumber, frameType, slot} = JSON.parse(
@@ -321,6 +341,8 @@ export default function ChoosePlayer() {
     <RosterHeader
       sticky={headerSticky}
       onToggleSticky={() => setHeaderSticky(value => !value)}
+      detailsOpen={detailsOpen}
+      onToggleDetails={() => setDetailsOpen(value => !value)}
       sideLabel={sideLabel}
       frameNumber={frameNumber}
       frameLabel={frameLabel}

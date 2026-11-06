@@ -23,6 +23,11 @@ export default function SettingsLayout() {
     if (Platform.OS !== 'ios') {
       return
     }
+    // Player profile writes the player's name onto this header. A static
+    // title here would replace it on the next pathname-driven update.
+    if (pathname.toLowerCase().includes('/playerinfo')) {
+      return
+    }
     parentNavigation.setOptions({
       title: t(settingsHeaderTitleKey(pathname)),
       headerBackTitle: t('back'),

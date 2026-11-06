@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
+  Platform,
 } from 'react-native'
 import {useLeague} from '@/hooks/useLeague'
 import {useAchievements} from '@/hooks/useAchievements'
@@ -13,8 +14,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import PlayerAchievementsCard from '@/components/PlayerAchievementsCard'
 import PlayerAchievementsHero from '@/components/PlayerAchievementsHero'
 import config from '@/config'
-import {useRouter} from 'expo-router'
-import {useNavigation} from 'expo-router'
+import {useNavigation, usePathname, useRouter} from 'expo-router'
 import {useTranslation} from 'react-i18next'
 import {LinearGradient} from 'expo-linear-gradient'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
@@ -100,6 +100,7 @@ export default function PlayerDetails({playerId}: PlayerDetailsProps) {
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
   const navigation = useNavigation()
+  const pathname = usePathname()
   const accent = ACCENTS[5]
 
   React.useEffect(() => {
@@ -126,12 +127,22 @@ export default function PlayerDetails({playerId}: PlayerDetailsProps) {
     }
   }, [playerId])
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
+    const title = playerInfo?.name || playerInfo?.nickname || t('players')
+    // Settings is a root-stack screen on iOS, and that stack already draws the
+    // bar. Showing this screen's header as well stacks a second back button.
+    // Quick Actions opens teams outside Settings, where this header is the bar.
+    if (Platform.OS === 'ios' && pathname.startsWith('/Settings')) {
+      navigation.setOptions({headerShown: false})
+      navigation.getParent()?.setOptions({title})
+      return
+    }
+
     navigation.setOptions({
-      title: playerInfo?.name || playerInfo?.nickname || t('players'),
+      title,
       headerShown: true,
     })
-  }, [navigation, playerInfo, t])
+  }, [navigation, pathname, playerInfo, t])
 
   const ScreenBackdrop = (
     <LinearGradient
