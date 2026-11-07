@@ -55,11 +55,12 @@ async function createChannel(id: string, name: string) {
     return
   }
   const existing = await Notifications.getNotificationChannelAsync(id)
-  // Android ignores later importance changes. A channel Notifee created below
-  // MAX never shows a heads-up banner until it is deleted and created again.
+  // Android ignores later importance/sound changes. Recreate when a prior
+  // build left importance too low or sound as a bad custom filename.
   if (
     existing &&
-    existing.importance < Notifications.AndroidImportance.MAX
+    (existing.importance < Notifications.AndroidImportance.MAX ||
+      existing.sound === 'custom')
   ) {
     await Notifications.deleteNotificationChannelAsync(id)
   } else if (existing) {
@@ -71,7 +72,8 @@ async function createChannel(id: string, name: string) {
     vibrationPattern: [0, 250, 250, 250],
     enableLights: true,
     lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-    sound: 'default',
+    // Omit sound for the system default. The string 'default' is treated as a
+    // custom filename and triggers "Custom sound 'default' not found".
     showBadge: true,
   })
 }
@@ -220,7 +222,7 @@ export async function presentRemoteNotification(remoteMessage: {
       title: title || 'Bangkok Pool League',
       body: body || undefined,
       data,
-      sound: 'default',
+      sound: true,
       interruptionLevel: 'active',
       priority: Notifications.AndroidNotificationPriority.MAX,
       ...(badge != null ? {badge} : {}),
