@@ -298,7 +298,7 @@ export default function AuthHome() {
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-gray-900">
+    <View className="relative flex-1 bg-white dark:bg-gray-900">
       <ScrollView
         className="flex-1"
         contentContainerStyle={completingLogin ? styles.dimmedContent : undefined}
@@ -426,6 +426,7 @@ export default function AuthHome() {
 
       {completingLogin ? (
         <View
+          className="absolute inset-0 z-10 items-center justify-center px-8"
           style={styles.overlay}
           accessibilityRole="progressbar"
           accessibilityLabel={t('signing_you_in')}>
@@ -458,12 +459,7 @@ export default function AuthHome() {
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
-    paddingHorizontal: 32,
-    zIndex: 10,
   },
   card: {
     width: '100%',
