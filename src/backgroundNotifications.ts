@@ -5,6 +5,7 @@
 import {
   applyBadgeFromRemoteMessage,
   ensureAllNotificationChannels,
+  presentRemoteNotification,
 } from '@/lib/notifications'
 import {getMessaging, setBackgroundMessageHandler} from '@react-native-firebase/messaging'
 import {Platform} from 'react-native'
@@ -15,6 +16,14 @@ if (Platform.OS !== 'web') {
     try {
       if (Platform.OS === 'android') {
         await ensureAllNotificationChannels()
+      }
+      // Notification payloads are shown by the OS in the background.
+      // Data-only payloads are not, so post the banner ourselves.
+      const hasSystemAlert = Boolean(
+        remoteMessage.notification?.title || remoteMessage.notification?.body,
+      )
+      if (!hasSystemAlert) {
+        await presentRemoteNotification(remoteMessage)
       }
       await applyBadgeFromRemoteMessage(remoteMessage)
     } catch (e) {

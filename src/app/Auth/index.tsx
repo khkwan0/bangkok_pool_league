@@ -13,7 +13,6 @@ import {
   ActivityIndicator,
   Dimensions,
   Image,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -29,6 +28,24 @@ import {Platform, useColorScheme} from 'react-native'
 interface StatusType {
   status: string
   error?: string
+}
+
+/**
+ * Google Sign-In on iOS presents ASWebAuthenticationSession. The JS promise
+ * resolves while that session is still dismissing. Presenting another
+ * controller, or popping this screen, before the session is gone leaves a
+ * transparent view over Settings that swallows presses and swipes.
+ * The Google SDK waits this long before it will present again.
+ */
+const IOS_GOOGLE_SESSION_DISMISS_MS = 1000
+
+function waitForIosGoogleSessionDismiss(since = Date.now()): Promise<void> {
+  if (Platform.OS !== 'ios') return Promise.resolve()
+  const remaining = IOS_GOOGLE_SESSION_DISMISS_MS - (Date.now() - since)
+  if (remaining <= 0) return Promise.resolve()
+  return new Promise(resolve => {
+    setTimeout(resolve, remaining)
+  })
 }
 
 export default function AuthHome() {
@@ -173,9 +190,20 @@ export default function AuthHome() {
           showPlayServicesUpdateDialog: true,
         })
       }
-      const response = await google.GoogleSignin.signIn()
-      if (google.isCancelledResponse(response)) return
+      let response
+      try {
+        response = await google.GoogleSignin.signIn()
+      } catch (e) {
+        await waitForIosGoogleSessionDismiss()
+        throw e
+      }
+      const signedInAt = Date.now()
+      if (google.isCancelledResponse(response)) {
+        await waitForIosGoogleSessionDismiss(signedInAt)
+        return
+      }
       if (!google.isSuccessResponse(response) || !response.data?.idToken) {
+        await waitForIosGoogleSessionDismiss(signedInAt)
         setErr('Google did not return an ID token. Try again.')
         return
       }
@@ -183,6 +211,7 @@ export default function AuthHome() {
       const res: StatusType = (await SocialLogin('google', {
         idToken: response.data.idToken,
       }))!
+      await waitForIosGoogleSessionDismiss(signedInAt)
       if (res?.status === 'ok') {
         router.back()
       } else {
@@ -395,12 +424,7 @@ export default function AuthHome() {
         </View>
       </ScrollView>
 
-      <Modal
-        visible={completingLogin}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => {}}>
+      {completingLogin ? (
         <View
           style={styles.overlay}
           accessibilityRole="progressbar"
@@ -427,18 +451,19 @@ export default function AuthHome() {
             </Text>
           </View>
         </View>
-      </Modal>
+      ) : null}
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
     paddingHorizontal: 32,
+    zIndex: 10,
   },
   card: {
     width: '100%',
