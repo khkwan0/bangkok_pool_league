@@ -54,16 +54,10 @@ async function createChannel(id: string, name: string) {
   if (Platform.OS !== 'android') {
     return
   }
-  const existing = await Notifications.getNotificationChannelAsync(id)
-  // Android ignores later importance/sound changes. Recreate when a prior
-  // build left importance too low or sound as a bad custom filename.
-  if (
-    existing &&
-    (existing.importance < Notifications.AndroidImportance.MAX ||
-      existing.sound === 'custom')
-  ) {
-    await Notifications.deleteNotificationChannelAsync(id)
-  } else if (existing) {
+  // Never delete an existing channel: deleting cancels every notification
+  // showing on it, and Android restores the old settings when the same id is
+  // recreated, so it would not raise importance anyway.
+  if (await Notifications.getNotificationChannelAsync(id)) {
     return
   }
   await Notifications.setNotificationChannelAsync(id, {
