@@ -123,6 +123,23 @@ export function isAnnouncementRemoteMessage(remoteMessage: {
   return remoteMessage?.data?.type === 'announcement'
 }
 
+/** Clear announcement pushes from the tray; leave every other notification. */
+export async function dismissAnnouncementNotifications() {
+  if (Platform.OS === 'web') {
+    return
+  }
+  try {
+    const presented = await Notifications.getPresentedNotificationsAsync()
+    await Promise.all(
+      presented
+        .filter(n => n.request.content.data?.type === 'announcement')
+        .map(n => Notifications.dismissNotificationAsync(n.request.identifier)),
+    )
+  } catch (e) {
+    console.error('Error dismissing announcement notifications:', e)
+  }
+}
+
 export function isSupportTicketRemoteMessage(remoteMessage: {
   data?: Record<string, unknown> | null
 }): boolean {
