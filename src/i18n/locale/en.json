@@ -1168,6 +1168,7 @@
   "predictions_tie_help": "A correct tie scores 3 points.",
   "predictions_frames": "frames",
   "predictions_margin_range": "Choose 1–{max} frames",
+  "predictions_margin_range_tie": "Choose 0–{max} frames. 0 is a tie.",
   "predictions_submit": "Save tip",
   "predictions_update": "Update tip",
   "predictions_saved": "Tip saved",

@@ -1162,6 +1162,7 @@
   "predictions_tie_help": "ทายเสมอถูกได้ 3 คะแนน",
   "predictions_frames": "เฟรม",
   "predictions_margin_range": "เลือก 1–{max} เฟรม",
+  "predictions_margin_range_tie": "เลือก 0–{max} เฟรม 0 คือเสมอ",
   "predictions_submit": "บันทึกคำทาย",
   "predictions_update": "แก้ไขคำทาย",
   "predictions_saved": "บันทึกแล้ว",
