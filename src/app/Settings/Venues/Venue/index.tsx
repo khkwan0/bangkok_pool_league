@@ -111,7 +111,7 @@ function VenueHero({
         colors={[...wash]}
         start={{x: 0, y: 0}}
         end={{x: 1, y: 1}}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
       />
       <View className="flex-row items-center px-4 pt-4 pb-3">
         <View
