@@ -5,7 +5,7 @@ import {useTheme} from 'expo-router/react-navigation'
 import QRCode from 'qrcode'
 import React, {useMemo} from 'react'
 import {useTranslation} from 'react-i18next'
-import {Pressable, Share, Text as RNText, View} from 'react-native'
+import {PixelRatio, Pressable, Share, Text as RNText, View} from 'react-native'
 
 type Props = {
   playerId: number
@@ -41,29 +41,40 @@ function QrMatrix({
   }, [value])
 
   const n = cells.length || 1
-  const cell = size / n
+  // Fractional cell sizes get rounded per-view and leave hairline gaps between rows.
+  const scale = PixelRatio.get()
+  const cell = Math.max(1, Math.floor((size * scale) / n)) / scale
+  const total = cell * n
 
   return (
     <View
       style={{
-        width: size,
-        height: size,
+        width: total,
+        height: total,
         backgroundColor,
       }}>
-      {cells.map((row, y) => (
-        <View key={y} style={{flexDirection: 'row', height: cell}}>
-          {row.map((dark, x) => (
-            <View
-              key={x}
-              style={{
-                width: cell,
-                height: cell,
-                backgroundColor: dark ? color : backgroundColor,
-              }}
-            />
-          ))}
-        </View>
-      ))}
+      {cells.map((row, y) => {
+        const runs: {x: number; len: number}[] = []
+        for (let x = 0; x < row.length; x++) {
+          if (!row[x]) continue
+          const last = runs[runs.length - 1]
+          if (last && last.x + last.len === x) last.len++
+          else runs.push({x, len: 1})
+        }
+        return runs.map(run => (
+          <View
+            key={`${y}-${run.x}`}
+            style={{
+              position: 'absolute',
+              top: y * cell,
+              left: run.x * cell,
+              width: run.len * cell,
+              height: cell,
+              backgroundColor: color,
+            }}
+          />
+        ))
+      })}
     </View>
   )
 }
