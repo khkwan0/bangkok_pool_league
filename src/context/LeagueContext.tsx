@@ -73,6 +73,8 @@ interface LeagueState {
   showPlayerOfTheWeek: boolean
   /** Local preference: coaching tips on the live scoresheet. */
   showScoresheetTips: boolean
+  /** Local preference (Android): hide the system navigation bar. */
+  hideSystemNavBar: boolean
   /** Server opt-in for virtual betting. */
   bettingOptedIn: boolean
   /** Local-only hide for betting UI (does not clear server opt-in). */
@@ -150,6 +152,7 @@ const initialState: LeagueState = {
   showPredictionsOnMatchCards: true,
   showPlayerOfTheWeek: true,
   showScoresheetTips: true,
+  hideSystemNavBar: false,
   bettingOptedIn: false,
   hideBettingUi: false,
   bettingEnabled: false,
@@ -346,6 +349,12 @@ const LeagueReducer = (state: any, action: any) => {
       return {
         ...state,
         showScoresheetTips: action.payload,
+      }
+    }
+    case 'SET_HIDE_SYSTEM_NAV_BAR': {
+      return {
+        ...state,
+        hideSystemNavBar: Boolean(action.payload),
       }
     }
     case 'SET_BETTING_OPTED_IN': {
@@ -622,6 +631,19 @@ export const LeagueProvider = ({children}: any) => {
         console.error(e)
       }
     }
+    const getHideSystemNavBar = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('hide_system_nav_bar')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (typeof parsed?.hide === 'boolean') {
+            dispatch({type: 'SET_HIDE_SYSTEM_NAV_BAR', payload: parsed.hide})
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
     const getBettingOddsFormat = async () => {
       try {
         const stored = await AsyncStorage.getItem('betting_odds_format')
@@ -644,6 +666,7 @@ export const LeagueProvider = ({children}: any) => {
     getShowPredictionsOnMatchCards()
     getShowPlayerOfTheWeek()
     getShowScoresheetTips()
+    getHideSystemNavBar()
     getBettingOddsFormat()
   }, [])
 
