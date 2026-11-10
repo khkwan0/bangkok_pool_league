@@ -1,7 +1,7 @@
 import {formatForumDate} from '@/components/Forums/formatForumDate'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
-import {useReleaseNotes, type ReleaseNote} from '@/hooks/useReleaseNotes'
+import {releaseNoteSportScope, useReleaseNotes, type ReleaseNote} from '@/hooks/useReleaseNotes'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
 import {useRouter} from 'expo-router'
 import {useNavigation, useTheme} from 'expo-router/react-navigation'
@@ -104,6 +104,8 @@ export default function ReleaseNotesScreen() {
               <RNView className="flex-1">
                 <Text className="text-xs font-semibold uppercase opacity-60">
                   {t(`release_notes_kind_${item.kind}`)}
+                  {' · '}
+                  {t(`release_notes_sport_${releaseNoteSportScope(item.audiences)}`)}
                 </Text>
                 <Text className="font-semibold">{item.title}</Text>
                 {item.preview ? (

@@ -25,7 +25,7 @@ Call the bkkleague MCP tool `create_release_note` once. Do not insert SQL yourse
 - `title`: one short sentence for players
 - `body`: markdown bullets of what changed, written for players
 - `kind`: `feature`, `fix`, or `change`
-- `audiences`: `all` for every league, web, and app. Otherwise combine `web` and/or `mobile` with `pool` and/or `darts`. A sport tag alone shows on that sport's website and app. A client tag alone shows on that client for both sports. Naming both means both must match.
+- `audiences`: name the sport. `pool` is pool only, `darts` is darts only, and both `pool` and `darts` means both leagues. Add `web` and/or `mobile` only when the change is limited to that client. `all` means both sports and both clients. The website and apps label each note Pool, Darts, or Pool and darts from these tags, so a note with no sport tag reads as both leagues.
 
 The tool needs an authenticated admin session on the bkkleague MCP server. If the call is denied, say so in the final reply. Do not write the row another way.
 

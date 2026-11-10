@@ -3,6 +3,19 @@ import React from 'react'
 
 export type ReleaseNoteKind = 'feature' | 'fix' | 'change'
 
+export type ReleaseNoteSportScope = 'pool' | 'darts' | 'both'
+
+/** Pool only, darts only, or both. `all` and notes with no sport tag count as both. */
+export function releaseNoteSportScope(audiences: readonly string[]): ReleaseNoteSportScope {
+  const tags = new Set(audiences)
+  if (tags.has('all')) return 'both'
+  const pool = tags.has('pool')
+  const darts = tags.has('darts')
+  if (pool && !darts) return 'pool'
+  if (darts && !pool) return 'darts'
+  return 'both'
+}
+
 export type ReleaseNote = {
   id: number
   title: string

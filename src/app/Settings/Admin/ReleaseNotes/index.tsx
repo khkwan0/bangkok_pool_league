@@ -2,6 +2,7 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
 import {
+  releaseNoteSportScope,
   useReleaseNotes,
   type ReleaseNote,
   type ReleaseNoteKind,
@@ -214,6 +215,8 @@ export default function AdminReleaseNotesScreen() {
               <Text className="font-semibold">{item.title}</Text>
               <Text className="mt-1 text-xs opacity-60">
                 {t(`release_notes_kind_${item.kind}`)}
+                {' · '}
+                {t(`release_notes_sport_${releaseNoteSportScope(item.audiences)}`)}
                 {item.hidden ? ` · ${t('release_notes_hidden')}` : ''}
               </Text>
             </Pressable>
