@@ -1,7 +1,10 @@
 import MatchBettingRow from '@/components/betting/MatchBettingRow'
 import MatchPredictionRow from '@/components/predictions/MatchPredictionRow'
 import {MatchInfoDataType} from '@/components/Match/types'
-import {readLiveCardScores} from '@/lib/liveCardScore'
+import {
+  cardScoreShowsLive,
+  resolveCardLiveScore,
+} from '@/lib/liveCardScore'
 import {useLiveCardScore} from '@/context/LiveCardScoresContext'
 import {ThemedText as Text} from '@/components/ThemedText'
 import CupMatchBanner, {
@@ -533,7 +536,8 @@ export default function MatchCardOld({
   const awayNameSize = teamNameSize(matchInfo.away_team_short_name ?? '')
   const socketScore = useLiveCardScore(Number(matchInfo.match_id) || 0)
   const liveScore =
-    socketScore === undefined ? readLiveCardScores(matchInfo) : socketScore
+    resolveCardLiveScore(socketScore, matchInfo)
+  const showLiveLabel = cardScoreShowsLive(liveScore)
 
   function renderCaptainActions(isHome: boolean) {
     const reviewProposal =
@@ -846,11 +850,11 @@ export default function MatchCardOld({
                   style={[
                     styles.vsHint,
                     {
-                      color: liveScore ? theme.confirm : theme.textSubtle,
-                      letterSpacing: liveScore ? 0.6 : 1,
+                      color: showLiveLabel ? theme.confirm : theme.textSubtle,
+                      letterSpacing: showLiveLabel ? 0.6 : 1,
                     },
                   ]}>
-                  {liveScore ? 'LIVE' : 'VS'}
+                  {showLiveLabel ? 'LIVE' : 'VS'}
                 </Text>
               </View>
 

@@ -28,6 +28,8 @@ export type MatchInfoDataType = {
   /** Present only while the scoresheet is in progress. */
   live_home_score?: number
   live_away_score?: number
+  /** True after finalize — show scores without the LIVE label. */
+  live_score_final?: boolean
   team_role_id: number
   player_team_id: number
   home_logo?: string

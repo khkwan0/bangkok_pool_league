@@ -117,12 +117,17 @@ export default function Frame({item, index, refreshing}: FrameProps) {
     const won = side === 'home' ? homeWon : awayWon
     const lost = !!winner && !won
     return {
-      flex: 1,
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 0,
+      minWidth: 0,
+      maxWidth: '100%' as const,
+      overflow: 'hidden' as const,
       flexDirection: 'column' as const,
       justifyContent: 'space-between' as const,
       borderRadius: 14,
       paddingVertical: 12,
-      paddingHorizontal: 8,
+      paddingHorizontal: 6,
       backgroundColor: won ? palette.panelWinner : palette.panel,
       borderWidth: won ? 1.5 : 1,
       borderColor: won ? palette.accent : palette.border,
@@ -140,6 +145,9 @@ export default function Frame({item, index, refreshing}: FrameProps) {
           backgroundColor: theme.card,
           borderWidth: 1,
           borderColor: theme.cardBorder,
+          alignSelf: 'stretch',
+          maxWidth: '100%',
+          overflow: 'hidden',
         },
         theme.shadow,
       ]}>
@@ -174,8 +182,10 @@ export default function Frame({item, index, refreshing}: FrameProps) {
         style={{
           flexDirection: 'row',
           alignItems: 'stretch',
-          gap: 8,
-          paddingHorizontal: 10,
+          alignSelf: 'stretch',
+          width: '100%',
+          gap: 6,
+          paddingHorizontal: 8,
           paddingBottom: 10,
         }}>
         <View style={panel('home')}>

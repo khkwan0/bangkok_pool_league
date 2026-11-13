@@ -3,7 +3,10 @@ import MatchBettingRow from '@/components/betting/MatchBettingRow'
 import RivalryStrip from '@/components/habits/RivalryStrip'
 import MatchPredictionRow from '@/components/predictions/MatchPredictionRow'
 import {MatchInfoDataType} from '@/components/Match/types'
-import {readLiveCardScores} from '@/lib/liveCardScore'
+import {
+  cardScoreShowsLive,
+  resolveCardLiveScore,
+} from '@/lib/liveCardScore'
 import {useLiveCardScore} from '@/context/LiveCardScoresContext'
 import {ThemedText as Text} from '@/components/ThemedText'
 import CupMatchBanner, {
@@ -499,8 +502,8 @@ export default function MatchCard({
   const homeNameSize = teamNameSize(matchInfo.home_team_short_name)
   const awayNameSize = teamNameSize(matchInfo.away_team_short_name)
   const socketScore = useLiveCardScore(Number(matchInfo.match_id) || 0)
-  const liveScore =
-    socketScore === undefined ? readLiveCardScores(matchInfo) : socketScore
+  const liveScore = resolveCardLiveScore(socketScore, matchInfo)
+  const showLiveLabel = cardScoreShowsLive(liveScore)
   const pageColors = isTournament ? theme.cupPage : theme.page
   const cupBoardBg = isDark ? cupTier.boardBgDark : cupTier.boardBgLight
 
@@ -685,11 +688,11 @@ export default function MatchCard({
                     style={[
                       styles.vsHint,
                       {
-                        color: liveScore ? theme.confirm : theme.textMuted,
-                        letterSpacing: liveScore ? 0.6 : 1.2,
+                        color: showLiveLabel ? theme.confirm : theme.textMuted,
+                        letterSpacing: showLiveLabel ? 0.6 : 1.2,
                       },
                     ]}>
-                    {liveScore ? 'LIVE' : 'VS'}
+                    {showLiveLabel ? 'LIVE' : 'VS'}
                   </Text>
                 </View>
 

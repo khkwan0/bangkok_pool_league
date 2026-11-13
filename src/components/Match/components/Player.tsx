@@ -65,7 +65,12 @@ function PlayerSlot({
       onPress={onPress}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
-      style={{paddingVertical: 2}}>
+      style={{
+        paddingVertical: filled ? 2 : 14,
+        minHeight: filled ? undefined : 48,
+        justifyContent: 'center',
+        alignSelf: 'stretch',
+      }}>
       <Row alignItems="center" justifyContent="center" style={{gap: 6}}>
         {filled ? (
           <Text
@@ -214,9 +219,21 @@ export default function Player({
   }
 
   return (
-    <View style={{alignItems: 'center'}}>
+    <View
+      style={{
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
+      }}>
       {Array.from({length: slotCount}, (_, slot) => (
-        <View key={slot} style={slot > 0 ? {marginTop: 8} : undefined}>
+        <View
+          key={slot}
+          style={
+            slot > 0
+              ? {marginTop: 8, width: '100%', maxWidth: '100%', minWidth: 0}
+              : {width: '100%', maxWidth: '100%', minWidth: 0}
+          }>
           <PlayerSlot {...slotProps(slot)} />
         </View>
       ))}
