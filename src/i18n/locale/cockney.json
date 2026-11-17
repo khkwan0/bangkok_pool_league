@@ -496,6 +496,7 @@
   "quick_actions": "Open quick actions",
   "rank": "Rank",
   "score": "Score",
+  "mgp": "MGP",
   "ranking_score_info_title": "How rankings are calculated",
   "ranking_score_info_points": "Each singles game is worth 1 game point. Each doubles game is worth 0.5 game points to each player.",
   "ranking_score_info_mgp": "The player with the most game points in the list sets MGP (most game points).",

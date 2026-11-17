@@ -558,6 +558,7 @@
   "quick_actions": "ทางลัด",
   "rank": "ยศ",
   "score": "คะแนน",
+  "mgp": "MGP",
   "ranking_score_info_title": "วิธีคำนวณอันดับ",
   "ranking_score_info_points": "เกมเดี่ยวมีค่า 1 แต้มเกม เกมคู่มีค่า 0.5 แต้มเกมต่อผู้เล่น",
   "ranking_score_info_mgp": "ผู้เล่นที่มีแต้มเกมมากที่สุดในรายการคือ MGP (แต้มเกมสูงสุด)",

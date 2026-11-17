@@ -8,6 +8,7 @@ import {
   winRatePercent,
   WinRateBar,
 } from '@/components/PlayerStatistics/statUi'
+import {RankingScoreInfoButton} from '@/components/Statistics/RankingScoreInfo'
 import StatsScopeChips from '@/components/Statistics/StatsScopeChips'
 import {Colors} from '@/constants/Colors'
 import {useStatsScope} from '@/context/StatsScopeContext'
@@ -31,7 +32,7 @@ import {
   View,
 } from 'react-native'
 
-type SortKey = 'points' | 'won' | 'played' | 'perc'
+type SortKey = 'mgp' | 'points' | 'won' | 'played' | 'perc'
 
 type PlayerStat = {
   player_id: number
@@ -40,6 +41,8 @@ type PlayerStat = {
   played: number
   won: number
   points: number
+  gamePoints: number
+  mgp: number
   perc: number
 }
 
@@ -162,6 +165,7 @@ function SortChips({
   const {t} = useTranslation()
   const colors = useStatColors()
   const options: {id: SortKey; label: string}[] = [
+    {id: 'mgp', label: t('mgp')},
     {id: 'points', label: t('points')},
     {id: 'won', label: t('won')},
     {id: 'played', label: t('played')},
@@ -169,40 +173,55 @@ function SortChips({
   ]
 
   return (
-    <View style={{marginBottom: 12}}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+    <View
+      style={{
+        marginBottom: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{flex: 1}}
+        contentContainerStyle={{alignItems: 'center'}}>
         {options.map(opt => {
           const active = sortOption === opt.id
           return (
-            <Pressable
-              key={opt.id}
-              accessibilityRole="button"
-              accessibilityState={{selected: active}}
-              accessibilityLabel={opt.label}
-              onPress={() => {
-                if (process.env.EXPO_OS === 'ios') {
-                  void Haptics.selectionAsync()
-                }
-                onChange(opt.id)
-              }}
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 16,
-                marginRight: 8,
-                backgroundColor: active ? colors.accent : colors.card,
-                borderWidth: 1,
-                borderColor: active ? colors.accent : colors.border,
-              }}>
-              <Text
+            <React.Fragment key={opt.id}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{selected: active}}
+                accessibilityLabel={opt.label}
+                onPress={() => {
+                  if (process.env.EXPO_OS === 'ios') {
+                    void Haptics.selectionAsync()
+                  }
+                  onChange(opt.id)
+                }}
                 style={{
-                  color: active ? '#fff' : colors.text,
-                  fontWeight: active ? '700' : '500',
-                  fontSize: 13,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 16,
+                  marginRight: opt.id === 'mgp' ? 4 : 8,
+                  backgroundColor: active ? colors.accent : colors.card,
+                  borderWidth: 1,
+                  borderColor: active ? colors.accent : colors.border,
                 }}>
-                {opt.label}
-              </Text>
-            </Pressable>
+                <Text
+                  style={{
+                    color: active ? '#fff' : colors.text,
+                    fontWeight: active ? '700' : '500',
+                    fontSize: 13,
+                  }}>
+                  {opt.label}
+                </Text>
+              </Pressable>
+              {opt.id === 'mgp' ? (
+                <View style={{marginRight: 8}}>
+                  <RankingScoreInfoButton size={18} />
+                </View>
+              ) : null}
+            </React.Fragment>
           )
         })}
       </ScrollView>
@@ -274,12 +293,21 @@ function SummaryStat({
   )
 }
 
-function PlayerCard({item, index}: {item: PlayerStat; index: number}) {
+function PlayerCard({
+  item,
+  index,
+  sortOption,
+}: {
+  item: PlayerStat
+  index: number
+  sortOption: SortKey
+}) {
   const router = useRouter()
   const pathname = usePathname()
   const colors = useStatColors()
   const {t} = useTranslation()
   const percent = winRatePercent(item.played, item.won, item.perc)
+  const showMgp = sortOption === 'mgp'
 
   function handlePress() {
     const base = pathname.replace(/\/Internal\/?$/, '')
@@ -320,9 +348,9 @@ function PlayerCard({item, index}: {item: PlayerStat; index: number}) {
             style={{
               fontSize: 18,
               fontWeight: '700',
-              color: winRateColor(percent),
+              color: showMgp ? colors.accent : winRateColor(percent),
             }}>
-            {formatWinLabel(percent)}
+            {showMgp ? item.mgp.toFixed(1) : formatWinLabel(percent)}
           </Text>
         </View>
         <View style={{marginTop: 12}}>
@@ -345,7 +373,7 @@ export default function TeamInternal({
   const {t} = useTranslation()
   const navigation = useNavigation()
   const [stats, setStats] = React.useState<PlayerStat[]>([])
-  const [sortOption, setSortOption] = React.useState<SortKey>('points')
+  const [sortOption, setSortOption] = React.useState<SortKey>('mgp')
   const [ready, setReady] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState(false)
@@ -353,7 +381,12 @@ export default function TeamInternal({
   const pageBg =
     Colors[useColorScheme() === 'dark' ? 'dark' : 'light'].background
 
-  const sortedStats = [...stats].sort((a, b) => b[sortOption] - a[sortOption])
+  const sortedStats = [...stats].sort((a, b) => {
+    const primary = b[sortOption] - a[sortOption]
+    if (primary !== 0) return primary
+    if (sortOption === 'points' || sortOption === 'mgp') return b.perc - a.perc
+    return 0
+  })
 
   async function getTeamInternalStats() {
     setLoading(true)
@@ -368,12 +401,14 @@ export default function TeamInternal({
         setError(true)
         return
       }
-      const data: PlayerStat[] = res.data.map((item: any) => {
+      const mapped = res.data.map((item: any) => {
         const played = Number(item.played) || 0
         // Prefer rawWon: API `won` is points-weighted (doubles = 0.5), same as `points`.
         const won =
           Number(item.rawWon ?? item.raw_won ?? item.won) || 0
         const points = Number(item.points) || 0
+        const gamePoints =
+          Number(item.adjPlayed ?? item.adj_played) || points || played
         return {
           player_id: item.player_id,
           nickname: item.nickname ?? '',
@@ -381,8 +416,24 @@ export default function TeamInternal({
           played,
           won,
           points,
+          gamePoints,
+          mgp: 0,
           perc: winRatePercent(played, won, null) ?? 0,
         }
+      })
+      // Same pool ranking as player rankings: win% × (gamePoints / MGP) ≡ winPoints / MGP.
+      const maxGamePoints = mapped.reduce(
+        (max, row) => Math.max(max, row.gamePoints),
+        0,
+      )
+      const data: PlayerStat[] = mapped.map(row => {
+        const winPct =
+          row.gamePoints > 0 ? row.points / row.gamePoints : 0
+        const mgp =
+          maxGamePoints > 0
+            ? winPct * (row.gamePoints / maxGamePoints) * 100
+            : 0
+        return {...row, mgp}
       })
       setStats(data)
     } catch (e) {
@@ -428,7 +479,9 @@ export default function TeamInternal({
       contentInsetAdjustmentBehavior="automatic"
       data={sortedStats}
       keyExtractor={item => String(item.player_id)}
-      renderItem={({item, index}) => <PlayerCard item={item} index={index} />}
+      renderItem={({item, index}) => (
+        <PlayerCard item={item} index={index} sortOption={sortOption} />
+      )}
       ListHeaderComponent={
         <View style={{paddingHorizontal: 16, paddingTop: 4}}>
           <StatsScopeChips />
