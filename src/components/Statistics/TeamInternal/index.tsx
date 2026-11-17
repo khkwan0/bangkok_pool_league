@@ -370,7 +370,9 @@ export default function TeamInternal({
       }
       const data: PlayerStat[] = res.data.map((item: any) => {
         const played = Number(item.played) || 0
-        const won = Number(item.won) || 0
+        // Prefer rawWon: API `won` is points-weighted (doubles = 0.5), same as `points`.
+        const won =
+          Number(item.rawWon ?? item.raw_won ?? item.won) || 0
         const points = Number(item.points) || 0
         return {
           player_id: item.player_id,
