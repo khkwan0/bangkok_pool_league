@@ -119,6 +119,30 @@ export function GoldenBreakRow({
           <Text style={[styles.kicker, {color: label}]}>
             {hero ? t('golden_breaks_latest') : t('golden_break_action')}
           </Text>
+          {(item.weekGoldenBreakCount ?? 0) > 1 ? (
+            <View
+              style={{
+                borderRadius: 999,
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+                backgroundColor: hero
+                  ? 'rgba(59,42,0,0.14)'
+                  : isDark
+                    ? 'rgba(245,158,11,0.22)'
+                    : 'rgba(245,158,11,0.18)',
+              }}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontWeight: '800',
+                  color: label,
+                }}>
+                {t('golden_breaks_week_multi', {
+                  count: item.weekGoldenBreakCount,
+                })}
+              </Text>
+            </View>
+          ) : null}
           {unread ? (
             <View
               accessibilityLabel={t('golden_breaks_new')}
@@ -155,6 +179,9 @@ export function GoldenBreakRow({
               ]}
               numberOfLines={1}>
               {player.nickname}
+              {(item.weekGoldenBreakCount ?? 0) > 1
+                ? ` ×${item.weekGoldenBreakCount}`
+                : ''}
             </Text>
           </Pressable>
         ))}

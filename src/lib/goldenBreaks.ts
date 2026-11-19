@@ -10,6 +10,10 @@ export type GoldenBreakItem = {
   frameId: number
   matchId: number
   matchDate: string
+  /** Monday (YYYY-MM-DD) of the week containing matchDate. */
+  weekStart?: string
+  /** Golden breaks by the top winner on this frame in the same week. */
+  weekGoldenBreakCount?: number
   frameNumber: number
   singles: boolean
   gameLabel: string
