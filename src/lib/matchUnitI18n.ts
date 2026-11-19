@@ -3,12 +3,16 @@ import i18n from '@/i18n'
 const LEG_LABELS: Record<string, {frame: string; frames: string}> = {
   en: {frame: 'Leg', frames: 'Legs'},
   th: {frame: 'เลก', frames: 'เลก'},
+  zh: {frame: '局', frames: '局'},
+  ja: {frame: 'レグ', frames: 'レグ'},
   cockney: {frame: 'Leg', frames: 'Legs'},
 }
 
 const FRAME_LABELS: Record<string, {frame: string; frames: string}> = {
   en: {frame: 'Frame', frames: 'Frames'},
   th: {frame: 'กระดาน', frames: 'เฟรม'},
+  zh: {frame: '局', frames: '局'},
+  ja: {frame: 'フレーム', frames: 'フレーム'},
   cockney: {frame: 'Frame', frames: 'Frames'},
 }
 
@@ -32,7 +36,10 @@ export function applyScoreUnitToI18n(scoreUnit: 'frame' | 'leg' | string) {
         let next = value
         if (lng === 'th') {
           next = next.replace(/เฟรม/g, 'เลก').replace(/กระดาน/g, 'เลก')
-        } else {
+        } else if (lng === 'ja') {
+          next = next
+            .replace(/フレーム/g, 'レグ')
+        } else if (lng !== 'zh') {
           next = next
             .replace(/\bFrames\b/g, 'Legs')
             .replace(/\bframes\b/g, 'legs')
