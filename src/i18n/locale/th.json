@@ -393,6 +393,7 @@
   "game_type": "ประเภทการแข่งขัน",
   "game_variety": "รูปแบบเกม",
   "history": "ประวัติ",
+  "history_empty": "ยังไม่มีประวัติแมตช์",
   "home": "ฐาน",
   "inactive": "ไม่ได้ใช้งาน",
   "info_and_guides": "สารสนเทศ",

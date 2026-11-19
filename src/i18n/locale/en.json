@@ -356,6 +356,7 @@
   "game_type": "Game type",
   "game_variety": "Game Variety",
   "history": "History",
+  "history_empty": "No match history yet.",
   "home": "Home",
   "inactive": "Inactive",
   "info_and_guides": "Info & Guides",
