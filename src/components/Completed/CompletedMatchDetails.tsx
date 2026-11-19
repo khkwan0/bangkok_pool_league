@@ -5,7 +5,12 @@ import {
 } from '@/components/Match/components/scoresheetTheme'
 import {useMatch} from '@/hooks'
 import {formatBangkokDateMed} from '@/lib/bangkokTime'
+import {
+  loadCompletedHeaderSticky,
+  saveCompletedHeaderSticky,
+} from '@/lib/completedHeaderSticky'
 import MCI from '@expo/vector-icons/MaterialCommunityIcons'
+import * as Haptics from 'expo-haptics'
 import {useNavigation, useRouter} from 'expo-router'
 import React from 'react'
 import {useTranslation} from 'react-i18next'
@@ -338,10 +343,30 @@ export default function CompletedMatchDetails({
   const router = useRouter()
   const theme = useScoresheetTheme()
   const {t} = useTranslation()
+  const [headerSticky, setHeaderSticky] = React.useState(false)
   const validMatchId = (() => {
     const id = Number(matchId)
     return Number.isFinite(id) && id > 0 ? id : null
   })()
+
+  React.useEffect(() => {
+    let cancelled = false
+    loadCompletedHeaderSticky().then(sticky => {
+      if (!cancelled) setHeaderSticky(sticky)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  function toggleHeaderSticky() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    setHeaderSticky(prev => {
+      const next = !prev
+      void saveCompletedHeaderSticky(next)
+      return next
+    })
+  }
 
   React.useEffect(() => {
     let cancelled = false
@@ -446,16 +471,17 @@ export default function CompletedMatchDetails({
   const awayName =
     matchMetadata?.away_team_short_name || matchMetadata?.away_team_name
 
-  return (
-    <View style={{flex: 1, backgroundColor: theme.canvas}}>
+  const header = (
+    <>
       <View
         style={[
           {
-            marginHorizontal: 12,
+            marginHorizontal: headerSticky ? 12 : 0,
             marginTop: 12,
             marginBottom: 8,
             borderRadius: 18,
           },
+          headerSticky ? {backgroundColor: theme.canvas} : null,
           theme.shadow,
         ]}>
         <View
@@ -467,220 +493,275 @@ export default function CompletedMatchDetails({
             borderColor: theme.cardBorder,
             paddingBottom: 16,
           }}>
-        <View style={{flexDirection: 'row', height: 4}}>
-          <View style={{flex: 1, backgroundColor: theme.home.accent}} />
-          <View style={{flex: 1, backgroundColor: theme.away.accent}} />
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            paddingHorizontal: 16,
-            paddingTop: 14,
-          }}>
-          <Text style={{color: theme.muted, fontSize: 13, fontWeight: '700'}}>
-            Match #{validMatchId}
-          </Text>
-          {typeof matchDate === 'string' && (
-            <Text style={{color: theme.muted, fontSize: 13, fontWeight: '600'}}>
-              {formatBangkokDateMed(matchDate)}
-            </Text>
-          )}
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            paddingHorizontal: 12,
-            paddingTop: 14,
-          }}>
-          <Pressable
-            style={{flex: 1, alignItems: 'center', opacity: homePressed ? 0.55 : 1}}
-            onPressIn={() => setHomePressed(true)}
-            onPressOut={() => setHomePressed(false)}
-            onPress={() => {
-              router.push({
-                pathname: '/Completed/Match/Team',
-                params: {
-                  params: JSON.stringify({teamId: matchMetadata?.home_team_id}),
-                },
-              })
-            }}>
-            {matchMetadata?.home_logo ? (
-              <Image
-                source={{uri: matchMetadata.home_logo}}
-                resizeMode="contain"
-                style={{width: 26, height: 26, marginBottom: 6}}
-              />
-            ) : null}
-            <Text
-              numberOfLines={2}
-              style={{
-                textAlign: 'center',
-                color: theme.text,
-                fontSize: 18,
-                fontWeight: '800',
-              }}>
-              {homeName}
-            </Text>
-            <View
-              style={{
-                marginTop: 8,
-                width: 36,
-                height: 3,
-                borderRadius: 2,
-                backgroundColor: theme.home.accent,
-              }}
-            />
-          </Pressable>
-          <View style={{width: 44, alignItems: 'center', paddingTop: 4}}>
-            <View
-              style={{
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderRadius: 999,
-                backgroundColor: theme.faint,
-              }}>
-              <Text
-                style={{
-                  color: theme.muted,
-                  fontSize: 11,
-                  fontWeight: '800',
-                  letterSpacing: 1,
-                }}>
-                VS
-              </Text>
-            </View>
-          </View>
-          <Pressable
-            style={{flex: 1, alignItems: 'center', opacity: awayPressed ? 0.55 : 1}}
-            onPressIn={() => setAwayPressed(true)}
-            onPressOut={() => setAwayPressed(false)}
-            onPress={() => {
-              router.push({
-                pathname: '/Completed/Match/Team',
-                params: {
-                  params: JSON.stringify({teamId: matchMetadata?.away_team_id}),
-                },
-              })
-            }}>
-            {matchMetadata?.away_logo ? (
-              <Image
-                source={{uri: matchMetadata.away_logo}}
-                resizeMode="contain"
-                style={{width: 26, height: 26, marginBottom: 6}}
-              />
-            ) : null}
-            <Text
-              numberOfLines={2}
-              style={{
-                textAlign: 'center',
-                color: theme.text,
-                fontSize: 18,
-                fontWeight: '800',
-              }}>
-              {awayName}
-            </Text>
-            <View
-              style={{
-                marginTop: 8,
-                width: 36,
-                height: 3,
-                borderRadius: 2,
-                backgroundColor: theme.away.accent,
-              }}
-            />
-          </Pressable>
-        </View>
-        <View style={{paddingHorizontal: 16, paddingTop: 12}}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                fontSize: 44,
-                lineHeight: 48,
-                fontWeight: '800',
-                fontVariant: ['tabular-nums'],
-                color:
-                  tied || homeFrames > awayFrames ? theme.home.accent : theme.muted,
-              }}>
-              {homeFrames}
-            </Text>
-            <Text
-              style={{
-                width: 28,
-                textAlign: 'center',
-                color: theme.muted,
-                fontSize: 22,
-                fontWeight: '600',
-              }}>
-              –
-            </Text>
-            <Text
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                fontSize: 44,
-                lineHeight: 48,
-                fontWeight: '800',
-                fontVariant: ['tabular-nums'],
-                color:
-                  tied || awayFrames > homeFrames ? theme.away.accent : theme.muted,
-              }}>
-              {awayFrames}
-            </Text>
+          <View style={{flexDirection: 'row', height: 4}}>
+            <View style={{flex: 1, backgroundColor: theme.home.accent}} />
+            <View style={{flex: 1, backgroundColor: theme.away.accent}} />
           </View>
           <View
             style={{
-              marginTop: 8,
-              height: 6,
-              borderRadius: 999,
-              overflow: 'hidden',
               flexDirection: 'row',
-              backgroundColor: theme.faint,
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingTop: 14,
+              gap: 8,
             }}>
-            {total === 0 ? (
-              <View style={{flex: 1}} />
-            ) : (
-              <>
-                {homeFrames > 0 && (
-                  <View
-                    style={{flex: homeFrames, backgroundColor: theme.home.accent}}
-                  />
-                )}
-                {awayFrames > 0 && (
-                  <View
-                    style={{flex: awayFrames, backgroundColor: theme.away.accent}}
-                  />
-                )}
-              </>
+            <Text style={{color: theme.muted, fontSize: 13, fontWeight: '700'}}>
+              Match #{validMatchId}
+            </Text>
+            <View style={{flex: 1}} />
+            {typeof matchDate === 'string' && (
+              <Text style={{color: theme.muted, fontSize: 13, fontWeight: '600'}}>
+                {formatBangkokDateMed(matchDate)}
+              </Text>
             )}
+            <Pressable
+              onPress={toggleHeaderSticky}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={
+                headerSticky ? 'Unpin match header' : 'Pin match header'
+              }
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.faint,
+              }}>
+              {({pressed}) => (
+                <MCI
+                  name={headerSticky ? 'pin' : 'pin-off'}
+                  size={16}
+                  color={
+                    pressed ? theme.win : headerSticky ? theme.text : theme.muted
+                  }
+                />
+              )}
+            </Pressable>
           </View>
-        </View>
-        {(matchMetadata?.first_break_home_team === 1 ||
-          matchMetadata?.first_break_home_team === 0) && (
-          <Text
+          <View
             style={{
-              textAlign: 'center',
-              marginTop: 12,
-              color: theme.muted,
-              fontSize: 12,
-              fontWeight: '700',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              paddingHorizontal: 12,
+              paddingTop: 14,
             }}>
-            {t('first_break')}:{' '}
-            {matchMetadata?.first_break_home_team === 1 ? homeName : awayName}
-          </Text>
-        )}
+            <Pressable
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                opacity: homePressed ? 0.55 : 1,
+              }}
+              onPressIn={() => setHomePressed(true)}
+              onPressOut={() => setHomePressed(false)}
+              onPress={() => {
+                router.push({
+                  pathname: '/Completed/Match/Team',
+                  params: {
+                    params: JSON.stringify({
+                      teamId: matchMetadata?.home_team_id,
+                    }),
+                  },
+                })
+              }}>
+              {matchMetadata?.home_logo ? (
+                <Image
+                  source={{uri: matchMetadata.home_logo}}
+                  resizeMode="contain"
+                  style={{width: 26, height: 26, marginBottom: 6}}
+                />
+              ) : null}
+              <Text
+                numberOfLines={2}
+                style={{
+                  textAlign: 'center',
+                  color: theme.text,
+                  fontSize: 18,
+                  fontWeight: '800',
+                }}>
+                {homeName}
+              </Text>
+              <View
+                style={{
+                  marginTop: 8,
+                  width: 36,
+                  height: 3,
+                  borderRadius: 2,
+                  backgroundColor: theme.home.accent,
+                }}
+              />
+            </Pressable>
+            <View style={{width: 44, alignItems: 'center', paddingTop: 4}}>
+              <View
+                style={{
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 999,
+                  backgroundColor: theme.faint,
+                }}>
+                <Text
+                  style={{
+                    color: theme.muted,
+                    fontSize: 11,
+                    fontWeight: '800',
+                    letterSpacing: 1,
+                  }}>
+                  VS
+                </Text>
+              </View>
+            </View>
+            <Pressable
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                opacity: awayPressed ? 0.55 : 1,
+              }}
+              onPressIn={() => setAwayPressed(true)}
+              onPressOut={() => setAwayPressed(false)}
+              onPress={() => {
+                router.push({
+                  pathname: '/Completed/Match/Team',
+                  params: {
+                    params: JSON.stringify({
+                      teamId: matchMetadata?.away_team_id,
+                    }),
+                  },
+                })
+              }}>
+              {matchMetadata?.away_logo ? (
+                <Image
+                  source={{uri: matchMetadata.away_logo}}
+                  resizeMode="contain"
+                  style={{width: 26, height: 26, marginBottom: 6}}
+                />
+              ) : null}
+              <Text
+                numberOfLines={2}
+                style={{
+                  textAlign: 'center',
+                  color: theme.text,
+                  fontSize: 18,
+                  fontWeight: '800',
+                }}>
+                {awayName}
+              </Text>
+              <View
+                style={{
+                  marginTop: 8,
+                  width: 36,
+                  height: 3,
+                  borderRadius: 2,
+                  backgroundColor: theme.away.accent,
+                }}
+              />
+            </Pressable>
+          </View>
+          <View style={{paddingHorizontal: 16, paddingTop: 12}}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text
+                style={{
+                  flex: 1,
+                  textAlign: 'center',
+                  fontSize: 44,
+                  lineHeight: 48,
+                  fontWeight: '800',
+                  fontVariant: ['tabular-nums'],
+                  color:
+                    tied || homeFrames > awayFrames
+                      ? theme.home.accent
+                      : theme.muted,
+                }}>
+                {homeFrames}
+              </Text>
+              <Text
+                style={{
+                  width: 28,
+                  textAlign: 'center',
+                  color: theme.muted,
+                  fontSize: 22,
+                  fontWeight: '600',
+                }}>
+                –
+              </Text>
+              <Text
+                style={{
+                  flex: 1,
+                  textAlign: 'center',
+                  fontSize: 44,
+                  lineHeight: 48,
+                  fontWeight: '800',
+                  fontVariant: ['tabular-nums'],
+                  color:
+                    tied || awayFrames > homeFrames
+                      ? theme.away.accent
+                      : theme.muted,
+                }}>
+                {awayFrames}
+              </Text>
+            </View>
+            <View
+              style={{
+                marginTop: 8,
+                height: 6,
+                borderRadius: 999,
+                overflow: 'hidden',
+                flexDirection: 'row',
+                backgroundColor: theme.faint,
+              }}>
+              {total === 0 ? (
+                <View style={{flex: 1}} />
+              ) : (
+                <>
+                  {homeFrames > 0 && (
+                    <View
+                      style={{
+                        flex: homeFrames,
+                        backgroundColor: theme.home.accent,
+                      }}
+                    />
+                  )}
+                  {awayFrames > 0 && (
+                    <View
+                      style={{
+                        flex: awayFrames,
+                        backgroundColor: theme.away.accent,
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </View>
+          </View>
+          {(matchMetadata?.first_break_home_team === 1 ||
+            matchMetadata?.first_break_home_team === 0) && (
+            <Text
+              style={{
+                textAlign: 'center',
+                marginTop: 12,
+                color: theme.muted,
+                fontSize: 12,
+                fontWeight: '700',
+              }}>
+              {t('first_break')}:{' '}
+              {matchMetadata?.first_break_home_team === 1 ? homeName : awayName}
+            </Text>
+          )}
         </View>
       </View>
 
       {validMatchId ? <More matchId={validMatchId} /> : null}
+    </>
+  )
 
+  return (
+    <View style={{flex: 1, backgroundColor: theme.canvas}}>
+      {headerSticky ? header : null}
       <FlatList
         style={{flex: 1}}
         contentContainerStyle={{paddingBottom: 24, paddingHorizontal: 12}}
         data={matchDetails}
+        ListHeaderComponent={headerSticky ? undefined : header}
         renderItem={({item, index}) => (
           <FrameRow
             frame={item}
