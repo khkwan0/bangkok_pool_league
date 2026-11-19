@@ -361,14 +361,21 @@ export default function WeeklyHighlightsCard() {
             showsHorizontalScrollIndicator={false}
             style={{marginTop: 14}}
             contentContainerStyle={{paddingRight: 4}}>
-            {data.spotlights.map(s => (
-              <SpotlightRow
-                key={s.id}
-                spotlight={s}
-                label={t(SPOTLIGHT_I18N[s.id] || s.label)}
-                theme={theme}
-              />
-            ))}
+            {data.spotlights.map(s => {
+              const base = t(SPOTLIGHT_I18N[s.id] || s.label)
+              const label =
+                s.id === 'golden_break' && s.value > 1
+                  ? `${base} ×${s.value}`
+                  : base
+              return (
+                <SpotlightRow
+                  key={s.id}
+                  spotlight={s}
+                  label={label}
+                  theme={theme}
+                />
+              )
+            })}
           </ScrollView>
         ) : null}
       </LinearGradient>

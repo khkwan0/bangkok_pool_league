@@ -565,14 +565,21 @@ export default function HighlightsExplorer() {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{paddingHorizontal: 16}}>
-                {data.spotlights.map(s => (
-                  <SpotlightCard
-                    key={s.id}
-                    spotlight={s}
-                    label={t(SPOTLIGHT_I18N[s.id] || s.label)}
-                    isDark={isDark}
-                  />
-                ))}
+                {data.spotlights.map(s => {
+                  const base = t(SPOTLIGHT_I18N[s.id] || s.label)
+                  const label =
+                    s.id === 'golden_break' && s.value > 1
+                      ? `${base} ×${s.value}`
+                      : base
+                  return (
+                    <SpotlightCard
+                      key={s.id}
+                      spotlight={s}
+                      label={label}
+                      isDark={isDark}
+                    />
+                  )
+                })}
               </ScrollView>
             </View>
           ) : null}
