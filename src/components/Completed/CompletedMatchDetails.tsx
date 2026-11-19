@@ -13,12 +13,27 @@ import {FlatList, Image, Pressable, Text, View} from 'react-native'
 
 type Frame = {
   frameId: number
+  /** Scoresheet frame number. Section breaks use -1. */
+  frameNo?: number
+  section?: boolean
+  sectionNumber?: number
   homePlayers: {nickName: string; playerId: number}[]
   awayPlayers: {nickName: string; playerId: number}[]
-  homeWin: number
+  /** 1 home won, 0 away won, null not played. */
+  homeWin: number | null
+  goldenBreak?: boolean
+  homeScore?: number
+  awayScore?: number
+  valuePerLeg?: number
 }
 
 type MatchDetails = Frame[]
+
+function frameNumberLabel(frame: Frame, playableOrdinal: number) {
+  const n = Number(frame.frameNo)
+  if (Number.isFinite(n) && n > 0) return n
+  return playableOrdinal
+}
 
 type MatchMetadata = {
   matchDate?: string
@@ -47,6 +62,9 @@ function CompletedSide({
   align,
   palette,
   winColor,
+  winInk,
+  goldenBreak,
+  goldenLabel,
   onOpenPlayer,
 }: {
   players: Frame['homePlayers']
@@ -58,6 +76,9 @@ function CompletedSide({
   align: 'left' | 'right'
   palette: SidePalette
   winColor: string
+  winInk: string
+  goldenBreak: boolean
+  goldenLabel: string
   onOpenPlayer: (playerId: number) => void
 }) {
   return (
@@ -69,7 +90,11 @@ function CompletedSide({
         paddingHorizontal: 10,
         backgroundColor: won ? palette.panelWinner : palette.panel,
         borderWidth: won ? 1.5 : 1,
-        borderColor: won ? palette.accent : palette.border,
+        borderColor: won
+          ? goldenBreak
+            ? winColor
+            : palette.accent
+          : palette.border,
         opacity: dim && !won ? 0.72 : 1,
         justifyContent: 'space-between',
       }}>
@@ -102,20 +127,43 @@ function CompletedSide({
           style={{
             marginTop: 8,
             alignSelf: 'stretch',
-            minHeight: 32,
+            minHeight: goldenBreak ? 40 : 32,
             borderRadius: 10,
             backgroundColor: winColor,
             alignItems: 'center',
             justifyContent: 'center',
+            paddingVertical: goldenBreak ? 4 : 0,
           }}>
-          <MCI name="check" size={18} color="#FFFFFF" />
+          <MCI
+            name={goldenBreak ? 'star' : 'check'}
+            size={goldenBreak ? 16 : 18}
+            color={winInk}
+          />
+          {goldenBreak ? (
+            <Text
+              numberOfLines={1}
+              style={{
+                marginTop: 1,
+                color: winInk,
+                fontSize: 11,
+                fontWeight: '800',
+              }}>
+              {goldenLabel}
+            </Text>
+          ) : null}
         </View>
       ) : null}
     </View>
   )
 }
 
-function FrameRow({frame, index}: {frame: Frame; index: number}) {
+function FrameRow({
+  frame,
+  playableOrdinal,
+}: {
+  frame: Frame
+  playableOrdinal: number
+}) {
   const {t} = useTranslation()
   const router = useRouter()
   const theme = useScoresheetTheme()
@@ -123,6 +171,53 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
   const [awayPressed, setAwayPressed] = React.useState(false)
   const homeWon = frame.homeWin === 1
   const awayWon = frame.homeWin === 0
+  const goldenBreak = Boolean(frame.goldenBreak)
+
+  if (frame.section) {
+    const sectionNo = frame.sectionNumber ?? frame.frameNo
+    return (
+      <View
+        style={{
+          marginTop: 6,
+          marginBottom: 2,
+          paddingVertical: 12,
+          paddingHorizontal: 14,
+          borderRadius: 14,
+          backgroundColor: theme.card,
+          borderWidth: 1,
+          borderColor: theme.cardBorder,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+        <Text style={{color: theme.muted, fontSize: 13, fontWeight: '700'}}>
+          {t('section')}
+          {sectionNo != null && Number(sectionNo) > 0 ? ` ${sectionNo}` : ''}
+        </Text>
+        <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+          <Text
+            style={{
+              color: theme.home.accent,
+              fontSize: 18,
+              fontWeight: '800',
+              fontVariant: ['tabular-nums'],
+            }}>
+            {Number(frame.homeScore ?? 0)}
+          </Text>
+          <Text style={{color: theme.muted, fontSize: 14}}>–</Text>
+          <Text
+            style={{
+              color: theme.away.accent,
+              fontSize: 18,
+              fontWeight: '800',
+              fontVariant: ['tabular-nums'],
+            }}>
+            {Number(frame.awayScore ?? 0)}
+          </Text>
+        </View>
+      </View>
+    )
+  }
 
   function openPlayer(playerId: number) {
     router.replace({
@@ -133,6 +228,9 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
     })
   }
 
+  const winColor = goldenBreak ? theme.gold : theme.win
+  const winInk = goldenBreak ? theme.goldInk : '#FFFFFF'
+
   return (
     <View
       style={[
@@ -140,24 +238,52 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
           borderRadius: 18,
           backgroundColor: theme.card,
           borderWidth: 1,
-          borderColor: theme.cardBorder,
+          borderColor: goldenBreak ? theme.gold : theme.cardBorder,
           paddingBottom: 10,
         },
         theme.shadow,
       ]}>
-      <Text
+      <View
         style={{
-          color: theme.muted,
-          fontSize: 12,
-          fontWeight: '800',
-          letterSpacing: 0.8,
-          textTransform: 'uppercase',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           paddingHorizontal: 14,
           paddingTop: 12,
           paddingBottom: 8,
+          gap: 8,
         }}>
-        {t('frame')} {index + 1}
-      </Text>
+        <Text
+          style={{
+            color: goldenBreak ? theme.goldInk : theme.muted,
+            fontSize: 12,
+            fontWeight: '800',
+            letterSpacing: 0.8,
+            textTransform: 'uppercase',
+          }}>
+          {t('frame')} {frameNumberLabel(frame, playableOrdinal)}
+        </Text>
+        {goldenBreak ? (
+          <View
+            style={{
+              borderRadius: 999,
+              backgroundColor: theme.gold,
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+            }}>
+            <Text
+              style={{
+                color: theme.goldInk,
+                fontSize: 10,
+                fontWeight: '800',
+                letterSpacing: 0.4,
+                textTransform: 'uppercase',
+              }}>
+              {t('golden_break_action')}
+            </Text>
+          </View>
+        ) : null}
+      </View>
       <View style={{flexDirection: 'row', gap: 8, paddingHorizontal: 10}}>
         <CompletedSide
           players={frame.homePlayers}
@@ -168,7 +294,10 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
           onPressOut={() => setHomePressed(false)}
           align="left"
           palette={theme.home}
-          winColor={theme.win}
+          winColor={winColor}
+          winInk={winInk}
+          goldenBreak={goldenBreak && homeWon}
+          goldenLabel={t('golden_break_action')}
           onOpenPlayer={openPlayer}
         />
         <CompletedSide
@@ -180,7 +309,10 @@ function FrameRow({frame, index}: {frame: Frame; index: number}) {
           onPressOut={() => setAwayPressed(false)}
           align="right"
           palette={theme.away}
-          winColor={theme.win}
+          winColor={winColor}
+          winInk={winInk}
+          goldenBreak={goldenBreak && awayWon}
+          goldenLabel={t('golden_break_action')}
           onOpenPlayer={openPlayer}
         />
       </View>
@@ -267,6 +399,13 @@ export default function CompletedMatchDetails({
       title: validMatchId ? `Match #${validMatchId}` : 'Match',
     })
   }, [validMatchId, navigation])
+
+  const playableOrdinals = React.useMemo(() => {
+    let ordinal = 0
+    return (matchDetails ?? []).map(frame =>
+      frame.section ? 0 : ++ordinal,
+    )
+  }, [matchDetails])
 
   if (loading) {
     return (
@@ -542,9 +681,18 @@ export default function CompletedMatchDetails({
         style={{flex: 1}}
         contentContainerStyle={{paddingBottom: 24, paddingHorizontal: 12}}
         data={matchDetails}
-        renderItem={({item, index}) => <FrameRow frame={item} index={index} />}
+        renderItem={({item, index}) => (
+          <FrameRow
+            frame={item}
+            playableOrdinal={playableOrdinals[index] ?? index + 1}
+          />
+        )}
         ItemSeparatorComponent={() => <View style={{height: 8}} />}
-        keyExtractor={item => item.frameId.toString()}
+        keyExtractor={(item, index) =>
+          item.section
+            ? `section-${item.sectionNumber ?? item.frameId}-${index}`
+            : String(item.frameId)
+        }
       />
     </View>
   )
