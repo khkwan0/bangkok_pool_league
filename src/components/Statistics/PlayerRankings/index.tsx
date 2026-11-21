@@ -6,11 +6,11 @@ import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {MiniSeasonChips} from '@/components/mini-leagues/MiniSeasonChips'
 import {useStatsScope} from '@/context/StatsScopeContext'
+import {useGuardedRelativePush} from '@/hooks/useGuardedRelativePush'
 import {useLeagueSeasonSelection} from '@/hooks/useLeagueSeasonSelection'
 import {useNetwork} from '@/hooks/useNetwork'
 import {useTabListContentContainerStyle} from '@/hooks/useTabListContentContainerStyle'
 import {useTheme} from 'expo-router/react-navigation'
-import {usePathname, useRouter} from 'expo-router'
 import React, {useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {
@@ -100,22 +100,12 @@ function DivisionJumpChips({
 function PlayerRow({
   player,
   index,
+  onPress,
 }: {
   player: PlayerRanking
   index: number
+  onPress: (playerId: number) => void
 }) {
-  const router = useRouter()
-  const currentPath = usePathname()
-
-  function handlePress(playerId: number) {
-    router.push({
-      pathname: (currentPath + '/Player') as any,
-      params: {
-        params: JSON.stringify({playerId}),
-      },
-    })
-  }
-
   const score =
     player.scoreDisp ??
     player.winRatioDisp ??
@@ -127,7 +117,7 @@ function PlayerRow({
 
   return (
     <Pressable
-      onPress={() => handlePress(player.playerId)}
+      onPress={() => onPress(player.playerId)}
       className="flex-row items-center py-3 px-4 border-b border-gray-200 dark:border-gray-700">
       <View style={{flex: 1}}>
         <Text className="font-medium">#{index + 1}</Text>
@@ -148,7 +138,13 @@ function PlayerRow({
   )
 }
 
-function DivisionRankings({data}: {data: DivisionPlayerRankings}) {
+function DivisionRankings({
+  data,
+  onPressPlayer,
+}: {
+  data: DivisionPlayerRankings
+  onPressPlayer: (playerId: number) => void
+}) {
   const {t} = useTranslation()
 
   if (data.players.length === 0) {
@@ -184,6 +180,7 @@ function DivisionRankings({data}: {data: DivisionPlayerRankings}) {
           key={`player-${player.playerId}-${index}`}
           player={player}
           index={index}
+          onPress={onPressPlayer}
         />
       ))}
     </View>
@@ -204,6 +201,15 @@ export default function PlayerRankings({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null)
+  const pushRelative = useGuardedRelativePush()
+  const openPlayer = React.useCallback(
+    (playerId: number) => {
+      pushRelative('/Player', {
+        params: JSON.stringify({playerId}),
+      })
+    },
+    [pushRelative],
+  )
   const listRef = React.useRef<FlatList<DivisionPlayerRankings>>(null)
   const jumpingRef = React.useRef(false)
   const listContentStyle = useTabListContentContainerStyle({paddingTop: 10})
@@ -357,7 +363,9 @@ export default function PlayerRankings({
           ref={listRef}
           contentContainerStyle={listContentStyle}
           data={visibleDivisions}
-          renderItem={({item}) => <DivisionRankings data={item} />}
+          renderItem={({item}) => (
+            <DivisionRankings data={item} onPressPlayer={openPlayer} />
+          )}
           keyExtractor={(item, index) =>
             `division-${item.division_id || item.division_name || index}`
           }
