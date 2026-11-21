@@ -34,8 +34,14 @@ export default function ScoreSheet({
   embedded = false,
 }: ScoreSheetProps = {}) {
   const router = useRouter()
-  const {state, dispatch, SocketConnect, SocketDisconnect, UpdateTeams}: any =
-    useMatchContext()
+  const {
+    state,
+    dispatch,
+    SocketConnect,
+    SocketDisconnect,
+    UpdateTeams,
+    adoptSheetGen,
+  }: any = useMatchContext()
   const {RefreshUpcoming}: any = useLeagueContext()
   const match = useMatch()
   const routeParams = useLocalSearchParams()
@@ -178,11 +184,20 @@ export default function ScoreSheet({
     }
   }, [])
 
+  function blankFrames(): FrameType[] {
+    const source = state?.matchInfo?.initialFrames
+    if (Array.isArray(source) && source.length > 0) {
+      return source.map((frame: FrameType) => ({...frame}))
+    }
+    return frames.current.map(frame => ({...frame}))
+  }
+
   async function GetFrames() {
     setRefreshing(true)
-    const __frames = frames.current
     try {
       const res = await match.GetFrames(matchInfo.match_id)
+      adoptSheetGen?.(res?.sheetGen)
+      const __frames = blankFrames()
       if (typeof res?.data?.frames !== 'undefined') {
         const _frames = res.data.frames
         _frames.forEach((frame: FrameType) => {
@@ -198,6 +213,7 @@ export default function ScoreSheet({
           }
         })
       }
+      frames.current = __frames
       dispatch({
         type: 'SET_FRAMES',
         payload: __frames,
@@ -214,35 +230,41 @@ export default function ScoreSheet({
   async function GetFirstBreak() {
     try {
       const res = await match.GetMatchInfo(matchInfo.match_id)
+      adoptSheetGen?.(res?.sheetGen)
       if (typeof res.status !== 'undefined' && res.status === 'ok') {
-        if (typeof res.data.firstBreak !== 'undefined' && res.data.firstBreak) {
-          dispatch({type: 'SET_FIRSTBREAK', payload: res.data.firstBreak})
-        } else {
-          dispatch({type: 'SET_FIRSTBREAK', payload: null})
-        }
-        if (
-          typeof res.data.finalize_home !== 'undefined' &&
-          Object.keys(res.data.finalize_home).length > 0
-        ) {
-          dispatch({
-            type: 'SET_FINALIZED_HOME',
-            payload: true,
-          })
-        }
-        if (
-          typeof res.data.finalize_away !== 'undefined' &&
-          Object.keys(res.data.finalize_away).length > 0
-        ) {
-          dispatch({
-            type: 'SET_FINALIZED_AWAY',
-            payload: true,
-          })
-        }
+        const data = res.data
+        const fb = Number(data?.firstBreak)
+        dispatch({
+          type: 'SET_FIRSTBREAK',
+          payload: Number.isFinite(fb) && fb > 0 ? fb : null,
+        })
+        dispatch({
+          type: 'SET_FINALIZED_HOME',
+          payload:
+            !!data?.finalize_home &&
+            Object.keys(data.finalize_home).length > 0,
+        })
+        dispatch({
+          type: 'SET_FINALIZED_AWAY',
+          payload:
+            !!data?.finalize_away &&
+            Object.keys(data.finalize_away).length > 0,
+        })
       }
     } catch (e) {
       console.log(e)
     }
   }
+
+  const sheetReloadSeen = React.useRef(0)
+  React.useEffect(() => {
+    const n = Number(state?.sheetReload ?? 0)
+    if (n === sheetReloadSeen.current) return
+    sheetReloadSeen.current = n
+    if (n <= 0) return
+    void GetFrames()
+    void GetFirstBreak()
+  }, [state?.sheetReload])
   /*
   React.useEffect(() => {
     ;(async () => {
