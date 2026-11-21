@@ -13,6 +13,7 @@ import {useAchievements} from '@/hooks/useAchievements'
 import {ThemedText as Text} from '@/components/ThemedText'
 import PlayerAchievementsCard from '@/components/PlayerAchievementsCard'
 import PlayerAchievementsHero from '@/components/PlayerAchievementsHero'
+import {ExpandablePlayerPhoto} from '@/components/ExpandablePlayerPhoto'
 import config from '@/config'
 import {useNavigation, usePathname, useRouter} from 'expo-router'
 import {useTranslation} from 'react-i18next'
@@ -217,11 +218,13 @@ export default function PlayerDetails({playerId}: PlayerDetailsProps) {
           <View style={[styles.stripe, {backgroundColor: accent}]} />
           <View style={styles.hero}>
             <View style={styles.avatarRing}>
-              <Image
-                source={{uri: avatarUri}}
-                style={styles.avatar}
-                resizeMode="cover"
-              />
+              <ExpandablePlayerPhoto uri={avatarUri} accessibilityLabel={nickname}>
+                <Image
+                  source={{uri: avatarUri}}
+                  style={styles.avatar}
+                  resizeMode="cover"
+                />
+              </ExpandablePlayerPhoto>
             </View>
             <View style={styles.nameRow}>
               <Text style={styles.playerTitle} numberOfLines={2}>
