@@ -8,8 +8,15 @@
 	<false/>
 	<key>method</key>
 	<string>app-store-connect</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.bangkok-pool-league</key>
+		<string>Bangkok Pool League App Store</string>
+	</dict>
+	<key>signingCertificate</key>
+	<string>Apple Distribution: Nitrox Studios LLC (2MXCL8R3KW)</string>
 	<key>signingStyle</key>
-	<string>automatic</string>
+	<string>manual</string>
 	<key>teamID</key>
 	<string>2MXCL8R3KW</string>
 	<key>uploadSymbols</key>

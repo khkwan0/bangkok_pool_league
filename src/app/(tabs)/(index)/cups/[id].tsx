@@ -2,6 +2,7 @@ import BracketTree, {
   type BracketTreeMatch,
   type BracketTreeStage,
 } from '@/components/cups/BracketTree'
+import {CupStructureTable, type CupStructureTableData} from '@/components/cups/CupStructureTable'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeague} from '@/hooks'
@@ -48,13 +49,17 @@ export default function CupBracketScreen() {
   const [openSignup, setOpenSignup] = React.useState(false)
   const [signingUp, setSigningUp] = React.useState(false)
   const [entryCount, setEntryCount] = React.useState<number | null>(null)
+  const [structure, setStructure] = React.useState<CupStructureTableData | null>(
+    null,
+  )
 
   const load = React.useCallback(async () => {
     if (!tournamentId) return
-    const [signupRes, bracketRes, completedRes] = await Promise.all([
+    const [signupRes, bracketRes, completedRes, structureRes] = await Promise.all([
       apiRef.current.getSignupStatus(tournamentId).catch(() => null),
       apiRef.current.getBracket(tournamentId).catch(() => null),
       apiRef.current.getCompletedMatches(tournamentId).catch(() => null),
+      apiRef.current.getStructure(tournamentId).catch(() => null),
     ])
     if (signupRes?.status === 'ok') {
       setName(signupRes.tournament?.name ?? '')
@@ -81,6 +86,11 @@ export default function CupBracketScreen() {
       )
     } else {
       setCompleted([])
+    }
+    if (structureRes?.status === 'ok' && structureRes.table) {
+      setStructure(structureRes.table)
+    } else {
+      setStructure(null)
     }
   }, [tournamentId])
 
@@ -183,7 +193,10 @@ export default function CupBracketScreen() {
 
   const isDraftOpen = status === 'draft' && openSignup
   const showEmpty =
-    !isDraftOpen && stages.length === 0 && completed.length === 0
+    !isDraftOpen &&
+    stages.length === 0 &&
+    completed.length === 0 &&
+    !structure
 
   return (
     <ScrollView
@@ -236,6 +249,8 @@ export default function CupBracketScreen() {
           ) : null}
         </View>
       ) : null}
+
+      <CupStructureTable table={structure} />
 
       {showEmpty ? (
         <Text style={{marginTop: 24, opacity: 0.55}}>

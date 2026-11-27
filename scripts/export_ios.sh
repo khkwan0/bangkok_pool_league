@@ -124,11 +124,22 @@ verify_distribution_signing
   || /usr/libexec/PlistBuddy -c "Set :teamID ${APPLE_TEAM_ID}" "$EXPORT_OPTIONS"
 
 echo "Exporting IPA from ${ARCHIVE_PATH} → ${EXPORT_PATH}…"
-xcodebuild -exportArchive \
-  -archivePath "$ARCHIVE_PATH" \
-  -exportPath "$EXPORT_PATH" \
-  -exportOptionsPlist "$EXPORT_OPTIONS" \
-  -allowProvisioningUpdates
+# Manual signing uses the installed App Store profile. -allowProvisioningUpdates
+# needs a working Xcode account, which this machine does not have, and it
+# fails the export before that local profile is used.
+SIGNING_STYLE="$(/usr/libexec/PlistBuddy -c 'Print :signingStyle' "$EXPORT_OPTIONS" 2>/dev/null || true)"
+if [ "$SIGNING_STYLE" = "manual" ]; then
+  xcodebuild -exportArchive \
+    -archivePath "$ARCHIVE_PATH" \
+    -exportPath "$EXPORT_PATH" \
+    -exportOptionsPlist "$EXPORT_OPTIONS"
+else
+  xcodebuild -exportArchive \
+    -archivePath "$ARCHIVE_PATH" \
+    -exportPath "$EXPORT_PATH" \
+    -exportOptionsPlist "$EXPORT_OPTIONS" \
+    -allowProvisioningUpdates
+fi
 
 IPA_PATH="$(find "$EXPORT_PATH" -maxdepth 1 -name '*.ipa' -print -quit)"
 if [ -z "$IPA_PATH" ]; then

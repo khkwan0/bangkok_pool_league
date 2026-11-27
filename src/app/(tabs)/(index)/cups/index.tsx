@@ -1,4 +1,8 @@
 import {TournamentListCard} from '@/components/cups/TournamentListCard'
+import {
+  CupStructureTable,
+  type CupStructureTableData,
+} from '@/components/cups/CupStructureTable'
 import {ThemedText as Text} from '@/components/ThemedText'
 import {ThemedView as View} from '@/components/ThemedView'
 import {useLeagueContext} from '@/context/LeagueContext'
@@ -22,9 +26,14 @@ type CupRow = {
   id: number
   name: string
   status: string
+  preset_key?: string | null
   game_type_label?: string
   entry_count?: number
   open_signup?: boolean
+}
+
+function cupTitle(name: string): string {
+  return /cup/i.test(name) ? name : `${name} Cup`
 }
 
 export default function CupsListScreen() {
@@ -39,6 +48,9 @@ export default function CupsListScreen() {
   const router = useRouter()
   const isDark = useColorScheme() === 'dark'
   const [rows, setRows] = React.useState<CupRow[]>([])
+  const [structures, setStructures] = React.useState<
+    Array<{id: number; name: string; table: CupStructureTableData}>
+  >([])
   const [loading, setLoading] = React.useState(true)
   const [refreshing, setRefreshing] = React.useState(false)
   const [canManage, setCanManage] = React.useState(false)
@@ -52,9 +64,33 @@ export default function CupsListScreen() {
   const load = React.useCallback(async () => {
     const opts = isMini ? {mini_league_id: miniId} : undefined
     const res = await apiRef.current.list(opts)
-    if (res?.status === 'ok') {
-      setRows(Array.isArray(res.data) ? res.data : [])
-    }
+    const listed: CupRow[] =
+      res?.status === 'ok' && Array.isArray(res.data) ? res.data : []
+    setRows(listed)
+    const redraw = listed.filter(
+      cup =>
+        cup.preset_key === 'gold_silver_bronze' &&
+        (cup.status === 'in_progress' || cup.status === 'ready'),
+    )
+    const loaded = await Promise.all(
+      redraw.map(async cup => {
+        const structure = await apiRef.current
+          .getStructure(cup.id)
+          .catch(() => null)
+        if (structure?.status === 'ok' && structure.table) {
+          return {id: cup.id, name: cup.name, table: structure.table}
+        }
+        return null
+      }),
+    )
+    setStructures(
+      loaded.filter(
+        (
+          row,
+        ): row is {id: number; name: string; table: CupStructureTableData} =>
+          row != null,
+      ),
+    )
     if (isSiteAdmin) {
       setCanManage(true)
     } else if (isMini) {
@@ -134,6 +170,19 @@ export default function CupsListScreen() {
               setRefreshing(false)
             }}
           />
+        }
+        ListHeaderComponent={
+          structures.length > 0 ? (
+            <View style={{gap: 8, marginBottom: 8}}>
+              {structures.map(cup => (
+                <CupStructureTable
+                  key={cup.id}
+                  title={cupTitle(cup.name)}
+                  table={cup.table}
+                />
+              ))}
+            </View>
+          ) : null
         }
         ListEmptyComponent={
           <View style={{alignItems: 'center', marginTop: 48, gap: 10}}>

@@ -23,6 +23,8 @@ export function useTournaments() {
 
   const getBracket = async id => Get(`/tournaments/${id}/bracket`)
 
+  const getStructure = async id => Get(`/tournaments/${id}/structure`)
+
   const getCompletedMatches = async id =>
     Get(`/tournaments/${id}/matches?status=completed`)
 
@@ -138,6 +140,7 @@ export function useTournaments() {
   return {
     list,
     getBracket,
+    getStructure,
     getCompletedMatches,
     adminList,
     adminGet,
