@@ -388,6 +388,7 @@ export default function UpcomingMatches(props: any) {
             idx={index}
             handlePress={HandlePress}
             compact={useMatchGrid}
+            showAvailability={!useMatchGrid}
           />
         )
         if (!useMatchGrid) return card
@@ -410,6 +411,7 @@ export default function UpcomingMatches(props: any) {
           idx={index}
           handlePress={HandlePress}
           showMineOnly={showMineOnly}
+          showAvailability
         />
       )
     },

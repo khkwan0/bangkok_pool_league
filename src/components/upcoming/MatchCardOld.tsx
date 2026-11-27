@@ -5,6 +5,7 @@ import {
   cardScoreShowsLive,
   resolveCardLiveScore,
 } from '@/lib/liveCardScore'
+import {MatchAvailability} from '@/components/upcoming/MatchAvailability'
 import {useLiveCardScore} from '@/context/LiveCardScoresContext'
 import {ThemedText as Text} from '@/components/ThemedText'
 import CupMatchBanner, {
@@ -327,6 +328,7 @@ export default function MatchCardOld({
   idx = 0,
   scoresheetPathname = '/Match',
   compact = false,
+  showAvailability = false,
 }: {
   matchInfo: MatchInfoDataType
   idx?: number
@@ -335,6 +337,8 @@ export default function MatchCardOld({
   scoresheetPathname?: string
   /** Narrower tile for the home matches grid. */
   compact?: boolean
+  /** Home list only. Asks whether this player can make the next match. */
+  showAvailability?: boolean
 }) {
   const router = useRouter()
   const {t} = useTranslation()
@@ -1096,6 +1100,18 @@ export default function MatchCardOld({
               </Pressable>
             </View>
           </>
+        ) : null}
+
+        {showAvailability && !compact ? (
+          <MatchAvailability
+            matchId={Number(matchInfo.match_id) || 0}
+            date={matchInfo.date}
+            accent={accent}
+            textColor={theme.text}
+            mutedColor={theme.textSecondary}
+            borderColor={theme.surfaceBorder}
+            surfaceColor={theme.surfaceBg}
+          />
         ) : null}
 
         {bothConfirmed ? (

@@ -314,6 +314,10 @@ function RootLayout() {
           }
 
           const claimType = String(remoteMessage?.data?.type || '')
+          if (claimType === 'availability') {
+            router.push('/(tabs)/(index)' as any)
+            return
+          }
           if (
             claimType === 'player_claim' ||
             claimType === 'player_claim_resolved'

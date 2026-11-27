@@ -1,5 +1,5 @@
 import Button from '@/components/Button'
-import MatchBettingRow from '@/components/betting/MatchBettingRow'
+import {MatchAvailability} from '@/components/upcoming/MatchAvailability'
 import RivalryStrip from '@/components/habits/RivalryStrip'
 import MatchPredictionRow from '@/components/predictions/MatchPredictionRow'
 import {MatchInfoDataType} from '@/components/Match/types'
@@ -248,6 +248,7 @@ export default function MatchCard({
   idx,
   embedded = false,
   scoresheetPathname = '/Match',
+  showAvailability = false,
 }: {
   matchInfo: MatchInfoDataType
   idx: number
@@ -257,6 +258,8 @@ export default function MatchCard({
   embedded?: boolean
   /** Route for the scoresheet Link (Settings stack needs its own path). */
   scoresheetPathname?: string
+  /** Home list only. Asks whether this player can make the next match. */
+  showAvailability?: boolean
 }) {
   const router = useRouter()
   const {t} = useTranslation()
@@ -814,6 +817,20 @@ export default function MatchCard({
             }
           />
         </View>
+
+        {showAvailability ? (
+          <View style={{paddingHorizontal: pad}}>
+            <MatchAvailability
+              matchId={Number(matchInfo.match_id) || 0}
+              date={matchInfo.date}
+              accent={accent}
+              textColor={theme.text}
+              mutedColor={theme.textSecondary}
+              borderColor={theme.boardBorder}
+              surfaceColor={theme.boardBg}
+            />
+          </View>
+        ) : null}
 
         <View style={styles.actions}>
           <Pressable

@@ -34,6 +34,7 @@ const CHANNELS = [
   {id: 'Admin', name: 'Admin'},
   {id: 'App Wide', name: 'General'},
   {id: 'match_confirmation', name: 'Match Confirmation'},
+  {id: 'match_availability', name: 'Match Availability'},
   // Fresh id so heads-up importance applies. Android will not raise the
   // importance of a channel that Notifee or an older build already created.
   {id: 'bkk-alerts', name: 'Alerts'},

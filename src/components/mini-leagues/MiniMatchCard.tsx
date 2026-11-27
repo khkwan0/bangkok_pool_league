@@ -1,4 +1,4 @@
-import {ThemedText as Text} from '@/components/ThemedText'
+import {MatchAvailability} from '@/components/upcoming/MatchAvailability'
 import {formatBangkokWeekdayDate} from '@/lib/bangkokTime'
 import {
   getMiniLeaguePalette,
@@ -333,6 +333,16 @@ export function MiniMatchCard({item, onPress, opening, miniLeagueId}: Props) {
           </View>
         </LinearGradient>
       </Pressable>
+      <MatchAvailability
+        matchId={item.id}
+        date={item.date}
+        accent={palette.accent}
+        textColor={bodyText}
+        mutedColor={muted}
+        borderColor={isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.1)'}
+        surfaceColor={isDark ? '#1a1a1a' : '#FFFFFF'}
+        style={{marginHorizontal: 12, marginBottom: 12}}
+      />
     </View>
   )
 }
